@@ -14,6 +14,8 @@ class Config:
     HEPCAT_MAIL_SENDER = 'Hepcat Admin <hepcat.mail@gmail.com>'
     HEPCAT_ADMIN = os.environ.get('HEPCAT_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
+
 
     @staticmethod
     def init_app(app):
