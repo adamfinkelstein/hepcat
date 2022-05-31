@@ -1,7 +1,7 @@
 from flask import render_template, flash, current_app
 from . import debug
 from .. import db
-from ..models import User
+from ..models import Role, User
 
 # AF: this function and the following route are for debugging internal variables
 def debugConfigToString(config):
@@ -31,6 +31,16 @@ def users():
     debug_output = '\n'
     for user in users:
         debug_output += user.first_name + ' ' + user.last_name + ' ' + user.email + '\n'
+    return render_template('debug.html', 
+                            debug_title=debug_title, debug_output=debug_output)
+
+@debug.route('/roles/')
+def roles():
+    roles = Role.query.all()
+    debug_title = "Roles"
+    debug_output = '\n'
+    for role in roles:
+        debug_output += role.name + '\n'
     return render_template('debug.html', 
                             debug_title=debug_title, debug_output=debug_output)
 

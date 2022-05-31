@@ -59,3 +59,28 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+def ensureAdmin():
+    modified = False
+    adminName = 'Admin'
+    adminRole = Role.query.filter_by(name=adminName).first()
+    if not adminRole:
+        adminRole = Role(name=adminName)
+        db.session.add(adminRole)
+        modified = True
+    app = current_app._get_current_object()
+    adminLogin = app.config['HEPCAT_ADMIN_LOGIN']
+    admin = User.query.filter_by(email=adminLogin).first()
+    if not admin:
+        adminPasswd = app.config['HEPCAT_ADMIN_PASSWD']
+        admin = User(email=adminLogin,
+                        first_name='Admin',
+                        last_name='User',
+                        role=adminRole,
+                        password=adminPasswd,
+                        confirmed=True)
+        db.session.add(admin)
+        modified = True
+    if modified:
+        db.session.commit()
