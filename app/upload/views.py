@@ -41,7 +41,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data.lower(),
-                    username=form.username.data,
+                    first_name=form.first_name.data, #now outdated
                     password=form.password.data)
         db.session.add(user)
         db.session.commit()
