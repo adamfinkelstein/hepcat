@@ -32,6 +32,9 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
+    from .upload import upload as upload_blueprint
+    app.register_blueprint(upload_blueprint)
+
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.
         # Follows this:
