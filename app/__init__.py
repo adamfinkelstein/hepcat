@@ -32,6 +32,9 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
+    from .debug import debug as debug_blueprint
+    app.register_blueprint(debug_blueprint, url_prefix='/debug')
+
     from .upload import upload as upload_blueprint
     app.register_blueprint(upload_blueprint)
 
