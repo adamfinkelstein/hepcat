@@ -1,6 +1,7 @@
 from flask import render_template, flash, current_app
 from . import main
-
+from .. import db
+from ..models import User
 
 @main.route('/')
 def index():
@@ -24,4 +25,14 @@ def debug():
         debug_title = "app.config"
         debug_output = debugConfigToString(app.config)
     return render_template('debug.html', 
-        debug_title=debug_title, debug_output=debug_output)
+                            debug_title=debug_title, debug_output=debug_output)
+
+@main.route('/users/')
+def users():
+    users = User.query.all()
+    debug_title = "Users"
+    debug_output = '\n'
+    for user in users:
+        debug_output += user.first_name + ' ' + user.last_name + ' ' + user.email + '\n'
+    return render_template('debug.html', 
+                            debug_title=debug_title, debug_output=debug_output)
