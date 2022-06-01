@@ -82,24 +82,24 @@ class Paper(db.Model):
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
 
-def sidToNum(pid):
-    n = pid.replace('papers_','')
+def sid_to_num(sid):
+    n = sid.replace('papers_','')
     return int(n)
 
-def numToSid(n):
+def num_to_sid(n):
     sid = f'papers_{n}'
     return sid
 
-def getOrInsertRole(role):
+def get_or_insert_role(role):
     roleObj = Role.query.filter_by(name=role).first()
     if not roleObj:
         roleObj = Role(name=role)
         db.session.add(roleObj)
     return roleObj
 
-def ensureAdmin():
+def ensure_admin():
     adminName = 'Admin'
-    adminRole = getOrInsertRole(adminName)
+    adminRole = get_or_insert_role(adminName)
     app = current_app._get_current_object()
     adminLogin = app.config['HEPCAT_ADMIN_LOGIN']
     admin = User.query.filter_by(email=adminLogin).first()

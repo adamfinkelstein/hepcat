@@ -20,18 +20,18 @@ if not os.path.exists(dataDir):
 # reviews: Submission ID,Role,Rating,Consensus Recommendation
 # summaries: Submission ID,Summary
 
-def writeFile(fname, contents):
+def write_file(fname, contents):
     path = f'{dataDir}/{fname}'
     with open(path, 'w') as f:
         f.write(contents)
 
-def nameToEmail(first, last):
+def name_to_email(first, last):
     first = first.lower()
     last = last.lower()
     email = f'{first}.{last}@example.com'
     return email
 
-def randomRole():
+def random_role():
     r = random.randint(0,100)
     if r > 10:
         return ''
@@ -41,51 +41,51 @@ def randomRole():
         return 'Admin'
 
 # Users: Email,First Name,Last Name,Role,Password
-def fakePerson(role):
+def fake_person(role):
     first = fake.first_name()
     last = fake.last_name()
-    email = nameToEmail(first,last)
+    email = name_to_email(first,last)
     passwd = fake.password()
     if not role:
-        role = randomRole()
+        role = random_role()
     result = f'{email},{first},{last},{role},{passwd}\n'
     return result,email
 
-def fakeUsers(n, fname):
+def fake_users(n, fname):
     emails = []
     people = 'Email,First Name,Last Name,Role,Password\n'
-    person,email = fakePerson('Admin')
+    person,email = fake_person('Admin')
     people += person
     emails.append(email)
     for i in range(1,n):
-        person,email = fakePerson(None)
+        person,email = fake_person(None)
         people += person
         emails.append(email)
-    writeFile(fname,people)
+    write_file(fname,people)
     return emails
 
-def randColor():
+def rand_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return color
 
-def csvSafeString(s):
+def csv_safe_string(s):
     return s.replace(',', '').replace('"', '').replace("'", '')
 
 # Abstracts: Submission ID,Thumbnail URL,Title,Abstract
 # assumes n is a 3-digit number
 def fakePaper(pid):
-    c1 = randColor()
-    c2 = randColor()
+    c1 = rand_color()
+    c2 = rand_color()
     n = pid.replace('papers_','')
     # like this: https://fakeimg.pl/600x450/a42/fa8/?text=255&font_size=240&font=bebas
     url = f'https://fakeimg.pl/600x450/{c1}/{c2}/?text={n}&font_size=240&font=bebas'
-    title    = csvSafeString( fake.sentence(nb_words=7) )
-    abstract = csvSafeString( fake.paragraph(nb_sentences=12) )
+    title    = csv_safe_string( fake.sentence(nb_words=7) )
+    abstract = csv_safe_string( fake.paragraph(nb_sentences=12) )
     title = title[:-1] # remove trailing period
     result = f'{pid},{url},{title},{abstract}\n'
     return result
 
-def fakePapers(n, fname):
+def fake_papers(n, fname):
     pids = []
     papers = 'Submission ID,Thumbnail URL,Title,Abstract\n'
     start = 101
@@ -93,28 +93,28 @@ def fakePapers(n, fname):
         pid = f'papers_{i}'
         papers += fakePaper(pid)
         pids.append(pid)
-    writeFile(fname,papers)
+    write_file(fname,papers)
     return pids
 
-def randNumConflicts():
+def rand_num_conflicts():
     n = math.floor( np.random.poisson(3) )
     return n
 
-def randConflicts(emails, n):
+def rand_conflicts(emails, n):
     ems = emails.copy()
     random.shuffle(ems)
     ems = ems[:n]
     return ems
 
 # Conflicts: Submission ID,Email
-def fakeConflicts(emails, papers, fname):
+def fake_conflicts(emails, papers, fname):
     conflicts = 'Submission ID,Email\n'
     for pid in papers:
-        n = randNumConflicts()
-        conf = randConflicts(emails, n)
+        n = rand_num_conflicts()
+        conf = rand_conflicts(emails, n)
         for c in conf:
             conflicts += f'{pid},{c}\n'
-    writeFile(fname, conflicts)
+    write_file(fname, conflicts)
 
 def gaussian(x, mu, sig):
     return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
@@ -128,7 +128,7 @@ def dumpOptions(weights, revs):
     print(revs)
     print()
 
-def randReviews(n):
+def rand_reviews(n):
     mu = random.uniform(-3.0, 3.0)
     sig = 2.0
     options = [-5,-3,-1,1,3,5]
@@ -141,7 +141,7 @@ def randReviews(n):
     # dumpOptions(weights, revs)
     return revs
 
-def revsToRec(revs):
+def revs_to_rec(revs):
     tot = sum(revs)
     if tot > 8:
         return 1
@@ -150,45 +150,45 @@ def revsToRec(revs):
     else:
         return ''
 
-def fmtReview(pid, rev, score, rec):
+def fmt_review(pid, rev, score, rec):
     line = f'{pid},{rev},{score},{rec}\n'
     return line
 
-def fakePaperReviews(pid):
+def fake_paper_reviews(pid):
     pri = 'Technical Papers Committee Member (lead)'
     sec = 'Technical Papers Committee Member'
     ter = 'Technical Papers Tertiary Reviewer'
-    revs = randReviews(5)
-    rec = revsToRec(revs)
-    result  = fmtReview(pid, pri, revs[0], rec)
-    result += fmtReview(pid, sec, revs[1], rec)
-    result += fmtReview(pid, ter, revs[2], '')
-    result += fmtReview(pid, ter, revs[3], '')
-    result += fmtReview(pid, ter, revs[4], '')
+    revs = rand_reviews(5)
+    rec = revs_to_rec(revs)
+    result  = fmt_review(pid, pri, revs[0], rec)
+    result += fmt_review(pid, sec, revs[1], rec)
+    result += fmt_review(pid, ter, revs[2], '')
+    result += fmt_review(pid, ter, revs[3], '')
+    result += fmt_review(pid, ter, revs[4], '')
     return result
 
 # Status: Submission ID,Role,Rating,Consensus Recommendation
-def fakeReviews(papers, fname):
+def fake_reviews(papers, fname):
     output = 'Submission ID,Role,Rating,Consensus Recommendation\n'
     for pid in papers:
-        output += fakePaperReviews(pid)
-    writeFile(fname, output)
+        output += fake_paper_reviews(pid)
+    write_file(fname, output)
 
 # Status: Submission ID,Summary
-def fakeSummaries(papers, fname):
+def fake_summaries(papers, fname):
     output = 'Submission ID,Summary\n'
     for pid in papers:
-        summary = csvSafeString( fake.sentence(nb_words=12) )
+        summary = csv_safe_string( fake.sentence(nb_words=12) )
         line = f'{pid},{summary}\n'
         output += line
-    writeFile(fname, output)
+    write_file(fname, output)
 
 def main():
-    emails = fakeUsers(50, 'users.csv')
-    papers = fakePapers(500, 'papers.csv')
-    fakeConflicts(emails, papers, 'conflicts.csv')
-    fakeReviews(papers, 'reviews.csv')
-    fakeSummaries(papers, 'summaries.csv')
+    emails = fake_users(50, 'users.csv')
+    papers = fake_papers(500, 'papers.csv')
+    fake_conflicts(emails, papers, 'conflicts.csv')
+    fake_reviews(papers, 'reviews.csv')
+    fake_summaries(papers, 'summaries.csv')
 
 if __name__ == "__main__":
     main()

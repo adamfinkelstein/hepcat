@@ -3,16 +3,16 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import Role, User, Paper, getOrInsertRole, ensureAdmin
+from ..models import Role, User, Paper, get_or_insert_role, ensure_admin
 
 import os
 import csv
 
 
 # Email,First Name,Last Name,Role,Password
-def insertUserRows(rows):
+def insert_user_rows(rows):
     # probably need to remove old users and conflicts.
-    # then ensureAdmin
+    # then ensure_admin
     for row in rows:
         if len(row) < 5:
             continue
@@ -22,13 +22,13 @@ def insertUserRows(rows):
                     last_name=last_name,
                     password=password)
         if len(role):
-            roleObj = getOrInsertRole(role)
+            roleObj = get_or_insert_role(role)
             user.role = roleObj
         db.session.add(user)
     db.session.commit()
 
 # Submission ID,Thumbnail URL,Title,Abstract
-def insertPaperRows(rows):
+def insert_paper_rows(rows):
     for row in rows:
         if len(row) < 4:
             continue
@@ -41,7 +41,7 @@ def insertPaperRows(rows):
     db.session.commit()
 
 # Submission ID,Email
-def insertConflictRows(rows):
+def insert_conflict_rows(rows):
     for row in rows:
         if len(row) < 2:
             continue
@@ -62,24 +62,24 @@ csvTypes = {
     'summaries' : 'Submission ID,Summary' }
 
 csvFunctions = {
-    'users' : insertUserRows,
-    'papers' : insertPaperRows,
-    'conflicts' : insertConflictRows,
+    'users' : insert_user_rows,
+    'papers' : insert_paper_rows,
+    'conflicts' : insert_conflict_rows,
     'clusters' : None,
     'reviews' : None,
     'summaries' : None }
 
-def isCSV(filename):
+def is_csv(filename):
     if '.' not in filename:
         return False
     ext = filename.rsplit('.', 1)[1].lower()
     return ext == 'csv'
 
-def makePathIfNeeded(path):
+def make_path_if_needed(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def readCSVRows(filename):
+def read_csv_rows(filename):
     with open(filename) as f:
         csvReader = csv.reader(f)
         rows = []
@@ -92,16 +92,16 @@ def readCSVRows(filename):
     rows = rows[1:]
     return header, rows
 
-def getCSVType(header):
+def get_csv_type(header):
     for t in csvTypes:
         typeHeader = csvTypes[t]
         if header.lower() == typeHeader.lower():
             return t
     return None
 
-def readCSV(filename):
-    header, rows = readCSVRows(filename)
-    headerType = getCSVType(header)
+def read_csv(filename):
+    header, rows = read_csv_rows(filename)
+    headerType = get_csv_type(header)
     if headerType in csvFunctions:
         func = csvFunctions[headerType]
         func(rows)
@@ -116,17 +116,17 @@ def upload():
     if form.validate_on_submit():
         file = form.file.data
         filename = secure_filename(file.filename)
-        if not isCSV(filename):
+        if not is_csv(filename):
             filename = None
             flash('Uploaded file is not CSV, ignored.')
         else:
             app = current_app._get_current_object()
             folder = app.config['UPLOAD_FOLDER']
-            makePathIfNeeded(folder)
+            make_path_if_needed(folder)
             fullpath = os.path.join(folder, filename)
             file.save(fullpath)
             flash('saved csv file here: '+fullpath)
-            ok = readCSV(fullpath)
+            ok = read_csv(fullpath)
             if ok:
                 flash('read csv file: ' + fullpath)
             else:

@@ -1,10 +1,10 @@
 from flask import render_template, flash, current_app
 from . import debug
 from .. import db
-from ..models import Role, User, Paper, numToSid
+from ..models import Role, User, Paper, num_to_sid
 import textwrap
 
-def reWrapTextOutput(output):
+def re_wrap_text_output(output):
     result = ''
     wrapper = textwrap.TextWrapper(width=80)
     lines = output.split('\n')
@@ -13,12 +13,12 @@ def reWrapTextOutput(output):
     return result
 
 def render_debug(title, output):
-    output = reWrapTextOutput(output)
+    output = re_wrap_text_output(output)
     return render_template('debug.html', 
                             debug_title=title, debug_output=output)
 
 # AF: this function and the following route are for debugging internal variables
-def debugConfigToString(config):
+def debug_config_to_string(config):
     output = '\n'
     for key in config:
         val = config[key]
@@ -33,7 +33,7 @@ def debugMain():
     app = current_app._get_current_object()
     if app and app.config:
         debug_title = 'app.config'
-        debug_output = debugConfigToString(app.config)
+        debug_output = debug_config_to_string(app.config)
     return render_debug(debug_title, debug_output)
 
 @debug.route('/users/')
@@ -68,7 +68,7 @@ def papers():
 
 @debug.route('/paper/<sidnum>')
 def paper(sidnum):
-    sid = numToSid(int(sidnum))
+    sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
     debug_title = sid
     debug_output = 'No matching paper found.'
@@ -81,7 +81,7 @@ def paper(sidnum):
 
 @debug.route('/paper_conflicts/<sidnum>')
 def paper_conflicts(sidnum):
-    sid = numToSid(int(sidnum))
+    sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
     debug_title = 'Conflicts for ' + sid
     debug_output = 'No matching paper found.'
