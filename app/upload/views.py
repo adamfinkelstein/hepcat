@@ -3,13 +3,13 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import User
+from ..models import Role,User,Paper
 
 import os
 import csv
 
 # Email,First Name,Last Name,Role,Password
-def createUsers(rows):
+def insertUserRows(rows):
     for row in rows:
         if len(row) < 5:
             continue
@@ -17,8 +17,37 @@ def createUsers(rows):
         user = User(email=email,
                     first_name=first_name,
                     last_name=last_name,
-                    # role=role, # need to look this up
                     password=password)
+        if len(role):
+            roleObj = Role.query.filter_by(name=role).first()
+            if (roleObj):
+                user.role = roleObj
+        db.session.add(user)
+    db.session.commit()
+
+# Submission ID,Thumbnail URL,Title,Abstract
+def insertPaperRows(rows):
+    for row in rows:
+        if len(row) < 4:
+            continue
+        sid,thumbnail,title,abstract = row
+        paper = Paper(sid=sid,
+                    thumbnail=thumbnail,
+                    title=title,
+                    abstract=abstract)
+        db.session.add(paper)
+    db.session.commit()
+
+# Submission ID,Email
+def insertConflictRows(rows):
+    for row in rows:
+        if len(row) < 2:
+            continue
+        sid,email = row
+        user = User.query.filter_by(email=email).first()
+        paper = Paper.query.filter_by(sid=sid).first()
+        if user and paper:
+            user.conf_papers.append(paper)
         db.session.add(user)
     db.session.commit()
 
@@ -29,6 +58,14 @@ csvTypes = {
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Rating,Consensus Recommendation',
     'summaries' : 'Submission ID,Summary' }
+
+csvFunctions = {
+    'users' : insertUserRows,
+    'papers' : insertPaperRows,
+    'conflicts' : insertConflictRows,
+    'clusters' : None,
+    'reviews' : None,
+    'summaries' : None }
 
 def isCSV(filename):
     if '.' not in filename:
@@ -63,10 +100,11 @@ def getCSVType(header):
 def readCSV(filename):
     header, rows = readCSVRows(filename)
     headerType = getCSVType(header)
-    if headerType != 'users':
-        return False
-    createUsers(rows)
-    return True
+    if headerType in csvFunctions:
+        func = csvFunctions[headerType]
+        func(rows)
+        return True
+    return False
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 @upload.route('/upload/', methods=('GET', 'POST'))

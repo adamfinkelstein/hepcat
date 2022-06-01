@@ -4,6 +4,14 @@ from flask import current_app
 from flask_login import UserMixin
 from . import db, login_manager
 
+# many-many: strongly encouraged to use Table rather than Class
+# https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/#many-to-many-relationships
+# Also in Flask book Ch. 12. Maybe omit primary_key.
+conflicts = db.Table( 'conflicts',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id') ),
+    db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
+#    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+#    db.Column('paper_id', db.Integer, db.ForeignKey('papers.id'), primary_key=True) )
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -24,6 +32,8 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic',
+        backref=db.backref('conf_users', lazy='dynamic'))
 
     @property
     def password(self):
@@ -60,7 +70,25 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# initially: Submission ID,Thumbnail URL,Title,Abstract
+class Paper(db.Model):
+    __tablename__ = 'papers'
+    id = db.Column(db.Integer, primary_key=True)
+    sid = db.Column(db.String(64), unique=True, index=True)
+    thumbnail = db.Column(db.String(256))
+    title = db.Column(db.String())
+    abstract = db.Column(db.String())
+    summary = db.Column(db.String())
+    all_scores = db.Column(db.String(64))
 
+def sidToNum(pid):
+    n = pid.replace('papers_','')
+    return int(n)
+
+def numToSid(n):
+    sid = f'papers_{n}'
+    return sid
+    
 def ensureAdmin():
     modified = False
     adminName = 'Admin'
