@@ -10,6 +10,7 @@ from . import db, login_manager
 conflicts = db.Table( 'conflicts',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
+# Some online examples indicate primary_key, like this:
 #    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
 #    db.Column('paper_id', db.Integer, db.ForeignKey('papers.id'), primary_key=True) )
 

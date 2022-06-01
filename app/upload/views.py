@@ -3,7 +3,7 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import Role, User, Paper, getOrInsertRole
+from ..models import Role, User, Paper, getOrInsertRole, ensureAdmin
 
 import os
 import csv
@@ -11,6 +11,8 @@ import csv
 
 # Email,First Name,Last Name,Role,Password
 def insertUserRows(rows):
+    # probably need to remove old users and conflicts.
+    # then ensureAdmin
     for row in rows:
         if len(row) < 5:
             continue
