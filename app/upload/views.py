@@ -3,10 +3,11 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import Role,User,Paper
+from ..models import Role, User, Paper, getOrInsertRole
 
 import os
 import csv
+
 
 # Email,First Name,Last Name,Role,Password
 def insertUserRows(rows):
@@ -19,9 +20,8 @@ def insertUserRows(rows):
                     last_name=last_name,
                     password=password)
         if len(role):
-            roleObj = Role.query.filter_by(name=role).first()
-            if (roleObj):
-                user.role = roleObj
+            roleObj = getOrInsertRole(role)
+            user.role = roleObj
         db.session.add(user)
     db.session.commit()
 

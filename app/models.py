@@ -88,15 +88,17 @@ def sidToNum(pid):
 def numToSid(n):
     sid = f'papers_{n}'
     return sid
-    
+
+def getOrInsertRole(role):
+    roleObj = Role.query.filter_by(name=role).first()
+    if not roleObj:
+        roleObj = Role(name=role)
+        db.session.add(roleObj)
+    return roleObj
+
 def ensureAdmin():
-    modified = False
     adminName = 'Admin'
-    adminRole = Role.query.filter_by(name=adminName).first()
-    if not adminRole:
-        adminRole = Role(name=adminName)
-        db.session.add(adminRole)
-        modified = True
+    adminRole = getOrInsertRole(adminName)
     app = current_app._get_current_object()
     adminLogin = app.config['HEPCAT_ADMIN_LOGIN']
     admin = User.query.filter_by(email=adminLogin).first()
@@ -109,6 +111,4 @@ def ensureAdmin():
                         password=adminPasswd,
                         confirmed=True)
         db.session.add(admin)
-        modified = True
-    if modified:
-        db.session.commit()
+    db.session.commit() # possibly not needed but probably no harm
