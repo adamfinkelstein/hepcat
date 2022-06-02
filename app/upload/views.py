@@ -3,16 +3,48 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import Role, User, Paper, get_or_insert_role, ensure_admin
+from ..models import Role, User, Paper, get_or_insert_role, ensure_admin, conflicts
+from sqlalchemy import func
 
 import os
 import csv
 
+def dump_users_papers_and_conflicts(title):
+    num_users = User.query.count()
+    num_papers = Paper.query.count()
+    num_conf = db.session.query(conflicts).count()
+    print(f'{title}: U {num_users} P {num_papers} C {num_conf}.')
+
+def delete_all_conflicts():
+    dump_users_papers_and_conflicts('Before conflict deletion')
+    users = User.query.all()
+    for user in users:
+        user.conf_papers = [] # empty list
+        db.session.add(user)
+    db.session.commit()    
+    dump_users_papers_and_conflicts('After conflict deletion')
+    
+def delete_all_users():
+    delete_all_conflicts() # need to delete conflicts before users
+    dump_users_papers_and_conflicts('Before user deletion')
+    num_deleted = User.query.delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} users.')
+    dump_users_papers_and_conflicts('After user deletion')
+
+def delete_all_papers():
+    delete_all_conflicts() # need to delete conflicts before papers
+    dump_users_papers_and_conflicts('Before paper deletion')
+    num_deleted = Paper.query.delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} papers.')
+    dump_users_papers_and_conflicts('After paper deletion')
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
-    # probably need to remove old users and conflicts.
-    # then ensure_admin
+    delete_all_users()
+    ensure_admin()
+    dump_users_papers_and_conflicts('After ensure')
     for row in rows:
         if len(row) < 5:
             continue
@@ -26,9 +58,11 @@ def insert_user_rows(rows):
             user.role = roleObj
         db.session.add(user)
     db.session.commit()
+    dump_users_papers_and_conflicts('After insertion')
 
 # Submission ID,Thumbnail URL,Title,Abstract
 def insert_paper_rows(rows):
+    delete_all_papers()
     for row in rows:
         if len(row) < 4:
             continue
@@ -42,6 +76,7 @@ def insert_paper_rows(rows):
 
 # Submission ID,Email
 def insert_conflict_rows(rows):
+    delete_all_conflicts()
     for row in rows:
         if len(row) < 2:
             continue
