@@ -17,6 +17,22 @@ def render_debug(title, output):
     return render_template('debug.html', 
                             debug_title=title, debug_output=output)
 
+def debug_orm_to_string(orm):
+    output = '\n'
+    obj = orm.__dict__
+    lines = []
+    for key in obj:
+        val = obj[key]
+        typ = type(val)
+        if typ != str and typ != int:
+            val = typ.__name__
+        line = f'{key} : {val}'
+        lines.append(line)
+    lines.reverse()
+    sep = '\n\n'
+    output = sep.join(lines) + sep
+    return output
+
 # AF: this function and the following route are for debugging internal variables
 def debug_config_to_string(config):
     output = '\n'
@@ -43,6 +59,15 @@ def users():
     debug_output = '\n'
     for user in users:
         debug_output += user.first_name + ' ' + user.last_name + ' ' + user.email + '\n'
+    return render_debug(debug_title, debug_output)
+
+@debug.route('/user/<email>')
+def user(email):
+    user = User.query.filter_by(email=email).first()
+    debug_title = email
+    debug_output = 'No matching user found.'
+    if user:
+        debug_output = debug_orm_to_string(user)
     return render_debug(debug_title, debug_output)
 
 @debug.route('/roles/')
@@ -73,10 +98,7 @@ def paper(sidnum):
     debug_title = sid
     debug_output = 'No matching paper found.'
     if paper:
-        debug_output = '\n'
-        debug_output += '* ' + paper.sid + ' ' + paper.title + '\n'
-        debug_output += '* ' + paper.abstract + '\n'
-        # debug_output += '* ' + paper.summary + '\n'
+        debug_output = debug_orm_to_string(paper)
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper_conflicts/<sidnum>')
@@ -89,6 +111,18 @@ def paper_conflicts(sidnum):
         debug_output = '\n'
         for user in paper.conf_users:
             debug_output += '* ' + user.first_name + ' ' + user.last_name + '\n'
+    return render_debug(debug_title, debug_output)
+
+@debug.route('/paper_reviews/<sidnum>')
+def paper_reviews(sidnum):
+    sid = num_to_sid(int(sidnum))
+    paper = Paper.query.filter_by(sid=sid).first()
+    debug_title = 'Conflicts for ' + sid
+    debug_output = 'No matching paper found.'
+    if paper:
+        debug_output = '\n'
+        for rev in paper.reviews:
+            debug_output += debug_orm_to_string(rev) + '============\n\n\n'
     return render_debug(debug_title, debug_output)
 
 @debug.route('/user_conflicts/<email>')
