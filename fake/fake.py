@@ -82,6 +82,7 @@ def fakePaper(pid):
     title    = csv_safe_string( fake.sentence(nb_words=7) )
     abstract = csv_safe_string( fake.paragraph(nb_sentences=12) )
     title = title[:-1] # remove trailing period
+    title = title.title() # each word caps
     result = f'{pid},{url},{title},{abstract}\n'
     return result
 

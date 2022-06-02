@@ -28,9 +28,9 @@ def debug_orm_to_string(orm):
             val = typ.__name__
         line = f'{key} : {val}'
         lines.append(line)
-    lines.reverse()
+    lines.sort()
     sep = '\n\n'
-    output = sep.join(lines) + sep
+    output = sep + sep.join(lines) + sep
     return output
 
 # AF: this function and the following route are for debugging internal variables

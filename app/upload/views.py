@@ -1,14 +1,14 @@
-from flask import render_template, flash, current_app
-from . import upload
-from werkzeug import secure_filename
-from .forms import UploadForm
-from .. import db
-from ..models import Role, User, Paper, Review
-from ..models import get_or_insert_role, ensure_admin, conflicts
-from sqlalchemy import func
-
 import os
 import csv
+
+from flask import render_template, flash, current_app
+from werkzeug import secure_filename
+from sqlalchemy import func
+from . import upload
+from .forms import UploadForm
+from .. import db
+from ..models import User, Paper, Review
+from ..models import get_or_insert_role, ensure_admin, conflicts
 
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
@@ -102,7 +102,7 @@ def insert_conflict_rows(rows):
 def review_role_to_num(role):
     if 'lead' in role:
         return 1
-    elif 'Committeee in role':
+    elif 'Committee' in role:
         return 2
     return 3
 
@@ -111,6 +111,37 @@ def review_str_to_num(s):
     if len(s):
         return int(s)
     return 0
+
+rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 1:'a', 3:'A', 5:'_A_'}
+
+def get_rating_code(rating):
+    if rating in rating_codes_dict:
+        return rating_codes_dict[rating]
+    return '?'
+
+def get_consensus_code(consensus_recs):
+    if len(consensus_recs) == 2 and consensus_recs[0] == consensus_recs[1]:
+        if consensus_recs[0] > 0:
+            return 'A'
+        else:
+            return 'R'
+    return 'T'
+    
+
+def papers_set_all_scores_and_status_from_reviews():
+    papers = Paper.query.all()
+    for paper in papers:
+        all_scores = '[ '
+        consensus_recs = []
+        reviews = paper.reviews.order_by(Review.role)
+        for review in reviews:
+            all_scores += get_rating_code(review.rating) + ' '
+            if review.role >= 1 and review.role <= 2: # primary or secondary
+                consensus_recs.append(review.consensus)
+        all_scores += '] ' + get_consensus_code(consensus_recs)
+        paper.all_scores = all_scores
+        db.session.add(paper)
+    db.session.commit()
 
 # Submission ID,Role,Rating,Consensus Recommendation
 def insert_review_rows(rows):
@@ -130,6 +161,7 @@ def insert_review_rows(rows):
                             consensus=consensus)
             db.session.add(review)
     db.session.commit()
+    papers_set_all_scores_and_status_from_reviews()
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
