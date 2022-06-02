@@ -3,7 +3,8 @@ from . import upload
 from werkzeug import secure_filename
 from .forms import UploadForm
 from .. import db
-from ..models import Role, User, Paper, get_or_insert_role, ensure_admin, conflicts
+from ..models import Role, User, Paper, Review
+from ..models import get_or_insert_role, ensure_admin, conflicts
 from sqlalchemy import func
 
 import os
@@ -12,8 +13,11 @@ import csv
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
     num_papers = Paper.query.count()
+    num_reviews = Review.query.count()
     num_conf = db.session.query(conflicts).count()
-    print(f'{title}: U {num_users} P {num_papers} C {num_conf}.')
+    result = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}. Reviews={num_reviews}.'
+    print(result)
+    return result
 
 def delete_all_conflicts():
     dump_users_papers_and_conflicts('Before conflict deletion')
@@ -39,6 +43,13 @@ def delete_all_papers():
     db.session.commit()
     print(f'Deleted {num_deleted} papers.')
     dump_users_papers_and_conflicts('After paper deletion')
+
+def delete_all_reviews():
+    dump_users_papers_and_conflicts('Before review deletion')
+    num_deleted = Review.query.delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} reviews.')
+    dump_users_papers_and_conflicts('After review deletion')
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
@@ -85,7 +96,39 @@ def insert_conflict_rows(rows):
         paper = Paper.query.filter_by(sid=sid).first()
         if user and paper:
             user.conf_papers.append(paper)
-        db.session.add(user)
+            db.session.add(user)
+    db.session.commit()
+
+def review_role_to_num(role):
+    if 'lead' in role:
+        return 1
+    elif 'Committeee in role':
+        return 2
+    return 3
+
+def review_str_to_num(s):
+    s = s.strip()
+    if len(s):
+        return int(s)
+    return 0
+
+# Submission ID,Role,Rating,Consensus Recommendation
+def insert_review_rows(rows):
+    delete_all_reviews()
+    for row in rows:
+        if len(row) < 4:
+            continue
+        sid,role,rating,consensus = row
+        paper = Paper.query.filter_by(sid=sid).first()
+        if paper:
+            role_num = review_role_to_num(role)
+            rating = review_str_to_num(rating)
+            consensus = review_str_to_num(consensus)
+            review = Review(paper=paper,
+                            role=role_num,
+                            rating=rating,
+                            consensus=consensus)
+            db.session.add(review)
     db.session.commit()
 
 csvTypes = {
@@ -101,7 +144,7 @@ csvFunctions = {
     'papers' : insert_paper_rows,
     'conflicts' : insert_conflict_rows,
     'clusters' : None,
-    'reviews' : None,
+    'reviews' : insert_review_rows,
     'summaries' : None }
 
 def is_csv(filename):
@@ -128,10 +171,10 @@ def read_csv_rows(filename):
     return header, rows
 
 def get_csv_type(header):
-    for t in csvTypes:
-        typeHeader = csvTypes[t]
+    for typ in csvTypes:
+        typeHeader = csvTypes[typ]
         if header.lower() == typeHeader.lower():
-            return t
+            return typ
     return None
 
 def read_csv(filename):
@@ -140,7 +183,8 @@ def read_csv(filename):
     if headerType in csvFunctions:
         func = csvFunctions[headerType]
         func(rows)
-        return True
+        msg = dump_users_papers_and_conflicts('After Upload')
+        return msg
     return False
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
@@ -160,12 +204,13 @@ def upload():
             make_path_if_needed(folder)
             fullpath = os.path.join(folder, filename)
             file.save(fullpath)
-            flash('saved csv file here: '+fullpath)
-            ok = read_csv(fullpath)
-            if ok:
-                flash('read csv file: ' + fullpath)
+            # flash('saved csv file here: '+fullpath)
+            msg = read_csv(fullpath)
+            if msg:
+                msg = f'Uploaded file "{filename}". ' + msg
+                flash(msg)
             else:
-                flash('unable to read csv file: ' + fullpath)
+                flash('Unable to read csv file: ' + filename)
     return render_template('upload.html', form=form, filename=filename)
 
 

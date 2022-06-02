@@ -81,6 +81,18 @@ class Paper(db.Model):
     abstract = db.Column(db.String())
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
+    reviews = db.relationship('Review', backref='paper', lazy='dynamic')
+
+# Submission ID,Role,Rating,Consensus Recommendation
+class Review(db.Model):
+    __tablename__ = 'reviews'
+    id = db.Column(db.Integer, primary_key=True)
+    paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
+    role = db.Column(db.Integer)
+    rating = db.Column(db.Integer)
+    consensus = db.Column(db.Integer)
+
+
 
 def sid_to_num(sid):
     n = sid.replace('papers_','')
