@@ -2,7 +2,7 @@ import os
 import csv
 
 from flask import render_template, flash, current_app
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
