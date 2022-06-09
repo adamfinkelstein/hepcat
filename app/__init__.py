@@ -41,8 +41,8 @@ def create_app(config_name):
     from .upload import upload as upload_blueprint
     app.register_blueprint(upload_blueprint)
 
-    from .comms import comms as comms_blueprint
-    app.register_blueprint(comms_blueprint)
+    from .sockets import sockets as sockets_blueprint
+    app.register_blueprint(sockets_blueprint)
 
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.

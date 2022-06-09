@@ -1,6 +1,6 @@
 import textwrap
 from flask import render_template, flash, current_app
-from flask_login import current_user
+from flask_login import login_required, current_user
 from . import debug
 from .. import db
 from ..models import Role, User, Paper, num_to_sid
@@ -44,6 +44,7 @@ def debug_config_to_string(config):
     return output
 
 @debug.route('/')
+@login_required
 def debugMain():
     debug_title = False
     debug_output = 'Nothing to see here.'
@@ -54,6 +55,7 @@ def debugMain():
     return render_debug(debug_title, debug_output)
 
 @debug.route('/users/')
+@login_required
 def users():
     users = User.query.all()
     debug_title = 'Users'
@@ -63,6 +65,7 @@ def users():
     return render_debug(debug_title, debug_output)
 
 @debug.route('/user/<email>')
+@login_required
 def user(email):
     user = User.query.filter_by(email=email).first()
     debug_title = email
@@ -72,6 +75,7 @@ def user(email):
     return render_debug(debug_title, debug_output)
 
 @debug.route('/roles/')
+@login_required
 def roles():
     roles = Role.query.all()
     debug_title = 'Roles'
@@ -84,6 +88,7 @@ def roles():
     return render_debug(debug_title, debug_output)
 
 @debug.route('/papers/')
+@login_required
 def papers():
     papers = Paper.query.all()
     debug_title = 'Papers'
@@ -93,6 +98,7 @@ def papers():
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper/<sidnum>')
+@login_required
 def paper(sidnum):
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
@@ -103,6 +109,7 @@ def paper(sidnum):
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper_conflicts/<sidnum>')
+@login_required
 def paper_conflicts(sidnum):
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
@@ -115,6 +122,7 @@ def paper_conflicts(sidnum):
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper_reviews/<sidnum>')
+@login_required
 def paper_reviews(sidnum):
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
@@ -127,6 +135,7 @@ def paper_reviews(sidnum):
     return render_debug(debug_title, debug_output)
 
 @debug.route('/user_conflicts/<email>')
+@login_required
 def user_conflicts(email):
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -140,6 +149,7 @@ def user_conflicts(email):
     return render_debug(debug_title, debug_output)
 
 @debug.route('/socketio/')
+@login_required
 def socketio_client():
     user_name = 'Unknown User'
     if current_user:
