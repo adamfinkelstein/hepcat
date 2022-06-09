@@ -112,19 +112,31 @@ def get_or_insert_role(role):
         db.session.add(roleObj)
     return roleObj
 
-def ensure_admin():
-    adminName = 'Admin'
-    adminRole = get_or_insert_role(adminName)
+def get_config_or_default(key, default):
     app = current_app._get_current_object()
-    adminLogin = app.config['HEPCAT_ADMIN_LOGIN']
-    admin = User.query.filter_by(email=adminLogin).first()
-    if not admin:
-        adminPasswd = app.config['HEPCAT_ADMIN_PASSWD']
-        admin = User(email=adminLogin,
-                        first_name='Admin',
-                        last_name='User',
-                        role=adminRole,
-                        password=adminPasswd,
+    if key in app.config:
+        return app.config[key]
+    return default
+
+def ensure_user(email, first_name, last_name, role_name, passwd):
+    role = get_or_insert_role(role_name)
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(email=email,
+                        first_name=first_name,
+                        last_name=last_name,
+                        role=role,
+                        password=passwd,
                         confirmed=True)
-        db.session.add(admin)
+        db.session.add(user)
     db.session.commit() # possibly not needed but probably no harm
+
+def ensure_admin():
+    # Add Admin User
+    email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'hepcat.mail@gmail.com')
+    passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
+    ensure_user(email, 'Admin', 'User', 'Admin', passwd)
+    # Add Test User
+    email = get_config_or_default('HEPCAT_TEST_LOGIN', 'af.princeton@gmail.com')
+    passwd = get_config_or_default('HEPCAT_TEST_PASSWD', 'pass')
+    ensure_user(email, 'Test', 'User', 'Test', passwd)
