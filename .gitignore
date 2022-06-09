@@ -1,6 +1,7 @@
 __pycache__
 *.sqlite
-venv
+venv*
+.env
 tmp
 data
 .DS_Store

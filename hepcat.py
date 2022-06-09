@@ -13,7 +13,6 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 def make_shell_context():
     return dict(db=db, User=User, Role=Role)
 
-
 @app.cli.command()
 @click.argument('test_names', nargs=-1)
 def test(test_names):
@@ -24,3 +23,6 @@ def test(test_names):
     else:
         tests = unittest.TestLoader().discover('tests')
     unittest.TextTestRunner(verbosity=2).run(tests)
+
+if __name__ == '__main__':
+    socketio.run(app)

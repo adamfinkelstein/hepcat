@@ -1,8 +1,9 @@
+import textwrap
 from flask import render_template, flash, current_app
+from flask_login import current_user
 from . import debug
 from .. import db
 from ..models import Role, User, Paper, num_to_sid
-import textwrap
 
 def re_wrap_text_output(output):
     result = ''
@@ -137,3 +138,12 @@ def user_conflicts(email):
         for paper in user.conf_papers:
             debug_output += '* ' + paper.sid + '\n'
     return render_debug(debug_title, debug_output)
+
+@debug.route('/socketio/')
+def socketio_client():
+    user_name = 'Unknown User'
+    if current_user:
+        user_name = current_user.get_full_name()
+    return render_template('socketio.html', 
+                        title='socketio', name=user_name)
+ 

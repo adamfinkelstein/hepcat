@@ -4,12 +4,14 @@ from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 from config import config
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
+socketio = SocketIO()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
@@ -25,6 +27,7 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
+    socketio.init_app(app)
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
@@ -37,6 +40,9 @@ def create_app(config_name):
 
     from .upload import upload as upload_blueprint
     app.register_blueprint(upload_blueprint)
+
+    from .comms import comms as comms_blueprint
+    app.register_blueprint(comms_blueprint)
 
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.
