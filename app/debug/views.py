@@ -145,5 +145,5 @@ def socketio_client():
     if current_user:
         user_name = current_user.get_full_name()
     return render_template('socketio.html', 
-                        title='socketio', name=user_name)
+                        title='Socketio chat', name=user_name)
  

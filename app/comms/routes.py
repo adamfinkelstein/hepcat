@@ -18,10 +18,11 @@ def disconnect():
         user_name = current_user.get_full_name()
     print(f'{user_name} - client disconnected')
 
-@socketio.on('ping')
-def ping(json):
+@socketio.on('chat')
+def chat(msg):
     user_name = 'Unknown User'
     if current_user:
         user_name = current_user.get_full_name()
-    msg = str(json)
-    print(f'{user_name} - client ping: {msg}')
+    echo = f'{user_name} chats: {msg}'
+    print(echo)
+    emit('chat_echo', echo, broadcast=True)

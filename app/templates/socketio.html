@@ -6,8 +6,13 @@
 
 <div class="page-header">
     <h1>{{ title }}</h1>
-    <button type="button" onclick="javascript:ping_pressed();">Ping</button>
+    <input type="text" id="chat-input">
+    <button type="button" onclick="javascript:button_press();">Send</button>
 </div>
+
+<p><hr><p>
+    
+<div id="chat"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
@@ -23,12 +28,15 @@
         myname = name;
     });
 
-    function ping_pressed() {
-        console.log('sending ping!')
-        data = { msg: 'Ping!', name: myname };
-        socket.emit('ping', data);
-    }
+    socket.on("chat_echo", (data) => {
+        document.getElementById("chat").innerHTML += "<br>" + data
+    })
 
+    function button_press() {
+        let val = document.getElementById("chat-input").value;
+        console.log('sending chat: ' + val);
+        socket.emit('chat', val);
+    }
 </script>
 
 
