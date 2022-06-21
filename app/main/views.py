@@ -1,7 +1,10 @@
-from flask import render_template, flash, current_app
+from flask import render_template, redirect, url_for,flash, request, current_app, send_from_directory
+from flask_login import login_user, logout_user, login_required, \
+    current_user
 from . import main
 from .. import db
-from ..models import User, ensure_admin
+from .. import static_folder
+from ..models import User, ensure_admin    
 
 @main.before_app_first_request
 def before_app_first_request():
@@ -9,7 +12,21 @@ def before_app_first_request():
     #print("before_app_first_request: ensure_admin")
     ensure_admin()
 
-@main.route('/')
-def index():
-    return render_template('index.html')
+@main.before_app_request
+def before_main_request():
+    if not (current_user and current_user.is_authenticated) \
+            and request.endpoint \
+            and request.blueprint != 'auth' \
+            and request.endpoint != 'static':
+        print('user not authenticated ... send to login')
+        return redirect(url_for('auth.login'))
 
+@main.route("/")
+@login_required
+def send_static_index():
+    # print('send index from static folder: ' + static_folder)
+    return send_from_directory(static_folder, 'index.html')
+
+@main.route("/test")
+def test():
+    return "this is a test"

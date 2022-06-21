@@ -7,6 +7,8 @@ from ..models import User
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm
 
+# AF changed this from main.index to app.index and now...
+main_index = 'main.send_static_index' 
 
 @auth.before_app_request
 def before_request():
@@ -15,13 +17,15 @@ def before_request():
             and request.endpoint \
             and request.blueprint != 'auth' \
             and request.endpoint != 'static':
+        print('redirect for auth unconfirmed')
         return redirect(url_for('auth.unconfirmed'))
 
 
 @auth.route('/unconfirmed')
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('main.index'))
+        return redirect(url_for(main_index))
+    print('render auth unconfirmed')
     return render_template('auth/unconfirmed.html')
 
 
@@ -34,7 +38,7 @@ def login():
             login_user(user, form.remember_me.data)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
-                next = url_for('main.index')
+                next = url_for(main_index)
             return redirect(next)
         flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
@@ -45,7 +49,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.')
-    return redirect(url_for('main.index'))
+    return redirect(url_for(main_index))
 
 
 @auth.route('/register', methods=['GET', 'POST'])
@@ -70,13 +74,13 @@ def register():
 @login_required
 def confirm(token):
     if current_user.confirmed:
-        return redirect(url_for('main.index'))
+        return redirect(url_for(main_index))
     if current_user.confirm(token):
         db.session.commit()
         flash('You have confirmed your account. Thanks!')
     else:
         flash('The confirmation link is invalid or has expired.')
-    return redirect(url_for('main.index'))
+    return redirect(url_for(main_index))
 
 
 @auth.route('/confirm')
@@ -86,4 +90,4 @@ def resend_confirmation():
     send_email(current_user.email, 'Confirm Your Account',
                'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
-    return redirect(url_for('main.index'))
+    return redirect(url_for(main_index))

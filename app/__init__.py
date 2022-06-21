@@ -1,3 +1,4 @@
+# import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
@@ -5,22 +6,37 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from config import config
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
-socketio = SocketIO()
+static_folder = ''
+
+allow_cors = True
+# configuration = config[config_name]
+# if 'ALLOW_CORS' in configuration:
+#     allow_cors = configuration['ALLOW_CORS']
+if allow_cors:
+    socketio = SocketIO(cors_allowed_origins="*")
+    print('FLASK_ALLOW_CORS - allowing cross origin requests')
+else:
+    socketio = SocketIO()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-
 def create_app(config_name):
-    app = Flask(__name__)
+    global static_folder
+    app = Flask(__name__,
+            static_url_path='', 
+            static_folder='../build')
+    if allow_cors:
+        CORS(app)
     app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
+    # config[config_name].init_app(app) # AF not needed (just pass)
 
     bootstrap.init_app(app)
     mail.init_app(app)
@@ -28,6 +44,7 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     socketio.init_app(app)
+    static_folder = app.static_folder # useful to share with main
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
@@ -39,7 +56,7 @@ def create_app(config_name):
     app.register_blueprint(debug_blueprint, url_prefix='/debug')
 
     from .upload import upload as upload_blueprint
-    app.register_blueprint(upload_blueprint)
+    app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
     from .sockets import sockets as sockets_blueprint
     app.register_blueprint(sockets_blueprint)

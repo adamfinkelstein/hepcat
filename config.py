@@ -17,25 +17,28 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
 
-
-    @staticmethod
-    def init_app(app):
-        pass
+    # AF: not needed
+    # @staticmethod
+    # def init_app(app):
+    #     pass
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    ALLOW_CORS = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 
 
 class TestingConfig(Config):
     TESTING = True
+    ALLOW_CORS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
         'sqlite://'
 
 
 class ProductionConfig(Config):
+    ALLOW_CORS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 

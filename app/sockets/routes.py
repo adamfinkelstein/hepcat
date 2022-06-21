@@ -6,7 +6,7 @@ from ..models import User, Role
 @socketio.on('connect')
 def connect():
     user_name = 'Unknown User'
-    if current_user:
+    if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
     print(f'{user_name} - client connected')
     emit('welcome', user_name)
@@ -14,15 +14,15 @@ def connect():
 @socketio.on('disconnect')
 def disconnect():
     user_name = 'Unknown User'
-    if current_user:
+    if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
     print(f'{user_name} - client disconnected')
 
 @socketio.on('chat')
 def chat(msg):
     user_name = 'Unknown User'
-    if current_user:
+    if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
     echo = f'{user_name} chats: {msg}'
     print(echo)
-    emit('chat_echo', echo, broadcast=True)
+    emit('chat_broadcast', echo, broadcast=True)

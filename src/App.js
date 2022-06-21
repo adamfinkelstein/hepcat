@@ -1,0 +1,97 @@
+import React, { useState, useEffect } from "react";
+import { Container, Stack } from 'react-bootstrap';
+
+import socketIOClient from "socket.io-client";
+
+export default function App() {
+
+  const [socket, setSocket] = useState(null);
+  const [welcome, setWelcome] = useState('');
+  const [messages, setMessages] = useState([]);
+  
+  useEffect(() => {
+    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
+    const newSocket = endpt ? socketIOClient(endpt) : socketIOClient();
+    setSocket(newSocket);
+    return () => newSocket.close();
+  }, [setSocket]);
+  
+  useEffect(() => {
+
+    console.log(socket);
+
+    const receiveWelcome = (msg) => {
+      console.log('received welcome:' + msg);
+      setWelcome(msg);
+    };
+
+    const receiveChat = (msg) => {
+      console.log('received chat:' + msg);
+      setMessages((oldList) => {
+        const newList = [...oldList, msg];
+        return newList;
+      });
+    };
+  
+    if (socket && 'on' in socket) {
+      console.log('register welcome and chat broadcast');
+      socket.on('welcome', receiveWelcome);
+      socket.on('chat_broadcast', receiveChat);
+    }
+
+    return () => {
+      if (socket && 'off' in socket) {
+        socket.off('welcome', receiveWelcome);
+        socket.off('chat_broadcast', receiveChat);
+      }
+    };
+  }, [socket]);
+
+
+  function sendMessage () {
+    const txtInput = document.getElementById("chat-input");
+    const value = txtInput.value;
+    txtInput.value = ''; // clear out the text input field on send
+    if (socket && 'emit' in socket) {
+      console.log('sending: ' + value);
+      socket.emit('chat', value);
+    }
+    else {
+      console.log('socket not connected. cannot send: ' + value)
+    }
+  }
+
+  function handleKeydown(event) {
+    if (event.keyCode === 13) { // return key clicks send button
+      document.getElementById("chat-btn").click();
+    }
+  }
+
+  return (
+    <Container fluid className="App">
+      <Stack direction="vertical">
+      <a href="/auth/logout">Logout</a>
+      <h1 className="header">Flask React Test v4 ({welcome})</h1>
+      <input type="text" id="chat-input" onKeyDown={handleKeydown} />
+      &nbsp;
+      <button id="chat-btn" onClick={sendMessage}>Send</button>
+      <h3>Messages:</h3>
+      {
+        (messages.length === 0) ? (
+          <span>(no messages)</span>
+        ) : (
+          <ul>
+            {
+              messages.map( (msg,index) => {
+                return(
+                  <li key={index.toString()}>{msg}</li>
+                )
+              })
+            }
+          </ul>
+        )
+      }
+    </Stack>
+    </Container>
+  );
+}
