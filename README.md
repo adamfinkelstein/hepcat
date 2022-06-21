@@ -4,7 +4,7 @@ This is the source code for the Hepcat project. This software is used to help gu
 
 ## To test at Heroku:
 
-Visit: `https://hepcat1.herokuapp.com/`
+Visit: `https://hepcat4.herokuapp.com/`
 
 ## To clone and set up:
 
