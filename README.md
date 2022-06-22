@@ -19,3 +19,10 @@ npm install
 npm run build
 ```
 
+## To set up heroku:
+
+```
+heroku buildpacks:set heroku/nodejs
+heroku buildpacks:add heroku/python
+heroku buildpacks
+```
