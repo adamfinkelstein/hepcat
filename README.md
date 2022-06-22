@@ -26,3 +26,9 @@ heroku buildpacks:set heroku/nodejs
 heroku buildpacks:add heroku/python
 heroku buildpacks
 ```
+
+Also set environment variables, at least:
+
+* DATABASE_URL_HEROKU (to the postgres database)
+* FLASK_CONFIG=production
+
