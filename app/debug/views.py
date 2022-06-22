@@ -148,12 +148,21 @@ def user_conflicts(email):
             debug_output += '* ' + paper.sid + '\n'
     return render_debug(debug_title, debug_output)
 
-@debug.route('/socketio/')
+# @debug.route('/socketio/')
+# @login_required
+# def socketio_client():
+#     user_name = 'Unknown User'
+#     if current_user:
+#         user_name = current_user.get_full_name()
+#     return render_template('socketio.html', 
+#                         title='Socketio chat', name=user_name)
+ 
+@debug.route('/me/')
 @login_required
-def socketio_client():
-    user_name = 'Unknown User'
+def whoami():
+    user_name = 'Unknown Login'
+    debug_output = 'Not much to say.'
     if current_user:
         user_name = current_user.get_full_name()
-    return render_template('socketio.html', 
-                        title='Socketio chat', name=user_name)
- 
+        debug_output = debug_orm_to_string(current_user)
+    return render_debug(user_name, debug_output)

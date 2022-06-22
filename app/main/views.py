@@ -22,11 +22,12 @@ def before_main_request():
         return redirect(url_for('auth.login'))
 
 @main.route("/")
+@main.route("/chat/")
 @login_required
 def send_static_index():
-    # print('send index from static folder: ' + static_folder)
+    print('send index from static folder: ' + static_folder)
     return send_from_directory(static_folder, 'index.html')
 
-@main.route("/test")
+@main.route("/test/")
 def test():
     return "this is a test"
