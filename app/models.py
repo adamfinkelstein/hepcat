@@ -115,10 +115,15 @@ def get_or_insert_role(role):
 def get_config_or_default(key, default):
     app = current_app._get_current_object()
     if key in app.config:
-        return app.config[key]
+        value = app.config[key]
+        if value:
+            return value
     return default
 
 def ensure_user(email, first_name, last_name, role_name, passwd):
+    if not (email and first_name and last_name and role_name and passwd):
+        print('cannot add user with incomplete info: ', 
+                email, first_name, last_name, role_name, passwd)
     role = get_or_insert_role(role_name)
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -136,7 +141,10 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'hepcat.mail@gmail.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
     ensure_user(email, 'Admin', 'User', 'Admin', passwd)
-    # Add Test User
-    email = get_config_or_default('HEPCAT_TEST_LOGIN', 'af.princeton@gmail.com')
-    passwd = get_config_or_default('HEPCAT_TEST_PASSWD', 'pass')
-    ensure_user(email, 'Test', 'User', 'Test', passwd)
+    # Add Test Users
+    email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
+    passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
+    ensure_user(email, 'Test1', 'User1', 'Test', passwd)
+    email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
+    passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
+    ensure_user(email, 'Test2', 'User2', 'Test', passwd)
