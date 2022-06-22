@@ -25,11 +25,11 @@ else:
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-def create_app(config_name):
+def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__,
             static_url_path='', 
-            static_folder='../build')
+            static_folder=build_path)
     if allow_cors:
         CORS(app)
     app.config.from_object(config[config_name])

@@ -6,10 +6,12 @@ from app import create_app, socketio
 #from app.models import User, Role
 
 config_name = os.getenv('FLASK_CONFIG') or 'default'
+build_path = os.getcwd() + '/build'
 
 print('creating app with config: ' + config_name)
+print('build path: ' + build_path)
 
-app = create_app(config_name)
+app = create_app(config_name, build_path)
 
 ### THIS WORKS BUT NOT NEEDED:
 # @app.route("/chat/", endpoint='chat')
