@@ -1,4 +1,4 @@
-# import os
+import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
@@ -15,10 +15,7 @@ moment = Moment()
 db = SQLAlchemy()
 static_folder = ''
 
-allow_cors = True
-# configuration = config[config_name]
-# if 'ALLOW_CORS' in configuration:
-#     allow_cors = configuration['ALLOW_CORS']
+allow_cors = os.getenv('ALLOW_CORS')
 if allow_cors:
     socketio = SocketIO(cors_allowed_origins="*")
     print('FLASK_ALLOW_CORS - allowing cross origin requests')

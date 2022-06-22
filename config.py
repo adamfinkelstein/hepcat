@@ -1,7 +1,6 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'UeVbP7PG4RmtNhz'
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
@@ -25,20 +24,17 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    ALLOW_CORS = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 
 
 class TestingConfig(Config):
     TESTING = True
-    ALLOW_CORS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
         'sqlite://'
 
 
 class ProductionConfig(Config):
-    ALLOW_CORS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL_HEROKU') or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 

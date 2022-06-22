@@ -1,7 +1,7 @@
 import os
 # import click
 # from flask_migrate import Migrate
-from flask import render_template, current_app, send_from_directory
+# from flask import render_template, current_app, send_from_directory
 from app import create_app, socketio
 #from app.models import User, Role
 
