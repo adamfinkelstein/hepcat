@@ -63,7 +63,8 @@ def insert_user_rows(rows):
         user = User(email=email,
                     first_name=first_name,
                     last_name=last_name,
-                    password=password)
+                    password=password,
+                    confirmed=True)
         if len(role):
             roleObj = get_or_insert_role(role)
             user.role = roleObj
@@ -220,7 +221,7 @@ def read_csv(filename):
     return False
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
-@upload.route('/upload/', methods=('GET', 'POST'))
+@upload.route('/', methods=('GET', 'POST'))
 def upload():
     form = UploadForm()
     filename = None

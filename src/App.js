@@ -70,7 +70,11 @@ export default function App() {
   return (
     <Container fluid className="App">
       <Stack direction="vertical">
-      <a href="/auth/logout">Logout</a>
+      Links:
+      <ul>
+      <li><a href="/upload">Upload</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+      </ul>
       <h1 className="header">Flask React Test v4 ({welcome})</h1>
       <input type="text" id="chat-input" onKeyDown={handleKeydown} />
       &nbsp;
