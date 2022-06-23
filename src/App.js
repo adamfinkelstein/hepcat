@@ -20,13 +20,21 @@ export default function App() {
 
     console.log(socket);
 
-    const receiveWelcome = (msg) => {
-      console.log('received welcome:' + msg);
-      setWelcome(msg);
+    const receiveWelcome = (data) => {
+      console.log('received welcome:');
+      console.log(data);
+      let user_name = 'Unknown User';
+      if (data && 'user_name' in data) {
+        user_name = data.user_name;
+      }
+      setWelcome(user_name);
     };
 
-    const receiveChat = (msg) => {
-      console.log('received chat:' + msg);
+    const receiveChat = (data) => {
+      console.log('received chat:');
+      console.log(data);
+      const sender = data.sender; // unused for now
+      const msg = data.message;
       setMessages((oldList) => {
         const newList = [...oldList, msg];
         return newList;
@@ -37,6 +45,8 @@ export default function App() {
       console.log('register welcome and chat broadcast');
       socket.on('welcome', receiveWelcome);
       socket.on('chat_broadcast', receiveChat);
+      // later investigate whether to register on disconnect
+      // ... possibly force a page reload which might send to login
     }
 
     return () => {
@@ -53,8 +63,10 @@ export default function App() {
     const value = txtInput.value;
     txtInput.value = ''; // clear out the text input field on send
     if (socket && 'emit' in socket) {
-      console.log('sending: ' + value);
-      socket.emit('chat', value);
+      const data = { message: value };
+      console.log('sending data:');
+      console.log(data);
+      socket.emit('chat', data);
     }
     else {
       console.log('socket not connected. cannot send: ' + value)

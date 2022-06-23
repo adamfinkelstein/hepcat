@@ -8,8 +8,11 @@ def connect():
     user_name = 'Unknown User'
     if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
+    else:
+        print('user is not logged in: should force disconnect here.')
     print(f'{user_name} - client connected')
-    emit('welcome', user_name)
+    data = { 'user_name': user_name }
+    emit('welcome', data)
 
 @socketio.on('disconnect')
 def disconnect():
@@ -19,10 +22,14 @@ def disconnect():
     print(f'{user_name} - client disconnected')
 
 @socketio.on('chat')
-def chat(msg):
+def chat(data):
     user_name = 'Unknown User'
     if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
+    else:
+        print('user is not logged in: should force disconnect here.')
+    msg = data['message']
     echo = f'{user_name} chats: {msg}'
     print(echo)
-    emit('chat_broadcast', echo, broadcast=True)
+    data['sender'] = user_name
+    emit('chat_broadcast', data, broadcast=True)
