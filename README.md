@@ -21,14 +21,23 @@ npm run build
 
 ## To set up heroku:
 
+Set up Heroku app and add it to git remotes. 
+Also set environment variables at Heroku, at least:
+
+* `SECRET_KEY`
+* `DATABASE_URL_HEROKU` (to the postgres database)
+* `FLASK_CONFIG=production` (later, make this default in code)
+* `MAIL_USERNAME`
+* `MAIL_PASSWORD`
+* `HEPCAT_ADMIN_LOGIN`
+* `HEPCAT_ADMIN_PASSWD`
+
+Then:
+
 ```
 heroku buildpacks:set heroku/nodejs
 heroku buildpacks:add heroku/python
 heroku buildpacks
+git push heroku
 ```
-
-Also set environment variables, at least:
-
-* DATABASE_URL_HEROKU (to the postgres database)
-* FLASK_CONFIG=production
 

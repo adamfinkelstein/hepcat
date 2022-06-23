@@ -1,7 +1,7 @@
 import os
 import csv
 
-from flask import render_template, flash, current_app
+from flask import render_template, flash, redirect, url_for, current_app
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from . import upload
@@ -127,7 +127,6 @@ def get_consensus_code(consensus_recs):
         else:
             return 'R'
     return 'T'
-    
 
 def papers_set_all_scores_and_status_from_reviews():
     papers = Paper.query.all()
@@ -217,14 +216,18 @@ def read_csv(filename):
         func = csvFunctions[headerType]
         func(rows)
         msg = dump_users_papers_and_conflicts('After Upload')
-        return msg
-    return False
+        if headerType == 'users':
+            msg += ' You have been logged out because users were updated.'
+            return msg, True
+        return msg, False
+    return False, False
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 @upload.route('/', methods=('GET', 'POST'))
 def upload():
     form = UploadForm()
     filename = None
+    logout = False
     if form.validate_on_submit():
         file = form.file.data
         filename = secure_filename(file.filename)
@@ -238,13 +241,16 @@ def upload():
             fullpath = os.path.join(folder, filename)
             file.save(fullpath)
             # flash('saved csv file here: '+fullpath)
-            msg = read_csv(fullpath)
+            msg, logout = read_csv(fullpath)
             if msg:
                 msg = f'Uploaded file "{filename}". ' + msg
-                flash(msg)
             else:
-                flash('Unable to read csv file: ' + filename)
-    return render_template('upload.html', form=form, filename=filename)
+                msg ='Unable to read csv file: ' + filename
+            flash(msg)
+    if logout:
+        return redirect(url_for('auth.login'))
+    else:
+        return render_template('upload.html', form=form, filename=filename)
 
 
 ''' Should follow redirect model, like this:

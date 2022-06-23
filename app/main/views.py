@@ -1,10 +1,8 @@
-from flask import render_template, redirect, url_for,flash, request, current_app, send_from_directory
-from flask_login import login_user, logout_user, login_required, \
-    current_user
+from flask import redirect, url_for, request, send_from_directory
+from flask_login import login_required, current_user
 from . import main
-from .. import db
 from .. import static_folder
-from ..models import User, ensure_admin    
+from ..models import ensure_admin    
 
 @main.before_app_first_request
 def before_app_first_request():
