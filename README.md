@@ -38,13 +38,13 @@ npm run build
 
 This works in python version 3.9.13 (generally 3.9.x):
 
-Installed python 3.9.13 for MacOS from python.org
+* Installed python 3.9.13 for MacOS from python.org
 
-Located the right version of python under usr/local/bin as python3.9
+* Located the right version of python under usr/local/bin as python3.9
 
-Used /usr/local/bin/python3.9 -m venv venv to build environment
+* Used /usr/local/bin/python3.9 -m venv venv to build environment
 
-We also had to brew install postgresql to install one of the packages.
+* We also had to brew install postgresql to install one of the packages.
 
 ## To run locally:
 
