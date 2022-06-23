@@ -1,7 +1,7 @@
 from flask_socketio import emit
 from flask_login import current_user
 from .. import socketio
-from ..models import User, Role
+from ..models import User, Paper
 
 @socketio.on('connect')
 def connect():
@@ -33,3 +33,14 @@ def chat(data):
     print(echo)
     data['sender'] = user_name
     emit('chat_broadcast', data, broadcast=True)
+
+@socketio.on('request_papers')
+def request_papers():
+    user_name = 'Unknown User'
+    if current_user and not current_user.is_anonymous:
+        user_name = current_user.get_full_name()
+    else:
+        print('user is not logged in: should force disconnect here.')
+    # papers = Paper.query.limit(10)
+    data = { 'papers': None, 'requester': user_name }
+    emit('papers', data, broadcast=True)

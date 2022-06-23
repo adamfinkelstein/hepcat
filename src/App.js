@@ -40,11 +40,17 @@ export default function App() {
         return newList;
       });
     };
-  
+
+    const receivePapers = (data) => {
+      console.log('received papers:');
+      console.log(data);
+    };
+
     if (socket && 'on' in socket) {
       console.log('register welcome and chat broadcast');
       socket.on('welcome', receiveWelcome);
       socket.on('chat_broadcast', receiveChat);
+      socket.on('papers', receivePapers);
       // later investigate whether to register on disconnect
       // ... possibly force a page reload which might send to login
     }
@@ -53,10 +59,10 @@ export default function App() {
       if (socket && 'off' in socket) {
         socket.off('welcome', receiveWelcome);
         socket.off('chat_broadcast', receiveChat);
+        socket.off('papers', receivePapers);
       }
     };
   }, [socket]);
-
 
   function sendMessage () {
     const txtInput = document.getElementById("chat-input");
@@ -70,6 +76,13 @@ export default function App() {
     }
     else {
       console.log('socket not connected. cannot send: ' + value)
+    }
+  }
+
+  function requestPapers () {
+    if (socket && 'emit' in socket) {
+      console.log('request papers');
+      socket.emit('request_papers');
     }
   }
 
@@ -91,6 +104,8 @@ export default function App() {
       <input type="text" id="chat-input" onKeyDown={handleKeydown} />
       &nbsp;
       <button id="chat-btn" onClick={sendMessage}>Send</button>
+      &nbsp;
+      <button id="papers-btn" onClick={requestPapers}>Papers</button>
       <h3>Messages:</h3>
       {
         (messages.length === 0) ? (
