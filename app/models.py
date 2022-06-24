@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
-from . import db, login_manager
+from . import db, ma, login_manager
 
 # many-many: strongly encouraged to use Table rather than Class
 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/#many-to-many-relationships
@@ -86,6 +86,15 @@ class Paper(db.Model):
     all_scores = db.Column(db.String(64))
     reviews = db.relationship('Review', backref='paper', lazy='dynamic')
 
+# Marshmallow schema
+# class PaperSchema(ma.SQLAlchemyAutoSchema):
+#     class Meta:
+#         model = Paper
+
+class PaperSchema(ma.Schema):
+    class Meta:
+        fields = ("id","sid", "thumbnail", "title", "abstract", "summary")
+
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
     __tablename__ = 'reviews'
@@ -95,7 +104,7 @@ class Review(db.Model):
     rating = db.Column(db.Integer)
     consensus = db.Column(db.Integer)
 
-
+# Helper functions
 
 def sid_to_num(sid):
     n = sid.replace('papers_','')

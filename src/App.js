@@ -8,6 +8,7 @@ export default function App() {
   const [socket, setSocket] = useState(null);
   const [welcome, setWelcome] = useState('');
   const [messages, setMessages] = useState([]);
+  const [papers, setPapers] = useState([]);
   
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -33,10 +34,10 @@ export default function App() {
     const receiveChat = (data) => {
       console.log('received chat:');
       console.log(data);
-      const sender = data.sender; // unused for now
-      const msg = data.message;
+      // const sender = data.sender; // unused for now
+      // const msg = data.message;
       setMessages((oldList) => {
-        const newList = [...oldList, msg];
+        const newList = [...oldList, data];
         return newList;
       });
     };
@@ -44,6 +45,8 @@ export default function App() {
     const receivePapers = (data) => {
       console.log('received papers:');
       console.log(data);
+      // const messages = data.papers.map( p => p.title );
+      setPapers(data.papers);
     };
 
     if (socket && 'on' in socket) {
@@ -100,7 +103,7 @@ export default function App() {
       <li><a href="/upload">Upload</a></li>
       <li><a href="/auth/logout">Logout</a></li>
       </ul>
-      <h1 className="header">Flask React Test v4 ({welcome})</h1>
+      <h1 className="header">Flask React Test v5 ({welcome})</h1>
       <input type="text" id="chat-input" onKeyDown={handleKeydown} />
       &nbsp;
       <button id="chat-btn" onClick={sendMessage}>Send</button>
@@ -115,7 +118,23 @@ export default function App() {
             {
               messages.map( (msg,index) => {
                 return(
-                  <li key={index.toString()}>{msg}</li>
+                  <li key={index.toString()}>{msg.sender + ': ' +msg.message}</li>
+                )
+              })
+            }
+          </ul>
+        )
+      }
+      <h3>Papers:</h3>
+      {
+        (papers.length === 0) ? (
+          <span>(no papers)</span>
+        ) : (
+          <ul>
+            {
+              papers.map( (p,index) => {
+                return(
+                  <li key={index.toString()}>{p.sid + ': ' +p.title}</li>
                 )
               })
             }

@@ -4,6 +4,7 @@ from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_cors import CORS
@@ -13,6 +14,7 @@ bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
+ma = Marshmallow()
 static_folder = ''
 
 allow_cors = os.getenv('ALLOW_CORS')
@@ -39,6 +41,7 @@ def create_app(config_name, build_path):
     mail.init_app(app)
     moment.init_app(app)
     db.init_app(app)
+    ma.init_app(app)
     login_manager.init_app(app)
     socketio.init_app(app)
     static_folder = app.static_folder # useful to share with main

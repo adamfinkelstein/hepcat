@@ -1,7 +1,10 @@
 from flask_socketio import emit
 from flask_login import current_user
 from .. import socketio
-from ..models import User, Paper
+from ..models import User, Paper, PaperSchema
+
+paper_schema = PaperSchema()
+papers_schema = PaperSchema(many=True)
 
 @socketio.on('connect')
 def connect():
@@ -41,6 +44,7 @@ def request_papers():
         user_name = current_user.get_full_name()
     else:
         print('user is not logged in: should force disconnect here.')
-    # papers = Paper.query.limit(10)
-    data = { 'papers': None, 'requester': user_name }
+    papers = Paper.query.limit(5).all()
+    papers_dump = papers_schema.dump(papers)
+    data = { 'papers': papers_dump, 'requester': user_name }
     emit('papers', data, broadcast=True)

@@ -1,9 +1,12 @@
 import textwrap
-from flask import render_template, flash, current_app
+from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
 from .. import db
-from ..models import Role, User, Paper, num_to_sid
+from ..models import Role, User, Paper, PaperSchema, num_to_sid
+
+paper_schema = PaperSchema()
+papers_schema = PaperSchema(many=True)
 
 def re_wrap_text_output(output):
     result = ''
@@ -96,6 +99,18 @@ def papers():
     for paper in papers:
         debug_output += paper.sid + ' ' + paper.title + '\n'
     return render_debug(debug_title, debug_output)
+
+@debug.route('/papers_json/')
+@login_required
+def papers_json():
+    all_papers = Paper.query.limit(5).all()
+    dump_papers = papers_schema.dump(all_papers)
+    debug_title = 'Papers Json'
+    debug_output = jsonify(dump_papers)
+    print(debug_output)
+    # return render_debug(debug_title, 'debug_output')
+    return debug_output
+
 
 @debug.route('/paper/<sidnum>')
 @login_required
