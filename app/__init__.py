@@ -15,7 +15,9 @@ mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 ma = Marshmallow()
-static_folder = ''
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+static_folder = '' # this global is set in create_app below
 
 allow_cors = os.getenv('ALLOW_CORS')
 if allow_cors:
@@ -24,14 +26,12 @@ if allow_cors:
 else:
     socketio = SocketIO()
 
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
-
 def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__,
             static_url_path='', 
             static_folder=build_path)
+    static_folder = build_path # save this for use in app/main
     if allow_cors:
         CORS(app)
     app.config.from_object(config[config_name])
@@ -44,7 +44,6 @@ def create_app(config_name, build_path):
     ma.init_app(app)
     login_manager.init_app(app)
     socketio.init_app(app)
-    static_folder = app.static_folder # useful to share with main
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
