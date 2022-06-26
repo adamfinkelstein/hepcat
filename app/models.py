@@ -32,7 +32,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
-    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.sid')
+    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.nid')
 
     @property
     def password(self):
@@ -75,6 +75,7 @@ def load_user(user_id):
 class Paper(db.Model):
     __tablename__ = 'papers'
     id = db.Column(db.Integer, primary_key=True)
+    nid = db.Column(db.Integer, unique=True, index=True)
     sid = db.Column(db.String(64), unique=True, index=True)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
@@ -103,13 +104,7 @@ class UserSchema(ma.Schema):
 
 class PaperSchema(ma.Schema):
     class Meta:
-        fields = ("id", "sid", "thumbnail", "title", "abstract", "summary")
-
-class PaperWithConflictsSchema(ma.Schema):
-    conflicts = ma.Nested(UserSchema, many=True)
-    class Meta:
-        fields = ("id", "sid", "thumbnail", "title", "abstract", "summary")
-
+        fields = ("id", "nid", "sid", "thumbnail", "title", "abstract", "summary")
 
 ######################
 # Helper functions
@@ -120,6 +115,7 @@ def sid_to_num(sid):
     return int(n)
 
 def num_to_sid(n):
+    # should add leading zeros, but not needed if larger than 100
     sid = f'papers_{n}'
     return sid
 

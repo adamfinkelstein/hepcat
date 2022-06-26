@@ -83,9 +83,12 @@ export default function App() {
   }
 
   function requestPapers () {
+    const txtInput = document.getElementById("chat-input");
+    const value = txtInput.value;
+    txtInput.value = ''; // clear out the text input field on req
     if (socket && 'emit' in socket) {
-      console.log('request papers');
-      socket.emit('request_papers');
+      console.log('request papers: '+value);
+      socket.emit('request_papers', value);
     }
   }
 

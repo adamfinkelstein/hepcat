@@ -7,8 +7,7 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review
-from ..models import get_or_insert_role, ensure_admin, conflicts
+from ..models import User, Paper, Review, sid_to_num, get_or_insert_role, ensure_admin, conflicts
 
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
@@ -37,6 +36,7 @@ def delete_all_users():
     dump_users_papers_and_conflicts('After user deletion')
 
 def delete_all_papers():
+    delete_all_reviews() # need to delete reviews before papers
     delete_all_conflicts() # need to delete conflicts before papers
     dump_users_papers_and_conflicts('Before paper deletion')
     num_deleted = Paper.query.delete()
@@ -79,7 +79,9 @@ def insert_paper_rows(rows):
         if len(row) < 4:
             continue
         sid,thumbnail,title,abstract = row
-        paper = Paper(sid=sid,
+        nid = sid_to_num(sid)
+        paper = Paper(nid=nid, 
+                    sid=sid,
                     thumbnail=thumbnail,
                     title=title,
                     abstract=abstract)

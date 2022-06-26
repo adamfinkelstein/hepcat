@@ -39,13 +39,20 @@ def chat(data):
     emit('chat_broadcast', data, broadcast=True)
 
 @socketio.on('request_papers')
-def request_papers():
+def request_papers(value):
     user_name = 'Unknown User'
     if current_user and not current_user.is_anonymous:
         user_name = current_user.get_full_name()
     else:
         print('user is not logged in: should force disconnect here.')
-    papers = Paper.query.order_by(Paper.sid).limit(10).all()
+    parts = value.split('-')
+    start = int(parts[0])
+    end = 10000
+    if len(parts) > 1:
+        end = int(parts[1])
+    papers = Paper.query.filter(Paper.nid >= start)\
+                        .filter(Paper.nid <= end)\
+                        .order_by(Paper.nid).all()
     paper_list = []
     for paper in papers:
         paper_dump = paper_schema.dump(paper)
