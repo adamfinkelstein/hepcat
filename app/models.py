@@ -32,8 +32,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
-    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic',
-        backref=db.backref('conf_users', lazy='dynamic'))
+    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.sid')
 
     @property
     def password(self):
@@ -83,6 +82,7 @@ class Paper(db.Model):
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
     reviews = db.relationship('Review', backref='paper', lazy='dynamic')
+    conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', order_by='(User.last_name,User.first_name)')
 
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
