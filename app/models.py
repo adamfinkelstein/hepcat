@@ -23,7 +23,6 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role %r>' % self.name
 
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -69,7 +68,6 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.email
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -86,15 +84,6 @@ class Paper(db.Model):
     all_scores = db.Column(db.String(64))
     reviews = db.relationship('Review', backref='paper', lazy='dynamic')
 
-# Marshmallow schema
-# class PaperSchema(ma.SQLAlchemyAutoSchema):
-#     class Meta:
-#         model = Paper
-
-class PaperSchema(ma.Schema):
-    class Meta:
-        fields = ("id","sid", "thumbnail", "title", "abstract", "summary")
-
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
     __tablename__ = 'reviews'
@@ -104,7 +93,27 @@ class Review(db.Model):
     rating = db.Column(db.Integer)
     consensus = db.Column(db.Integer)
 
+######################
+# Marshmallo schemas
+######################
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "email", "first_name", "last_name")
+
+class PaperSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "sid", "thumbnail", "title", "abstract", "summary")
+
+class PaperWithConflictsSchema(ma.Schema):
+    conflicts = ma.Nested(UserSchema, many=True)
+    class Meta:
+        fields = ("id", "sid", "thumbnail", "title", "abstract", "summary")
+
+
+######################
 # Helper functions
+######################
 
 def sid_to_num(sid):
     n = sid.replace('papers_','')

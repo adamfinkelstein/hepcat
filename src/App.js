@@ -125,7 +125,7 @@ export default function App() {
           </ul>
         )
       }
-      <h3>Papers:</h3>
+      <h3>Papers with conflicts:</h3>
       {
         (papers.length === 0) ? (
           <span>(no papers)</span>
@@ -134,7 +134,18 @@ export default function App() {
             {
               papers.map( (p,index) => {
                 return(
-                  <li key={index.toString()}>{p.sid + ': ' +p.title}</li>
+                  <li key={index.toString()}>{p.sid + ': ' +p.title}
+                  {
+                    p.conflicts.length > 0 &&
+                    <ul>
+                      {
+                        p.conflicts.map( (u,index) =>
+                        <li key={index.toString()}>{u.first_name + ' ' + u.last_name}</li>
+                        )
+                      }
+                    </ul>
+                  }
+                  </li>
                 )
               })
             }

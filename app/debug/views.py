@@ -133,7 +133,7 @@ def paper_conflicts(sidnum):
     if paper:
         debug_output = '\n'
         for user in paper.conf_users:
-            debug_output += '* ' + user.first_name + ' ' + user.last_name + '\n'
+            debug_output += '* ' + user.get_full_name() + '\n'
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper_reviews/<sidnum>')

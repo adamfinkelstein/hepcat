@@ -19,7 +19,7 @@ def before_main_request():
         print('user not authenticated ... send to login')
         return redirect(url_for('auth.login'))
 
-@main.route("/chat/")
+# @main.route("/chat/")
 @main.route("/")
 @login_required
 def send_static_index():
