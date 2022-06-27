@@ -84,3 +84,15 @@ python -m pip install --upgrade pip
 pip install numpy faker
 python fake.py
 ```
+
+## To drop all tables in Postgres
+
+```
+\dt (<==shows tables)
+DROP TABLE IF EXISTS history;
+DROP TABLE IF EXISTS conflicts;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS papers;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
+```

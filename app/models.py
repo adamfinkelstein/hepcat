@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
+from sqlalchemy.sql import func
 from . import db, ma, login_manager
 
 # many-many: strongly encouraged to use Table rather than Class
@@ -32,7 +33,6 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
-    conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.nid')
 
     @property
     def password(self):
@@ -83,7 +83,17 @@ class Paper(db.Model):
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
     reviews = db.relationship('Review', backref='paper', lazy='dynamic')
-    conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', order_by='(User.last_name,User.first_name)')
+    conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', 
+        order_by='(User.last_name,User.first_name)',
+        backref=db.backref('conf_papers', lazy='dynamic'))
+    history = db.relationship('History', backref='paper', lazy='dynamic', 
+        order_by='History.when')
+
+    # old ref
+    # conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.nid')
+    # conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic',
+    #     backref=db.backref('conf_users', lazy='dynamic'))
+
 
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
@@ -93,6 +103,15 @@ class Review(db.Model):
     role = db.Column(db.Integer)
     rating = db.Column(db.Integer)
     consensus = db.Column(db.Integer)
+
+# Submission ID,DateTime,Status
+class History(db.Model):
+    __tablename__ = 'history'
+    id = db.Column(db.Integer, primary_key=True)
+    paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
+    when = db.Column(db.DateTime, server_default=func.now())
+    status = db.Column(db.String(16))
+
 
 ######################
 # Marshmallo schemas

@@ -46,9 +46,10 @@ def request_papers(value):
     else:
         print('user is not logged in: should force disconnect here.')
     parts = value.split('-')
-    start = int(parts[0])
-    end = 10000
-    if len(parts) > 1:
+    start,end = (0,9999)
+    if parts[0]:
+        start = int(parts[0])
+    if len(parts) > 1 and parts[1]:
         end = int(parts[1])
     papers = Paper.query.filter(Paper.nid >= start)\
                         .filter(Paper.nid <= end)\

@@ -1,5 +1,6 @@
 import os
 import csv
+from datetime import datetime, timedelta
 
 from flask import render_template, flash, redirect, url_for, current_app
 from werkzeug.utils import secure_filename
@@ -7,7 +8,7 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, sid_to_num, get_or_insert_role, ensure_admin, conflicts
+from ..models import User, Paper, Review, History, sid_to_num, get_or_insert_role, ensure_admin, conflicts
 
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
@@ -37,6 +38,7 @@ def delete_all_users():
 
 def delete_all_papers():
     delete_all_reviews() # need to delete reviews before papers
+    delete_all_history() # need to delete history before papers
     delete_all_conflicts() # need to delete conflicts before papers
     dump_users_papers_and_conflicts('Before paper deletion')
     num_deleted = Paper.query.delete()
@@ -50,6 +52,11 @@ def delete_all_reviews():
     db.session.commit()
     print(f'Deleted {num_deleted} reviews.')
     dump_users_papers_and_conflicts('After review deletion')
+
+def delete_all_history():
+    num_deleted = History.query.delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} history entries.')
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
@@ -165,13 +172,32 @@ def insert_review_rows(rows):
     db.session.commit()
     papers_set_all_scores_and_status_from_reviews()
 
+# Submission ID,Seconds,Status
+def insert_history(rows):
+    delete_all_history()
+    now = datetime.now()
+    for row in rows:
+        if len(row) < 3:
+            continue
+        sid,secs,status = row
+        paper = Paper.query.filter_by(sid=sid).first()
+        if paper:
+            then = now - timedelta(seconds = int(secs))
+            history = History(paper=paper,
+                            when=then,
+                            status=status)
+            db.session.add(history)
+    db.session.commit()
+
+
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
     'papers' : 'Submission ID,Thumbnail URL,Title,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Rating,Consensus Recommendation',
-    'summaries' : 'Submission ID,Summary' }
+    'summaries' : 'Submission ID,Summary',
+    'history' : 'Submission ID,Seconds,Status' }
 
 csvFunctions = {
     'users' : insert_user_rows,
@@ -179,7 +205,8 @@ csvFunctions = {
     'conflicts' : insert_conflict_rows,
     'clusters' : None,
     'reviews' : insert_review_rows,
-    'summaries' : None }
+    'summaries' : None,
+    'history' : insert_history }
 
 def is_csv(filename):
     if '.' not in filename:
