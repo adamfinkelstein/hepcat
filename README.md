@@ -74,4 +74,13 @@ heroku buildpacks
 git push heroku
 ```
 
+## To generate fake data
 
+```
+cd fake
+python3 -m venv venv-fake
+source venv-fake/bin/activate
+python -m pip install --upgrade pip
+pip install numpy faker
+python fake.py
+```

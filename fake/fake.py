@@ -1,9 +1,8 @@
-import random
-import math
 import os
-from asyncore import write
-from faker import Faker
+import math
+import random
 import numpy as np
+from faker import Faker
 
 # globals
 fake = Faker()
@@ -19,6 +18,7 @@ if not os.path.exists(dataDir):
 # clusters: Submission ID,Cluster
 # reviews: Submission ID,Role,Rating,Consensus Recommendation
 # summaries: Submission ID,Summary
+# history: Submission ID,Seconds,Status
 
 def write_file(fname, contents):
     path = f'{dataDir}/{fname}'
@@ -40,7 +40,7 @@ def random_role():
     else:
         return 'Admin'
 
-# Users: Email,First Name,Last Name,Role,Password
+# users: Email,First Name,Last Name,Role,Password
 def fake_person(role):
     first = fake.first_name()
     last = fake.last_name()
@@ -71,7 +71,7 @@ def rand_color():
 def csv_safe_string(s):
     return s.replace(',', '').replace('"', '').replace("'", '')
 
-# Abstracts: Submission ID,Thumbnail URL,Title,Abstract
+# papers: Submission ID,Thumbnail URL,Title,Abstract
 # assumes n is a 3-digit number
 def fakePaper(pid):
     c1 = rand_color()
@@ -107,7 +107,7 @@ def rand_conflicts(emails, n):
     ems = ems[:n]
     return ems
 
-# Conflicts: Submission ID,Email
+# conflicts: Submission ID,Email
 def fake_conflicts(emails, papers, fname):
     conflicts = 'Submission ID,Email\n'
     for pid in papers:
@@ -133,7 +133,6 @@ def rand_reviews(n):
     mu = random.uniform(-3.0, 3.0)
     sig = 2.0
     options = [-5,-3,-1,1,3,5]
-    # weights = [1,5,10,10,5,1] # manual
     weights = []
     for opt in options:
         w = gaussian(opt, mu, sig)
@@ -151,6 +150,13 @@ def revs_to_rec(revs):
     else:
         return ''
 
+def gen_status(rec):
+    if not rec:
+        return 'T'
+    if rec > 0:
+        return random.choice(['C','J'])
+    return 'R'
+
 def fmt_review(pid, rev, score, rec):
     line = f'{pid},{rev},{score},{rec}\n'
     return line
@@ -166,16 +172,20 @@ def fake_paper_reviews(pid):
     result += fmt_review(pid, ter, revs[2], '')
     result += fmt_review(pid, ter, revs[3], '')
     result += fmt_review(pid, ter, revs[4], '')
-    return result
+    return result, rec
 
-# Status: Submission ID,Role,Rating,Consensus Recommendation
+# reviews: Submission ID,Role,Rating,Consensus Recommendation
 def fake_reviews(papers, fname):
     output = 'Submission ID,Role,Rating,Consensus Recommendation\n'
+    recs = {}
     for pid in papers:
-        output += fake_paper_reviews(pid)
+        line,rec = fake_paper_reviews(pid)
+        output += line
+        recs[pid] = rec
     write_file(fname, output)
+    return recs
 
-# Status: Submission ID,Summary
+# summary: Submission ID,Summary
 def fake_summaries(papers, fname):
     output = 'Submission ID,Summary\n'
     for pid in papers:
@@ -184,12 +194,37 @@ def fake_summaries(papers, fname):
         output += line
     write_file(fname, output)
 
+# history: Submission ID,Seconds,Status
+def fake_history(recs, fname):
+    papers = recs.keys()
+    papers = list(papers)
+    random.shuffle(papers)
+    keep = int(len(papers) * 0.4) # keep 40%
+    papers = papers[:keep]
+    dups = papers[:] # shallow copy
+    random.shuffle(dups)
+    keep = int(len(papers) * 0.2) # keep 20%
+    dups = dups[:keep]
+    papers += dups
+    seconds = 100
+    lines = []
+    for pid in papers:
+        seconds += random.randrange(100,200)
+        status = gen_status(recs[pid])
+        line = f'{pid},-{seconds},{status}\n'
+        lines.append(line)
+    lines.reverse()
+    output = 'Submission ID,Seconds,Status\n'
+    output += ''.join(lines)
+    write_file(fname, output)
+
 def main():
     emails = fake_users(50, 'users.csv')
     papers = fake_papers(500, 'papers.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
-    fake_reviews(papers, 'reviews.csv')
+    recs = fake_reviews(papers, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')
+    fake_history(recs, 'history.csv')
 
 if __name__ == "__main__":
     main()
