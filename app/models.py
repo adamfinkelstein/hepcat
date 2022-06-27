@@ -125,6 +125,10 @@ class PaperSchema(ma.Schema):
     class Meta:
         fields = ("id", "nid", "sid", "thumbnail", "title", "abstract", "summary")
 
+class HistorySchema(ma.Schema):
+    class Meta:
+        fields = ("paper_id", "when", "status")
+
 ######################
 # Helper functions
 ######################

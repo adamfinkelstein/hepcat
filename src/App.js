@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Stack } from 'react-bootstrap';
-
+import Moment from 'moment';
 import socketIOClient from "socket.io-client";
 
 export default function App() {
@@ -128,7 +128,7 @@ export default function App() {
           </ul>
         )
       }
-      <h3>Papers with conflicts:</h3>
+      <h3>Papers with history and conflicts:</h3>
       {
         (papers.length === 0) ? (
           <span>(no papers)</span>
@@ -142,8 +142,13 @@ export default function App() {
                     p.conflicts.length > 0 &&
                     <ul>
                       {
+                        p.history.map( (h,index) =>
+                        <li key={index.toString()}>History: {h.status + ' (' + Moment(h.when).format('ddd HH:mm')})</li>
+                        )
+                      }
+                      {
                         p.conflicts.map( (u,index) =>
-                        <li key={index.toString()}>{u.first_name + ' ' + u.last_name}</li>
+                        <li key={(-1*(index+1)).toString()}>Conflict: {u.first_name + ' ' + u.last_name}</li>
                         )
                       }
                     </ul>

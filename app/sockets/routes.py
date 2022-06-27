@@ -1,11 +1,12 @@
 from flask_socketio import emit
 from flask_login import current_user
 from .. import socketio
-from ..models import User, Paper, UserSchema, PaperSchema
+from ..models import User, Paper, UserSchema, PaperSchema, HistorySchema
 
 user_schema = UserSchema()
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
+history_schema = HistorySchema(many=True)
 
 @socketio.on('connect')
 def connect():
@@ -58,10 +59,13 @@ def request_papers(value):
     for paper in papers:
         paper_dump = paper_schema.dump(paper)
         conflicts = []
+        history = []
         for user in paper.conf_users:
             user_dump = user_schema.dump(user)
             conflicts.append(user_dump)
+        history_dump = history_schema.dump(paper.history)
         paper_dump['conflicts'] = conflicts
+        paper_dump['history'] = history_dump
         paper_list.append(paper_dump)
     data = { 'papers': paper_list, 'requester': user_name }
     emit('papers', data, broadcast=True)
