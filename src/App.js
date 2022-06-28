@@ -5,13 +5,25 @@ import socketIOClient from "socket.io-client";
 
 export default function App() {
 
+  let glob_config;
+
+  const getConfigVar = (config_var) => {
+    if (config_var in process.env) {
+      return process.env[config_var];
+    }
+    if (glob_config && config_var in glob_config) {
+      return glob_config[config_var];
+    }
+    return false;
+  }
+
   const [socket, setSocket] = useState(null);
   const [welcome, setWelcome] = useState('');
   const [messages, setMessages] = useState([]);
   const [papers, setPapers] = useState([]);
   
   useEffect(() => {
-    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
+    const endpt = getConfigVar('REACT_APP_SOCKET_ENDPOINT');
     const newSocket = endpt ? socketIOClient(endpt) : socketIOClient();
     setSocket(newSocket);
     return () => newSocket.close();
@@ -29,6 +41,10 @@ export default function App() {
         user_name = data.user_name;
       }
       setWelcome(user_name);
+      if (data && 'config' in data) {
+        glob_config = data.config;
+        console.log(glob_config)
+      }
     };
 
     const receiveChat = (data) => {
@@ -54,6 +70,13 @@ export default function App() {
       socket.on('welcome', receiveWelcome);
       socket.on('chat_broadcast', receiveChat);
       socket.on('papers', receivePapers);
+      socket.on("connect_error", () => {
+        if (getConfigVar('REACT_APP_DISCONNECT_ON_ERR')) {
+          console.log('disconnecting due to connect_error...');
+          socket.disconnect();
+          setWelcome('DISCONNECTED!')
+        }
+      });
       // later investigate whether to register on disconnect
       // ... possibly force a page reload which might send to login
     }

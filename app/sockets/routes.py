@@ -1,3 +1,4 @@
+import os
 from flask_socketio import emit
 from flask_login import current_user
 from .. import socketio
@@ -8,6 +9,13 @@ paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
 history_schema = HistorySchema(many=True)
 
+def get_react_env_vars():
+    vars = {}
+    for item, value in os.environ.items():
+        if item.startswith('REACT_APP'):
+            vars[item] = value
+    return vars
+
 @socketio.on('connect')
 def connect():
     user_name = 'Unknown User'
@@ -16,7 +24,8 @@ def connect():
     else:
         print('user is not logged in: should force disconnect here.')
     print(f'{user_name} - client connected')
-    data = { 'user_name': user_name }
+    config_vars = get_react_env_vars()
+    data = { 'user_name': user_name, 'config': config_vars }
     emit('welcome', data)
 
 @socketio.on('disconnect')
