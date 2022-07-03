@@ -194,7 +194,7 @@ def fake_summaries(papers, fname):
         output += line
     write_file(fname, output)
 
-# history: Submission ID,Seconds,Status
+# history: Submission ID,Seconds,Context,Status
 def fake_history(recs, fname):
     papers = recs.keys()
     papers = list(papers)
@@ -211,10 +211,11 @@ def fake_history(recs, fname):
     for pid in papers:
         seconds += random.randrange(100,200)
         status = gen_status(recs[pid])
-        line = f'{pid},-{seconds},{status}\n'
+        context = random.choice(['Sticky','Plenary'])
+        line = f'{pid},-{seconds},{context},{status}\n'
         lines.append(line)
     lines.reverse()
-    output = 'Submission ID,Seconds,Status\n'
+    output = 'Submission ID,Seconds,Context,Status\n'
     output += ''.join(lines)
     write_file(fname, output)
 

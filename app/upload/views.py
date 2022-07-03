@@ -8,7 +8,7 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, sid_to_num, get_or_insert_role, ensure_admin, conflicts
+from ..models import User, Paper, Review, History, HistoryContext, sid_to_num, get_or_insert_role, ensure_admin, conflicts
 
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
@@ -122,6 +122,14 @@ def review_str_to_num(s):
         return int(s)
     return 0
 
+def consensus_num_to_str(num):
+    if num < 0:
+        return 'R'
+    elif num == 0:
+        return 'T'
+    else:
+        return 'C' # should be C or J!!! but how to know?!?
+
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 1:'a', 3:'A', 5:'_A_'}
 
 def get_rating_code(rating):
@@ -155,12 +163,14 @@ def papers_set_all_scores_and_status_from_reviews():
 # Submission ID,Role,Rating,Consensus Recommendation
 def insert_review_rows(rows):
     delete_all_reviews()
+    now = datetime.now()
     for row in rows:
         if len(row) < 4:
             continue
         sid,role,rating,consensus = row
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
+            # add review
             role_num = review_role_to_num(role)
             rating = review_str_to_num(rating)
             consensus = review_str_to_num(consensus)
@@ -169,22 +179,35 @@ def insert_review_rows(rows):
                             rating=rating,
                             consensus=consensus)
             db.session.add(review)
+
+            # add history
+            then = now - timedelta(days = 7) # a week ago
+            context = int(HistoryContext.BBS)
+            status = consensus_num_to_str(consensus)
+            history = History(paper=paper,
+                            when=then,
+                            context=context,
+                            status=status)
+            db.session.add(history)
+
     db.session.commit()
     papers_set_all_scores_and_status_from_reviews()
 
-# Submission ID,Seconds,Status
+# Submission ID,Seconds,Context,Status
 def insert_history(rows):
     delete_all_history()
     now = datetime.now()
     for row in rows:
-        if len(row) < 3:
+        if len(row) < 4:
             continue
-        sid,secs,status = row
+        sid,secs,context,status = row
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
             then = now - timedelta(seconds = int(secs))
+            context = int(HistoryContext[context])
             history = History(paper=paper,
                             when=then,
+                            context=context,
                             status=status)
             db.session.add(history)
     db.session.commit()
@@ -197,7 +220,7 @@ csvTypes = {
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Rating,Consensus Recommendation',
     'summaries' : 'Submission ID,Summary',
-    'history' : 'Submission ID,Seconds,Status' }
+    'history' : 'Submission ID,Seconds,Context,Status' }
 
 csvFunctions = {
     'users' : insert_user_rows,

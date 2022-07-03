@@ -181,3 +181,8 @@ def whoami():
         user_name = current_user.get_full_name()
         debug_output = debug_orm_to_string(current_user)
     return render_debug(user_name, debug_output)
+
+# @debug.route('/kill_db/')
+# def kill_db():
+#     kill_db_for_debug()
+#     return 'Killed DB!'

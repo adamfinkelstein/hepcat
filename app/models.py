@@ -1,9 +1,34 @@
+from enum import IntEnum
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
+from sqlalchemy.orm import column_property
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from . import db, ma, login_manager
+
+######################
+# History Contexts
+######################
+
+class HistoryContext(IntEnum):
+    BBS = 0
+    Sticky = 1
+    Plenary = 2
+    length = 3
+
+# int(HistoryContext.Plenary)
+# 2
+#
+# for i in range(HistoryContext.length):
+#     print(i,HistoryContext(i).name)
+# 0 BBS
+# 1 Sticky
+# 2 Plenary
+#
+# name = 'Sticky'
+# print(int(HistoryContext[name]))
 
 # many-many: strongly encouraged to use Table rather than Class
 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/#many-to-many-relationships
@@ -30,6 +55,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
+    full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
@@ -110,7 +136,23 @@ class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
     when = db.Column(db.DateTime, server_default=func.now())
+    context = db.Column(db.Integer)
     status = db.Column(db.String(16))
+
+    @hybrid_property
+    def context_str(self):
+        return HistoryContext(self.context).name
+
+
+# def kill_db_for_debug():
+#     # conflicts.drop(db.engine)
+#     # History.__table__.drop(db.engine)
+#     # Review.__table__.drop(db.engine)
+#     # Paper.__table__.drop(db.engine)
+#     # User.__table__.drop(db.engine)
+#     # Role.__table__.drop(db.engine)
+#     with db.engine.connect() as con:
+#         con.execute('DROP TABLE IF EXISTS conflicts;')
 
 
 ######################
@@ -127,7 +169,7 @@ class PaperSchema(ma.Schema):
 
 class HistorySchema(ma.Schema):
     class Meta:
-        fields = ("paper_id", "when", "status")
+        fields = ("paper_id", "when", "context", "context_str", "status")
 
 ######################
 # Helper functions

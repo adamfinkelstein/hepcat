@@ -68,7 +68,6 @@ def request_papers(value):
     for paper in papers:
         paper_dump = paper_schema.dump(paper)
         conflicts = []
-        history = []
         for user in paper.conf_users:
             user_dump = user_schema.dump(user)
             conflicts.append(user_dump)

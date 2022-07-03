@@ -52,6 +52,11 @@ This works in python version 3.9.13 (generally 3.9.x):
 * In addition, you can get a live React server running too, as follows. Before launching Flask (python, as above), `export ALLOW_CORS=True`. Now, while Flask server is running, you can also use `npm start` to launch a React server to serve the React app, and it will connect by socketio to the Flask server (CORS required). To get to the live-updating React app, navigate browser to `http://127.0.0.1:3000`.
 * If you don't specify the database URL it writes a local SQL file-based database. Or you can connect to a local Postgres database via:  `DEV_DATABASE_URL=postgresql://localhost`. (AF tested on Mac with Postgres Version 2.5.6.)
 
+## Local database options
+
+* To get local sqlite file, don't set DEV_DATABASE_URL
+* For postgres: DEV_DATABASE_URL=postgresql://localhost
+
 ## To set up heroku:
 
 Set up Heroku app and add it to git remotes. 
