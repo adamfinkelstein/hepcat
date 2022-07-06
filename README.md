@@ -90,7 +90,7 @@ pip install numpy faker
 python fake.py
 ```
 
-## To drop all tables in Postgres
+## To drop all tables in local Postgres
 
 ```
 \dt (<==shows tables)
@@ -101,3 +101,5 @@ DROP TABLE IF EXISTS papers;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
 ```
+
+(To do so at Heroku, log into Heroku panel and find the spot in settings for that database.)
