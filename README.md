@@ -54,8 +54,8 @@ This works in python version 3.9.13 (generally 3.9.x):
 
 ## Local database options
 
-* To get local sqlite file, don't set DEV_DATABASE_URL
-* For postgres: DEV_DATABASE_URL=postgresql://localhost
+* To get local sqlite file, don't set `DEV_DATABASE_URL`
+* For postgres: `DEV_DATABASE_URL=postgresql://localhost`
 
 ## To set up heroku:
 

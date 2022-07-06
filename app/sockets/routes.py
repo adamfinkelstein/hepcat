@@ -3,6 +3,7 @@ from flask_socketio import emit
 from flask_login import current_user
 from .. import socketio
 from ..models import User, Paper, UserSchema, PaperSchema, HistorySchema
+from ..orderq import order_q
 
 user_schema = UserSchema()
 paper_schema = PaperSchema()
@@ -64,8 +65,9 @@ def request_papers(value):
     papers = Paper.query.filter(Paper.nid >= start)\
                         .filter(Paper.nid <= end)\
                         .order_by(Paper.nid).all()
+    ordered = order_q(papers)
     paper_list = []
-    for paper in papers:
+    for paper in ordered:
         paper_dump = paper_schema.dump(paper)
         conflicts = []
         for user in paper.conf_users:
