@@ -10,4 +10,25 @@
 <div class="col-md-4">
     {{ wtf.quick_form(form) }}
 </div>
+
+<div class="col-lg-6">
+{% if uploads %}
+<h2>Already uploaded:</h2>
+<ul>
+{% for upload in uploads %}
+<li>{{upload.file}} &mdash; {{upload.count}} uploaded {{moment(upload.when).format('LLLL')}}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if pending %}
+<h2>Pending uploads:</h2>
+<ul>
+{% for p in pending %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+
 {% endblock %}

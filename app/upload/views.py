@@ -3,12 +3,13 @@ import csv
 from datetime import datetime, timedelta
 
 from flask import render_template, flash, redirect, url_for, current_app
+from flask_login import current_user
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, sid_to_num, get_or_insert_role, ensure_admin, conflicts
+from ..models import User, Paper, Review, History, HistoryContext, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts
 
 def dump_users_papers_and_conflicts(title):
     num_users = User.query.count()
@@ -63,6 +64,7 @@ def insert_user_rows(rows):
     delete_all_users()
     ensure_admin()
     dump_users_papers_and_conflicts('After ensure')
+    count = 0
     for row in rows:
         if len(row) < 5:
             continue
@@ -76,12 +78,15 @@ def insert_user_rows(rows):
             roleObj = get_or_insert_role(role)
             user.role = roleObj
         db.session.add(user)
+        count += 1
     db.session.commit()
     dump_users_papers_and_conflicts('After insertion')
+    return count
 
 # Submission ID,Thumbnail URL,Title,Abstract
 def insert_paper_rows(rows):
     delete_all_papers()
+    count = 0
     for row in rows:
         if len(row) < 4:
             continue
@@ -93,11 +98,14 @@ def insert_paper_rows(rows):
                     title=title,
                     abstract=abstract)
         db.session.add(paper)
+        count += 1
     db.session.commit()
+    return count
 
 # Submission ID,Email
 def insert_conflict_rows(rows):
     delete_all_conflicts()
+    count = 0
     for row in rows:
         if len(row) < 2:
             continue
@@ -107,7 +115,9 @@ def insert_conflict_rows(rows):
         if user and paper:
             user.conf_papers.append(paper)
             db.session.add(user)
+            count += 1
     db.session.commit()
+    return count
 
 def review_role_to_num(role):
     if 'lead' in role:
@@ -164,6 +174,7 @@ def papers_set_all_scores_and_status_from_reviews():
 def insert_review_rows(rows):
     delete_all_reviews()
     now = datetime.now()
+    count = 0
     for row in rows:
         if len(row) < 4:
             continue
@@ -179,6 +190,7 @@ def insert_review_rows(rows):
                             rating=rating,
                             consensus=consensus)
             db.session.add(review)
+            count += 1
 
             # add history
             then = now - timedelta(days = 7) # a week ago
@@ -192,11 +204,13 @@ def insert_review_rows(rows):
 
     db.session.commit()
     papers_set_all_scores_and_status_from_reviews()
+    return count
 
 # Submission ID,Seconds,Context,Status
 def insert_history(rows):
     delete_all_history()
     now = datetime.now()
+    count = 0
     for row in rows:
         if len(row) < 4:
             continue
@@ -210,7 +224,9 @@ def insert_history(rows):
                             context=context,
                             status=status)
             db.session.add(history)
+            count += 1
     db.session.commit()
+    return count
 
 
 csvTypes = {
@@ -230,6 +246,10 @@ csvFunctions = {
     'reviews' : insert_review_rows,
     'summaries' : None,
     'history' : insert_history }
+
+csvDependence = {
+    'users' : ['conflicts'],
+    'papers' : ['reviews', 'conflicts'] } # add clusters, summaries
 
 def is_csv(filename):
     if '.' not in filename:
@@ -261,18 +281,38 @@ def get_csv_type(header):
             return typ
     return None
 
+def delete_prev_file_uploads(headerType):
+    FileUpload.query.filter_by(file=headerType).delete()
+    if headerType in csvDependence:
+        deps = csvDependence[headerType]
+        for dep in deps:
+            FileUpload.query.filter_by(file=dep).delete()
+
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
     headerType = get_csv_type(header)
     if headerType in csvFunctions:
         func = csvFunctions[headerType]
-        func(rows)
+        if not func:
+            return False, False
+        count = func(rows)
+        delete_prev_file_uploads(headerType)
+        upload = FileUpload(file=headerType, count=count, user_id=current_user.id)
+        db.session.add(upload)
+        db.session.commit()
         msg = dump_users_papers_and_conflicts('After Upload')
         if headerType == 'users':
             msg += ' You have been logged out because users were updated.'
             return msg, True
         return msg, False
     return False, False
+
+def pending_files(uploads):
+    already = [upload.file for upload in uploads]
+    keys = list(csvTypes.keys())
+    pending = [key for key in keys if key not in already]
+    print(already, keys, pending)
+    return pending
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 @upload.route('/', methods=('GET', 'POST'))
@@ -301,8 +341,9 @@ def upload():
             flash(msg)
     if logout:
         return redirect(url_for('auth.login'))
-    else:
-        return render_template('upload.html', form=form, filename=filename)
+    uploads = FileUpload.query.all()
+    pending = pending_files(uploads)
+    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending)
 
 
 ''' Should follow redirect model, like this:

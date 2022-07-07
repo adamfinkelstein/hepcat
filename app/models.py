@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
-from . import db, ma, login_manager
+from . import db, ma, set_gq, login_manager
 
 ######################
 # History Contexts
@@ -36,9 +36,6 @@ class HistoryContext(IntEnum):
 conflicts = db.Table( 'conflicts',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
-# Some online examples indicate primary_key, like this:
-#    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-#    db.Column('paper_id', db.Integer, db.ForeignKey('papers.id'), primary_key=True) )
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -103,8 +100,10 @@ class Paper(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nid = db.Column(db.Integer, unique=True, index=True)
     sid = db.Column(db.String(64), unique=True, index=True)
+    queue_order = db.Column(db.Integer, default=0)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
+    area = db.Column(db.String())    
     abstract = db.Column(db.String())
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
@@ -114,12 +113,6 @@ class Paper(db.Model):
         backref=db.backref('conf_papers', lazy='dynamic'))
     history = db.relationship('History', backref='paper', lazy='dynamic', 
         order_by='History.when')
-
-    # old ref
-    # conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic', order_by='Paper.nid')
-    # conf_papers = db.relationship('Paper', secondary=conflicts, lazy='dynamic',
-    #     backref=db.backref('conf_users', lazy='dynamic'))
-
 
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
@@ -143,16 +136,23 @@ class History(db.Model):
     def context_str(self):
         return HistoryContext(self.context).name
 
+class GlobQueue(db.Model):
+    __tablename__ = 'glob_queue'
+    id = db.Column(db.Integer, primary_key=True)
+    bar = db.Column(db.Float, default=0.0)
+    hide_all = db.Column(db.Boolean, default=False)
+    message = db.Column(db.String(), default='')
+    current = db.Column(db.Integer, default=0)
+    current_show = db.Column(db.Boolean, default=False)
+    current_start = db.Column(db.DateTime, server_default=func.now())
 
-# def kill_db_for_debug():
-#     # conflicts.drop(db.engine)
-#     # History.__table__.drop(db.engine)
-#     # Review.__table__.drop(db.engine)
-#     # Paper.__table__.drop(db.engine)
-#     # User.__table__.drop(db.engine)
-#     # Role.__table__.drop(db.engine)
-#     with db.engine.connect() as con:
-#         con.execute('DROP TABLE IF EXISTS conflicts;')
+class FileUpload(db.Model):
+    __tablename__ = 'file_upload'
+    id = db.Column(db.Integer, primary_key=True)
+    file = db.Column(db.String(64))
+    count = db.Column(db.Integer, default=0)
+    when = db.Column(db.DateTime, server_default=func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
 ######################
@@ -165,11 +165,28 @@ class UserSchema(ma.Schema):
 
 class PaperSchema(ma.Schema):
     class Meta:
-        fields = ("id", "nid", "sid", "thumbnail", "title", "abstract", "summary")
+        fields = ("id", "nid", "sid", "queue_order", "thumbnail", "title", 
+                "abstract", "summary")
 
 class HistorySchema(ma.Schema):
     class Meta:
         fields = ("paper_id", "when", "context", "context_str", "status")
+
+######################
+# Global queue vars
+######################
+
+def ensure_gq():
+    gq = GlobQueue.query.first()
+    if not gq:
+        gq = GlobQueue()
+        db.session.add(gq)
+        db.session.commit()
+        print(f'created GC with id {gq.id}')
+    else:
+        print(f'retrieved GC with id {gq.id}')
+    set_gq(gq)
+
 
 ######################
 # Helper functions
@@ -213,7 +230,7 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
                         password=passwd,
                         confirmed=True)
         db.session.add(user)
-    db.session.commit() # possibly not needed but probably no harm
+    db.session.commit()
 
 def ensure_admin():
     # Add Admin User
@@ -227,3 +244,5 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
     ensure_user(email, 'Test2', 'User2', 'Test', passwd)
+    # Also init global queue variables, if needed
+    ensure_gq()

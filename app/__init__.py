@@ -67,3 +67,13 @@ def create_app(config_name, build_path):
         db.create_all()
 
     return app
+
+gq = None # this global will be set in models by the func below
+
+def set_gq(g):
+    global gq
+    gq = g
+
+def get_gq():
+    global gq
+    return gq

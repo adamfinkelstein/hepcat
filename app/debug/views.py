@@ -2,7 +2,7 @@ import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
-from .. import db
+from .. import get_gq
 from ..models import Role, User, Paper, PaperSchema, num_to_sid
 
 paper_schema = PaperSchema()
@@ -28,7 +28,7 @@ def debug_orm_to_string(orm):
     for key in obj:
         val = obj[key]
         typ = type(val)
-        if typ != str and typ != int:
+        if typ not in [str, int, float, bool]:
             val = typ.__name__
         line = f'{key} : {val}'
         lines.append(line)
@@ -162,15 +162,6 @@ def user_conflicts(email):
         for paper in user.conf_papers:
             debug_output += '* ' + paper.sid + '\n'
     return render_debug(debug_title, debug_output)
-
-# @debug.route('/socketio/')
-# @login_required
-# def socketio_client():
-#     user_name = 'Unknown User'
-#     if current_user:
-#         user_name = current_user.get_full_name()
-#     return render_template('socketio.html', 
-#                         title='Socketio chat', name=user_name)
  
 @debug.route('/me/')
 @login_required
@@ -182,7 +173,13 @@ def whoami():
         debug_output = debug_orm_to_string(current_user)
     return render_debug(user_name, debug_output)
 
-# @debug.route('/kill_db/')
-# def kill_db():
-#     kill_db_for_debug()
-#     return 'Killed DB!'
+@debug.route('/gq/')
+@login_required
+def debugGQ():
+    debug_title = 'Global Queue Vars'
+    gq = get_gq()
+    if gq:
+        debug_output = debug_orm_to_string(gq)
+    else:
+        debug_output = 'No GQ !!!'
+    return render_debug(debug_title, debug_output)
