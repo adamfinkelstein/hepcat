@@ -229,7 +229,7 @@ def consensus_num_to_str(num):
     else:
         return 'C' # should be C or J!!! but how to know?!?
 
-rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 1:'a', 3:'A', 5:'_A_'}
+rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'', 1:'a', 3:'A', 5:'_A_'}
 
 def get_rating_code(rating):
     if rating in rating_codes_dict:
@@ -238,28 +238,38 @@ def get_rating_code(rating):
 
 def get_consensus_code(consensus_recs):
     if len(consensus_recs) == 2 and consensus_recs[0] == consensus_recs[1]:
-        if consensus_recs[0] > 0:
-            return 'A'
-        else:
-            return 'R'
+        # if consensus_recs[0] > 0:
+        #     return 'A'
+        # else:
+        #     return 'R'
+        return consensus_recs[0]
     return 'T'
+
+def scores_to_string(scores):
+    codes = [ get_rating_code(score) for score in scores ]
+    brackets = '[ ' + ' '.join(codes) + ' ]'
+    return brackets
 
 def papers_set_all_scores_and_status_from_reviews():
     papers = Paper.query.all()
     for paper in papers:
-        all_scores = '[ '
+        conference_scores = []
+        journal_scores = []
         consensus_recs = []
         reviews = paper.reviews.order_by(Review.role)
         for review in reviews:
-            all_scores += get_rating_code(review.rating) + ' '
+            conference_scores.append( review.conference )
+            journal_scores.append( review.journal )
             if review.role >= 1 and review.role <= 2: # primary or secondary
                 consensus_recs.append(review.consensus)
-        all_scores += '] ' + get_consensus_code(consensus_recs)
+        all_scores = scores_to_string(conference_scores) + \
+                     scores_to_string(journal_scores) + ' ' + \
+                     get_consensus_code(consensus_recs)
         paper.all_scores = all_scores
         db.session.add(paper)
     db.session.commit()
 
-# Submission ID,Role,Rating,Consensus Recommendation
+# Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 def insert_review_rows(rows):
     delete_all_reviews()
     now = datetime.now()
@@ -267,16 +277,18 @@ def insert_review_rows(rows):
     for row in rows:
         if len(row) < 4:
             continue
-        sid,role,rating,consensus = row
+        sid,role,conference,journal,consensus = row
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
             # add review
             role_num = review_role_to_num(role)
-            rating = review_str_to_num(rating)
-            consensus = review_str_to_num(consensus)
+            conference = review_str_to_num(conference)
+            journal = review_str_to_num(journal)
+            # consensus = review_str_to_num(consensus)
             review = Review(paper=paper,
                             role=role_num,
-                            rating=rating,
+                            conference=conference,
+                            journal=journal,
                             consensus=consensus)
             db.session.add(review)
             count += 1
@@ -284,11 +296,11 @@ def insert_review_rows(rows):
             # add history
             then = now - timedelta(days = 7) # a week ago
             context_enum = int(HistoryContext.BBS)
-            status = consensus_num_to_str(consensus)
+            # status = consensus_num_to_str(consensus)
             history = History(paper=paper,
                             when=then,
                             context_enum=context_enum,
-                            status=status)
+                            status=consensus)
             db.session.add(history)
 
     db.session.commit()
@@ -331,7 +343,7 @@ csvTypes = {
     'papers' : 'Submission ID,Thumbnail URL,Title,Area,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
-    'reviews' : 'Submission ID,Role,Rating,Consensus Recommendation',
+    'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation',
     'summaries' : 'Submission ID,Summary',
     'history' : 'Submission ID,Seconds,Context,Status' }
 

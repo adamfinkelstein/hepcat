@@ -16,7 +16,7 @@ if not os.path.exists(dataDir):
 # papers: Submission ID,Thumbnail URL,Title,Abstract
 # conflicts: Submission ID,Email
 # clusters: Submission ID,Cluster
-# reviews: Submission ID,Role,Rating,Consensus Recommendation
+# reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # summaries: Submission ID,Summary
 # history: Submission ID,Seconds,Status
 
@@ -145,44 +145,47 @@ def rand_reviews(n):
         weights.append(w)
     revs = random.choices(options, weights, k=n)
     # dumpOptions(weights, revs)
+    if random.uniform(0.0,1.0) > 0.5:
+        for i in range(5):
+            revs[i] = 0
     return revs
 
 def revs_to_rec(revs):
-    tot = sum(revs)
-    if tot > 8:
+    tot = 1.0 * sum(revs) / len(revs)
+    if tot > 1.6:
         return 1
     elif tot < -1:
         return -1
     else:
-        return ''
+        return 0
 
 def gen_status(rec):
-    if not rec:
+    if rec == 0:
         return 'T'
     if rec > 0:
         return random.choice(['C','J'])
     return 'R'
 
-def fmt_review(pid, rev, score, rec):
-    line = f'{pid},{rev},{score},{rec}\n'
+def fmt_review(pid, rev, conf_score, jour_score, rec):
+    line = f'{pid},{rev},{conf_score},{jour_score},{rec}\n'
     return line
 
 def fake_paper_reviews(pid):
     pri = 'Technical Papers Committee Member (lead)'
     sec = 'Technical Papers Committee Member'
     ter = 'Technical Papers Tertiary Reviewer'
-    revs = rand_reviews(5)
-    rec = revs_to_rec(revs)
-    result  = fmt_review(pid, pri, revs[0], rec)
-    result += fmt_review(pid, sec, revs[1], rec)
-    result += fmt_review(pid, ter, revs[2], '')
-    result += fmt_review(pid, ter, revs[3], '')
-    result += fmt_review(pid, ter, revs[4], '')
+    revs = rand_reviews(10)
+    rec = gen_status(revs_to_rec(revs))
+    result  = fmt_review(pid, pri, revs[0], revs[5], rec)
+    result += fmt_review(pid, sec, revs[1], revs[6], rec)
+    result += fmt_review(pid, ter, revs[2], revs[7], '')
+    result += fmt_review(pid, ter, revs[3], revs[8], '')
+    result += fmt_review(pid, ter, revs[4], revs[9], '')
     return result, rec
 
-# reviews: Submission ID,Role,Rating,Consensus Recommendation
+# reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 def fake_reviews(papers, fname):
-    output = 'Submission ID,Role,Rating,Consensus Recommendation\n'
+    output = 'Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation\n'
     recs = {}
     for pid in papers:
         line,rec = fake_paper_reviews(pid)
@@ -231,7 +234,7 @@ def fake_history(recs, fname):
     lines = []
     for pid in papers:
         seconds += random.randrange(100,200)
-        status = gen_status(recs[pid])
+        status = recs[pid]
         context = random.choice(['Sticky','Plenary'])
         line = f'{pid},-{seconds},{context},{status}\n'
         lines.append(line)

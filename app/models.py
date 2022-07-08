@@ -133,7 +133,8 @@ class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
     role = db.Column(db.Integer)
-    rating = db.Column(db.Integer)
+    conference = db.Column(db.Integer)
+    journal = db.Column(db.Integer)
     consensus = db.Column(db.Integer)
 
 # Submission ID,DateTime,Status
