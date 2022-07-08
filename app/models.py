@@ -98,9 +98,6 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    def get_full_name(self):
-        return f'{self.first_name} {self.last_name}'
-
     def __repr__(self):
         return '<User %r>' % self.email
 

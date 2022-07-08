@@ -1,5 +1,5 @@
 import os
-from flask_socketio import emit
+from flask_socketio import emit, disconnect
 from flask_login import current_user
 from .. import socketio
 from ..models import User, Paper, UserSchema, PaperSchema, HistorySchema
@@ -17,32 +17,37 @@ def get_react_env_vars():
             vars[item] = value
     return vars
 
-@socketio.on('connect')
-def connect():
-    user_name = 'Unknown User'
+def get_name_or_disconnect():
     if current_user and not current_user.is_anonymous:
-        user_name = current_user.get_full_name()
-    else:
-        print('user is not logged in: should force disconnect here.')
+        user_name = current_user.full_name
+        return user_name
+    print('user is not logged in: forcing disconnect here.')
+    disconnect()
+    return None
+
+@socketio.on('connect')
+def io_connect():
+    user_name = get_name_or_disconnect()
+    if not user_name:
+        return
     print(f'{user_name} - client connected')
     config_vars = get_react_env_vars()
     data = { 'user_name': user_name, 'config': config_vars }
     emit('welcome', data)
 
 @socketio.on('disconnect')
-def disconnect():
+def io_disconnect():
     user_name = 'Unknown User'
     if current_user and not current_user.is_anonymous:
-        user_name = current_user.get_full_name()
+        user_name = current_user.full_name
     print(f'{user_name} - client disconnected')
 
+## TEMP FUNCTION FOR DEBUG SOCKETS:
 @socketio.on('chat')
-def chat(data):
-    user_name = 'Unknown User'
-    if current_user and not current_user.is_anonymous:
-        user_name = current_user.get_full_name()
-    else:
-        print('user is not logged in: should force disconnect here.')
+def io_chat(data):
+    user_name = get_name_or_disconnect()
+    if not user_name:
+        return
     msg = data['message']
     echo = f'{user_name} chats: {msg}'
     print(echo)
@@ -50,12 +55,10 @@ def chat(data):
     emit('chat_broadcast', data, broadcast=True)
 
 @socketio.on('request_papers')
-def request_papers(value):
-    user_name = 'Unknown User'
-    if current_user and not current_user.is_anonymous:
-        user_name = current_user.get_full_name()
-    else:
-        print('user is not logged in: should force disconnect here.')
+def io_request_papers(value):
+    user_name = get_name_or_disconnect()
+    if not user_name:
+        return
     parts = value.split('-')
     start,end = (0,9999)
     if parts[0]:
