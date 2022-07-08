@@ -71,9 +71,14 @@ def rand_color():
 def csv_safe_string(s):
     return s.replace(',', '').replace('"', '').replace("'", '')
 
-# papers: Submission ID,Thumbnail URL,Title,Abstract
+area_options = ['Animation/Simulation','Imaging/Video','Interaction/VR','Modeling/Geometry','Rendering/Visualization'
+]
+def fake_area():
+    return random.choice(area_options)
+
+# papers: Submission ID,Thumbnail URL,Title,Area,Abstract
 # assumes n is a 3-digit number
-def fakePaper(pid):
+def fake_paper(pid):
     c1 = rand_color()
     c2 = rand_color()
     n = pid.replace('papers_','')
@@ -83,16 +88,17 @@ def fakePaper(pid):
     abstract = csv_safe_string( fake.paragraph(nb_sentences=12) )
     title = title[:-1] # remove trailing period
     title = title.title() # each word caps
-    result = f'{pid},{url},{title},{abstract}\n'
+    area = fake_area()
+    result = f'{pid},{url},{title},{area},{abstract}\n'
     return result
 
 def fake_papers(n, fname):
     pids = []
-    papers = 'Submission ID,Thumbnail URL,Title,Abstract\n'
+    papers = 'Submission ID,Thumbnail URL,Title,Area,Abstract\n'
     start = 101
     for i in range(start, start+n):
         pid = f'papers_{i}'
-        papers += fakePaper(pid)
+        papers += fake_paper(pid)
         pids.append(pid)
     write_file(fname,papers)
     return pids
@@ -194,16 +200,31 @@ def fake_summaries(papers, fname):
         output += line
     write_file(fname, output)
 
+cluster_options=['A','B','C','D','E']
+
+# clusters: Submission ID,Cluster
+def fake_clusters(papers, fname):
+    output = 'Submission ID,Cluster\n'
+    dups = papers[:] # shallow copy
+    keep = int(len(papers) * 0.1) # keep 0%
+    dups = dups[:keep]
+    random.shuffle(dups)
+    for pid in dups:
+        cluster = random.choice(cluster_options)
+        line = f'{pid},{cluster}\n'
+        output += line
+    write_file(fname, output)
+
 # history: Submission ID,Seconds,Context,Status
 def fake_history(recs, fname):
     papers = recs.keys()
     papers = list(papers)
     random.shuffle(papers)
-    keep = int(len(papers) * 0.4) # keep 40%
+    keep = int(len(papers) * 0.7) # keep 70%
     papers = papers[:keep]
     dups = papers[:] # shallow copy
     random.shuffle(dups)
-    keep = int(len(papers) * 0.2) # keep 20%
+    keep = int(len(papers) * 0.4) # keep 40%
     dups = dups[:keep]
     papers += dups
     seconds = 100
@@ -225,6 +246,7 @@ def main():
     fake_conflicts(emails, papers, 'conflicts.csv')
     recs = fake_reviews(papers, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')
+    fake_clusters(papers, 'clusters.csv')
     fake_history(recs, 'history.csv')
 
 if __name__ == "__main__":

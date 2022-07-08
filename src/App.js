@@ -166,7 +166,7 @@ export default function App() {
                     <ul>
                       {
                         p.history.map( (h,index) =>
-                        <li key={index.toString()}>History: {h.status + ' (' + h.context + ' ' + h.context_str + ' ' + Moment(h.when).format('ddd HH:mm')})</li>
+                        <li key={index.toString()}>History: {h.status + ' (' + h.context + ' ' + Moment(h.when).format('ddd HH:mm')})</li>
                         )
                       }
                       {

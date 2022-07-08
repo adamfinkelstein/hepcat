@@ -9,14 +9,20 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts
+from ..models import User, Paper, Review, History, HistoryContext, Label, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
+    ### ??? Later: return here if not in special mode for debugging uploads
     num_users = User.query.count()
     num_papers = Paper.query.count()
     num_reviews = Review.query.count()
+    num_history = History.query.count()
+    num_labels = Label.query.count()
     num_conf = db.session.query(conflicts).count()
-    result = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}. Reviews={num_reviews}.'
+    num_tags = db.session.query(tags).count()
+    result  = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}.'
+    result += f' Reviews={num_reviews}. History={num_history}. Labels={num_labels}.'
+    result += f' Tags={num_tags}.'
     print(result)
     return result
 
@@ -28,7 +34,23 @@ def delete_all_conflicts():
         db.session.add(user)
     db.session.commit()    
     dump_users_papers_and_conflicts('After conflict deletion')
-    
+
+#### ????
+def delete_all_clusters():
+    return
+
+def delete_all_labels():
+    dump_users_papers_and_conflicts('Before label deletion')
+    labels = Label.query.all()
+    for label in labels:
+        label.tag_papers = [] # empty list
+        db.session.add(label)
+    db.session.commit()
+    num_deleted = Label.query.delete()
+    db.session.commit()
+    print(f'deleted {num_deleted} labels')
+    dump_users_papers_and_conflicts('After label deletion')
+
 def delete_all_users():
     delete_all_conflicts() # need to delete conflicts before users
     dump_users_papers_and_conflicts('Before user deletion')
@@ -41,6 +63,7 @@ def delete_all_papers():
     delete_all_reviews() # need to delete reviews before papers
     delete_all_history() # need to delete history before papers
     delete_all_conflicts() # need to delete conflicts before papers
+    delete_all_labels() # need to delete labels before papers
     dump_users_papers_and_conflicts('Before paper deletion')
     num_deleted = Paper.query.delete()
     db.session.commit()
@@ -58,6 +81,15 @@ def delete_all_history():
     num_deleted = History.query.delete()
     db.session.commit()
     print(f'Deleted {num_deleted} history entries.')
+
+def delete_all_summaries():
+    papers = Paper.query.all()
+    count = len(papers)
+    for paper in papers:
+        paper.summary = ''
+        db.session.add(paper)
+    db.session.commit()
+    print(f'Deleted {count} summaries.')
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
@@ -83,14 +115,14 @@ def insert_user_rows(rows):
     dump_users_papers_and_conflicts('After insertion')
     return count
 
-# Submission ID,Thumbnail URL,Title,Abstract
+# Submission ID,Thumbnail URL,Title,Area,Abstract
 def insert_paper_rows(rows):
     delete_all_papers()
     count = 0
     for row in rows:
-        if len(row) < 4:
+        if len(row) < 5:
             continue
-        sid,thumbnail,title,abstract = row
+        sid,thumbnail,title,areas,abstract = row
         nid = sid_to_num(sid)
         paper = Paper(nid=nid, 
                     sid=sid,
@@ -99,6 +131,15 @@ def insert_paper_rows(rows):
                     abstract=abstract)
         db.session.add(paper)
         count += 1
+        label_names = areas_to_labels(areas)
+        for label_name in label_names:
+            label = Label.query.filter_by(name=label_name).first()
+            if not label:
+                label = Label(name=label_name)
+                db.session.add(label)
+            if label and paper:
+                paper.tag_labels.append(label)
+                db.session.add(paper)
     db.session.commit()
     return count
 
@@ -118,6 +159,54 @@ def insert_conflict_rows(rows):
             count += 1
     db.session.commit()
     return count
+
+# Submission ID,Summary
+def insert_summary_rows(rows):
+    delete_all_summaries()
+    count = 0
+    for row in rows:
+        if len(row) < 2:
+            continue
+        sid,summary = row
+        paper = Paper.query.filter_by(sid=sid).first()
+        if paper:
+            paper.summary = summary
+            db.session.add(paper)
+            count += 1
+    db.session.commit()
+    return count
+
+# Submission ID,Cluster
+def insert_cluster_rows(rows):
+    delete_all_clusters() ####????? currently does nothing
+    count = 0
+    for row in rows:
+        if len(row) < 2:
+            continue
+        sid,cluster = row
+        label_name = cluster_to_label(cluster)
+        paper = Paper.query.filter_by(sid=sid).first()
+        label = Label.query.filter_by(name=label_name).first()
+        if not label:
+            label = Label(name=label_name)
+            db.session.add(label)
+        if label and paper:
+            paper.tag_labels.append(label)
+            db.session.add(paper)
+            count += 1
+    db.session.commit()
+    return count
+
+def cluster_to_label(cluster):
+    return f'Cluster-{cluster}'
+
+def area_to_label(area):
+    return f'Area-{area}'
+
+def areas_to_labels(areas_string):
+    areas = areas_string.split('/')
+    labels = [area_to_label(area) for area in areas]
+    return labels
 
 def review_role_to_num(role):
     if 'lead' in role:
@@ -194,11 +283,11 @@ def insert_review_rows(rows):
 
             # add history
             then = now - timedelta(days = 7) # a week ago
-            context = int(HistoryContext.BBS)
+            context_enum = int(HistoryContext.BBS)
             status = consensus_num_to_str(consensus)
             history = History(paper=paper,
                             when=then,
-                            context=context,
+                            context_enum=context_enum,
                             status=status)
             db.session.add(history)
 
@@ -207,7 +296,7 @@ def insert_review_rows(rows):
     return count
 
 # Submission ID,Seconds,Context,Status
-def insert_history(rows):
+def insert_history_rows(rows):
     delete_all_history()
     now = datetime.now()
     count = 0
@@ -218,20 +307,28 @@ def insert_history(rows):
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
             then = now - timedelta(seconds = int(secs))
-            context = int(HistoryContext[context])
+            context_enum = int(HistoryContext[context])
             history = History(paper=paper,
                             when=then,
-                            context=context,
+                            context_enum=context_enum,
                             status=status)
             db.session.add(history)
             count += 1
     db.session.commit()
     return count
 
+csvLinklings = {
+    'users' : 'users.csv',
+    'papers' : 'abstracts.csv',
+    'conflicts' : 'conflicts.csv',
+    'clusters' : 'clusters.csv',
+    'reviews' : 'status.csv',
+    'summaries' : 'commitee_notes.csv',
+    'history' : 'n/a' }
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
-    'papers' : 'Submission ID,Thumbnail URL,Title,Abstract',
+    'papers' : 'Submission ID,Thumbnail URL,Title,Area,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Rating,Consensus Recommendation',
@@ -242,14 +339,14 @@ csvFunctions = {
     'users' : insert_user_rows,
     'papers' : insert_paper_rows,
     'conflicts' : insert_conflict_rows,
-    'clusters' : None,
+    'clusters' : insert_cluster_rows,
     'reviews' : insert_review_rows,
-    'summaries' : None,
-    'history' : insert_history }
+    'summaries' : insert_summary_rows,
+    'history' : insert_history_rows }
 
 csvDependence = {
     'users' : ['conflicts'],
-    'papers' : ['reviews', 'conflicts'] } # add clusters, summaries
+    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'summaries'] }
 
 def is_csv(filename):
     if '.' not in filename:
@@ -307,11 +404,11 @@ def read_csv(filename):
         return msg, False
     return False, False
 
-def pending_files(uploads):
+def pending_uploads(uploads):
     already = [upload.file for upload in uploads]
     keys = list(csvTypes.keys())
     pending = [key for key in keys if key not in already]
-    print(already, keys, pending)
+    # print(already, keys, pending)
     return pending
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
@@ -342,8 +439,8 @@ def upload():
     if logout:
         return redirect(url_for('auth.login'))
     uploads = FileUpload.query.all()
-    pending = pending_files(uploads)
-    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending)
+    pending = pending_uploads(uploads)
+    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings)
 
 
 ''' Should follow redirect model, like this:

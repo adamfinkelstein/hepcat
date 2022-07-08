@@ -30,12 +30,25 @@ class HistoryContext(IntEnum):
 # name = 'Sticky'
 # print(int(HistoryContext[name]))
 
+######################
+# Many-to-Many Tables
+######################
+
 # many-many: strongly encouraged to use Table rather than Class
 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/#many-to-many-relationships
 # Also in Flask book Ch. 12. Maybe omit primary_key.
+
 conflicts = db.Table( 'conflicts',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
+
+tags = db.Table( 'tags',
+    db.Column('label_id', db.Integer, db.ForeignKey('labels.id') ),
+    db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
+
+######################
+# Regular Tables/Classes
+######################
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -56,6 +69,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    # conf_papers is a backref from papers
 
     @property
     def password(self):
@@ -103,7 +117,6 @@ class Paper(db.Model):
     queue_order = db.Column(db.Integer, default=0)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
-    area = db.Column(db.String())    
     abstract = db.Column(db.String())
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
@@ -111,6 +124,9 @@ class Paper(db.Model):
     conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', 
         order_by='(User.last_name,User.first_name)',
         backref=db.backref('conf_papers', lazy='dynamic'))
+    tag_labels = db.relationship('Label', secondary=tags, lazy='dynamic', 
+        order_by='Label.name',
+        backref=db.backref('tag_papers', lazy='dynamic'))
     history = db.relationship('History', backref='paper', lazy='dynamic', 
         order_by='History.when')
 
@@ -129,12 +145,22 @@ class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
     when = db.Column(db.DateTime, server_default=func.now())
-    context = db.Column(db.Integer)
+    context_enum = db.Column(db.Integer)
     status = db.Column(db.String(16))
 
     @hybrid_property
-    def context_str(self):
-        return HistoryContext(self.context).name
+    def context(self):
+        return HistoryContext(self.context_enum).name
+
+# currently handles areas and clusters, but may add more types later
+class Label(db.Model):
+    __tablename__ = 'labels'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    # tag_papers set by backref from papers
+
+    def __repr__(self):
+        return '<Label %r>' % self.name
 
 class GlobQueue(db.Model):
     __tablename__ = 'glob_queue'
@@ -170,7 +196,7 @@ class PaperSchema(ma.Schema):
 
 class HistorySchema(ma.Schema):
     class Meta:
-        fields = ("paper_id", "when", "context", "context_str", "status")
+        fields = ("paper_id", "when", "context", "status")
 
 ######################
 # Global queue vars
