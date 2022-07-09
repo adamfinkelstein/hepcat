@@ -35,8 +35,22 @@ def delete_all_conflicts():
     db.session.commit()    
     dump_users_papers_and_conflicts('After conflict deletion')
 
-#### ????
 def delete_all_clusters():
+    dump_users_papers_and_conflicts('Before cluster deletion')
+    papers = Paper.query.all()
+    for paper in papers:
+        labels = list(paper.tag_labels)
+        new_labels = [label for label in labels if not label_is_cluster(label)]
+        if len(new_labels) < len(labels):
+            paper.tag_labels = new_labels
+            db.session.add(paper)
+    labels = Label.query.all()
+    names = [label.name for label in list(labels)]
+    cluster_names = [name for name in names if name.startswith('Cluster-')]
+    for name in cluster_names:
+        Label.query.filter_by(name=name).delete()
+    db.session.commit()    
+    dump_users_papers_and_conflicts('After cluster deletion')
     return
 
 def delete_all_labels():
@@ -178,13 +192,13 @@ def insert_summary_rows(rows):
 
 # Submission ID,Cluster
 def insert_cluster_rows(rows):
-    delete_all_clusters() ####????? currently does nothing
+    delete_all_clusters()
     count = 0
     for row in rows:
         if len(row) < 2:
             continue
         sid,cluster = row
-        label_name = cluster_to_label(cluster)
+        label_name = cluster_to_label_name(cluster)
         paper = Paper.query.filter_by(sid=sid).first()
         label = Label.query.filter_by(name=label_name).first()
         if not label:
@@ -197,15 +211,21 @@ def insert_cluster_rows(rows):
     db.session.commit()
     return count
 
-def cluster_to_label(cluster):
+def cluster_to_label_name(cluster):
     return f'Cluster-{cluster}'
 
-def area_to_label(area):
+def area_to_label_name(area):
     return f'Area-{area}'
+
+def label_is_cluster(label):
+    return label.name.startswith('Cluster-')
+
+def label_is_area(label):
+    return label.name.startswith('Area-')
 
 def areas_to_labels(areas_string):
     areas = areas_string.split('/')
-    labels = [area_to_label(area) for area in areas]
+    labels = [area_to_label_name(area) for area in areas]
     return labels
 
 def review_role_to_num(role):
