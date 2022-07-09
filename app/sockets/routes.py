@@ -29,7 +29,10 @@ def get_grid_dump():
     # later: order them here
     grid_dump = []
     for paper in papers:
-        status = paper.history[-1].status # later fix this up!
+        if len(paper.history):
+            status = paper.history[-1].status # later fix this up!
+        else:
+            status = 'U'
         paper_dump = { 'nid': paper.nid, 'status': status }
         grid_dump.append(paper_dump)
     return grid_dump
