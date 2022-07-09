@@ -69,7 +69,12 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    # role is a backref from Role
     # conf_papers is a backref from papers
+
+    @hybrid_property
+    def role_name(self):
+        return self.role.name
 
     @property
     def password(self):
@@ -111,6 +116,7 @@ class Paper(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nid = db.Column(db.Integer, unique=True, index=True)
     sid = db.Column(db.String(64), unique=True, index=True)
+    sort_score = db.Column(db.Float, default=0.0)
     queue_order = db.Column(db.Integer, default=0)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
@@ -185,7 +191,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("id", "email", "first_name", "last_name")
+        fields = ("email", "full_name", "role_name")
 
 class PaperSchema(ma.Schema):
     class Meta:

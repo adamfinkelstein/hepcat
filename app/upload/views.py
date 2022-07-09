@@ -270,6 +270,24 @@ def scores_to_string(scores):
     brackets = '[ ' + ' '.join(codes) + ' ]'
     return brackets
 
+def average_scores(scores):
+    return 1.0 * sum(scores) / len(scores)
+
+def non_zero_scores(scores):
+    scores = [ score for score in scores if score != 0 ]
+    return scores
+
+def journal_only(conference_scores):
+    nz = non_zero_scores(conference_scores)
+    return len(nz) > 0
+
+def scores_to_sort_score(conference_scores,journal_scores):
+    journal_ave = average_scores(journal_scores)
+    conference_ave = average_scores(conference_scores)
+    if journal_only(conference_scores):
+        return journal_ave
+    return max(conference_ave, journal_ave)
+
 def papers_set_all_scores_and_status_from_reviews():
     papers = Paper.query.all()
     for paper in papers:
@@ -282,6 +300,7 @@ def papers_set_all_scores_and_status_from_reviews():
             journal_scores.append( review.journal )
             if review.role >= 1 and review.role <= 2: # primary or secondary
                 consensus_recs.append(review.consensus)
+        paper.sort_score = scores_to_sort_score(conference_scores,journal_scores)
         all_scores = scores_to_string(conference_scores) + \
                      scores_to_string(journal_scores) + ' ' + \
                      get_consensus_code(consensus_recs)
