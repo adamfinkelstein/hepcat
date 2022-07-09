@@ -195,7 +195,7 @@ class UserSchema(ma.Schema):
 
 class PaperSchema(ma.Schema):
     class Meta:
-        fields = ("id", "nid", "sid", "queue_order", "thumbnail", "title", 
+        fields = ("nid", "sid", "queue_order", "thumbnail", "title", 
                 "abstract", "summary")
 
 class HistorySchema(ma.Schema):
