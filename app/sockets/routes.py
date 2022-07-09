@@ -1,7 +1,7 @@
 import os
 from flask_socketio import emit, disconnect
 from flask_login import current_user
-from .. import socketio, db
+from .. import socketio, db, allow_cors
 from ..models import User, Paper, UserSchema, PaperSchema, HistorySchema
 from ..orderq import order_q
 
@@ -20,6 +20,9 @@ def get_react_env_vars():
 def get_user_or_disconnect():
     if current_user and not current_user.is_anonymous:
         return current_user
+    if allow_cors: # hack to allow React to run in a different port without a login
+        user = User.query.first()
+        return user
     print('user is not logged in: forcing disconnect here.')
     disconnect()
     return None
