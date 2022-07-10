@@ -37,20 +37,20 @@ a.nav-link {
   list-style: none;
 }
 
+.expand-buttons{
+  margin-left: auto;
+}
+
 .expand-bar{
-  top: 80px;
-  position: fixed;
+  padding: 20px 5px;
 }
 
-.queue-container{
-  overflow-y: scroll;
-  margin-top: 80px;
+.expand-button, .collapse-button{
+  border: 1px solid black;
 }
-
 /* Queue Item Styling */
 
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap");
-
 
 /* Style the buttons that are used to open and close the accordion panel */
 .accordion {
@@ -72,13 +72,11 @@ a.nav-link {
 .accordion_title {
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
-  font-size: 14px;
   text-align: left;
 }
 
 /* Style the accordion chevron icon */
 .accordion_icon {
-  margin-left: auto;
   transition: transform 0.6s ease;
 }
 
@@ -97,13 +95,9 @@ a.nav-link {
 .accordion_text {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
-  font-size: 14px;
-  padding: 18px;
 }
-
-.queue_element_title{
-  display: flex;
-  flex-direction: row;
+.queue-element-container{
+  width: 100%
 }
 
 .queue_element{
@@ -113,14 +107,17 @@ a.nav-link {
 }
 
 /* Paper Styling (right panel) */
-.Paper{
-  padding: 10px 10px 0 10px;
+.right-panel-container{
+  overflow-y: scroll;
 }
 
-.paper img{
-  display: block;
-  margin: 0 auto;
-  margin-top: 50px;
+.paper-image{
+  width: 75%;
+  margin-top: 20px;
+}
+
+.paper-img-container{
+  text-align: center;
 }
 
 /* Split Screen CSS */
@@ -129,7 +126,6 @@ a.nav-link {
   display: flex;
   flex-direction: row;
   height: 100vh;
-  padding: 15px 30px 0px 30px;
 }
 
 .gutter {
@@ -148,14 +144,20 @@ a.nav-link {
   display: grid;
   grid-gap: 2px;
   text-align: center;
+  margin: 0 auto;
 }
 
 .grid_legend{
   margin-top: 10px;
 }
 
+.grid-controls{
+  padding: 20px 5px;
+}
+
 .legend-container{
   list-style: none;
+  padding: 3px;
 }
 
 .grid-item{
@@ -210,6 +212,19 @@ a.nav-link {
   padding: 0 15px;
 }
 
-.preferences-legend{
-  margin-bottom: 100px;
+.preferences-container{
+  margin-top: 40px;
+  padding: 20px 5px;
+}
+
+.font-size-dropdown{
+  margin-left: 15px;
+}
+
+.color-preferences-container{
+  margin-top: 30px;
+}
+
+.color-picker{
+  margin-left: 150px;
 }

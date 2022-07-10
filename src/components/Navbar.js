@@ -20,9 +20,9 @@ export default function Header() {
           >
             <NavDropdown title="Settings" id="navbarScrollingDropdown">
               <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
-              <NavDropdown.Item href="#action3">Change Password</NavDropdown.Item>
+              <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="#action4">Log Out</NavDropdown.Item>
+              <NavDropdown.Item as={NavLink} to="logout">Log Out</NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

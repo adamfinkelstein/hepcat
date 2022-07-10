@@ -5,7 +5,7 @@ import Queue from './Queue'
 import Paper from './Paper'
 import Grid from './Grid'
 import {useState} from 'react'
-import GridControls from './PaperControls';
+import GridControls from './GridControls';
 import ColorsDisplay from './ColorsDisplay';
 
 export default function Body(){
@@ -17,7 +17,6 @@ export default function Body(){
     const [gridSize, setGridSize] = useState(60);
 
     function createGridCSS(){
-        console.log("space: " + (gridSize*window.innerHeight / 100))
         return "repeat(" + (Math.floor(gridSize / 4)) + ", 40px)"
     }
 
@@ -34,25 +33,28 @@ export default function Body(){
                     onDrag={(sizes) => {
                         setGridSize(sizes[1])
                     }}
-                    minSize={[350, 500]}
+                    minSize={[450, 500]}
                     >
-                        {queue.length ? <Queue/> : <div>No papers in queue.</div>}
+                        <Container>
+                            {queue.length ? <Queue/> : <div>No papers in queue.</div>}
+                        </Container>
                         <Container>
                             <GridControls showingStickie={showingStickie} setShowingStickie={setShowingStickie} 
                                           showGrid={showGrid} setShowGrid={setShowGrid}/>
-                            {showGrid || queue.length == 0 ? 
-                            <div>
-                                <div className="grid-container" style={{gridTemplateColumns: createGridCSS()}}>
-                                    <Grid showingStickie={showingStickie}/>
-                                </div> 
-                                <hr style={{ borderTop: "3px solid #000", borderRadius: "2px"}}/>
-                                <div className="grid-container" style={{gridTemplateColumns: createGridCSS()}}>
-                                    <Grid showingStickie={showingStickie}/>
+                            <div className="right-panel-container">
+                                {showGrid || queue.length == 0 ? 
+                                <div>
+                                    <div className="grid-container" style={{gridTemplateColumns: createGridCSS()}}>
+                                        <Grid showingStickie={showingStickie}/>
+                                    </div> 
+                                    <hr style={{ borderTop: "3px solid #000", borderRadius: "2px"}}/>
+                                    <div className="grid-container" style={{gridTemplateColumns: createGridCSS()}}>
+                                        <Grid showingStickie={showingStickie}/>
+                                    </div>
+                                    <ColorsDisplay/>
                                 </div>
-                                <ColorsDisplay/>
+                                : <Paper/>}
                             </div>
-                            
-                            : <Paper/>}
                         </Container>
                     </Split>
             )}

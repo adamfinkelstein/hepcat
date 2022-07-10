@@ -4,7 +4,7 @@ import Body from './components/Body.js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainPage from './pages/MainPage.js'
 import AppContext from './contexts/AppContext.js'
-import ColorsContext from './contexts/ColorContext.js'
+import PreferencesContext from './contexts/PreferencesContext'
 import PreferencesPage from "./pages/PreferencesPage.js";
 
 export default function App() {
@@ -12,7 +12,7 @@ export default function App() {
   return (
     <Container fluid className="App">
       <BrowserRouter>
-        <ColorsContext>
+        <PreferencesContext>
           <AppContext>
             <Navbar/>
             <Routes>
@@ -21,7 +21,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AppContext>
-        </ColorsContext>
+        </PreferencesContext>
       </BrowserRouter>
     </Container>
   );

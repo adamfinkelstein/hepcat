@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SketchPicker } from 'react-color';
 import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
-import { useColors, useChangeColor, useDefaultColors } from '../contexts/ColorContext';
+import { useColors, useChangeColor, useDefaultColors, useTextColors, useChangeTextColors } from '../contexts/PreferencesContext';
 import { SketchPresetColors } from 'react-color/lib/components/sketch/SketchPresetColors';
 import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
@@ -10,48 +10,34 @@ import ColorsDisplay from './ColorsDisplay';
 export default function ColorPreferences(){
 
   let colors = useColors()
-  console.log(colors);
   let changeColor = useChangeColor()
   let defaultColors = useDefaultColors()
+  let textColors = useTextColors()
+  let changeTextColors = useChangeTextColors()
   let [pickingFor, setPickingFor] = useState("reject")
 
   let handleChangeComplete = (type, color) => {
-    switch(type) {
-        case "reject":
-            changeColor("reject", color.hex);
-            break;
-        case "conference":
-            changeColor("conference", color.hex);
-            break;
-        case "journal":
-            changeColor("journal", color.hex);
-            break;
-        case "tabled":
-            changeColor("tabled", color.hex);
-            break;
-        case "untouched":
-            changeColor("untouched", color.hex);
-            break;
-        case "current":
-            changeColor("current", color.hex);
-            break;
-        default:
-          // code block
-      }
-    };
+    let textBlack = color.hsv.v > 0.5 ? true : false; 
+    changeTextColors(type, textBlack)
+    changeColor(type, color.hex);
+  };
 
     return (
         // Color Preferences
-        <Container>
+        <Container className="color-preferences-container">
+            <h3>Color Preferences</h3>
             <Stack direction='horizontal'>
                 <ColorsDisplay clickable setPickingFor={setPickingFor}/>
                 <SketchPicker
                     disableAlpha
                     color={ colors[pickingFor] }
                     onChangeComplete={ (color) => handleChangeComplete(pickingFor, color) }
+                    className="color-picker"
                 />
             </Stack>
-            <button onClick={() => defaultColors()}>Go Back to Defaults</button>
+            <Container>
+                <button onClick={() => defaultColors()}>Go Back to Default Colors</button>
+            </Container>
         </Container>
     );
 

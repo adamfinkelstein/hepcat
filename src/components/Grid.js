@@ -20,7 +20,7 @@ export default function Grid({showingStickie}){
                 className += " current"
             }
             else{
-                switch(paperStatus.status){
+                switch(paperStatus){
                     case "U":
                         className += " untouched"
                         break;

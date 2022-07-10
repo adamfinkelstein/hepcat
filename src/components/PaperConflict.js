@@ -5,6 +5,7 @@ export default function PaperConflict({conflicts}){
     
     return(
         <Container className="PaperConflict">
+            Conflicted:
             <ul>
             {
                 conflicts.map((conflict, index) => {

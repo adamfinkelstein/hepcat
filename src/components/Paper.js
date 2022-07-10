@@ -9,17 +9,17 @@ export default function Paper(){
     const current = currentPaper.queue_order
 
     return(
-        <Container className="Paper">
+        <Container className="Paper custom-font-size">
 
             <div>
             {(currentPaper === undefined) ? (
                 <p>No data.</p>
             ) : (
                 <div>
-                    <h2>Q{current}: {currentPaper.submission_id}: {currentPaper.title}</h2>
+                    <h2 className='paper-title'>Q{current}: {currentPaper.title}</h2>
                     <br></br>
                     <p>{currentPaper.abstract}</p>
-                    <img src={currentPaper.thumbnail}></img>
+                    <div className='paper-img-container'><img src={currentPaper.thumbnail} className="paper-image"></img></div>
                 </div>
             )}
             </div>            

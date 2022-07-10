@@ -1,6 +1,6 @@
 import { Container } from "react-bootstrap";
 import Stack from 'react-bootstrap/Stack'
-import { useColors } from "../contexts/ColorContext";
+import { useColors } from "../contexts/PreferencesContext";
 
 export default function ColorsDisplay({clickable, setPickingFor}){
 
@@ -16,7 +16,7 @@ export default function ColorsDisplay({clickable, setPickingFor}){
     }
 
     return(
-        <Container className="grid_legend">
+        <div className="grid_legend">
             <ul>
             {        
                 Object.keys(colors).map(key => {
@@ -33,6 +33,6 @@ export default function ColorsDisplay({clickable, setPickingFor}){
                 })
             }
             </ul>
-        </Container>
+        </div>
     )
 }
