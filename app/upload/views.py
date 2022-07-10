@@ -85,6 +85,7 @@ def delete_all_papers():
     dump_users_papers_and_conflicts('After paper deletion')
 
 def delete_all_reviews():
+    delete_all_history() # need to delete history before reviews
     dump_users_papers_and_conflicts('Before review deletion')
     num_deleted = Review.query.delete()
     db.session.commit()
@@ -92,9 +93,21 @@ def delete_all_reviews():
     dump_users_papers_and_conflicts('After review deletion')
 
 def delete_all_history():
+    dump_users_papers_and_conflicts('Before History deletion')
     num_deleted = History.query.delete()
     db.session.commit()
     print(f'Deleted {num_deleted} history entries.')
+    dump_users_papers_and_conflicts('Before History deletion')
+
+# this is before history upload, which is just for debugging
+def delete_non_bbs_history():
+    dump_users_papers_and_conflicts('Before non-BBS History deletion')
+    bbs_context = int(HistoryContext.BBS)
+    # Note that filter() allows for != (but filter_by does not allow it)
+    num_deleted = History.query.filter(History.context_enum != bbs_context).delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} history entries.')
+    dump_users_papers_and_conflicts('Before non-BBS History deletion')
 
 def delete_all_summaries():
     papers = Paper.query.all()
@@ -356,7 +369,7 @@ def insert_review_rows(rows):
 
 # Submission ID,Seconds,Context,Status
 def insert_history_rows(rows):
-    delete_all_history()
+    delete_non_bbs_history() # delete history since BBS
     now = datetime.now()
     count = 0
     for row in rows:
@@ -405,6 +418,7 @@ csvFunctions = {
 
 csvDependence = {
     'users' : ['conflicts'],
+    'reviews' : ['history'],
     'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'summaries'] }
 
 def is_csv(filename):
