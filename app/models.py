@@ -200,7 +200,7 @@ class PaperSchema(ma.Schema):
 
 class HistorySchema(ma.Schema):
     class Meta:
-        fields = ("paper_id", "when", "context", "status")
+        fields = ("when", "context", "status")
 
 ######################
 # Global queue vars

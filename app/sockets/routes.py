@@ -2,7 +2,7 @@ import os
 from flask_socketio import emit, disconnect
 from flask_login import current_user
 from .. import socketio, db, allow_cors
-from ..models import User, Paper, UserSchema, PaperSchema, HistorySchema
+from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema
 from ..orderq import order_q
 
 user_schema = UserSchema()
@@ -48,7 +48,7 @@ def get_queue():
                     .filter(Paper.nid <= end)\
                     .order_by(Paper.nid).all()
     paper_list = []
-
+    plenary_context = int(HistoryContext.Plenary)
     for index,paper in enumerate(papers):
         paper_dump = paper_schema.dump(paper)
         paper_dump['queue_order'] = index+1
@@ -56,7 +56,9 @@ def get_queue():
         for user in paper.conf_users:
             user_dump = user_schema.dump(user)
             conflicts.append(user_dump)
-        history_dump = history_schema.dump(paper.history)
+        pid = paper.id
+        plenary_history = History.query.filter_by(paper_id=pid).filter_by(context_enum=plenary_context).all()
+        history_dump = history_schema.dump(plenary_history)
         paper_dump['conflicts'] = conflicts
         paper_dump['history'] = history_dump
         paper_list.append(paper_dump)

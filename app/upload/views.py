@@ -281,30 +281,38 @@ def journal_only(conference_scores):
     nz = non_zero_scores(conference_scores)
     return len(nz) > 0
 
-def scores_to_sort_score(conference_scores,journal_scores):
+def all_scores_to_sort_score(conference_scores,journal_scores):
     journal_ave = average_scores(journal_scores)
     conference_ave = average_scores(conference_scores)
     if journal_only(conference_scores):
         return journal_ave
     return max(conference_ave, journal_ave)
 
+def all_scores_to_string(conference_scores,journal_scores,consensus_recs):
+    score_string = 'c' + scores_to_string(conference_scores) + \
+                   'j' + scores_to_string(journal_scores) + \
+                   'bbs: ' + get_consensus_code(consensus_recs)
+    return score_string
+
+def reviews_to_score_lists(reviews):
+    conference_scores = []
+    journal_scores = []
+    consensus_recs = []
+    for review in reviews:
+        conference_scores.append( review.conference )
+        journal_scores.append( review.journal )
+        if review.role >= 1 and review.role <= 2: # primary or secondary
+            consensus_recs.append(review.consensus)
+    return conference_scores,journal_scores,consensus_recs
+
 def papers_set_all_scores_and_status_from_reviews():
     papers = Paper.query.all()
     for paper in papers:
-        conference_scores = []
-        journal_scores = []
-        consensus_recs = []
         reviews = paper.reviews.order_by(Review.role)
-        for review in reviews:
-            conference_scores.append( review.conference )
-            journal_scores.append( review.journal )
-            if review.role >= 1 and review.role <= 2: # primary or secondary
-                consensus_recs.append(review.consensus)
-        paper.sort_score = scores_to_sort_score(conference_scores,journal_scores)
-        all_scores = scores_to_string(conference_scores) + \
-                     scores_to_string(journal_scores) + ' ' + \
-                     get_consensus_code(consensus_recs)
-        paper.all_scores = all_scores
+        conference_scores,journal_scores,consensus_recs = \
+            reviews_to_score_lists(reviews)
+        paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
+        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_recs)
         db.session.add(paper)
     db.session.commit()
 
