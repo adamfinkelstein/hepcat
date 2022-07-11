@@ -14,8 +14,8 @@ export default function TextPreferences(){
                 <h5>Choose font size</h5>
                 <DropdownButton id="dropdown-item-button" title={fontInfo["currentFontSize"]} className="font-size-dropdown">
                     {
-                        Object.keys(fontInfo["fontSizes"]).map((fontSizeKey) => {
-                            return <Dropdown.Item as="button" onClick={() => changeFontSize(fontSizeKey)}>{fontSizeKey}</Dropdown.Item>
+                        Object.keys(fontInfo["fontSizes"]).map((fontSizeKey, index) => {
+                            return <Dropdown.Item key={index} as="button" onClick={() => changeFontSize(fontSizeKey)}>{fontSizeKey}</Dropdown.Item>
                         })
                     }
                 </DropdownButton>

@@ -20,6 +20,7 @@ def before_main_request():
         return redirect(url_for('auth.login'))
 
 # @main.route("/chat/")
+@main.route("/preferences/")
 @main.route("/")
 @login_required
 def send_static_index():
@@ -29,3 +30,4 @@ def send_static_index():
 @main.route("/test/")
 def test():
     return "this is a test"
+    

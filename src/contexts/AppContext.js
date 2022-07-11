@@ -73,52 +73,15 @@ export default function AppContext({children}){
       }
     };
   }, [socket]);
-  /*
-  useEffect(() => {
-    fetch("http://127.0.0.1:5000/papers", {
-    })
-    .then(res => {
-      return res.json()
-  })
-    .then(papers => {
-      let status = []
-      for(let i = 0; i < papers.length; i++){
-        let randomStickie = Math.random()
-        let randomStatus = Math.round(Math.random()*4)
-        let statusPaper, stickie;
-        switch(randomStatus){
-          case 0:
-            statusPaper = "U"
-            break;
-          case 1:
-            statusPaper = "R"
-            break;
-          case 2:
-            statusPaper = "C"
-            break;
-          case 3:
-            statusPaper = "J"
-            break;
-          case 4:
-            statusPaper = "T"
-            break;
-          case 5:
-            statusPaper = "Q"
-            break;
-          default:
-            statusPaper = "U"
-        }
-        status.push({"status": statusPaper, "stickie": (randomStickie > 0.5 ? true : false)})
-      }
-      setStatus(status)
-      setPapers(papers)
-    })
-    .catch(err => {
-      console.log(err);
-    })
-  }, [])
-*/
 
+  function socketEmit(message, data){
+    if(socket && socket.emit){
+      if(data) socket.emit(message, data)
+      else socket.emit(message)
+    }else{
+      console.log("socket doesnt exist, message not sent.")
+    }
+  }
 
   return(
       <UserContext.Provider value={user}>
@@ -130,7 +93,7 @@ export default function AppContext({children}){
                 "queueCurrent": queueCurrent, // nid
                 "setUserCurrent": setUserCurrent}
               }>
-              <SocketEmitContext.Provider value={socket.emit}>
+              <SocketEmitContext.Provider value={socketEmit}>
                 {children}
               </SocketEmitContext.Provider>
             </GlobalsContext.Provider>

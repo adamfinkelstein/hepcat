@@ -17,7 +17,8 @@ export default function ColorPreferences(){
   let [pickingFor, setPickingFor] = useState("reject")
 
   let handleChangeComplete = (type, color) => {
-    let textBlack = color.hsv.v > 0.5 ? true : false; 
+      console.log(color)
+    let textBlack = color.hsl.l > 0.55 ? true : false; 
     changeTextColors(type, textBlack)
     changeColor(type, color.hex);
   };
