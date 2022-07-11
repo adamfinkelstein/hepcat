@@ -44,9 +44,7 @@ export default function Queue(){
             }
             <Container className="expand-bar">
                 <Stack direction="horizontal">
-                    <button type="button" className="btn btn-success" onClick={() => {
-                        window.location.href = '/auth/logout'}
-                    }>Current: {globals.queueCurrent + 1} of {queue.length}</button>
+                    <span>Current: {globals.queueCurrent + 1} of {queue.length}</span>
                     <div className="expand-buttons">
                         <button onClick={() => setQueueExpanded(allOpen)} disabled={queueExpanded.every(s => s === "active")}
                                 type="button" className="btn btn-light expand-button"> 

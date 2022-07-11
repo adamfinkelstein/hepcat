@@ -4,6 +4,7 @@ import socketIOClient from "socket.io-client";
 const UserContext = React.createContext()
 const QueueContext = React.createContext()
 const GridContext = React.createContext()
+const SocketEmitContext = React.createContext()
 const GlobalsContext = React.createContext() // holds user's and queue's current paper and more
 
 export function useUser(){
@@ -20,6 +21,10 @@ export function useGrid(){
 
 export function useGlobals(){
   return useContext(GlobalsContext)
+}
+
+export function useSocketEmitContext(){
+  return useContext(SocketEmitContext)
 }
 
 export default function AppContext({children}){
@@ -125,7 +130,9 @@ export default function AppContext({children}){
                 "queueCurrent": queueCurrent, // nid
                 "setUserCurrent": setUserCurrent}
               }>
-              {children}
+              <SocketEmitContext.Provider value={socket.emit}>
+                {children}
+              </SocketEmitContext.Provider>
             </GlobalsContext.Provider>
           </GridContext.Provider>
         </QueueContext.Provider>
