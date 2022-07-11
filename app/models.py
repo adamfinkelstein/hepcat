@@ -270,9 +270,9 @@ def ensure_admin():
     # Add Test Users
     email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
     passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
-    ensure_user(email, 'Test1', 'User1', 'Test', passwd)
+    ensure_user(email, 'Adam', 'Finkelstein', 'Admin', passwd)
     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
-    ensure_user(email, 'Test2', 'User2', 'Test', passwd)
+    ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
     # Also init global queue variables, if needed
     ensure_gq()
