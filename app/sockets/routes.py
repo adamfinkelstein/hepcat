@@ -120,3 +120,14 @@ def io_request_papers(value):
     data = { 'papers': paper_list, 'requester': user_name }
     emit('papers', data, broadcast=True)
 
+@socketio.on('admin_prev_paper')
+def admin_prev_paper():
+    print('admin request for prev paper')
+
+@socketio.on('admin_next_paper')
+def admin_next_paper():
+    print('admin request for next paper')
+
+@socketio.on('admin_show_paper')
+def admin_show_paper():
+    print('admin request for show paper')
