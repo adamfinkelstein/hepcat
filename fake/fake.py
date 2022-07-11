@@ -225,6 +225,7 @@ def fake_history(recs, fname):
     random.shuffle(papers)
     keep = int(len(papers) * 0.7) # keep 70%
     papers = papers[:keep]
+
     dups = papers[:] # shallow copy
     random.shuffle(dups)
     keep = int(len(papers) * 0.4) # keep 40%
@@ -238,7 +239,7 @@ def fake_history(recs, fname):
         context = random.choice(['Sticky','Plenary'])
         line = f'{pid},-{seconds},{context},{status}\n'
         lines.append(line)
-    lines.reverse()
+    lines.reverse() # this puts them in time order
     output = 'Submission ID,Seconds,Context,Status\n'
     output += ''.join(lines)
     write_file(fname, output)

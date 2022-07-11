@@ -12,7 +12,7 @@ from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, Label, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
-    ### ??? Later: return here if not in special mode for debugging uploads
+    ### ??? Later: return here, if not in special mode for debugging uploads
     num_users = User.query.count()
     num_papers = Paper.query.count()
     num_reviews = Review.query.count()
@@ -97,7 +97,7 @@ def delete_all_history():
     num_deleted = History.query.delete()
     db.session.commit()
     print(f'Deleted {num_deleted} history entries.')
-    dump_users_papers_and_conflicts('Before History deletion')
+    dump_users_papers_and_conflicts('After History deletion')
 
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
@@ -107,7 +107,7 @@ def delete_non_bbs_history():
     num_deleted = History.query.filter(History.context_enum != bbs_context).delete()
     db.session.commit()
     print(f'Deleted {num_deleted} history entries.')
-    dump_users_papers_and_conflicts('Before non-BBS History deletion')
+    dump_users_papers_and_conflicts('After non-BBS History deletion')
 
 def delete_all_summaries():
     papers = Paper.query.all()
@@ -254,13 +254,13 @@ def review_str_to_num(s):
         return int(s)
     return 0
 
-def consensus_num_to_str(num):
-    if num < 0:
-        return 'R'
-    elif num == 0:
-        return 'T'
-    else:
-        return 'C' # should be C or J!!! but how to know?!?
+# def consensus_num_to_str(num):
+#     if num < 0:
+#         return 'R'
+#     elif num == 0:
+#         return 'T'
+#     else:
+#         return 'C' # should be C or J!!! but how to know?!?
 
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'', 1:'a', 3:'A', 5:'_A_'}
 
@@ -301,10 +301,10 @@ def all_scores_to_sort_score(conference_scores,journal_scores):
         return journal_ave
     return max(conference_ave, journal_ave)
 
-def all_scores_to_string(conference_scores,journal_scores,consensus_recs):
+def all_scores_to_string(conference_scores,journal_scores,consensus_code):
     score_string = 'c' + scores_to_string(conference_scores) + \
-                   'j' + scores_to_string(journal_scores) + \
-                   'bbs: ' + get_consensus_code(consensus_recs)
+                   ' j' + scores_to_string(journal_scores) + \
+                   ' bbs: ' + consensus_code
     return score_string
 
 def reviews_to_score_lists(reviews):
@@ -319,20 +319,32 @@ def reviews_to_score_lists(reviews):
     return conference_scores,journal_scores,consensus_recs
 
 def papers_set_all_scores_and_status_from_reviews():
+    now = datetime.now()
     papers = Paper.query.all()
     for paper in papers:
+        # add score summaries to paper
         reviews = paper.reviews.order_by(Review.role)
         conference_scores,journal_scores,consensus_recs = \
             reviews_to_score_lists(reviews)
+        consensus_code = get_consensus_code(consensus_recs)
         paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
-        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_recs)
+        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_code)
         db.session.add(paper)
+
+        # add BBS history
+        then = now - timedelta(days = 7) # pretend this is a week ago (for debug)
+        context_enum = int(HistoryContext.BBS)
+        history = History(paper=paper,
+                        when=then,
+                        context_enum=context_enum,
+                        status=consensus_code)
+        db.session.add(history)
+
     db.session.commit()
 
 # Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 def insert_review_rows(rows):
     delete_all_reviews()
-    now = datetime.now()
     count = 0
     for row in rows:
         if len(row) < 4:
@@ -344,7 +356,6 @@ def insert_review_rows(rows):
             role_num = review_role_to_num(role)
             conference = review_str_to_num(conference)
             journal = review_str_to_num(journal)
-            # consensus = review_str_to_num(consensus)
             review = Review(paper=paper,
                             role=role_num,
                             conference=conference,
@@ -352,17 +363,6 @@ def insert_review_rows(rows):
                             consensus=consensus)
             db.session.add(review)
             count += 1
-
-            # add history
-            then = now - timedelta(days = 7) # a week ago
-            context_enum = int(HistoryContext.BBS)
-            # status = consensus_num_to_str(consensus)
-            history = History(paper=paper,
-                            when=then,
-                            context_enum=context_enum,
-                            status=consensus)
-            db.session.add(history)
-
     db.session.commit()
     papers_set_all_scores_and_status_from_reviews()
     return count
@@ -376,10 +376,14 @@ def insert_history_rows(rows):
         if len(row) < 4:
             continue
         sid,secs,context,status = row
-        paper = Paper.query.filter_by(sid=sid).first()
+        nid = sid_to_num(sid)
+        secs = int(secs)
+        paper = Paper.query.filter_by(nid=nid).first()
         if paper:
-            then = now - timedelta(seconds = int(secs))
+            then = now - timedelta(seconds=secs)
             context_enum = int(HistoryContext[context])
+            if not context_enum:
+                print(f'adding history for paper {paper.id} and zero context')
             history = History(paper=paper,
                             when=then,
                             context_enum=context_enum,
