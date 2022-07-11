@@ -24,7 +24,7 @@ def get_user_or_disconnect():
         return current_user
     if allow_cors: # hack to allow React to run in a different port without a login
         # user = User.query.first()
-        user = User.query.order_by(func.random()) # for PostgreSQL, SQLite
+        user = User.query.order_by(func.random()).first() # for PostgreSQL, SQLite
         return user
     print('user is not logged in: forcing disconnect here.')
     disconnect()
