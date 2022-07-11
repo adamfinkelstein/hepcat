@@ -121,6 +121,10 @@ def paper(sidnum):
     debug_output = 'No matching paper found.'
     if paper:
         debug_output = debug_orm_to_string(paper)
+        debug_output += '\nHistory:\n\n'
+        history = paper.history
+        for h in history:
+            debug_output += debug_orm_to_string(h)
     return render_debug(debug_title, debug_output)
 
 @debug.route('/paper_conflicts/<sidnum>')
