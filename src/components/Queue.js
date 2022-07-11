@@ -1,13 +1,15 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack'
-import {useQueue, useGlobals} from '../contexts/AppContext'
+import {useQueue, useGlobals, useUser} from '../contexts/AppContext'
 import QueueElement from './QueueElement.js'
 import {useState} from 'react'
+import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue(){
  
     const queue = useQueue()
     const globals = useGlobals()
+    const user = useUser()
 
     let allClosed = []
     for(let i = 0; i < queue.length; i++){
@@ -36,9 +38,15 @@ export default function Queue(){
 
     return(
         <Container className="Queue">
+            {
+                user && user.role_name == "Admin" &&
+                <AdminQueueControls/>
+            }
             <Container className="expand-bar">
                 <Stack direction="horizontal">
-                    <button type="button" className="btn btn-success">Current: {globals.queueCurrent + 1} of {queue.length}</button>
+                    <button type="button" className="btn btn-success" onClick={() => {
+                        window.location.href = '/auth/logout'}
+                    }>Current: {globals.queueCurrent + 1} of {queue.length}</button>
                     <div className="expand-buttons">
                         <button onClick={() => setQueueExpanded(allOpen)} disabled={queueExpanded.every(s => s === "active")}
                                 type="button" className="btn btn-light expand-button"> 

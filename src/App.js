@@ -6,6 +6,7 @@ import MainPage from './pages/MainPage.js'
 import AppContext from './contexts/AppContext.js'
 import PreferencesContext from './contexts/PreferencesContext'
 import PreferencesPage from "./pages/PreferencesPage.js";
+import SetQueuePage from "./pages/SetQueuePage.js";
 
 export default function App() {
   
@@ -18,6 +19,7 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<MainPage/>}/>
                 <Route path="/preferences" element={<PreferencesPage/>}/>
+                <Route path="/set_queue" element={<SetQueuePage/>}/>
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AppContext>
