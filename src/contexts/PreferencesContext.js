@@ -5,12 +5,20 @@ const defaultColors = {"reject": "#f00", "conference": "#00f", "journal": "#0f0"
                       "untouched": "#ef0", "current": "#0af"}
 const defaultTextColors = {"reject": true, "conference": true, "journal": true, "tabled": true, 
                           "untouched": true, "current": true}
+                          
+const fontSizes = {
+                    "Extra Small": 0.70,
+                    "Small": 0.85,
+                    "Medium": 1.0,
+                    "Large": 1.15,
+                    "Extra Large": 1.30
+                  }
 
 const ColorsContext = React.createContext()
 const ChangeColorsContext = React.createContext()
 const TextColorsContext = React.createContext()
 const ChangeTextColorsContext = React.createContext()
-const FontSizeContext = React.createContext()
+const FontInfoContext = React.createContext()
 const ChangeFontSizeContext = React.createContext()
 
 const DefaultColorsContext = React.createContext()
@@ -35,8 +43,8 @@ export function useDefaultColors(){
     return useContext(DefaultColorsContext)
 }
 
-export function useFontSize(){
-  return useContext(FontSizeContext)
+export function useFontInfo(){
+  return useContext(FontInfoContext)
 }
 
 export function useChangeFontSize(){
@@ -80,7 +88,7 @@ export default function PreferencesContext({children}){
           color:${textColors[colorKey] ? "#000" : "#fff"}}`);
           cssStyle.appendChild(prefRule);
       })
-      var fontSizeRule = document.createTextNode(`.custom-font-size{font-size:${100*(fontSize == "Medium" ? 1 : (fontSize == "Small" ? 0.85 : 1.15))}%}`)
+      var fontSizeRule = document.createTextNode(`.custom-font-size{font-size:${100*fontSizes[fontSize]}%}`)
       cssStyle.appendChild(fontSizeRule);
       console.log(cssStyle)
       document.getElementsByTagName("head")[0].appendChild(cssStyle);
@@ -110,11 +118,11 @@ export default function PreferencesContext({children}){
             <DefaultColorsContext.Provider value={changeToDefaultColors}>
               <TextColorsContext.Provider value={textColors}>
                 <ChangeTextColorsContext.Provider value={changeTextColors}>
-                  <FontSizeContext.Provider value={fontSize}>
+                  <FontInfoContext.Provider value={{"currentFontSize": fontSize, "fontSizes": fontSizes}}>
                     <ChangeFontSizeContext.Provider value={setFontSize}>
                       {children}
                     </ChangeFontSizeContext.Provider>
-                  </FontSizeContext.Provider>
+                  </FontInfoContext.Provider>
                 </ChangeTextColorsContext.Provider>
               </TextColorsContext.Provider>
             </DefaultColorsContext.Provider>
