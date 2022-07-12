@@ -2,6 +2,7 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import {useState} from 'react'
 import {useFlasher} from '../contexts/FlasherContext'
+import {useSocketEmit} from '../contexts/AppContext'
 import Alert from 'react-bootstrap/Alert';
 import Collapse from 'react-bootstrap/Collapse';
 
@@ -13,6 +14,7 @@ export default function ChangePasswordPage(){
     let visible = flasher["visible"]
     let hideFlash = flasher["hideFlash"];
     let flashMessage = flasher["flashMessage"]
+    let emit = useSocketEmit()
 
     function handleSubmit(event){
         event.preventDefault();
@@ -28,6 +30,7 @@ export default function ChangePasswordPage(){
           }
         console.log("changing password to " + password)
         flash("You have successfully changed your password", "success")
+        emit("user_change_password", password)
     }
 
     function handleInputChange(event){

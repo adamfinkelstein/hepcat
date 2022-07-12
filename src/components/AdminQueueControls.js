@@ -1,11 +1,11 @@
 import Stack from "react-bootstrap/Stack"
-import { useGlobals, useSocketEmitContext } from "../contexts/AppContext"
+import { useGlobals, useSocketEmit } from "../contexts/AppContext"
 import DropdownButton from "react-bootstrap/DropdownButton"
 import Dropdown from "react-bootstrap/Dropdown"
 import {useState} from 'react'
 
 export default function AdminQueueControls(){
-    let socketEmit = useSocketEmitContext()
+    let socketEmit = useSocketEmit()
     let globals = useGlobals()
     let [newStatus, setNewStatus] = useState("Reject")
     return(
@@ -29,10 +29,11 @@ export default function AdminQueueControls(){
                     }}>
                 Next &gt;
             </button>
-            <DropdownButton id="dropdown-item-button" title={newStatus} className="new-status-dropdown">
+            <DropdownButton id="dropdown-item-button" title={newStatus} className={"new-status-dropdown" + " " + newStatus.toLowerCase()}>
                 {
                     ["Reject", "Conference", "Journal", "Table"].map((newStatus, index) => {
-                        return <Dropdown.Item key={index} as="button" onClick={() => setNewStatus(newStatus)}>{newStatus}</Dropdown.Item>
+                        return <Dropdown.Item key={index} as="button" 
+                                              onClick={() => setNewStatus(newStatus)}>{newStatus}</Dropdown.Item>
                     })
                 }
             </DropdownButton>
