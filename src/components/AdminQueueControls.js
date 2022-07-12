@@ -25,7 +25,7 @@ export default function AdminQueueControls(){
             </button>
             <button
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
-                        socketEmit("admin_show_paper")
+                        socketEmit("admin_show_current")
                     }}>
                 Next &gt;
             </button>

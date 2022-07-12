@@ -236,7 +236,7 @@ def fake_history(recs, fname):
     for pid in papers:
         seconds += random.randrange(100,200)
         status = recs[pid]
-        context = random.choice(['Sticky','Plenary'])
+        context = random.choice(['Stickie','Plenary'])
         line = f'{pid},-{seconds},{context},{status}\n'
         lines.append(line)
     lines.reverse() # this puts them in time order

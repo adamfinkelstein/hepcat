@@ -46,7 +46,7 @@ export default function Grid({showingStickie}){
     }
 
     return(
-        grid.map((gridElem, index) => {
+        grid.above.map((gridElem, index) => {
             return <div key={index} className={gridClass(gridElem)}>{gridElem.nid}</div>
         })
     )

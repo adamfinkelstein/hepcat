@@ -96,7 +96,7 @@ export default function SetQueue(){
                     <div key={`inline-checkbox`} className="mb-4">
                         <Form.Check
                             inline
-                            label="Sticky Only"
+                            label="Stickie Only"
                             name="group1"
                             type="checkbox"
                             id={`inline-checkbox-1`}

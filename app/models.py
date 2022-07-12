@@ -14,7 +14,7 @@ from . import db, ma, set_gq, login_manager
 
 class HistoryContext(IntEnum):
     BBS = 0
-    Sticky = 1
+    Stickie = 1
     Plenary = 2
     length = 3
 
@@ -24,10 +24,10 @@ class HistoryContext(IntEnum):
 # for i in range(HistoryContext.length):
 #     print(i,HistoryContext(i).name)
 # 0 BBS
-# 1 Sticky
+# 1 Stickie
 # 2 Plenary
 #
-# name = 'Sticky'
+# name = 'Stickie'
 # print(int(HistoryContext[name]))
 
 ######################

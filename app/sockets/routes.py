@@ -20,7 +20,7 @@ def get_react_env_vars():
             vars[item] = value
     return vars
 
-def get_user_or_disconnect():
+def get_user_or_force_disconnect():
     if current_user and not current_user.is_anonymous:
         return current_user
     if allow_cors: # hack to allow React to run in a different port without a login
@@ -33,18 +33,34 @@ def get_user_or_disconnect():
     disconnect()
     return None
 
-def get_grid_dump():
-    papers = Paper.query.all()
+def get_grid_dump_bar(above):
+    bar = 0.0
+    if above:
+        papers = Paper.query.filter(Paper.sort_score >= bar).order_by(Paper.sort_score.desc()).all()
+    else:
+        papers = Paper.query.filter(Paper.sort_score < bar).order_by(Paper.sort_score.desc()).all()
     # later: order them here
-    grid_dump = []
+    papers_dump = []
+    context_stickie = int(HistoryContext.Stickie)
+    context_plenary = int(HistoryContext.Plenary)
     for paper in papers:
+        status = 'U' # Unseen
+        stickie = False
         history = list(paper.history)
-        if len(history):
-            status = history[-1].status # later fix this up!
-        else:
-            status = 'U'
-        paper_dump = { 'nid': paper.nid, 'status': status }
-        grid_dump.append(paper_dump)
+        for h in history:
+            if h.context_enum == context_stickie:
+                stickie = True
+            elif h.context_enum == context_plenary:
+                stickie = False
+                status = h.status
+        paper_dump = { 'nid': paper.nid, 'status': status, 'stickie': stickie }
+        papers_dump.append(paper_dump)
+    return papers_dump
+
+def get_grid_dump():
+    above = get_grid_dump_bar(True)
+    below = get_grid_dump_bar(False)
+    grid_dump = { 'above': above, 'below': below }
     return grid_dump
 
 def get_queue():
@@ -54,7 +70,7 @@ def get_queue():
                     .filter(Paper.nid <= end)\
                     .order_by(Paper.nid).all()
     paper_list = []
-    plenary_context = int(HistoryContext.Plenary)
+    context_plenary = int(HistoryContext.Plenary)
     for index,paper in enumerate(papers):
         paper_dump = paper_schema.dump(paper)
         paper_dump['queue_order'] = index+1
@@ -63,7 +79,7 @@ def get_queue():
             user_dump = user_schema.dump(user)
             conflicts.append(user_dump)
         pid = paper.id
-        plenary_history = History.query.filter_by(paper_id=pid).filter_by(context_enum=plenary_context).all()
+        plenary_history = History.query.filter_by(paper_id=pid).filter_by(context_enum=context_plenary).all()
         history_dump = history_schema.dump(plenary_history)
         paper_dump['conflicts'] = conflicts
         paper_dump['history'] = history_dump
@@ -72,17 +88,18 @@ def get_queue():
 
 @socketio.on('connect')
 def io_connect():
-    user = get_user_or_disconnect()
+    user = get_user_or_force_disconnect()
     if not user:
         return
     print(f'{user.full_name} - client connected')
     user_dump = user_schema.dump(user)
     # config_vars = get_react_env_vars()
     grid_dump = get_grid_dump()
-    data = { 'user': user_dump, 'grid': grid_dump } # 'config': config_vars }
-    emit('welcome', data)
+    data = {'user': user_dump, 
+            'grid': grid_dump } # later: 'config': config_vars }
+    emit('server_welcome', data)
     data = get_queue()
-    emit('queue', data)
+    emit('server_set_queue', data)
 
 @socketio.on('disconnect')
 def io_disconnect():
@@ -90,35 +107,6 @@ def io_disconnect():
     if current_user and not current_user.is_anonymous:
         user_name = current_user.full_name
     print(f'{user_name} - client disconnected')
-
-@socketio.on('request_papers')
-def io_request_papers(value):
-    user_name = get_user_or_disconnect()
-    if not user_name:
-        return
-    parts = value.split('-')
-    start,end = (0,9999)
-    if parts[0]:
-        start = int(parts[0])
-    if len(parts) > 1 and parts[1]:
-        end = int(parts[1])
-    papers = Paper.query.filter(Paper.nid >= start)\
-                        .filter(Paper.nid <= end)\
-                        .order_by(Paper.nid).all()
-    ordered = order_q(papers)
-    paper_list = []
-    for paper in ordered:
-        paper_dump = paper_schema.dump(paper)
-        conflicts = []
-        for user in paper.conf_users:
-            user_dump = user_schema.dump(user)
-            conflicts.append(user_dump)
-        history_dump = history_schema.dump(paper.history)
-        paper_dump['conflicts'] = conflicts
-        paper_dump['history'] = history_dump
-        paper_list.append(paper_dump)
-    data = { 'papers': paper_list, 'requester': user_name }
-    emit('papers', data, broadcast=True)
 
 @socketio.on('admin_prev_paper')
 def admin_prev_paper():
@@ -128,6 +116,38 @@ def admin_prev_paper():
 def admin_next_paper():
     print('admin request for next paper')
 
-@socketio.on('admin_show_paper')
-def admin_show_paper():
+@socketio.on('admin_show_current')
+def admin_show_current():
     print('admin request for show paper')
+
+@socketio.on('admin_show_queue')
+def admin_show_queue(data):
+    print(f'admin request for show queue: {data.show} {data.message}')
+
+@socketio.on('admin_set_queue')
+def admin_set_queue():
+    print('admin request for set queue')
+
+@socketio.on('user_set_stickie')
+def user_set_stickie():
+    print('user request for set stickie')
+
+'''
+* server_queue_hide (broadcast with message)
+* server_set_queue
+    * default current paper: the first in queue
+    * can be just reply to admin 
+    * broadcasted on "show queue"
+* server_update_papers (from next button)
+    * current paper (qid, nid, status for pulldown and hide)
+    * prev paper (history, queue and grid status: color and clear sticky)
+    * current status (for pulldown)
+* server_update_stickie (QID and boolean)
+
+Note:
+* grid (and user) is sent with welcome
+
+Later add:
+* admin_queue_propbe
+* server_queue_length (from probe)
+'''

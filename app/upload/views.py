@@ -102,9 +102,9 @@ def delete_all_history():
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
     dump_users_papers_and_conflicts('Before non-BBS History deletion')
-    bbs_context = int(HistoryContext.BBS)
+    context_bbs = int(HistoryContext.BBS)
     # Note that filter() allows for != (but filter_by does not allow it)
-    num_deleted = History.query.filter(History.context_enum != bbs_context).delete()
+    num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
     db.session.commit()
     print(f'Deleted {num_deleted} history entries.')
     dump_users_papers_and_conflicts('After non-BBS History deletion')

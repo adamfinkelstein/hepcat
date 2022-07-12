@@ -62,14 +62,14 @@ export default function AppContext({children}){
 
     if (socket && 'on' in socket) {
       console.log('register welcome etc');
-      socket.on('welcome', receiveWelcome);
-      socket.on('queue', receiveQueue);
+      socket.on('server_welcome', receiveWelcome);
+      socket.on('server_set_queue', receiveQueue);
     }
 
     return () => {
       if (socket && 'off' in socket) {
-        socket.off('welcome', receiveWelcome);
-        socket.off('queue', receiveQueue);
+        socket.off('server_welcome', receiveWelcome);
+        socket.off('server_set_queue', receiveQueue);
       }
     };
   }, [socket]);
