@@ -38,7 +38,7 @@ export default function Queue(){
             }
             <Container className="expand-bar">
                 <Stack direction="horizontal">
-                    <span>Current: {globals.queueCurrent + 1} of {queue.length}</span>
+                    <span className='current-text'>Current: {globals.queueCurrent + 1} of {queue.length}</span>
                     <div className="expand-buttons">
                         {
                             !queueExpanded[0] && 

@@ -48,6 +48,10 @@ a.nav-link {
 .expand-button, .collapse-button{
   border: 1px solid black;
 }
+
+.current-text{
+  font-size: 25px;
+}
 /* Queue Item Styling */
 
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap");
@@ -94,6 +98,20 @@ a.nav-link {
   border: 1px solid black;
   padding: 10px 5px;
   cursor: pointer;
+}
+
+.AdminQueueControls{
+  margin-top: 15px;
+}
+
+.paper-change-button{
+  margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid black;
+}
+
+.new-status-dropdown{
+  margin-left: auto
 }
 
 /* Paper Styling (right panel) */
