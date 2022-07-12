@@ -65,7 +65,7 @@ export default function Body(){
                                 {((showGrid || queue.length == 0) && !showingQueueGUI) ? 
                                 <div>
                                     <div className="grid-container">
-                                        <Grid showingStickie={showingStickie}/>
+                                        <Grid isAbove showingStickie={showingStickie}/>
                                     </div> 
                                     <hr style={{ borderTop: "3px solid #000", borderRadius: "2px"}}/>
                                     <div className="grid-container">

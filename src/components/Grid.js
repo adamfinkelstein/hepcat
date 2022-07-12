@@ -13,7 +13,7 @@ export default function Grid({isAbove,showingStickie}){
         let className = "grid-item";
         let paperStatus = gridElem.status
         if(showingStickie){
-            if(paperStatus.stickie){
+            if(gridElem.stickie){
                 className += " stickie"
             }else{
                 className += " non-stickie"
