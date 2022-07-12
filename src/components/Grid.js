@@ -1,9 +1,13 @@
 import { Container } from "react-bootstrap";
-import {useGlobals, useGrid} from '../contexts/AppContext'
+import {useGlobals, useUser, useGrid} from '../contexts/AppContext'
 
-export default function Grid({showingStickie}){
-    const grid = useGrid()
-    const globals = useGlobals()
+export default function Grid({isAbove,showingStickie}){
+    const user = useUser();
+    const grid = useGrid();
+    const globals = useGlobals();
+    const aboveOrBelow = isAbove ? grid.above : grid.below;
+    const notConflicted = aboveOrBelow.filter(
+        paper => !user.conflict_papers.includes(paper.nid));
 
     function gridClass(gridElem){
         let className = "grid-item";
@@ -46,7 +50,7 @@ export default function Grid({showingStickie}){
     }
 
     return(
-        grid.above.map((gridElem, index) => {
+        notConflicted.map((gridElem, index) => {
             return <div key={index} className={gridClass(gridElem)}>{gridElem.nid}</div>
         })
     )
