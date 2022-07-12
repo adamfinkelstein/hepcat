@@ -24,9 +24,9 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{current_user.full_name}}<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#">Preferences</a></li>
-                <li><a href="#">Upload Files</a></li>
-                <li><a href="#">Change Password</a></li>
+                <li><a href="/preferences">Preferences</a></li>
+                <li><a href="/upload">Upload Files</a></li>
+                <li><a href="/change_password">Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
               </ul>
