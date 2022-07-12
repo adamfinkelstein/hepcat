@@ -16,15 +16,6 @@ export default function Header() {
     <Navbar bg="dark" variant="dark" fixed="top">
       <Container>
         <Navbar.Brand as={NavLink} to="/">Hepcat: SIGGRAPH PC Meeting</Navbar.Brand>
-        {
-          user && user.role_name === "Admin" &&
-          <Nav className="me-auto">
-            <Nav.Link onClick={() => {
-              window.location.href = '/upload'
-            }}>Upload Files</Nav.Link>
-            <Nav.Link as={NavLink} to="/set_queue">Set Queue</Nav.Link>
-          </Nav>
-        }
 
         <Navbar.Collapse id="navbarScroll">
           <Nav
@@ -36,6 +27,10 @@ export default function Header() {
               user && 
               <NavDropdown title={user.full_name} id="navbarScrollingDropdown">
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
+                {
+                  user.role_name === "Admin" &&
+                  <NavDropdown.Item onClick={() => {window.location.href = '/upload'}}>Upload Files</NavDropdown.Item>
+                }
                 <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={() => {
