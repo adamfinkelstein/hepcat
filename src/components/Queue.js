@@ -30,12 +30,6 @@ export default function Queue(){
         return className
     }
 
-    function toggleActive(index){
-        let newState = [...queueExpanded]
-        newState[index] = newState[index] === "active" ? "" : "active"
-        setQueueExpanded(newState)
-    }
-
     return(
         <Container className="Queue">
             {
@@ -46,14 +40,20 @@ export default function Queue(){
                 <Stack direction="horizontal">
                     <span>Current: {globals.queueCurrent + 1} of {queue.length}</span>
                     <div className="expand-buttons">
-                        <button onClick={() => setQueueExpanded(allOpen)} disabled={queueExpanded.every(s => s === "active")}
-                                type="button" className="btn btn-light expand-button"> 
-                            Expand all 
-                        </button>
-                        <button onClick={() => setQueueExpanded(allClosed)} disabled={queueExpanded.every(s => s === "")}
-                                type="button" className="btn btn-light collapse-button" style={{marginLeft: "10px"}}> 
-                            Collapse all 
-                        </button>
+                        {
+                            !queueExpanded[0] && 
+                            <button onClick={() => setQueueExpanded(allOpen)}
+                                    type="button" className="btn btn-light expand-button"> 
+                                Expand all 
+                            </button>
+                        }
+                        {
+                            queueExpanded[0] && 
+                            <button onClick={() => setQueueExpanded(allClosed)}
+                                    type="button" className="btn btn-light collapse-button" style={{marginLeft: "10px"}}> 
+                                Collapse all 
+                            </button>
+                        }
                     </div>
                 </Stack>
             </Container>
@@ -63,7 +63,7 @@ export default function Queue(){
                     queue.map((paper, index) => {
                         return(
                             <li key={index} className={currentClass(index)}>
-                                <QueueElement paper={paper} active={queueExpanded[index]} toggleActive={toggleActive}/>
+                                <QueueElement paper={paper} active={queueExpanded[index]}/>
                             </li> 
                         )
                     })
