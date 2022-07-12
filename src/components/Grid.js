@@ -22,7 +22,7 @@ export default function Grid({showingStickie}){
             else{
                 switch(paperStatus){
                     case "U":
-                        className += " untouched"
+                        className += " unseen"
                         break;
                     case "R":
                         className += " reject"
@@ -37,7 +37,7 @@ export default function Grid({showingStickie}){
                         className += " journal"
                         break;
                     default:
-                        className += " untouched"
+                        className += " unseen"
                         break;
                 }
             }

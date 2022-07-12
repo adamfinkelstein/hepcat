@@ -1,10 +1,10 @@
 import { text } from '@fortawesome/fontawesome-svg-core'
 import React, {useState, useContext, useEffect} from 'react'
 
-const defaultColors = {"reject": "#f00", "conference": "#00f", "journal": "#0f0", "tabled": "#eee", 
-                      "untouched": "#ef0", "current": "#0af"}
-const defaultTextColors = {"reject": true, "conference": true, "journal": true, "tabled": true, 
-                          "untouched": true, "current": true}
+const defaultColors = {"reject": "#eb3b72", "conference": "#0b2563", "journal": "#277811", "tabled": "#e9fc53", 
+                      "unseen": "#eee", "current": "#000"}
+const defaultTextColors = {"reject": true, "conference": false, "journal": false, "tabled": true, 
+                          "unseen": true, "current": false}
                           
 const fontSizes = {
                     "Extra Small": 0.70,

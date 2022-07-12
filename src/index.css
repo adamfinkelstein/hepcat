@@ -172,26 +172,6 @@ a.nav-link {
   margin-right: 10px;
 }
 
-.untouched{
-  background-color: orange;
-}
-
-.reject{
-  background-color: red;
-}
-
-.conference{
-  background-color: blue;
-}
-
-.journal{
-  background-color: green;
-}
-
-.tabled{
-  background-color: gray;
-}
-
 .stickie{
   color: blue;
   background-color: gray;
