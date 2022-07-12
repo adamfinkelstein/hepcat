@@ -32,8 +32,8 @@ export default function AppContext({children}){
   const [user, setUser] = useState(null)
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
-  const [userCurrent, setUserCurrent] = useState(0)
-  const [queueCurrent, setQueueCurrent] = useState(0)
+  const [userCurrent, setUserCurrent] = useState(3)
+  const [queueCurrent, setQueueCurrent] = useState(3)
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {

@@ -29,12 +29,21 @@ export default function AdminQueueControls(){
                     }}>
                 Next &gt;
             </button>
+
             <DropdownButton id="dropdown-item-button" title={newStatus} className={"new-status-dropdown" + " " + newStatus.toLowerCase()}>
                 {
-                    ["Reject", "Conference", "Journal", "Table"].map((newStatus, index) => {
-                        return <Dropdown.Item key={index} as="button" 
-                                              onClick={() => setNewStatus(newStatus)}>{newStatus}</Dropdown.Item>
+                    ["Reject", "Conference", "Journal", "Tabled"].map((newStatus, index) => {
+                        return(
+                            <Dropdown.Item as="button" 
+                            onClick={() => setNewStatus(newStatus)} key={index}>
+                                <Stack direction="horizontal">
+                                    <div className={"rectangle" + " " + newStatus.toLowerCase()}/>
+                                    <span>{newStatus}</span>
+                                </Stack>
+                            </Dropdown.Item>
+                        )
                     })
+                    
                 }
             </DropdownButton>
         </Stack>
