@@ -151,8 +151,8 @@ a.nav-link {
 .grid-container{
   display: grid;
   grid-gap: 2px;
+  grid-template-columns: repeat(auto-fit, 50px);
   text-align: center;
-  margin: 0 auto;
 }
 
 .grid_legend{

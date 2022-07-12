@@ -1,20 +1,34 @@
 import Stack from "react-bootstrap/Stack"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBorderAll } from '@fortawesome/free-solid-svg-icons'
+import { useUser } from "../contexts/AppContext"
 
-export default function GridControls({showingStickie, setShowingStickie, showGrid, setShowGrid}){
+export default function GridControls({showingStickie, setShowingStickie, showGrid, setShowGrid, showingQueueGUI, setShowingQueueGUI}){
+    const user = useUser()
     return(
         <Stack direction="horizontal" className="grid-controls">
-            <button onClick={() => {setShowGrid(showGrid === true ? false : true)}}
-                    type="button" className="btn btn-primary">
-                <FontAwesomeIcon icon={faBorderAll} /><span style={{marginLeft: "10px"}}> {showGrid ? "Hide" : "Show"} Grid</span>
-            </button>
             {
-                showGrid && (
+                !showingQueueGUI && 
+                <button onClick={() => {setShowGrid(showGrid === true ? false : true)}}
+                        type="button" className="btn btn-primary">
+                    <FontAwesomeIcon icon={faBorderAll} /><span style={{marginLeft: "10px"}}> {showGrid ? "Hide" : "Show"} Grid</span>
+                </button>
+            }
+            {
+                showGrid && !showingQueueGUI && (
                     <button style={{marginLeft: "20px"}} 
                             onClick={() => {setShowingStickie(showingStickie === true ? false : true)}}
                             type="button" className="btn btn-primary">
                         <span>{showingStickie ? "Hide" : "Show"} Stickies</span>
+                    </button>
+                )
+            }
+            {
+                user && user.role_name === "Admin" && (
+                    <button style={{margin: "0 auto"}} 
+                            onClick={() => {setShowingQueueGUI(showingQueueGUI === true ? false : true)}}
+                            type="button" className="btn btn-primary">
+                        <span>{showingQueueGUI ? "Hide" : "Show"} Set Queue</span>
                     </button>
                 )
             }
