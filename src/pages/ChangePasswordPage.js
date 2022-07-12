@@ -23,7 +23,7 @@ export default function ChangePasswordPage(){
         }
         var regularExpression = new RegExp('^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$');
         if (!regularExpression.test(password)) {
-            flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "failure")
+            flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning")
             return;
           }
         console.log("changing password to " + password)
