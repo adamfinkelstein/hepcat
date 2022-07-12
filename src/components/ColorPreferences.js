@@ -11,7 +11,8 @@ export default function ColorPreferences(){
 
   let colors = useColors()
   let changeColor = useChangeColor()
-  let defaultColors = useDefaultColors()
+  let defaultColors = Object.values(useDefaultColors()["defaultColors"])
+  let changeToDefaultColors = useDefaultColors()["changeToDefaultColors"]
   let textColors = useTextColors()
   let changeTextColors = useChangeTextColors()
   let [pickingFor, setPickingFor] = useState("reject")
@@ -34,10 +35,11 @@ export default function ColorPreferences(){
                     color={ colors[pickingFor] }
                     onChangeComplete={ (color) => handleChangeComplete(pickingFor, color) }
                     className="color-picker"
+                    presetColors={defaultColors}
                 />
             </Stack>
             <Container>
-                <button onClick={() => defaultColors()}>Go Back to Default Colors</button>
+                <button onClick={() => changeToDefaultColors()}>Go Back to Default Colors</button>
             </Container>
         </Container>
     );

@@ -115,7 +115,7 @@ export default function PreferencesContext({children}){
   return(
     <ColorsContext.Provider value={colors}>
         <ChangeColorsContext.Provider value={changeColor}>
-            <DefaultColorsContext.Provider value={changeToDefaultColors}>
+            <DefaultColorsContext.Provider value={{"defaultColors": defaultColors, "changeToDefaultColors": changeToDefaultColors}}>
               <TextColorsContext.Provider value={textColors}>
                 <ChangeTextColorsContext.Provider value={changeTextColors}>
                   <FontInfoContext.Provider value={{"currentFontSize": fontSize, "fontSizes": fontSizes}}>
