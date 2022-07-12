@@ -23,7 +23,7 @@ export function useGlobals(){
   return useContext(GlobalsContext)
 }
 
-export function useSocketEmitContext(){
+export function useSocketEmit(){
   return useContext(SocketEmitContext)
 }
 

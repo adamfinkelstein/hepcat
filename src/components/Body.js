@@ -32,7 +32,7 @@ export default function Body(){
     }
 
     return(
-        <Container>
+        <Container className='Body'>
             {(!user) ? (
                 <p>User not connected.</p>
             ) : (

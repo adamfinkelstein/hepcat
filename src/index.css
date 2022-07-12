@@ -16,6 +16,11 @@ code {
   padding-top: 50px;
 }
 
+.Body{
+  margin: 0px;
+  padding: 0px;
+}
+
 .right-panel{
   margin-top: 15px;
 }
@@ -39,6 +44,7 @@ a.nav-link {
 
 .Queue ul{
   list-style: none;
+  padding: 0;
 }
 
 .expand-buttons{
