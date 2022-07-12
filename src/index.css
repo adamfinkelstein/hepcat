@@ -16,6 +16,10 @@ code {
   padding-top: 50px;
 }
 
+.right-panel{
+  margin-top: 15px;
+}
+
 /* Navbar styling */
 .Navbar {
   border-bottom: 1px solid #ddd;
@@ -116,7 +120,6 @@ a.nav-link {
 
 /* Paper Styling (right panel) */
 .right-panel-container{
-  overflow-y: scroll;
 }
 
 .paper-image{
