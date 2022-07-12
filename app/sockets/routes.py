@@ -86,15 +86,22 @@ def get_queue():
         paper_list.append(paper_dump)
     return paper_list
 
+def get_user_dump(user):
+    user_dump = user_schema.dump(user)
+    conflict_papers = list(user.conf_papers)
+    conflict_ids = [p.nid for p in conflict_papers]
+    user_dump['conflict_papers'] = conflict_ids
+    return user_dump
+
 @socketio.on('connect')
 def io_connect():
     user = get_user_or_force_disconnect()
     if not user:
         return
     print(f'{user.full_name} - client connected')
-    user_dump = user_schema.dump(user)
-    # config_vars = get_react_env_vars()
+    user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
+    # config_vars = get_react_env_vars()
     data = {'user': user_dump, 
             'grid': grid_dump } # later: 'config': config_vars }
     emit('server_welcome', data)
@@ -131,6 +138,13 @@ def admin_set_queue():
 @socketio.on('user_set_stickie')
 def user_set_stickie():
     print('user request for set stickie')
+
+@socketio.on('user_change_password')
+def user_change_password(new_password):
+    user = get_user_or_force_disconnect()
+    # security! later: disable printing pass:
+    print(f'user {user.full_name} changes password to {new_password}')
+    user.password = new_password
 
 '''
 * server_queue_hide (broadcast with message)
