@@ -216,3 +216,28 @@ a.nav-link {
 .color-picker{
   margin-left: 150px;
 }
+
+/* Change Password Page Styling */
+.ChangePasswordPage{
+  margin-top: 30px;
+}
+
+.change-password-main-container{
+  padding: 50px 10px;
+}
+
+.reset-password{
+  margin: 0 auto;
+}
+
+.password-fields{
+  margin: 100px 0 0 100px;
+}
+
+.form-title{
+  font-size: 20px;
+}
+
+.reset-password-row{
+  margin-bottom: 20px;
+}
