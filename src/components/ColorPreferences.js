@@ -18,11 +18,12 @@ export default function ColorPreferences(){
   let [pickingFor, setPickingFor] = useState("reject")
 
   let handleChangeComplete = (type, color) => {
-      console.log(color)
-    let textBlack = color.hsl.l > 0.55 ? true : false; 
-    changeTextColors(type, textBlack)
-    changeColor(type, color.hex);
-  };
+        console.log(color)
+        const blackWhiteThresh = 0.7; // threshold between black or white text
+        const textBlack = color.hsl.l > blackWhiteThresh ? true : false; 
+        changeTextColors(type, textBlack)
+        changeColor(type, color.hex);
+    };
 
     return (
         // Color Preferences
