@@ -132,8 +132,8 @@ def admin_show_queue(data):
     print(f'admin request for show queue: {data.show} {data.message}')
 
 @socketio.on('admin_set_queue')
-def admin_set_queue():
-    print('admin request for set queue')
+def admin_set_queue(data):
+    print('admin request for set queue:', data)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie():
