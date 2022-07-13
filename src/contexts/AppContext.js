@@ -79,7 +79,7 @@ export default function AppContext({children}){
       if(data) socket.emit(message, data)
       else socket.emit(message)
     }else{
-      console.log("socket doesnt exist, message not sent.")
+      console.log("socket does not exist, message not sent.")
     }
   }
 

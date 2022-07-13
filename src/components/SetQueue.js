@@ -1,5 +1,5 @@
 import { Container } from "react-bootstrap";
-import {useQueue} from '../contexts/AppContext'
+import {useQueue, useSocketEmit} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
@@ -12,6 +12,7 @@ const statusList = ['Tabled','Reject','Conference','Journal'];
 const filterList = ['Stickie Only','Untouched Only','No Clusters'];
 
 export default function SetQueue(){
+    let socketEmit = useSocketEmit()
     let queue = useQueue()
     let flasher = useFlasher()
     let flash = flasher["flash"]
@@ -21,7 +22,15 @@ export default function SetQueue(){
     let [adminConflicts, setAdminConflicts] = useState("Never")
 
     function setQueue(){
-
+        const statuses = statusList.filter( (s,index) =>
+            document.getElementById("status-checkbox-"+index).checked
+        );
+        const filters = filterList.filter( (f,index) =>
+            document.getElementById("only-checkbox-"+index).checked
+        );
+        const data = { statuses, filters, lowRange, highRange, adminConflicts };
+        console.log(data);
+        socketEmit("admin_set_queue", data)
         flash("Sent queue request.", "success");
     }
 
@@ -82,7 +91,7 @@ export default function SetQueue(){
                                 variant="secondary">
                                 {
                                     ["All Scores", "At/Above Bar", "Below Bar", "In Range"].map((scoreSelection, index) => {
-                                        return <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(scoreSelection)}>{scoreSelection}</Dropdown.Item>
+                                        return <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(`scoreSelection`)}>{scoreSelection}</Dropdown.Item>
                                     })
                                 }
                             </DropdownButton>
