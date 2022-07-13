@@ -47,7 +47,7 @@ export default function Body(){
                     minSize={[500, 500]}
                     >
                         <Container>
-                            {queue.length ? <Queue/> : <div>No papers in queue.</div>}
+                            {queue.length ? <Queue/> : <div id="noPapersInQueue">No papers in queue.</div>}
                         </Container>
                         <Container className='right-panel'>
                             <Collapse in={visible}>

@@ -9,7 +9,7 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, Label, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts, tags
+from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -269,14 +269,14 @@ def get_rating_code(rating):
         return rating_codes_dict[rating]
     return '?'
 
-def get_consensus_code(consensus_recs):
+def get_consensus_info(consensus_recs):
+    # later: need to check for Conference / Journal?
     if len(consensus_recs) == 2 and consensus_recs[0] == consensus_recs[1]:
-        # if consensus_recs[0] > 0:
-        #     return 'A'
-        # else:
-        #     return 'R'
-        return consensus_recs[0]
-    return 'T'
+        letter = consensus_recs[0]
+    else:
+        letter = 'T'
+    enum,name = status_letter_to_history(letter)
+    return enum, name, letter
 
 def scores_to_string(scores):
     codes = [ get_rating_code(score) for score in scores ]
@@ -326,18 +326,18 @@ def papers_set_all_scores_and_status_from_reviews():
         reviews = paper.reviews.order_by(Review.role)
         conference_scores,journal_scores,consensus_recs = \
             reviews_to_score_lists(reviews)
-        consensus_code = get_consensus_code(consensus_recs)
+        consensus_enum,_,consensus_letter = get_consensus_info(consensus_recs)
         paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
-        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_code)
+        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_letter)
         db.session.add(paper)
 
-        # add BBS history
+        # add BBS history ### ??? later: fix time below...
         then = now - timedelta(days = 7) # pretend this is a week ago (for debug)
         context_enum = int(HistoryContext.BBS)
         history = History(paper=paper,
                         when=then,
                         context_enum=context_enum,
-                        status=consensus_code)
+                        status_enum=consensus_enum)
         db.session.add(history)
 
     db.session.commit()
@@ -367,6 +367,13 @@ def insert_review_rows(rows):
     papers_set_all_scores_and_status_from_reviews()
     return count
 
+def status_letter_to_history(status_string):
+    letter = status_string[0]
+    for entry in HistoryStatus:
+        if entry.name[0] == letter:
+            return entry.value, entry.name
+    return 0, 'Tabled'
+
 # Submission ID,Seconds,Context,Status
 def insert_history_rows(rows):
     delete_non_bbs_history() # delete history since BBS
@@ -382,12 +389,13 @@ def insert_history_rows(rows):
         if paper:
             then = now - timedelta(seconds=secs)
             context_enum = int(HistoryContext[context])
+            status_enum,_ = status_letter_to_history(status)
             if not context_enum:
                 print(f'adding history for paper {paper.id} and zero context')
             history = History(paper=paper,
                             when=then,
                             context_enum=context_enum,
-                            status=status)
+                            status_enum=status_enum)
             db.session.add(history)
             count += 1
     db.session.commit()

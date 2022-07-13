@@ -25,10 +25,10 @@ export default function SetQueue(){
         const statuses = statusList.filter( (s,index) =>
             document.getElementById("status-checkbox-"+index).checked
         );
-        const filters = filterList.filter( (f,index) =>
+        const only = filterList.filter( (f,index) =>
             document.getElementById("only-checkbox-"+index).checked
         );
-        const data = { statuses, filters, lowRange, highRange, adminConflicts };
+        const data = { statuses, only, lowRange, highRange, adminConflicts };
         console.log(data);
         socketEmit("admin_set_queue", data)
         flash("Sent queue request.", "success");

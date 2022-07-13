@@ -161,10 +161,10 @@ def revs_to_rec(revs):
 
 def gen_status(rec):
     if rec == 0:
-        return 'T'
+        return 'Tabled'
     if rec > 0:
-        return random.choice(['C','J'])
-    return 'R'
+        return random.choice(['Conference','Journal'])
+    return 'Reject'
 
 def fmt_review(pid, rev, conf_score, jour_score, rec):
     line = f'{pid},{rev},{conf_score},{jour_score},{rec}\n'

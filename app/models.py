@@ -9,26 +9,19 @@ from sqlalchemy.sql import func
 from . import db, ma, set_gq, login_manager
 
 ######################
-# History Contexts
+# History Context / Status
 ######################
 
 class HistoryContext(IntEnum):
     BBS = 0
     Stickie = 1
     Plenary = 2
-    length = 3
 
-# int(HistoryContext.Plenary)
-# 2
-#
-# for i in range(HistoryContext.length):
-#     print(i,HistoryContext(i).name)
-# 0 BBS
-# 1 Stickie
-# 2 Plenary
-#
-# name = 'Stickie'
-# print(int(HistoryContext[name]))
+class HistoryStatus(IntEnum):
+    Tabled = 0
+    Reject = 1
+    Conference = 2
+    Journal = 3
 
 ######################
 # Many-to-Many Tables
@@ -141,7 +134,7 @@ class Review(db.Model):
     role = db.Column(db.Integer)
     conference = db.Column(db.Integer)
     journal = db.Column(db.Integer)
-    consensus = db.Column(db.Integer)
+    consensus = db.Column(db.Integer) # later will be a status code????
 
 # Submission ID,DateTime,Status
 class History(db.Model):
@@ -150,11 +143,15 @@ class History(db.Model):
     paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
     when = db.Column(db.DateTime, server_default=func.now())
     context_enum = db.Column(db.Integer)
-    status = db.Column(db.String(16))
+    status_enum = db.Column(db.Integer)
 
     @hybrid_property
     def context(self):
         return HistoryContext(self.context_enum).name
+
+    @hybrid_property
+    def status(self):
+        return HistoryStatus(self.status_enum).name
 
 # currently handles areas and clusters, but may add more types later
 class Label(db.Model):

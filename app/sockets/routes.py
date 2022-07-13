@@ -44,7 +44,7 @@ def get_grid_dump_bar(above):
     context_stickie = int(HistoryContext.Stickie)
     context_plenary = int(HistoryContext.Plenary)
     for paper in papers:
-        status = 'U' # Unseen
+        status_full = 'Unseen'
         stickie = False
         history = list(paper.history)
         for h in history:
@@ -52,8 +52,11 @@ def get_grid_dump_bar(above):
                 stickie = True
             elif h.context_enum == context_plenary:
                 stickie = False
-                status = h.status
-        paper_dump = { 'nid': paper.nid, 'status': status, 'stickie': stickie }
+                status_full = h.status
+        status_short = status_full[:1] # first letter
+        paper_dump = { 'nid': paper.nid, \
+            'status': status_short, \
+            'status_full': status_full, 'stickie': stickie }
         papers_dump.append(paper_dump)
     return papers_dump
 
@@ -63,6 +66,27 @@ def get_grid_dump():
     grid_dump = { 'above': above, 'below': below }
     return grid_dump
 
+def get_paper_conflicts_dump(paper):
+    conflicts = []
+    for user in paper.conf_users:
+        user_dump = user_schema.dump(user)
+        conflicts.append(user_dump)
+    return conflicts
+
+def get_paper_history_dump(paper):
+    context_plenary = int(HistoryContext.Plenary)
+    plenary_history = History.query.filter_by(paper_id=paper.id) \
+        .filter_by(context_enum=context_plenary).all()
+    history_dump = history_schema.dump(plenary_history)
+    return history_dump
+
+# def get_paper_status_for_filter(paper):
+#     context_plenary = int(HistoryContext.Plenary)
+#     plenary_history = History.query.filter_by(paper_id=paper.id) \
+#         .filter_by(context_enum=context_plenary).all()
+#     history_dump = history_schema.dump(plenary_history)
+#     return history_dump
+
 def get_queue():
     start = 150
     end = 250
@@ -70,20 +94,33 @@ def get_queue():
                     .filter(Paper.nid <= end)\
                     .order_by(Paper.nid).all()
     paper_list = []
-    context_plenary = int(HistoryContext.Plenary)
     for index,paper in enumerate(papers):
         paper_dump = paper_schema.dump(paper)
-        paper_dump['queue_order'] = index+1
-        conflicts = []
-        for user in paper.conf_users:
-            user_dump = user_schema.dump(user)
-            conflicts.append(user_dump)
-        pid = paper.id
-        plenary_history = History.query.filter_by(paper_id=pid).filter_by(context_enum=context_plenary).all()
-        history_dump = history_schema.dump(plenary_history)
+        conflicts = get_paper_conflicts_dump(paper)
+        history_dump = get_paper_history_dump(paper)
         paper_dump['conflicts'] = conflicts
         paper_dump['history'] = history_dump
+        paper_dump['queue_order'] = index+1
         paper_list.append(paper_dump)
+    return paper_list
+
+def include_paper_in_queue(paper, filters):
+    if paper.nid < 150:
+        return True
+    return False
+
+def set_queue(filters):
+    papers = Paper.query.all()
+    paper_list = []
+    for index,paper in enumerate(papers):
+        if include_paper_in_queue(paper, filters):
+            conflicts = get_paper_conflicts_dump(paper)
+            history_dump = get_paper_history_dump(paper)
+            paper_dump = paper_schema.dump(paper)
+            paper_dump['conflicts'] = conflicts
+            paper_dump['history'] = history_dump
+            paper_dump['queue_order'] = index+1
+            paper_list.append(paper_dump)
     return paper_list
 
 def get_user_dump(user):
@@ -132,8 +169,10 @@ def admin_show_queue(data):
     print(f'admin request for show queue: {data.show} {data.message}')
 
 @socketio.on('admin_set_queue')
-def admin_set_queue(data):
-    print('admin request for set queue:', data)
+def admin_set_queue(filters):
+    print('admin request for set queue:', filters)
+    queue = set_queue(filters)
+    emit('server_set_queue', queue)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie():
