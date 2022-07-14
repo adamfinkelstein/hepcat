@@ -29,7 +29,13 @@ export default function QueueElement({paper, active}){
             </Stack>
             <div ref={content} style={{ maxHeight: `${(active === "" || content === null) ? "0px" : `${content.current.scrollHeight}px`}` }} className="accordion_content">
                 <div className="accordion_text">
-                    <PaperConflict conflicts={paper.conflicts}></PaperConflict>
+                    <PaperConflict header="Conflicted" conflicts={paper.conflicts}></PaperConflict>
+                </div>
+                <div className="accordion_text">
+                    <PaperConflict header="Enter" conflicts={paper.enter}></PaperConflict>
+                </div>
+                <div className="accordion_text">
+                    <PaperConflict header="Leave" conflicts={paper.leave}></PaperConflict>
                 </div>
             </div>
         </Container>
