@@ -2,7 +2,6 @@ from math import dist
 import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
 from python_tsp.exact import solve_tsp_dynamic_programming
-# from .models import Paper
 
 # for exact solution (only for small matrices)...
 # from python_tsp.exact import solve_tsp_dynamic_programming
@@ -15,20 +14,24 @@ from python_tsp.exact import solve_tsp_dynamic_programming
 # permutation, distance = solve_tsp_dynamic_programming(distance_matrix)
 
 def get_paper_conficts_set(p):
-    conflicts = p.conf_users
-    ids = list(map(lambda c: c.id, conflicts))
-    ids = set(ids)
-    return ids
+    if not p or not p.conf_users:
+        return set()
+    conflict_set = set(list(p.conf_users))
+    return conflict_set
 
-def get_paper_distance(pi,pj,verbose=False):
-    confi = get_paper_conficts_set(pi)
-    confj = get_paper_conficts_set(pj)
-    enter = confi - confj
-    leave = confj - confi
+def get_enter_leave_conf_sets(paper_prev,paper_curr):
+    conf_prev = get_paper_conficts_set(paper_prev)
+    conf_curr = get_paper_conficts_set(paper_curr)
+    enter = conf_prev - conf_curr
+    leave = conf_curr - conf_prev
+    return conf_prev,conf_curr,enter,leave
+
+def get_paper_distance(paper_prev,paper_curr,verbose=False):
+    conf_prev,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper_curr)
     sum = len(enter) + len(leave)
     if verbose:
-        stay = confi.intersection(confj)
-        print('stay: ', stay)
+        stay = conf_curr.intersection(conf_prev)
+        print('stay out: ', stay)
         print('enter: ', enter)
         print('leave: ', leave)
         print('sum: ', sum)
@@ -37,11 +40,12 @@ def get_paper_distance(pi,pj,verbose=False):
 def get_distance_matrix(papers):
     n = len(papers)
     distance_matrix = np.zeros((n,n))
+    verbose = (n<12)
     for i in range(n-1):
         pi = papers[i]
         for j in range(i+1,n):
             pj = papers[j]
-            d = get_paper_distance(pi,pj)
+            d = get_paper_distance(pi,pj,verbose)
             distance_matrix[i][j] = d
             distance_matrix[j][i] = d
     return distance_matrix
@@ -64,8 +68,8 @@ def debug_order(distance_matrix, permutation, distance, ordered_papers):
 def order_q(papers, optimal=False, verbose=False):
     maxn = 100
     n = len(papers)
-    if n > maxn:
-        print(f'skip ordering {n} papers because it is too slow for more than {maxn}.')
+    if n < 3 or n > maxn:
+        print(f'skip ordering {n} papers because it is too few, or too many/slow (max={maxn}).')
         return papers
     distance_matrix = get_distance_matrix(papers)
     if optimal:

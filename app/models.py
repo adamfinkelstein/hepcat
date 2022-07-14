@@ -97,7 +97,7 @@ class User(UserMixin, db.Model):
         return True
 
     def __repr__(self):
-        return '<User %r>' % self.email
+        return '<User %r>' % self.full_name
 
 @login_manager.user_loader
 def load_user(user_id):

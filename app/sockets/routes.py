@@ -6,7 +6,7 @@ from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema
-from ..orderq import order_q
+from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
 paper_schema = PaperSchema()
@@ -67,12 +67,21 @@ def get_grid_dump():
     grid_dump = { 'above': above, 'below': below }
     return grid_dump
 
-def get_paper_conflicts_dump(paper):
-    conflicts = []
-    for user in paper.conf_users:
+def get_user_list_dump(users, sort=True):
+    user_list = list(users) # in case it was a set
+    if sort:
+        # currently sorts on full name. later: last name???
+        user_list = sorted(user_list, key=lambda u: u.full_name)
+    list_dump = []
+    for user in user_list:
         user_dump = user_schema.dump(user)
-        conflicts.append(user_dump)
-    return conflicts
+        list_dump.append(user_dump)
+    return list_dump
+
+def get_paper_conflicts_dump(paper):
+    user_list = paper.conf_users
+    conflict_dump = get_user_list_dump(user_list)
+    return conflict_dump
 
 def get_paper_history_dump(paper):
     context_plenary = int(HistoryContext.Plenary)
@@ -143,13 +152,14 @@ def clear_queue():
 
 def set_queue(filters):
     papers = Paper.query.all()
-    queue_order = 1
-    for paper in papers:
-        if include_paper_in_queue(paper, filters):
-            paper.queue_order = queue_order
-            queue_order += 1
-        else:
-            paper.queue_order = 0
+    p_list = list(papers)
+    filter_papers = [p for p in p_list if include_paper_in_queue(p,filters)]
+    order_papers = order_q(filter_papers)
+    for paper in p_list:
+        paper.queue_order = 0
+    for index,paper in enumerate(order_papers):
+        paper.queue_order = (index+1)
+    for paper in p_list:
         db.session.add(paper)
     db.session.commit()
 
@@ -157,13 +167,18 @@ def get_queue():
     papers = Paper.query.filter(Paper.queue_order > 0) \
                     .order_by(Paper.queue_order).all()
     paper_list = []
+    paper_prev = None
     for paper in papers:
-        conflicts = get_paper_conflicts_dump(paper)
         history_dump = get_paper_history_dump(paper)
+        # conflicts = get_paper_conflicts_dump(paper)
+        _,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper)
         paper_dump = paper_schema.dump(paper)
-        paper_dump['conflicts'] = conflicts
         paper_dump['history'] = history_dump
+        paper_dump['conflicts'] = get_user_list_dump(conf_curr)
+        paper_dump['enter'] = get_user_list_dump(enter)
+        paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
+        paper_prev = paper
     return paper_list
 
 def get_user_dump(user):
