@@ -57,6 +57,12 @@ export default function AppContext({children}){
     const receiveQueue = (data) => {
       console.log('received queue:');
       console.log(data);
+      const maxSize = 50;
+      const len = data.length;
+      if (len > maxSize) {
+        console.log('cutting queue size down from ' + len + ' to ' + maxSize);
+        data = data.slice(0,maxSize);
+      }
       setQueue(data);
     };
 

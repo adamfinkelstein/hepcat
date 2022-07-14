@@ -9,7 +9,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack";
 
 const statusList = ['Tabled','Reject','Conference','Journal'];
-const filterList = ['Stickie Only','Untouched Only','No Clusters'];
+const filterList = ['Stickie Only','Unseen Only','No Clusters'];
 
 export default function SetQueue(){
     let socketEmit = useSocketEmit()
@@ -21,7 +21,8 @@ export default function SetQueue(){
     let [highRange, setHighRange] = useState(5.1)
     let [adminConflicts, setAdminConflicts] = useState("Never")
 
-    function setQueue(){
+    function handleSendQ(event){
+        event.preventDefault(); // do not send the form!
         const statuses = statusList.filter( (s,index) =>
             document.getElementById("status-checkbox-"+index).checked
         );
@@ -35,7 +36,7 @@ export default function SetQueue(){
     }
 
     function handleInputChange(event){
-        event.preventDefault();
+        event.preventDefault(); // do not send the form!
         const target = event.target;
         if(target.name === "lowRange") setLowRange(target.value)
         else if(target.name === "highRange") setHighRange(target.value)
@@ -125,7 +126,7 @@ export default function SetQueue(){
                     </div>
                 </Form>
             </div>
-            <Button variant="primary" onClick={()=>setQueue()} style={{marginTop: "30px"}}>Update Queue</Button>
+            <Button variant="primary" onClick={handleSendQ} style={{marginTop: "30px"}}>Request Queue</Button>
         </Container>
     )
 }

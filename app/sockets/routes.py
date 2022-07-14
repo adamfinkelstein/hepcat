@@ -2,8 +2,9 @@ import os
 import random
 from flask_socketio import emit, disconnect
 from flask_login import current_user
+from sqlalchemy import true
 from sqlalchemy.sql.expression import func
-from .. import socketio, allow_cors
+from .. import db, socketio, allow_cors
 from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema
 from ..orderq import order_q
 
@@ -80,47 +81,89 @@ def get_paper_history_dump(paper):
     history_dump = history_schema.dump(plenary_history)
     return history_dump
 
-# def get_paper_status_for_filter(paper):
-#     context_plenary = int(HistoryContext.Plenary)
-#     plenary_history = History.query.filter_by(paper_id=paper.id) \
-#         .filter_by(context_enum=context_plenary).all()
-#     history_dump = history_schema.dump(plenary_history)
-#     return history_dump
+def get_latest_history(paper):
+    latest_history = History.query.filter_by(paper_id=paper.id) \
+        .order_by(History.when.desc()).first()
+    return latest_history
 
-def get_queue():
-    start = 150
-    end = 250
-    papers = Paper.query.filter(Paper.nid >= start)\
-                    .filter(Paper.nid <= end)\
-                    .order_by(Paper.nid).all()
-    paper_list = []
-    for index,paper in enumerate(papers):
-        paper_dump = paper_schema.dump(paper)
-        conflicts = get_paper_conflicts_dump(paper)
-        history_dump = get_paper_history_dump(paper)
-        paper_dump['conflicts'] = conflicts
-        paper_dump['history'] = history_dump
-        paper_dump['queue_order'] = index+1
-        paper_list.append(paper_dump)
-    return paper_list
+def get_latest_history_status(paper):
+    latest = get_latest_history(paper)
+    if latest:
+        return latest.status
+    return None
 
-def include_paper_in_queue(paper, filters):
-    if paper.nid < 150:
+def is_paper_unseen(paper):
+    context_bbs = int(HistoryContext.BBS)
+    latest = get_latest_history(paper)
+    if not latest or latest.context_enum == context_bbs:
         return True
     return False
 
+def is_paper_stickie(paper):
+    context_stickie = int(HistoryContext.Stickie)
+    latest = get_latest_history(paper)
+    if not latest or latest.context_enum != context_stickie:
+        return False
+    return True
+
+def is_in_cluster(paper):
+    for label in paper.tag_labels:
+        if label.is_cluster:
+            return True
+    return False
+
+# const filterList = ['Stickie Only','Untouched Only','No Clusters'];
+def include_paper_in_queue(paper, filters):
+    sort_score = paper.sort_score
+    lowRange = float(filters['lowRange'])
+    highRange = float(filters['highRange'])
+    filter_statuses = filters['statuses']
+    filter_only = filters['only']
+    if sort_score < lowRange: ### ???? decide which is >=
+        return False
+    if sort_score > highRange:
+        return False
+    status = get_latest_history_status(paper)
+    if status not in filter_statuses:
+        return False
+    if 'Stickie Only' in filter_only and not is_paper_stickie(paper):
+        return False
+    if 'Unseen Only' in filter_only and not is_paper_unseen(paper):
+        return False
+    if 'No Clusters' in filter_only and is_in_cluster(paper):
+        return False
+    return True 
+
+def clear_queue():
+    papers = Paper.query.all()
+    for paper in papers:
+        paper.queue_order = 0
+        db.session.add(paper)
+    db.session.commit()
+
 def set_queue(filters):
     papers = Paper.query.all()
-    paper_list = []
-    for index,paper in enumerate(papers):
+    queue_order = 1
+    for paper in papers:
         if include_paper_in_queue(paper, filters):
-            conflicts = get_paper_conflicts_dump(paper)
-            history_dump = get_paper_history_dump(paper)
-            paper_dump = paper_schema.dump(paper)
-            paper_dump['conflicts'] = conflicts
-            paper_dump['history'] = history_dump
-            paper_dump['queue_order'] = index+1
-            paper_list.append(paper_dump)
+            paper.queue_order = queue_order
+            queue_order += 1
+        else:
+            paper.queue_order = 0
+        db.session.add(paper)
+    db.session.commit()
+
+def get_queue():
+    papers = Paper.query.filter(Paper.queue_order > 0) \
+                    .order_by(Paper.queue_order).all()
+    paper_list = []
+    for paper in papers:
+        conflicts = get_paper_conflicts_dump(paper)
+        history_dump = get_paper_history_dump(paper)
+        paper_dump = paper_schema.dump(paper)
+        paper_dump['conflicts'] = conflicts
+        paper_dump['history'] = history_dump
+        paper_list.append(paper_dump)
     return paper_list
 
 def get_user_dump(user):
@@ -143,7 +186,8 @@ def io_connect():
             'grid': grid_dump } # later: 'config': config_vars }
     emit('server_welcome', data)
     data = get_queue()
-    emit('server_set_queue', data)
+    if len(data):
+        emit('server_set_queue', data)
 
 @socketio.on('disconnect')
 def io_disconnect():
@@ -171,7 +215,8 @@ def admin_show_queue(data):
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
     print('admin request for set queue:', filters)
-    queue = set_queue(filters)
+    set_queue(filters)
+    queue = get_queue()
     emit('server_set_queue', queue)
 
 @socketio.on('user_set_stickie')

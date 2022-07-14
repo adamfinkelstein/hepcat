@@ -9,7 +9,8 @@ from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, sid_to_num, get_or_insert_role, ensure_admin, conflicts, tags
+from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, \
+     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -39,14 +40,14 @@ def delete_all_clusters():
     dump_users_papers_and_conflicts('Before cluster deletion')
     papers = Paper.query.all()
     for paper in papers:
+        # first remove all cluster labels from paper
         labels = list(paper.tag_labels)
-        new_labels = [label for label in labels if not label_is_cluster(label)]
+        new_labels = [label for label in labels if not label.is_cluster]
         if len(new_labels) < len(labels):
             paper.tag_labels = new_labels
             db.session.add(paper)
-    labels = Label.query.all()
-    names = [label.name for label in list(labels)]
-    cluster_names = [name for name in names if name.startswith('Cluster-')]
+    cluster_labels = Label.query.filter(Label.is_cluster).all()
+    cluster_names = [label.name for label in list(cluster_labels)]
     for name in cluster_names:
         Label.query.filter_by(name=name).delete()
     db.session.commit()    
@@ -158,7 +159,7 @@ def insert_paper_rows(rows):
                     abstract=abstract)
         db.session.add(paper)
         count += 1
-        label_names = areas_to_labels(areas)
+        label_names = areas_to_label_names(areas)
         for label_name in label_names:
             label = Label.query.filter_by(name=label_name).first()
             if not label:
@@ -224,19 +225,7 @@ def insert_cluster_rows(rows):
     db.session.commit()
     return count
 
-def cluster_to_label_name(cluster):
-    return f'Cluster-{cluster}'
-
-def area_to_label_name(area):
-    return f'Area-{area}'
-
-def label_is_cluster(label):
-    return label.name.startswith('Cluster-')
-
-def label_is_area(label):
-    return label.name.startswith('Area-')
-
-def areas_to_labels(areas_string):
+def areas_to_label_names(areas_string):
     areas = areas_string.split('/')
     labels = [area_to_label_name(area) for area in areas]
     return labels

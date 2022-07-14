@@ -153,6 +153,15 @@ class History(db.Model):
     def status(self):
         return HistoryStatus(self.status_enum).name
 
+prefix_cluster = 'Cluster-'
+prefix_area = 'Area-'
+
+def cluster_to_label_name(cluster):
+    return f'{prefix_cluster}{cluster}'
+
+def area_to_label_name(area):
+    return f'{prefix_area}{area}'
+
 # currently handles areas and clusters, but may add more types later
 class Label(db.Model):
     __tablename__ = 'labels'
@@ -160,8 +169,17 @@ class Label(db.Model):
     name = db.Column(db.String(64), unique=True)
     # tag_papers set by backref from papers
 
+    @hybrid_property
+    def is_cluster(self):
+        return self.name.startswith(prefix_cluster)
+
+    @hybrid_property
+    def is_area(self):
+        return self.name.startswith(prefix_area)
+
     def __repr__(self):
         return '<Label %r>' % self.name
+
 
 class GlobQueue(db.Model):
     __tablename__ = 'glob_queue'
