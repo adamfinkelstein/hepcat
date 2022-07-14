@@ -15,27 +15,28 @@ export default function AdminQueueControls(){
                         socketEmit("admin_prev_paper")
                     }}
             >
-               &lt; Previous
+            Prev
             </button>
             <button 
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
                         socketEmit("admin_next_paper")
                     }}>
-                Show Paper
+            Show
             </button>
             <button
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
                         socketEmit("admin_show_current")
                     }}>
-                Next &gt;
+            Next
             </button>
 
-            <DropdownButton id="dropdown-item-button" title={newStatus} className={"new-status-dropdown" + " " + newStatus.toLowerCase()}>
+            <DropdownButton id="status-dropdown-menu" title={newStatus}
+                    variant="outline">
                 {
                     ["Reject", "Conference", "Journal", "Tabled"].map((newStatus, index) => {
                         return(
-                            <Dropdown.Item as="button" 
-                            onClick={() => setNewStatus(newStatus)} key={index}>
+                            <Dropdown.Item as="button" key={index}
+                            onClick={() => setNewStatus(newStatus)}>
                                 <Stack direction="horizontal">
                                     <div className={"rectangle" + " " + newStatus.toLowerCase()}/>
                                     <span>{newStatus}</span>

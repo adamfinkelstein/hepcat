@@ -253,6 +253,8 @@ a.nav-link {
   margin-bottom: 20px;
 }
 
+/* AF added the ones below -- need to integrate above */
+
 #noPapersInQueue {
   color: purple;
   margin: 40px;
@@ -264,4 +266,13 @@ a.nav-link {
   border: 1px dashed purple;
   text-align: center;
   font-style: italic;
+}
+
+#status-dropdown-menu {
+  width:120px;
+  border: 1px solid black;
+}
+
+#status-dropdown-menu:hover {
+  background: lightyellow;
 }
