@@ -4,6 +4,9 @@ import DropdownButton from "react-bootstrap/DropdownButton"
 import Dropdown from "react-bootstrap/Dropdown"
 import {useState} from 'react'
 
+// this var also in SetQueue - consolidate?
+const statusList = ['Tabled','Reject','Conference','Journal'];
+
 export default function AdminQueueControls(){
     let socketEmit = useSocketEmit()
     let globals = useGlobals()
@@ -33,7 +36,7 @@ export default function AdminQueueControls(){
             <DropdownButton id="status-dropdown-menu" title={newStatus}
                     variant="outline">
                 {
-                    ["Reject", "Conference", "Journal", "Tabled"].map((newStatus, index) => {
+                    statusList.map((newStatus, index) => {
                         return(
                             <Dropdown.Item as="button" key={index}
                             onClick={() => setNewStatus(newStatus)}>
