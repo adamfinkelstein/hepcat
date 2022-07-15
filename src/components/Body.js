@@ -20,7 +20,7 @@ export default function Body(){
     const [showGrid, setShowGrid] = useState(false);
     const [showingStickie, setShowingStickie] = useState(false);
     const [showingQueueGUI, setShowingQueueGUI] = useState(false);
-    const [gridSize, setGridSize] = useState(60);
+    const [gridSize, setGridSize] = useState(60); // MAYBE OLD ???
 
     const flasher = useFlasher()
     //const flash = flasher["flash"]
@@ -28,9 +28,9 @@ export default function Body(){
     const hideFlash = flasher["hideFlash"];
     const flashMessage = flasher["flashMessage"]
 
-    function createGridCSS(){
-        return "repeat(" + (Math.floor(gridSize / 4)) + ", 40px)"
-    }
+    // function createGridCSS(){
+    //     return "repeat(" + (Math.floor(gridSize / 4)) + ", 40px)"
+    // }
 
     return(
         <Container className='Body'>
@@ -63,7 +63,7 @@ export default function Body(){
                                           showGrid={showGrid} setShowGrid={setShowGrid}
                                           showingQueueGUI={showingQueueGUI} setShowingQueueGUI={setShowingQueueGUI}/>
                             <div className="right-panel-container">
-                                {((showGrid || queue.length == 0) && !showingQueueGUI) ? 
+                                {((showGrid || queue.length === 0) && !showingQueueGUI) ? 
                                 <div>
                                     <div className="grid-container">
                                         <Grid isAbove showingStickie={showingStickie}/>

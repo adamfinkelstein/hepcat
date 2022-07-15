@@ -22,7 +22,7 @@ export default function Paper(){
                     <p className='custom-font-size'>Reviews: {cp.all_scores}&nbsp;Sort:{cp.sort_score}</p>
                     <p className='custom-font-size'>Summary: {cp.summary}</p>
                     <p className='custom-font-size'>Abstract: {cp.abstract}</p>
-                    <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image"></img></div>
+                    <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
                 </div>
             )}
             </div>            

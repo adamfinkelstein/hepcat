@@ -33,7 +33,7 @@ export default function Queue(){
     return(
         <Container className="Queue">
             {
-                user && user.role_name == "Admin" &&
+                user && user.role_name === "Admin" &&
                 <AdminQueueControls/>
             }
             <Container className="expand-bar">

@@ -39,9 +39,9 @@ export default function AdminQueueControls() {
                     statusList.map((newStatus, index) => {
                         return(
                             <Dropdown.Item as="button" key={index}
-                            onClick={() => setNewStatus(newStatus)}>
+                                onClick={() => setNewStatus(newStatus)}>
                                 <Stack direction="horizontal">
-                                    <div className={"rectangle" + " " + newStatus.toLowerCase()}/>
+                                    <div className={"rectangle " + newStatus.toLowerCase()}/>
                                     <span>{newStatus}</span>
                                 </Stack>
                             </Dropdown.Item>

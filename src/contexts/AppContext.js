@@ -37,11 +37,11 @@ export default function AppContext({children}){
       console.log('received queue:');
       console.log(data);
       const maxSize = 50;
-      const queue = data.paper_list;
+      let queue = data.paper_list; // modified below temp ???
       const globs = data.globs;
       const current = globs.current;
       const len = queue.length;
-      if (len > maxSize) {
+      if (len > maxSize) { // AF: just temp cut down ???
         console.log('cutting queue size down from ' + len + ' to ' + maxSize);
         queue = queue.slice(0,maxSize);
       }
