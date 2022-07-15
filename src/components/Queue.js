@@ -24,7 +24,7 @@ export default function Queue(){
 
     function currentClass(index){
         let className = "queue_element"
-        if(index === globals.userCurrent){
+        if(index === globals.queueCurrent){
           className += " current"
         }
         return className

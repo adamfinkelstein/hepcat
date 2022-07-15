@@ -18,9 +18,7 @@ export default function QueueElement({paper, active}){
     // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
     return(
-        <Container onClick={() => {
-            globals.setUserCurrent(index)
-        }}>
+        <Container>
             <Stack direction="horizontal" className="queue-element-container">
                 <div>
                     <span className="accordion_title">

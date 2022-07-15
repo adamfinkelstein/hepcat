@@ -40,7 +40,7 @@ def get_paper_distance(paper_prev,paper_curr,verbose=False):
 def get_distance_matrix(papers):
     n = len(papers)
     distance_matrix = np.zeros((n,n))
-    verbose = (n<12)
+    verbose = False
     for i in range(n-1):
         pi = papers[i]
         for j in range(i+1,n):
