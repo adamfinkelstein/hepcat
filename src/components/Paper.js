@@ -1,11 +1,11 @@
 import Container from 'react-bootstrap/Container';
-import {useGlobals, useQueue} from '../contexts/AppContext'
+import {useAppGlobals} from '../contexts/AppContext'
 
 export default function Paper(){
 
-    const queue = useQueue();
-    const globals = useGlobals();
-    const showPaper = queue && queue.length && globals && globals.queueCurrent;
+    const globals = useAppGlobals();
+    const queue = globals.queue;
+    const showPaper = queue && queue.length && globals.queueCurrent;
     const cp = queue.length ? queue[globals.userCurrent] : null;
     const queue_order = cp ? cp.queue_order : '-1';
 

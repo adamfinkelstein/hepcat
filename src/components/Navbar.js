@@ -2,16 +2,17 @@ import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import NavItem from "react-bootstrap/NavItem";
+//import NavItem from "react-bootstrap/NavItem";
 import { NavLink } from 'react-router-dom';
-import {useUser} from '../contexts/AppContext'
+import {useAppGlobals} from '../contexts/AppContext'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 
 export default function Header() {
 
-  let user = useUser()
+  const globals = useAppGlobals();
+  const user = globals.user;
   return (
     <Navbar bg="dark" variant="dark" fixed="top">
       <Container>

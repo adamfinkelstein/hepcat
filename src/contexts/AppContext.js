@@ -1,31 +1,35 @@
 import React, {useState, useContext, useEffect} from 'react'
 import socketIOClient from "socket.io-client";
 
-const UserContext = React.createContext()
-const QueueContext = React.createContext()
-const GridContext = React.createContext()
-const SocketEmitContext = React.createContext()
-const GlobalsContext = React.createContext() // holds user's and queue's current paper and more
+// const UserContext = React.createContext()
+// const QueueContext = React.createContext()
+// const GridContext = React.createContext()
+// const SocketEmitContext = React.createContext()
 
-export function useUser(){
-  return useContext(UserContext)
-}
+// this holds a bunch of things, such as:
+// user, queue, grid, socketEmit, 
+// userCurrent, queueCurrent and setQueueCurrent
+const GlobalsContext = React.createContext() 
 
-export function useQueue(){
-  return useContext(QueueContext)
-}
+// export function useUser(){
+//   return useContext(UserContext)
+// }
 
-export function useGrid(){
-  return useContext(GridContext)
-}
+// export function useQueue(){
+//   return useContext(QueueContext)
+// }
 
-export function useGlobals(){
+// export function useGrid(){
+//   return useContext(GridContext)
+// }
+
+export function useAppGlobals(){
   return useContext(GlobalsContext)
 }
 
-export function useSocketEmit(){
-  return useContext(SocketEmitContext)
-}
+// export function useSocketEmit(){
+//   return useContext(SocketEmitContext)
+// }
 
 export default function AppContext({children}){
     
@@ -83,31 +87,30 @@ export default function AppContext({children}){
     };
   }, [socket]);
 
-  function socketEmit(message, data){
-    if(socket && socket.emit){
-      if(data) socket.emit(message, data)
-      else socket.emit(message)
-    }else{
-      console.log("socket does not exist, message not sent.")
+  function socketEmit(message, data) {
+    if (!socket || !socket.emit) {
+      console.log("socket does not exist, message not sent.");
+      return;
     }
+    if (data) {
+      socket.emit(message, data);
+      return;
+    }
+    socket.emit(message);
   }
 
-  return(
-      <UserContext.Provider value={user}>
-        <QueueContext.Provider value={queue}>
-          <GridContext.Provider value={grid}>
-            <GlobalsContext.Provider 
-              value={
-                {"userCurrent": userCurrent, // index in queue
-                "queueCurrent": queueCurrent, // index in queue
-                "setUserCurrent": setUserCurrent}
-              }>
-              <SocketEmitContext.Provider value={socketEmit}>
-                {children}
-              </SocketEmitContext.Provider>
-            </GlobalsContext.Provider>
-          </GridContext.Provider>
-        </QueueContext.Provider>
-      </UserContext.Provider>
+  return (
+      <GlobalsContext.Provider 
+        value={{
+          "user": user,
+          "queue": queue,
+          "grid": grid,
+          "socketEmit": socketEmit,
+          "userCurrent": userCurrent,
+          "queueCurrent": queueCurrent,
+          "setUserCurrent": setUserCurrent
+        }}>
+        {children}
+      </GlobalsContext.Provider>
   )
 }

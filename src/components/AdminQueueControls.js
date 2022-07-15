@@ -1,5 +1,5 @@
 import Stack from "react-bootstrap/Stack"
-import { useGlobals, useSocketEmit } from "../contexts/AppContext"
+import { useAppGlobals } from "../contexts/AppContext"
 import DropdownButton from "react-bootstrap/DropdownButton"
 import Dropdown from "react-bootstrap/Dropdown"
 import {useState} from 'react'
@@ -7,10 +7,10 @@ import {useState} from 'react'
 // this var also in SetQueue - consolidate?
 const statusList = ['Tabled','Reject','Conference','Journal'];
 
-export default function AdminQueueControls(){
-    let socketEmit = useSocketEmit()
-    let globals = useGlobals()
-    let [newStatus, setNewStatus] = useState("Reject")
+export default function AdminQueueControls() {
+    const globals = useAppGlobals();
+    const socketEmit = globals.socketEmit;
+    const [newStatus, setNewStatus] = useState("Reject");
     return(
         <Stack direction="horizontal" className="AdminQueueControls">
             <button

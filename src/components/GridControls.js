@@ -1,10 +1,11 @@
 import Stack from "react-bootstrap/Stack"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBorderAll } from '@fortawesome/free-solid-svg-icons'
-import { useUser } from "../contexts/AppContext"
+import { useAppGlobals } from "../contexts/AppContext"
 
 export default function GridControls({showingStickie, setShowingStickie, showGrid, setShowGrid, showingQueueGUI, setShowingQueueGUI}){
-    const user = useUser()
+    const globals = useAppGlobals();
+    const user = globals.user;
     return(
         <Stack direction="horizontal" className="grid-controls">
             {

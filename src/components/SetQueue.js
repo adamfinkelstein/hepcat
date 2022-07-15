@@ -1,5 +1,5 @@
 import { Container } from "react-bootstrap";
-import {useQueue, useSocketEmit} from '../contexts/AppContext'
+import {useAppGlobals} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
@@ -12,8 +12,9 @@ const statusList = ['Tabled','Reject','Conference','Journal'];
 const filterList = ['Stickie Only','Unseen Only','No Clusters'];
 
 export default function SetQueue(){
-    let socketEmit = useSocketEmit()
-    let queue = useQueue()
+    const globals = useAppGlobals()
+    const socketEmit = globals.socketEmit;
+    // let queue = globals.queue;
     let flasher = useFlasher()
     let flash = flasher["flash"]
     let [scoreSelection, setScoreSelection] = useState("At/Above Bar")

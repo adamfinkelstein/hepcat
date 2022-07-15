@@ -1,10 +1,10 @@
-import { Container } from "react-bootstrap";
-import {useGlobals, useUser, useGrid} from '../contexts/AppContext'
+//import { Container } from "react-bootstrap";
+import {useAppGlobals} from '../contexts/AppContext'
 
 export default function Grid({isAbove,showingStickie}){
-    const user = useUser();
-    const grid = useGrid();
-    const globals = useGlobals();
+    const globals = useAppGlobals();
+    const user = globals.user;
+    const grid = globals.grid;
     const aboveOrBelow = isAbove ? grid.above : grid.below;
     const notConflicted = aboveOrBelow.filter(
         paper => !user.conflict_papers.includes(paper.nid));

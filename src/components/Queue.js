@@ -1,15 +1,15 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack'
-import {useQueue, useGlobals, useUser} from '../contexts/AppContext'
+import {useAppGlobals} from '../contexts/AppContext'
 import QueueElement from './QueueElement.js'
 import {useState} from 'react'
 import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue(){
  
-    const queue = useQueue()
-    const globals = useGlobals()
-    const user = useUser()
+    const globals = useAppGlobals();
+    const queue = globals.queue;
+    const user = globals.user;
 
     let allClosed = []
     for(let i = 0; i < queue.length; i++){

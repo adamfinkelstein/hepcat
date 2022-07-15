@@ -1,6 +1,6 @@
 import Container from 'react-bootstrap/Container'
 import Split from 'react-split';
-import {useQueue, useUser} from '../contexts/AppContext'
+import {useAppGlobals} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Queue from './Queue'
 import Paper from './Paper'
@@ -13,8 +13,9 @@ import Alert from 'react-bootstrap/Alert';
 import Collapse from 'react-bootstrap/Collapse';
 
 export default function Body(){
-    const queue = useQueue()
-    const user = useUser()
+    const globals = useAppGlobals();
+    const user = globals.user;
+    const queue = globals.queue;
 
     const [showGrid, setShowGrid] = useState(false);
     const [showingStickie, setShowingStickie] = useState(false);
@@ -22,7 +23,7 @@ export default function Body(){
     const [gridSize, setGridSize] = useState(60);
 
     const flasher = useFlasher()
-    const flash = flasher["flash"]
+    //const flash = flasher["flash"]
     const visible = flasher["visible"]
     const hideFlash = flasher["hideFlash"];
     const flashMessage = flasher["flashMessage"]
