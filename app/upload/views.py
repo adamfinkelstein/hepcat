@@ -2,7 +2,7 @@ import os
 import csv
 from datetime import datetime, timedelta
 
-from flask import render_template, flash, redirect, url_for, current_app
+from flask import render_template, flash, redirect, url_for, send_file, current_app
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -487,7 +487,7 @@ def pending_uploads(uploads):
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 @upload.route('/', methods=('GET', 'POST'))
-def upload():
+def upload_main():
     form = UploadForm()
     filename = None
     logout = False
@@ -515,6 +515,49 @@ def upload():
     uploads = FileUpload.query.all()
     pending = pending_uploads(uploads)
     return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings)
+
+def write_text_to_file(text, filename):
+    with open(filename, 'w') as f:
+        f.write(text)
+
+def write_csv(rows, filename):
+    text = '\n'.join(rows)
+    write_text_to_file(text, filename)
+
+# this function and the next duplicate functions in sockets/routes.py
+# they should be refactored!
+def get_latest_history(paper):
+    latest_history = History.query.filter_by(paper_id=paper.id) \
+        .order_by(History.when.desc()).first()
+    return latest_history
+
+def get_latest_history_status(paper):
+    latest = get_latest_history(paper)
+    if latest:
+        return latest.status
+    return None
+
+def get_results_as_rows():
+    papers = Paper.query.all()
+    header = 'Submission ID,Status'
+    rows = [ header ]
+    for paper in papers:
+        status = get_latest_history_status(paper)
+        row = f'{paper.sid},{status}'
+        rows.append(row)
+    return rows
+
+
+@upload.route('/download_results_csv')
+def download_results_csv():
+    app = current_app._get_current_object()
+    folder = app.config['UPLOAD_FOLDER']
+    make_path_if_needed(folder)
+    filename = 'hepcat-results.csv'
+    fullpath = os.path.join(folder, filename)
+    rows = get_results_as_rows()
+    write_csv(rows, fullpath)
+    return send_file(fullpath, as_attachment=True)
 
 
 ''' Should follow redirect model, like this:
