@@ -16,6 +16,7 @@ export default function Body(){
     const globals = useAppGlobals();
     const user = globals.user;
     const queue = globals.queue;
+    const showPaper = globals.showPaper;
 
     const [showGrid, setShowGrid] = useState(false);
     const [showingStickie, setShowingStickie] = useState(false);
@@ -75,7 +76,7 @@ export default function Body(){
                                     <ColorsDisplay/>
                                 </div>
                                 : (
-                                showingQueueGUI ? <SetQueue></SetQueue> : <Paper/>
+                                showingQueueGUI ? <SetQueue></SetQueue> : <Paper showPaper={true} />
                             )}
                             </div>
                         </Container>

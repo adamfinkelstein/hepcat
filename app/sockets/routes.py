@@ -174,9 +174,24 @@ def set_queue(filters):
     db.session.add(gq)
     db.session.commit()
 
+def show_current_paper():
+    gq = GlobQueue.query.first()
+    gq.current_show = True
+    db.session.add(gq)
+    db.session.commit()
+
+def hide_queue(hide, message):
+    gq = GlobQueue.query.first()
+    gq.hide_all = hide
+    gq.message = message
+    db.session.add(gq)
+    db.session.commit()
+
+
 def inc_current_paper_index_by(inc):
     gq = GlobQueue.query.first()
     gq.current += inc
+    gq.current_show = False
     db.session.add(gq)
     db.session.commit()
 
@@ -258,7 +273,7 @@ def io_disconnect():
 @socketio.on('admin_prev_paper')
 def admin_prev_paper():
     print('admin request for prev paper')
-    inc_current_paper_index_by(-1)
+    inc_current_paper_index_by(-1) # also "hides" current
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs)
 
@@ -269,23 +284,23 @@ def admin_next_paper(status_update):
     inc_current_paper_index_by(+1)
     # other things this should do:
     # - hide current
+    # - set color and sticky status on prev (for grid)
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs)
-
-'''
-* update_papers (from next button)
-    * current paper (qid, nid, status for pulldown and hide)
-    * prev paper (history, queue and grid status: color and clear sticky)
-    * current status (for pulldown)
-'''
 
 @socketio.on('admin_show_current')
 def admin_show_current():
     print('admin request for show paper')
+    show_current_paper()
+    globs = get_globs_dump_with_status()
+    emit('server_set_globs', globs)
 
-@socketio.on('admin_show_queue')
-def admin_show_queue(data):
-    print(f'admin request for show queue: {data.show} {data.message}')
+@socketio.on('admin_hide_queue')
+def admin_hide_queue(data):
+    print(f'admin request for hide queue: {data.hide} {data.message}')
+    hide_queue(data.hide, data.message)
+    globs = get_globs_dump_with_status()
+    emit('server_set_globs', globs)
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
@@ -295,8 +310,8 @@ def admin_set_queue(filters):
     emit('server_set_queue', queue)
 
 @socketio.on('user_set_stickie')
-def user_set_stickie():
-    print('user request for set stickie')
+def user_set_stickie(data):
+    print('user request for set stickie:', data)
 
 @socketio.on('user_change_password')
 def user_change_password(new_password):

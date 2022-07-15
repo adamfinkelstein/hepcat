@@ -13,7 +13,9 @@ export default function AppContext({children}){
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
   const [queueCurrent, setQueueCurrent] = useState(0)
+  const [showPaper, setShowPaper] = useState(false)
   const [socket, setSocket] = useState(null);
+  const [serverGlobs, setServerGlobs] = useState(null)
 
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -33,28 +35,29 @@ export default function AppContext({children}){
       setGrid(data.grid);
     };
 
+    const receiveGlobs = (data) => {
+      console.log('received globs:');
+      console.log(data);
+      setQueueCurrent(data.current);
+      setShowPaper(data.show_paper);
+      setServerGlobs(data);
+    }
+
     const receiveQueue = (data) => {
       console.log('received queue:');
       console.log(data);
       const maxSize = 50;
       let queue = data.paper_list; // modified below temp ???
-      const globs = data.globs;
-      const current = globs.current;
       const len = queue.length;
       if (len > maxSize) { // AF: just temp cut down ???
         console.log('cutting queue size down from ' + len + ' to ' + maxSize);
         queue = queue.slice(0,maxSize);
       }
       setQueue(queue);
-      setQueueCurrent(current);
+      receiveGlobs(data.globs);
     };
 
-    const receiveGlobs = (data) => {
-      console.log('received globs:');
-      console.log(data);
-      const current = data.current;
-      setQueueCurrent(current);
-    }
+
 
     if (socket && 'on' in socket) {
       console.log('register welcome etc');
@@ -91,7 +94,9 @@ export default function AppContext({children}){
           "queue": queue,
           "grid": grid,
           "queueCurrent": queueCurrent,
+          "showPaper": showPaper,
           "socketEmit": socketEmit,
+          "serverGlobs": serverGlobs,
         }}>
         {children}
       </AppGlobalsContext.Provider>
