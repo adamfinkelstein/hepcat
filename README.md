@@ -49,7 +49,20 @@ This works in python version 3.9.13 (generally 3.9.x):
 ## To run locally:
 
 * `python hepcat.py` - This lauches the Flask server. Then navigate browser to `http://127.0.0.1:5000`. Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`). When you visit the React app in that page (after login) you are getting the version complied by `npm run build` above. 
-* In addition, you can get a live React server running too, as follows. Before launching Flask (python, as above), `export ALLOW_CORS=True`. Now, while Flask server is running, you can also use `npm start` to launch a React server to serve the React app, and it will connect by socketio to the Flask server (CORS required). To get to the live-updating React app, navigate browser to `http://127.0.0.1:3000`.
+
+* In addition, you can get a live React server running too, as follows.
+
+	* Before launching Flask (python, as above), 
+	`export ALLOW_CORS=True`.
+
+	* In terminal before you use `npm start` (next step) do: 
+	`export REACT_APP_SOCKET_ENDPOINT=http://127.0.0.1:5000/` 
+	(or whatever the port Flask is running on).
+
+	* Now, while Flask server is running, you can also use `npm start` to launch a React server to serve the React app, and it will connect by socketio to the Flask server (CORS required). 
+	
+	* To get to the live-updating React app, navigate browser to `http://127.0.0.1:3000`.
+
 * If you don't specify the database URL it writes a local SQL file-based database. Or you can connect to a local Postgres database via:  `DEV_DATABASE_URL=postgresql://localhost`. (AF tested on Mac with Postgres Version 2.5.6.)
 
 ## Local database options

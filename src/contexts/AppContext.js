@@ -37,7 +37,7 @@ export default function AppContext({children}){
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const endpt = "http://127.0.0.1:5000/"; // change this to go to specific PORT
+    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
     const newSocket = endpt ? socketIOClient(endpt) : socketIOClient();
     setSocket(newSocket);
     return () => newSocket.close();
