@@ -1,35 +1,11 @@
 import React, {useState, useContext, useEffect} from 'react'
 import socketIOClient from "socket.io-client";
 
-// const UserContext = React.createContext()
-// const QueueContext = React.createContext()
-// const GridContext = React.createContext()
-// const SocketEmitContext = React.createContext()
-
-// this holds a bunch of things, such as:
-// user, queue, grid, socketEmit, 
-// userCurrent, queueCurrent and setQueueCurrent
-const GlobalsContext = React.createContext() 
-
-// export function useUser(){
-//   return useContext(UserContext)
-// }
-
-// export function useQueue(){
-//   return useContext(QueueContext)
-// }
-
-// export function useGrid(){
-//   return useContext(GridContext)
-// }
+const AppGlobalsContext = React.createContext() 
 
 export function useAppGlobals(){
-  return useContext(GlobalsContext)
+  return useContext(AppGlobalsContext)
 }
-
-// export function useSocketEmit(){
-//   return useContext(SocketEmitContext)
-// }
 
 export default function AppContext({children}){
     
@@ -100,7 +76,7 @@ export default function AppContext({children}){
   }
 
   return (
-      <GlobalsContext.Provider 
+      <AppGlobalsContext.Provider 
         value={{
           "user": user,
           "queue": queue,
@@ -111,6 +87,6 @@ export default function AppContext({children}){
           "setUserCurrent": setUserCurrent
         }}>
         {children}
-      </GlobalsContext.Provider>
+      </AppGlobalsContext.Provider>
   )
 }
