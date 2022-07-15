@@ -38,7 +38,8 @@ export default function AppContext({children}){
       console.log(data);
       const maxSize = 50;
       const queue = data.paper_list;
-      const current = data.current;
+      const globs = data.globs;
+      const current = globs.current;
       const len = queue.length;
       if (len > maxSize) {
         console.log('cutting queue size down from ' + len + ' to ' + maxSize);
@@ -48,16 +49,25 @@ export default function AppContext({children}){
       setQueueCurrent(current);
     };
 
+    const receiveGlobs = (data) => {
+      console.log('received globs:');
+      console.log(data);
+      const current = data.current;
+      setQueueCurrent(current);
+    }
+
     if (socket && 'on' in socket) {
       console.log('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
+      socket.on('server_set_globs', receiveGlobs);
     }
 
     return () => {
       if (socket && 'off' in socket) {
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
+        socket.off('server_set_globs', receiveGlobs);
       }
     };
   }, [socket]);

@@ -5,14 +5,15 @@ from flask_login import current_user
 from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema, GlobQueue
+from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistoryStatus, HistorySchema, GlobQueue, GlobQueueSchema
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
+global_schema = GlobQueueSchema()
 history_schema = HistorySchema(many=True)
-
 
 def get_react_env_vars():
     vars = {}
@@ -169,9 +170,48 @@ def set_queue(filters):
     for paper in p_list:
         db.session.add(paper)
     gq = GlobQueue.query.first()
-    gq.current = 1
+    gq.current = 0
     db.session.add(gq)
     db.session.commit()
+
+def inc_current_paper_index_by(inc):
+    gq = GlobQueue.query.first()
+    gq.current += inc
+    db.session.add(gq)
+    db.session.commit()
+
+def update_current_paper_status(new_status):
+    _, paper = get_globs_and_paper_at_current_index()
+    context_plenary = int(HistoryContext.Plenary)
+    status_enum = int(HistoryStatus[new_status])
+    history = History(paper=paper,
+                    context_enum=context_plenary,
+                    status_enum=status_enum)
+    db.session.add(history)
+
+def get_globs_dump():
+    gq = GlobQueue.query.first()
+    globs = global_schema.dump(gq)
+    return globs
+
+def get_globs_and_paper_at_current_index():
+    globs = get_globs_dump()
+    index = globs['current']
+    if index >= 0:
+        papers = Paper.query.filter(Paper.queue_order > 0) \
+                      .order_by(Paper.queue_order).limit(index+1)
+        papers = list(papers)
+        if index < len(papers):
+            paper = papers[index]
+            return globs, paper
+    return globs, None
+
+def get_globs_dump_with_status():
+    globs, paper = get_globs_and_paper_at_current_index()
+    if paper:
+        status = get_latest_history_status(paper)
+        globs['current_status'] = status
+    return globs
 
 def get_queue():
     papers = Paper.query.filter(Paper.queue_order > 0) \
@@ -189,8 +229,8 @@ def get_queue():
         paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
         paper_prev = paper
-    gq = GlobQueue.query.first()
-    queue = { 'paper_list': paper_list, 'current': gq.current }
+    globs = get_globs_dump_with_status()
+    queue = { 'paper_list': paper_list, 'globs': globs }
     return queue
 
 @socketio.on('connect')
@@ -218,10 +258,26 @@ def io_disconnect():
 @socketio.on('admin_prev_paper')
 def admin_prev_paper():
     print('admin request for prev paper')
+    inc_current_paper_index_by(-1)
+    globs = get_globs_dump_with_status()
+    emit('server_set_globs', globs)
 
 @socketio.on('admin_next_paper')
-def admin_next_paper():
-    print('admin request for next paper')
+def admin_next_paper(status_update):
+    print('admin request for next paper with status:', status_update)
+    update_current_paper_status(status_update)
+    inc_current_paper_index_by(+1)
+    # other things this should do:
+    # - hide current
+    globs = get_globs_dump_with_status()
+    emit('server_set_globs', globs)
+
+'''
+* update_papers (from next button)
+    * current paper (qid, nid, status for pulldown and hide)
+    * prev paper (history, queue and grid status: color and clear sticky)
+    * current status (for pulldown)
+'''
 
 @socketio.on('admin_show_current')
 def admin_show_current():

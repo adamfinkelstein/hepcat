@@ -187,7 +187,7 @@ class GlobQueue(db.Model):
     bar = db.Column(db.Float, default=0.0)
     hide_all = db.Column(db.Boolean, default=False)
     message = db.Column(db.String(), default='')
-    current = db.Column(db.Integer, default=0)
+    current = db.Column(db.Integer, default=-1) # 0-base index into queue
     current_show = db.Column(db.Boolean, default=False)
     current_start = db.Column(db.DateTime, server_default=func.now())
 
@@ -216,6 +216,10 @@ class PaperSchema(ma.Schema):
 class HistorySchema(ma.Schema):
     class Meta:
         fields = ("when", "context", "status")
+
+class GlobQueueSchema(ma.Schema):
+    class Meta:
+        fields = ("bar", "hide_all", "message", "current", "current_show", "current_start")
 
 ######################
 # Global queue vars
