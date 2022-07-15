@@ -11,7 +11,7 @@ export default function QueueElement({paper, active}){
     // const queue = useQueue();
     const globals = useGlobals();
     const content = useRef(null);
-    const index = paper.queue_order - 1;
+    const index = paper ? paper.queue_order - 1 : -1;
     const conflicted = user.conflict_papers.includes(paper.nid);
     const qLine = conflicted ? ': CONFLICTED!' : 
             ( ' (' + paper.nid + '): ' + paper.title );

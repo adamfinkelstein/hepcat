@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
-from . import db, ma, set_gq, login_manager
+from . import db, ma, login_manager
 
 ######################
 # History Context / Status
@@ -230,8 +230,6 @@ def ensure_gq():
         print(f'created GC with id {gq.id}')
     else:
         print(f'retrieved GC with id {gq.id}')
-    set_gq(gq)
-
 
 ######################
 # Helper functions

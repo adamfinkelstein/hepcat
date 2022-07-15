@@ -2,7 +2,6 @@ import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
-from .. import get_gq
 from ..models import Role, User, Paper, PaperSchema, num_to_sid
 
 paper_schema = PaperSchema()
@@ -181,7 +180,7 @@ def whoami():
 @login_required
 def debugGQ():
     debug_title = 'Global Queue Vars'
-    gq = get_gq()
+    gq = GlobQueue.query.first()
     if gq:
         debug_output = debug_orm_to_string(gq)
     else:

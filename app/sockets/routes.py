@@ -5,7 +5,7 @@ from flask_login import current_user
 from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema
+from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistorySchema, GlobQueue
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -66,6 +66,13 @@ def get_grid_dump():
     below = get_grid_dump_bar(False)
     grid_dump = { 'above': above, 'below': below }
     return grid_dump
+
+def get_user_dump(user):
+    user_dump = user_schema.dump(user)
+    conflict_papers = list(user.conf_papers)
+    conflict_ids = [p.nid for p in conflict_papers]
+    user_dump['conflict_papers'] = conflict_ids
+    return user_dump
 
 def get_user_list_dump(users, sort=True):
     user_list = list(users) # in case it was a set
@@ -161,6 +168,9 @@ def set_queue(filters):
         paper.queue_order = (index+1)
     for paper in p_list:
         db.session.add(paper)
+    gq = GlobQueue.query.first()
+    gq.current = 1
+    db.session.add(gq)
     db.session.commit()
 
 def get_queue():
@@ -179,14 +189,9 @@ def get_queue():
         paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
         paper_prev = paper
-    return paper_list
-
-def get_user_dump(user):
-    user_dump = user_schema.dump(user)
-    conflict_papers = list(user.conf_papers)
-    conflict_ids = [p.nid for p in conflict_papers]
-    user_dump['conflict_papers'] = conflict_ids
-    return user_dump
+    gq = GlobQueue.query.first()
+    queue = { 'paper_list': paper_list, 'current': gq.current }
+    return queue
 
 @socketio.on('connect')
 def io_connect():
@@ -197,12 +202,11 @@ def io_connect():
     user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
     # config_vars = get_react_env_vars()
-    data = {'user': user_dump, 
-            'grid': grid_dump } # later: 'config': config_vars }
+    # later: 'config': config_vars }
+    data = {'user': user_dump, 'grid': grid_dump } 
     emit('server_welcome', data)
     data = get_queue()
-    if len(data):
-        emit('server_set_queue', data)
+    emit('server_set_queue', data)
 
 @socketio.on('disconnect')
 def io_disconnect():

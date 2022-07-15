@@ -58,12 +58,15 @@ export default function AppContext({children}){
       console.log('received queue:');
       console.log(data);
       const maxSize = 50;
-      const len = data.length;
+      const queue = data.paper_list;
+      const current = data.current;
+      const len = queue.length;
       if (len > maxSize) {
         console.log('cutting queue size down from ' + len + ' to ' + maxSize);
-        data = data.slice(0,maxSize);
+        queue = queue.slice(0,maxSize);
       }
-      setQueue(data);
+      setQueue(queue);
+      setQueueCurrent(current);
     };
 
     if (socket && 'on' in socket) {
@@ -96,7 +99,7 @@ export default function AppContext({children}){
             <GlobalsContext.Provider 
               value={
                 {"userCurrent": userCurrent, // index in queue
-                "queueCurrent": queueCurrent, // nid
+                "queueCurrent": queueCurrent, // index in queue
                 "setUserCurrent": setUserCurrent}
               }>
               <SocketEmitContext.Provider value={socketEmit}>

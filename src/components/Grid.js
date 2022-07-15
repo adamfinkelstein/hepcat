@@ -20,7 +20,7 @@ export default function Grid({isAbove,showingStickie}){
             }
         }
         else{
-            if(gridElem.nid === globals.queueCurrent){
+            if(gridElem.queue_order === globals.queueCurrent + 1){
                 className += " current"
             }
             else{

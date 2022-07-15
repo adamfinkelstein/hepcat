@@ -3,19 +3,21 @@ import {useGlobals, useQueue} from '../contexts/AppContext'
 
 export default function Paper(){
 
-    const globals = useGlobals();
     const queue = useQueue();
-    const cp = queue[globals.userCurrent];
+    const globals = useGlobals();
+    const showPaper = queue && queue.length && globals && globals.queueCurrent;
+    const cp = queue.length ? queue[globals.userCurrent] : null;
+    const queue_order = cp ? cp.queue_order : '-1';
 
     return(
         <Container className="Paper">
 
             <div>
-            {(cp === undefined) ? (
+            {(showPaper) ? (
                 <p>No current paper.</p>
             ) : (
                 <div>
-                    <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
+                    <h2 className='paper-title custom-font-size'>Q{queue_order} ({cp.nid}): {cp.title}</h2>
                     <br/>
                     <p className='custom-font-size'>Reviews: {cp.all_scores}&nbsp;Sort:{cp.sort_score}</p>
                     <p className='custom-font-size'>Summary: {cp.summary}</p>
