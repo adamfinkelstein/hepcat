@@ -2,7 +2,7 @@ import os
 import random
 from flask_socketio import emit, disconnect
 from flask_login import current_user
-from sqlalchemy import true
+# from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistoryStatus, HistorySchema, GlobQueue, GlobQueueSchema
@@ -174,6 +174,7 @@ def set_queue(filters):
 def show_current_paper():
     gq = GlobQueue.query.first()
     gq.current_show = True
+    gq.current_start = func.now()
     db.session.add(gq)
     db.session.commit()
 

@@ -9,10 +9,11 @@ export default function Paper(){
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
     const queueCurrent = globals.queueCurrent;
     const currentShow = globals.serverGlobs.current_show;
+    const currentStart = moment.utc(globals.serverGlobs.current_start).local().format('ddd LT');
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
     const hist = cp ? cp.history : [];
     const histMap = hist.map( h => 
-        h.status + " (" + moment(h.when).format('ddd LT') + ")" );
+        h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")" );
     const histJoin = histMap.join(', ');
 
     return(
@@ -36,6 +37,7 @@ export default function Paper(){
                 <div>
                     <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
                     <br/>
+                    <p className='custom-font-size'>Showed: {currentStart}</p>
                     <p className='custom-font-size'>Reviews: {cp.all_scores}&nbsp;Sort:{cp.sort_score}</p>
                     <p className='custom-font-size'>History: {histJoin}</p>
                     <p className='custom-font-size'>Summary: {cp.summary}</p>
