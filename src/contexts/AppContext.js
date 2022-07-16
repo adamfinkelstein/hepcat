@@ -26,6 +26,9 @@ export default function AppContext({children}){
       current_status: String (Conference, Journal, Reject, Tabled)
       hide_queue: Boolean
       message: String
+
+    Set in react to include the following:
+      queueCurrentID (numerical id to access grid)
   */
 
   useEffect(() => {
@@ -49,6 +52,7 @@ export default function AppContext({children}){
     const receiveGlobs = (data) => {
       console.log('received globs:');
       console.log(data);
+      console.log(queue)
       setQueueCurrent(data.current);
       setServerGlobs(data);
 

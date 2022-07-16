@@ -33,7 +33,7 @@ export default function Queue(){
     function currentClass(index){
         let className = "queue_element"
         if (index === globals.queueCurrent){
-            className += " current"
+            className += " Current"
         }
         else {
             if (index < globals.queueCurrent){

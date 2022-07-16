@@ -4,14 +4,23 @@ import {useAppGlobals} from '../contexts/AppContext'
 export default function Grid({isAbove,showingStickie}){
     const globals = useAppGlobals();
     const user = globals.user;
+    const queue = globals.queue;
     const grid = globals.grid;
     const aboveOrBelow = isAbove ? grid.above : grid.below;
     const notConflicted = aboveOrBelow.filter(
         paper => !user.conflict_papers.includes(paper.nid));
 
+    
+    let queueCurrentID = 0 // none has 0 nid
+    if(globals.queueCurrent < queue.length){
+        queueCurrentID = queue[globals.queueCurrent].nid
+    }
+
     function gridClass(gridElem){
         let className = "grid-item";
-        let paperStatus = gridElem.status
+        let paperStatus = gridElem.status_full
+   
+
         if(showingStickie){
             if(gridElem.stickie){
                 className += " stickie"
@@ -20,30 +29,10 @@ export default function Grid({isAbove,showingStickie}){
             }
         }
         else{
-            if(gridElem.queue_order === globals.queueCurrent + 1){
-                className += " current"
-            }
-            else{
-                switch(paperStatus){
-                    case "U":
-                        className += " unseen"
-                        break;
-                    case "R":
-                        className += " reject"
-                        break;
-                    case "C":
-                        className += " conference"
-                        break;
-                    case "T":
-                        className += " tabled"
-                        break;
-                    case "J":
-                        className += " journal"
-                        break;
-                    default:
-                        className += " unseen"
-                        break;
-                }
+            if(gridElem.nid === queueCurrentID){
+                className += " Current"
+            } else{
+                className += " " + paperStatus
             }
         }
         return className;

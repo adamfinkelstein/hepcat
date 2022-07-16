@@ -2,21 +2,21 @@ import { text } from '@fortawesome/fontawesome-svg-core'
 import React, {useState, useContext, useEffect} from 'react'
 
 const defaultColors = {
-  "unseen": "#F4F4F4", 
-  "tabled": "#E8F77D", 
-  "reject": "#F3A8C0", 
-  "conference": "#628BF0", 
-  "journal": "#288D0C", 
-  "current": "#000000"
+  "Unseen": "#F4F4F4", 
+  "Tabled": "#E8F77D", 
+  "Reject": "#F3A8C0", 
+  "Conference": "#628BF0", 
+  "Journal": "#288D0C", 
+  "Current": "#000000"
 }
 
 const defaultTextColors = {
-  "unseen": true, 
-  "tabled": true, 
-  "reject": true, 
-  "conference": false, 
-  "journal": false, 
-  "current": false
+  "Unseen": true, 
+  "Tabled": true, 
+  "Reject": true, 
+  "Conference": false, 
+  "Journal": false, 
+  "Current": false
 }
                           
 const fontSizes = {
