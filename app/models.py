@@ -185,11 +185,12 @@ class GlobQueue(db.Model):
     __tablename__ = 'glob_queue'
     id = db.Column(db.Integer, primary_key=True)
     bar = db.Column(db.Float, default=0.0)
-    hide_all = db.Column(db.Boolean, default=False)
+    hide_queue = db.Column(db.Boolean, default=False)
     message = db.Column(db.String(), default='')
     current = db.Column(db.Integer, default=-1) # 0-base index into queue
     current_show = db.Column(db.Boolean, default=False)
     current_start = db.Column(db.DateTime, server_default=func.now())
+    current_show_enter = db.Column(db.Boolean, default=False)
 
 class FileUpload(db.Model):
     __tablename__ = 'file_upload'
@@ -219,7 +220,8 @@ class HistorySchema(ma.Schema):
 
 class GlobQueueSchema(ma.Schema):
     class Meta:
-        fields = ("bar", "hide_all", "message", "current", "current_show", "current_start")
+        fields = ("bar", "hide_queue", "message", 
+            "current", "current_show", "current_start", "current_show_enter")
 
 ######################
 # Global queue vars
