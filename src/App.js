@@ -6,6 +6,7 @@ import MainPage from './pages/MainPage.js'
 import AppContext from './contexts/AppContext.js'
 import PreferencesContext from './contexts/PreferencesContext'
 import PreferencesPage from "./pages/PreferencesPage.js";
+import AboutPage from "./pages/AboutPage.js";
 import ChangePasswordPage from "./pages/ChangePasswordPage.js";
 import FlasherContext from './contexts/FlasherContext.js';
 
@@ -20,6 +21,7 @@ export default function App() {
                 <Navbar/>
                 <Routes>
                     <Route path="/" element={<MainPage/>}/>
+                    <Route path="/about" element={<AboutPage/>}/>
                     <Route path="/preferences" element={<PreferencesPage/>}/>
                     <Route path="/change_password" element={<ChangePasswordPage/>}/>
                     <Route path="*" element={<Navigate to="/" />} />

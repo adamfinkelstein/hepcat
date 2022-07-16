@@ -27,6 +27,7 @@ export default function Header() {
             {
               user && 
               <NavDropdown title={user.full_name} id="navbarScrollingDropdown">
+                <NavDropdown.Item as={NavLink} to="about">About</NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {
                   user.role_name === "Admin" &&

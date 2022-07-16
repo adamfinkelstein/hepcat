@@ -19,7 +19,7 @@ def before_main_request():
         print('user not authenticated ... send to login')
         return redirect(url_for('auth.login'))
 
-# @main.route("/chat/")
+@main.route("/about/")
 @main.route("/preferences/")
 @main.route("/")
 @login_required
