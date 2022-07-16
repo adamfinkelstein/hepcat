@@ -15,6 +15,18 @@ export default function AppContext({children}){
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
+  
+  /* 
+    serverGlobs Fields:
+      bar: Float
+      current: Int
+      current_history: Array[History obj]
+      current_show: Boolean
+      current_start: DateTime
+      current_status: String (Conference, Journal, Reject, Tabled)
+      hide_queue: Boolean
+      message: String
+  */
 
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -39,6 +51,9 @@ export default function AppContext({children}){
       console.log(data);
       setQueueCurrent(data.current);
       setServerGlobs(data);
+
+      // set status of previous paper by using setQueue (current)
+      // set status of previous paper by using setGrid (nid)
     }
 
     const receiveQueue = (data) => {
@@ -54,8 +69,6 @@ export default function AppContext({children}){
       setQueue(queue);
       receiveGlobs(data.globs);
     };
-
-
 
     if (socket && 'on' in socket) {
       console.log('register welcome etc');

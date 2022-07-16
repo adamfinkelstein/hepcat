@@ -40,7 +40,7 @@ export default function Queue(){
               className += " past"
             }
             if (index % 2) {
-                className += " odd_row"
+              className += " odd_row"
             }
         }
         return className

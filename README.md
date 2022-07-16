@@ -69,6 +69,7 @@ This works in python version 3.9.13 (generally 3.9.x):
 
 * To get local sqlite file, don't set `DEV_DATABASE_URL`
 * For postgres: `DEV_DATABASE_URL=postgresql://localhost`
+* Wipe out: rm data-dev.sqlite
 
 ## To set up heroku:
 
