@@ -68,22 +68,6 @@ a.nav-link {
 
 /* Style the buttons that are used to open and close the accordion panel */
 
-.queue_element.odd_row{
-  background-color: #eec;
-}
-
-.current{
-  background-color: cyan;
-}
-
-.past{
-  background-color: #dfd;
-}
-
-.past.odd_row{
-  background-color: #beb;
-}
-
 /* Style the accordion content title */
 .accordion_title {
   font-family: "Open Sans", sans-serif;
@@ -117,10 +101,30 @@ a.nav-link {
 }
 
 .queue_element{
-  border: 1px solid black;
+  border: 1px solid #aaa;
+  margin-top:-2px; /* this avoids double-border between elements */
   padding: 10px 5px;
   cursor: pointer;
+  margin-top:-1px;
 }
+
+.queue_element.odd_row{
+  background-color: #eec;
+}
+
+.current{
+  border: 1px solid black;
+  background-color: cyan;
+}
+
+.past{
+  background-color: #dfd;
+}
+
+.past.odd_row{
+  background-color: #beb;
+}
+
 
 .AdminQueueControls{
   margin-top: 15px;
