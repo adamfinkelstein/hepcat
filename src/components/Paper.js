@@ -11,8 +11,9 @@ export default function Paper(){
     const currentShow = globals.serverGlobs.current_show;
     const currentStart = moment.utc(globals.serverGlobs.current_start).local().format('ddd LT');
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
-    const hist = cp ? cp.history : [];
-    const histMap = hist.map( h => 
+    const hist = globals.serverGlobs.current_history;
+    const histSafe = hist ? hist : [];
+    const histMap = histSafe.map( h => 
         h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")" );
     const histJoin = histMap.join(', ');
 

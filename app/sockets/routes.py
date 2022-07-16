@@ -226,6 +226,9 @@ def get_globs_dump_with_status():
     if paper:
         status = get_latest_history_status(paper)
         globs['current_status'] = status
+        if globs['current_show']:
+            history = get_paper_history_dump(paper)
+            globs['current_history'] = history
     return globs
 
 def get_queue():
@@ -234,11 +237,10 @@ def get_queue():
     paper_list = []
     paper_prev = None
     for paper in papers:
-        history_dump = get_paper_history_dump(paper)
         # conflicts = get_paper_conflicts_dump(paper)
         _,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper)
         paper_dump = paper_schema.dump(paper)
-        paper_dump['history'] = history_dump
+        # paper_dump['history'] = history_dump
         paper_dump['conflicts'] = get_user_list_dump(conf_curr)
         paper_dump['enter'] = get_user_list_dump(enter)
         paper_dump['leave'] = get_user_list_dump(leave)
