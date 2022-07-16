@@ -10,6 +10,8 @@ export default function Queue(){
     const globals = useAppGlobals();
     const queue = globals.queue;
     const user = globals.user;
+    const counter = globals.queueCurrent + 1;
+    const currentCount = counter > queue.length ? "completed" : counter + " of";
 
     let allClosed = []
     for(let i = 0; i < queue.length; i++){
@@ -38,7 +40,7 @@ export default function Queue(){
             }
             <Container className="expand-bar">
                 <Stack direction="horizontal">
-                    <span className='current-text'>Current: {globals.queueCurrent + 1} of {queue.length}</span>
+                    <span className='current-text'>Current: {currentCount} {queue.length}</span>
                     <div className="expand-buttons">
                         {
                             !queueExpanded[0] && 

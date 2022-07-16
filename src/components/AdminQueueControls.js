@@ -11,9 +11,10 @@ export default function AdminQueueControls() {
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
     const [newStatus, setNewStatus] = useState("Reject");
+    const completed = globals.queueCurrent >= globals.queue.length;
     const disablePrev = globals.queueCurrent === 0 ? "disabled" : "";
-    const disableShow = globals.serverGlobs.current_show ? "disabled" : "";
-    const disableNext = globals.queueCurrent >= globals.queue.length ? "disabled" : "";
+    const disableShow = completed || globals.serverGlobs.current_show ? "disabled" : "";
+    const disableNext = completed ? "disabled" : "";
 
     return(
         <Stack direction="horizontal" className="AdminQueueControls">
