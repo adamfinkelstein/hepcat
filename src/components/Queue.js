@@ -10,8 +10,14 @@ export default function Queue(){
     const globals = useAppGlobals();
     const queue = globals.queue;
     const user = globals.user;
-    const counter = globals.queueCurrent + 1;
+    const current = globals.queueCurrent;
+    const counter = current + 1;
     const currentCount = counter > queue.length ? "completed" : counter + " of";
+    const past_max = 3;
+    const future_max = 12;
+    const start_index = Math.max(0, current - past_max);
+    const end_index = Math.min(counter + future_max, queue.length);
+    const queueSlice = queue.slice(start_index, end_index);
 
     let allClosed = []
     for(let i = 0; i < queue.length; i++){
@@ -26,8 +32,16 @@ export default function Queue(){
 
     function currentClass(index){
         let className = "queue_element"
-        if(index === globals.queueCurrent){
-          className += " current"
+        if (index === globals.queueCurrent){
+            className += " current"
+        }
+        else {
+            if (index < globals.queueCurrent){
+              className += " past"
+            }
+            if (index % 2) {
+                className += " odd_row"
+            }
         }
         return className
     }
@@ -62,9 +76,9 @@ export default function Queue(){
             <Container className="queue-container custom-font-size">
                 <ul>
                     {
-                    queue.map((paper, index) => {
+                    queueSlice.map((paper, index) => {
                         return(
-                            <li key={index} className={currentClass(index)}>
+                            <li key={index} className={currentClass(index+start_index)}>
                                 <QueueElement paper={paper} active={queueExpanded[index]}/>
                             </li> 
                         )

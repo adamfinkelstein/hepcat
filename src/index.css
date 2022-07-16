@@ -68,8 +68,20 @@ a.nav-link {
 
 /* Style the buttons that are used to open and close the accordion panel */
 
+.queue_element.odd_row{
+  background-color: #eec;
+}
+
 .current{
   background-color: cyan;
+}
+
+.past{
+  background-color: #dfd;
+}
+
+.past.odd_row{
+  background-color: #beb;
 }
 
 /* Style the accordion content title */
