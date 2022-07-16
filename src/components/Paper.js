@@ -22,7 +22,16 @@ export default function Paper(){
             { !isPaper ? (
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
-                 <p>Hidden.</p>
+                <div>
+                <h2>Conflicts</h2>
+                <ul>
+                    {cp.conflicts.map( (user,index) => {
+                        return (
+                            <li key={index}>{user.full_name}</li>
+                        )
+                    })}
+                </ul>
+                </div>
                 ) : (
                 <div>
                     <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
