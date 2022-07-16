@@ -13,7 +13,6 @@ export default function AppContext({children}){
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
   const [queueCurrent, setQueueCurrent] = useState(0)
-  const [showPaper, setShowPaper] = useState(false)
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
 
@@ -39,7 +38,6 @@ export default function AppContext({children}){
       console.log('received globs:');
       console.log(data);
       setQueueCurrent(data.current);
-      setShowPaper(data.show_paper);
       setServerGlobs(data);
     }
 
@@ -94,7 +92,6 @@ export default function AppContext({children}){
           "queue": queue,
           "grid": grid,
           "queueCurrent": queueCurrent,
-          "showPaper": showPaper,
           "socketEmit": socketEmit,
           "serverGlobs": serverGlobs,
         }}>

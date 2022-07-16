@@ -169,10 +169,7 @@ def set_queue(filters):
         paper.queue_order = (index+1)
     for paper in p_list:
         db.session.add(paper)
-    gq = GlobQueue.query.first()
-    gq.current = 0
-    db.session.add(gq)
-    db.session.commit()
+    zero_or_inc_current_index(0) # does commit!
 
 def show_current_paper():
     gq = GlobQueue.query.first()
@@ -187,10 +184,12 @@ def hide_queue(hide, message):
     db.session.add(gq)
     db.session.commit()
 
-
-def inc_current_paper_index_by(inc):
+def zero_or_inc_current_index(zero_or_inc):
     gq = GlobQueue.query.first()
-    gq.current += inc
+    if zero_or_inc == 0:
+        gq.current = 0
+    else:
+        gq.current += zero_or_inc
     gq.current_show = False
     db.session.add(gq)
     db.session.commit()
@@ -273,7 +272,7 @@ def io_disconnect():
 @socketio.on('admin_prev_paper')
 def admin_prev_paper():
     print('admin request for prev paper')
-    inc_current_paper_index_by(-1) # also "hides" current
+    zero_or_inc_current_index(-1) # also "hides" current
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs)
 
@@ -281,9 +280,8 @@ def admin_prev_paper():
 def admin_next_paper(status_update):
     print('admin request for next paper with status:', status_update)
     update_current_paper_status(status_update)
-    inc_current_paper_index_by(+1)
+    zero_or_inc_current_index(+1) # also "hides" current
     # other things this should do:
-    # - hide current
     # - set color and sticky status on prev (for grid)
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs)
