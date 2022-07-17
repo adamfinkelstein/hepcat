@@ -35,6 +35,7 @@ In addition, you can choose a set of "favorites" and they will be highlighted in
 Note that preferences are saved in local storage in your browser, which has several implications. First, you can set different preferences for different computers (or even different browsers), which may be helpful for different monitors etc. Second, your preferences are not trasfered to the Hepcat server,
 meaning there is no way for this information to be "leaked" by the server to another user -- important because "favorites" should be considered sensitive.
 
+
 ### Image example
 
 It turns out that you can insert an image easily in Markdown:
