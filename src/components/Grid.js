@@ -12,7 +12,7 @@ export default function Grid({isAbove,showingStickie}){
 
     
     let queueCurrentID = 0 // none has 0 nid
-    if(globals.queueCurrent < queue.length){
+    if(queue.length && globals.queueCurrent < queue.length){
         queueCurrentID = queue[globals.queueCurrent].nid
     }
 
