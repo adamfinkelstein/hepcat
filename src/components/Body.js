@@ -4,23 +4,17 @@ import {useAppGlobals} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Queue from './Queue'
 import Paper from './Paper'
-import Grid from './Grid'
-import {useState} from 'react'
-import GridControls from './GridControls';
-import ColorsDisplay from './ColorsDisplay';
+import GridSection from './GridSection'
 import SetQueue from './SetQueue';
 import Alert from 'react-bootstrap/Alert';
 import Collapse from 'react-bootstrap/Collapse';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 
 export default function Body(){
     const globals = useAppGlobals();
     const user = globals.user;
     const queue = globals.queue;
-
-    const [showGrid, setShowGrid] = useState(false);
-    const [showingStickie, setShowingStickie] = useState(false);
-    const [showingQueueGUI, setShowingQueueGUI] = useState(false);
-    const [gridSize, setGridSize] = useState(60); // MAYBE OLD ???
 
     const flasher = useFlasher()
     //const flash = flasher["flash"]
@@ -42,9 +36,6 @@ export default function Body(){
                     className='split'
                     sizes={[40, 60]}
                     cursor="col-resize"
-                    onDrag={(sizes) => {
-                        setGridSize(sizes[1])
-                    }}
                     minSize={[500, 500]}
                     >
                         <Container>
@@ -59,25 +50,23 @@ export default function Body(){
                                     </Alert>
                                 </div>
                             </Collapse>
-                            <GridControls showingStickie={showingStickie} setShowingStickie={setShowingStickie} 
-                                          showGrid={showGrid} setShowGrid={setShowGrid}
-                                          showingQueueGUI={showingQueueGUI} setShowingQueueGUI={setShowingQueueGUI}/>
-                            <div className="right-panel-container">
-                                {((showGrid || queue.length === 0) && !showingQueueGUI) ? 
-                                <div>
-                                    <div className="grid-container">
-                                        <Grid isAbove showingStickie={showingStickie}/>
-                                    </div> 
-                                    <hr style={{ borderTop: "3px solid #000", borderRadius: "2px"}}/>
-                                    <div className="grid-container">
-                                        <Grid showingStickie={showingStickie}/>
-                                    </div>
-                                    <ColorsDisplay/>
-                                </div>
-                                : (
-                                showingQueueGUI ? <SetQueue></SetQueue> : <Paper/>
-                            )}
-                            </div>
+                            <Tabs defaultActiveKey="paper"
+                                  id="uncontrolled-tab-example"
+                                  className="mb-3">
+                                <Tab eventKey="paper" title="Paper">
+                                    <Paper />
+                                </Tab>
+                                <Tab eventKey="grid" title="Grid">
+                                    <GridSection />
+                                </Tab>
+                                {
+                                    user && user.role_name === "Admin" && (
+                                        <Tab eventKey="set-queue" title="Set Queue">
+                                            <SetQueue/>
+                                        </Tab>
+                                    )
+                                }
+                            </Tabs>
                         </Container>
                     </Split>
             )}
