@@ -23,6 +23,30 @@ class HistoryStatus(IntEnum):
     Conference = 2
     Journal = 3
 
+def context_str_to_enum(str):
+    if hasattr(HistoryContext, str):
+        return int(HistoryContext[str])
+    return 0
+
+def context_enum_to_str(n):
+    for entry in HistoryContext:
+        # print(entry.name, entry.value)
+        if entry.value == n:
+            return entry.name
+    return 'BBS' # default
+
+def status_str_to_enum(str):
+    if hasattr(HistoryStatus, str):
+        return int(HistoryStatus[str])
+    return 0 # default is Tabled
+
+def status_enum_to_str(n):
+    for entry in HistoryStatus:
+        # print(entry.name, entry.value)
+        if entry.value == n:
+            return entry.name
+    return 'Tabled' # default
+
 ######################
 # Many-to-Many Tables
 ######################

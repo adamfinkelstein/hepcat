@@ -10,7 +10,8 @@ from . import upload
 from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, \
-     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, conflicts, tags
+    sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, \
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -244,14 +245,6 @@ def review_str_to_num(s):
         return int(s)
     return 0
 
-# def consensus_num_to_str(num):
-#     if num < 0:
-#         return 'R'
-#     elif num == 0:
-#         return 'T'
-#     else:
-#         return 'C' # should be C or J!!! but how to know?!?
-
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'', 1:'a', 3:'A', 5:'_A_'}
 
 def get_rating_code(rating):
@@ -262,11 +255,11 @@ def get_rating_code(rating):
 def get_consensus_info(consensus_recs):
     # later: need to check for Conference / Journal?
     if len(consensus_recs) == 2 and consensus_recs[0] == consensus_recs[1]:
-        letter = consensus_recs[0]
+        enum = consensus_recs[0]
     else:
-        letter = 'T'
-    enum,name = status_letter_to_history(letter)
-    return enum, name, letter
+        enum = 0 # default is Tabled
+    name = status_enum_to_str(enum)
+    return enum, name
 
 def scores_to_string(scores):
     codes = [ get_rating_code(score) for score in scores ]
@@ -316,9 +309,9 @@ def papers_set_all_scores_and_status_from_reviews():
         reviews = paper.reviews.order_by(Review.role)
         conference_scores,journal_scores,consensus_recs = \
             reviews_to_score_lists(reviews)
-        consensus_enum,_,consensus_letter = get_consensus_info(consensus_recs)
+        consensus_enum,consensus_str = get_consensus_info(consensus_recs)
         paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
-        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_letter)
+        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str)
         db.session.add(paper)
 
         # add BBS history ### ??? later: fix time below...
@@ -346,6 +339,7 @@ def insert_review_rows(rows):
             role_num = review_role_to_num(role)
             conference = review_str_to_num(conference)
             journal = review_str_to_num(journal)
+            consensus = status_str_to_enum(consensus)
             review = Review(paper=paper,
                             role=role_num,
                             conference=conference,
@@ -378,8 +372,8 @@ def insert_history_rows(rows):
         paper = Paper.query.filter_by(nid=nid).first()
         if paper:
             then = now - timedelta(seconds=secs)
-            context_enum = int(HistoryContext[context])
-            status_enum,_ = status_letter_to_history(status)
+            context_enum = context_str_to_enum(context)
+            status_enum = status_str_to_enum(status)
             if not context_enum:
                 print(f'adding history for paper {paper.id} and zero context')
             history = History(paper=paper,
