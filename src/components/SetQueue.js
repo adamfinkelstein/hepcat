@@ -37,6 +37,7 @@ export default function SetQueue(){
     }
 
     function handleInputChange(event){
+        console.log("hiii")
         event.preventDefault(); // do not send the form!
         const target = event.target;
         if(target.name === "lowRange") setLowRange(target.value)
@@ -93,7 +94,9 @@ export default function SetQueue(){
                                 variant="secondary">
                                 {
                                     ["All Scores", "At/Above Bar", "Below Bar", "In Range"].map((scoreSelection, index) => {
-                                        return <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(`scoreSelection`)}>{scoreSelection}</Dropdown.Item>
+                                        return(
+                                            <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(scoreSelection)}>{scoreSelection}</Dropdown.Item>
+                                        )
                                     })
                                 }
                             </DropdownButton>
@@ -108,7 +111,6 @@ export default function SetQueue(){
                                 value={highRange}
                                 onChange={handleInputChange}
                             />
-
                         </Stack>
                     </div>
                     <div>

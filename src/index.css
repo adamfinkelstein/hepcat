@@ -141,8 +141,6 @@ a.nav-link {
 }
 
 /* Paper Styling (right panel) */
-.right-panel-container{
-}
 
 .paper-image{
   width: 75%;
@@ -184,6 +182,9 @@ a.nav-link {
   margin-top: 10px;
 }
 
+.grid-display-dropdown{
+  margin: 5px;
+}
 .grid-controls{
   padding: 20px 5px;
 }

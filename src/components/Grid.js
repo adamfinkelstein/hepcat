@@ -1,7 +1,7 @@
 //import { Container } from "react-bootstrap";
 import {useAppGlobals} from '../contexts/AppContext'
 
-export default function Grid({isAbove,showingStickie}){
+export default function Grid({isAbove,gridDisplay}){
     const globals = useAppGlobals();
     const user = globals.user;
     const queue = globals.queue;
@@ -21,7 +21,7 @@ export default function Grid({isAbove,showingStickie}){
         let paperStatus = gridElem.status_full
    
 
-        if(showingStickie){
+        if(gridDisplay == "Stickie"){
             if(gridElem.stickie){
                 className += " stickie"
             }else{
