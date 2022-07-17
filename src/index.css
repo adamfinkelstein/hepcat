@@ -292,3 +292,7 @@ a.nav-link {
 #status-dropdown-menu:hover {
   background: lightyellow;
 }
+
+.about-container {
+  margin-top: 20px;
+}
