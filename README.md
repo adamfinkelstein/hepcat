@@ -68,7 +68,7 @@ This works in python version 3.9.13 (generally 3.9.x):
 ## Local database options
 
 * To get local sqlite file, don't set `DEV_DATABASE_URL`
-* For postgres: `DEV_DATABASE_URL=postgresql://localhost`
+* For postgres: `export DEV_DATABASE_URL=postgresql://localhost`
 * Wipe out: rm data-dev.sqlite
 
 ## To set up heroku:
@@ -108,12 +108,16 @@ python fake.py
 
 ```
 \dt (<==shows tables)
-DROP TABLE IF EXISTS history;
-DROP TABLE IF EXISTS conflicts;
-DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS papers;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS history CASCADE;
+DROP TABLE IF EXISTS conflicts CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS papers CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS file_upload CASCADE;
+DROP TABLE IF EXISTS glob_queue CASCADE;
+DROP TABLE IF EXISTS labels CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
 ```
 
 (To do so at Heroku, log into Heroku panel and find the spot in settings for that database.)

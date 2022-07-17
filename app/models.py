@@ -198,7 +198,7 @@ class FileUpload(db.Model):
     file = db.Column(db.String(64))
     count = db.Column(db.Integer, default=0)
     when = db.Column(db.DateTime, server_default=func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    # user_id = db.Column(db.Integer, db.ForeignKey('users.id')) AF removed this
 
 
 ######################

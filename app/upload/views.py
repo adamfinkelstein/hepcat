@@ -69,7 +69,8 @@ def delete_all_labels():
 def delete_all_users():
     delete_all_conflicts() # need to delete conflicts before users
     dump_users_papers_and_conflicts('Before user deletion')
-    num_deleted = User.query.delete()
+    # see: https://stackoverflow.com/questions/3481976/ 
+    num_deleted = User.query.delete() # delete(synchronize_session='fetch')
     db.session.commit()
     print(f'Deleted {num_deleted} users.')
     dump_users_papers_and_conflicts('After user deletion')
@@ -453,11 +454,15 @@ def get_csv_type(header):
     return None
 
 def delete_prev_file_uploads(headerType):
-    FileUpload.query.filter_by(file=headerType).delete()
-    if headerType in csvDependence:
-        deps = csvDependence[headerType]
-        for dep in deps:
-            FileUpload.query.filter_by(file=dep).delete()
+    print('about to delete headerType: ', headerType)
+    if headerType not in csvDependence:
+        FileUpload.query.filter_by(file=headerType).delete()
+        return
+    del_list = csvDependence[headerType]
+    del_list = list(del_list)
+    del_list.append(headerType)
+    print('about to delete these file upload types: ', del_list)
+    FileUpload.query.filter(FileUpload.file in del_list).delete()
 
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
@@ -468,7 +473,7 @@ def read_csv(filename):
             return False, False
         count = func(rows)
         delete_prev_file_uploads(headerType)
-        upload = FileUpload(file=headerType, count=count, user_id=current_user.id)
+        upload = FileUpload(file=headerType, count=count)
         db.session.add(upload)
         db.session.commit()
         msg = dump_users_papers_and_conflicts('After Upload')
