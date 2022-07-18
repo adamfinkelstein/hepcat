@@ -14,7 +14,7 @@ export default function PreferencesPage() {
     let flashMessage = flasher["flashMessage"]
 
     return (
-        <Container>
+        <Container className='preferences-page'>
             <Collapse in={visible}>
                 <div>
                     <Alert variant={flashMessage.type || 'info'} dismissible

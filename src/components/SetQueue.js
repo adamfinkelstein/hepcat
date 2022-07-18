@@ -75,112 +75,110 @@ export default function SetQueue(){
             </div>
             <hr className="horizontal-divider"/>
             <div>
-                <Form>
-                    <Stack direction="horizontal" gap={5}>
-                        <div>&nbsp;</div>
-                        <div>
-                            <span style={{fontSize:"18px"}}><u>Include All</u>:</span>
-                            <br />
-                            <div key={`status-checkbox`} className="mb-4">
-                            { statusList.map((label, index) => {
-                                return(
-                                    <div key={`status-checkbox-div-`+index}>
-                                    <Form.Check
-                                    label={label}
-                                    type="checkbox"
-                                    id={`status-checkbox-`+index}
-                                    checked = {statusCheckbox.includes(label)}
-                                    onChange={() => {
-                                        if(statusCheckbox.includes(label)){
-                                            console.log("includes")
-                                            setStatusCheckbox((oldStatusCheckbox) => {
-                                                return oldStatusCheckbox.filter((oldStatus, i) => oldStatus !== label)
-                                            })
-                                        }else{
-                                            setStatusCheckbox((oldStatusCheckbox) => {
-                                                return [...oldStatusCheckbox, label]
-                                            })
-                                        }
-                                    }}
-                                    />
-                                    </div>
-                                )
-                            })}
-                            </div>
-                        </div>
-                        <div className="vr" />
-                        <div>
-                            <span style={{fontSize:"18px"}}><u>Include Only</u>:</span>
-                            <br />
-                            <div key={`only-checkbox`} className="mb-4">
-                            { filterList.map((label, index) => {
-                                return(
-                                    <div key={`only-checkbox-div-`+index}>
-                                    <Form.Check
-                                    label={label}
-                                    type="checkbox"
-                                    id={`only-checkbox-`+index}
-                                    checked = {onlyCheckbox.includes(label)}
-                                    onChange={() => {
-                                        if(onlyCheckbox.includes(label)){
-                                            setOnlyCheckbox((oldOnlyCheckbox) => {
-                                                return oldOnlyCheckbox.filter((oldOnly, i) => oldOnly !== label)
-                                            })
-                                        }else{
-                                            setOnlyCheckbox((oldOnlyCheckbox) => {
-                                                return [...oldOnlyCheckbox, label]
-                                            })
-                                        }
-                                    }}
-                                    />
-                                    </div>
-                                )
-                            })}
-                            </div>
-                            <div>&nbsp;</div>
-                        </div>
-                    </Stack>
-                    <div style={{marginBottom: "20px"}}>
-                        <Stack direction="horizontal" gap={4}>
-                            <DropdownButton id="dropdown-item-button" 
-                                title={scoreSelection} className="new-status-dropdown"
-                                variant="secondary">
-                                {
-                                    ["All Scores", "At/Above Bar", "Below Bar", "In Range"].map((scoreSelection, index) => {
-                                        return(
-                                            <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(scoreSelection)}>{scoreSelection}</Dropdown.Item>
-                                        )
-                                    })
-                                }
-                            </DropdownButton>
-                            <input
-                                name="lowRange"
-                                value={lowRange}
-                                onChange={handleInputChange}
-                            />
-                            <span style={{fontSize: "18px"}}>&le; Avg &le;</span>
-                            <input
-                                name="highRange"
-                                value={highRange}
-                                onChange={handleInputChange}
-                            />
-                        </Stack>
-                    </div>
+                <Stack direction="horizontal" gap={5}>
+                    <div>&nbsp;</div>
                     <div>
-                        <Stack direction = "horizontal">
-                            <span style={{fontSize:"18px"}}>Gather admin/chair conflicts: </span>
-                            <DropdownButton id="dropdown-item-button" 
-                                title={adminConflicts} className="new-status-dropdown"
-                                variant="secondary">
-                                {
-                                    ["Start", "End", "Never"].map((conflictSelection, index) => {
-                                        return <Dropdown.Item key={index} as="button" onClick={() => setAdminConflicts(conflictSelection)}>{conflictSelection}</Dropdown.Item>
-                                    })
-                                }
-                            </DropdownButton>
-                        </Stack>
+                        <span style={{fontSize:"18px"}}><u>Include All</u>:</span>
+                        <br />
+                        <div key={`status-checkbox`} className="mb-4">
+                        { statusList.map((label, index) => {
+                            return(
+                                <div key={`status-checkbox-div-`+index}>
+                                <Form.Check
+                                label={label}
+                                type="checkbox"
+                                id={`status-checkbox-`+index}
+                                checked = {statusCheckbox.includes(label)}
+                                onChange={() => {
+                                    if(statusCheckbox.includes(label)){
+                                        console.log("includes")
+                                        setStatusCheckbox((oldStatusCheckbox) => {
+                                            return oldStatusCheckbox.filter((oldStatus, i) => oldStatus !== label)
+                                        })
+                                    }else{
+                                        setStatusCheckbox((oldStatusCheckbox) => {
+                                            return [...oldStatusCheckbox, label]
+                                        })
+                                    }
+                                }}
+                                />
+                                </div>
+                            )
+                        })}
+                        </div>
                     </div>
-                </Form>
+                    <div className="vr" />
+                    <div>
+                        <span style={{fontSize:"18px"}}><u>Include Only</u>:</span>
+                        <br />
+                        <div key={`only-checkbox`} className="mb-4">
+                        { filterList.map((label, index) => {
+                            return(
+                                <div key={`only-checkbox-div-`+index}>
+                                <Form.Check
+                                label={label}
+                                type="checkbox"
+                                id={`only-checkbox-`+index}
+                                checked = {onlyCheckbox.includes(label)}
+                                onChange={() => {
+                                    if(onlyCheckbox.includes(label)){
+                                        setOnlyCheckbox((oldOnlyCheckbox) => {
+                                            return oldOnlyCheckbox.filter((oldOnly, i) => oldOnly !== label)
+                                        })
+                                    }else{
+                                        setOnlyCheckbox((oldOnlyCheckbox) => {
+                                            return [...oldOnlyCheckbox, label]
+                                        })
+                                    }
+                                }}
+                                />
+                                </div>
+                            )
+                        })}
+                        </div>
+                        <div>&nbsp;</div>
+                    </div>
+                </Stack>
+                <div style={{marginBottom: "20px"}}>
+                    <Stack direction="horizontal" gap={4}>
+                        <DropdownButton id="dropdown-item-button" 
+                            title={scoreSelection} className="new-status-dropdown"
+                            variant="secondary" type="button">
+                            {
+                                ["All Scores", "At/Above Bar", "Below Bar", "In Range"].map((scoreSelection, index) => {
+                                    return(
+                                        <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(scoreSelection)}>{scoreSelection}</Dropdown.Item>
+                                    )
+                                })
+                            }
+                        </DropdownButton>
+                        <input
+                            name="lowRange"
+                            value={lowRange}
+                            onChange={handleInputChange}
+                        />
+                        <span style={{fontSize: "18px"}}>&le; Avg &le;</span>
+                        <input
+                            name="highRange"
+                            value={highRange}
+                            onChange={handleInputChange}
+                        />
+                    </Stack>
+                </div>
+                <div>
+                    <Stack direction = "horizontal">
+                        <span style={{fontSize:"18px"}}>Gather admin/chair conflicts: </span>
+                        <DropdownButton id="dropdown-item-button" 
+                            title={adminConflicts} className="new-status-dropdown"
+                            variant="secondary" type="button">
+                            {
+                                ["Start", "End", "Never"].map((conflictSelection, index) => {
+                                    return <Dropdown.Item key={index} as="button" onClick={() => setAdminConflicts(conflictSelection)}>{conflictSelection}</Dropdown.Item>
+                                })
+                            }
+                        </DropdownButton>
+                    </Stack>
+                </div>
             </div>
             <Button variant="primary" onClick={handleSendQ} style={{marginTop: "30px"}}>Request Queue</Button>
             <hr className="horizontal-divider"/>

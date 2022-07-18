@@ -242,6 +242,10 @@ a.nav-link {
   padding: 20px 5px;
 }
 
+.preferences-page{
+  margin-top: 15px;
+}
+
 .font-size-dropdown{
   margin-left: 15px;
 }
@@ -260,6 +264,42 @@ a.nav-link {
   margin-top: 30px;
 }
 
+.favorites-input{
+  margin-left: 10px;
+}
+
+.favorites-submit-btn{
+  margin-left: 10px;
+}
+
+.example-favorites{
+  margin-left: 10px;
+}
+
+.delete-all-btn{
+  margin-left: 10px;
+}
+
+.delete-btn{
+  color: red;
+  margin-left: 10px;
+}
+
+.current-favorites-bar{
+  margin-top: 10px;
+}
+
+.current-favorite-id{
+  width: 50px;
+}
+
+.current-favorites-container{
+  margin-top: 10px;
+}
+
+.current-favorites-container li{
+  margin: 5px 0;
+}
 
 .color-picker{
   margin-left: 150px;

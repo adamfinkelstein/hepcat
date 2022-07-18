@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
 import { useChangeFavorites, useFavorites } from '../contexts/PreferencesContext'
 import {useFlasher} from '../contexts/FlasherContext'
+import Button from 'react-bootstrap/Button'
 
 export default function FavoritePreferences(){
     let favorites = useFavorites()
@@ -29,6 +30,10 @@ export default function FavoritePreferences(){
                 flash("Favorites could not be updated. You supplied an id that is already in your favorites.", "warning")
                 return
             }
+            else if(newValues.includes(num)){
+                flash("Favorites could not be updated. You supplied a duplicate value.", "warning")
+                return
+            }
             newValues.push(num)
         }
         changeFavorites(oldFav => {
@@ -44,33 +49,33 @@ export default function FavoritePreferences(){
             <form onSubmit={handleSubmit}>
                 <label>
                     New Favorites:
-                    <input type="text" name="favorites" />
+                    <input type="text" name="favorites" className='favorites-input'/>
                 </label>
-                <input type="submit" value="Submit" />
-                <span>
-                    Either as paper id (100) or list of paper ids (100, 101, ...)
+                <input type="submit" value="Submit" className='favorites-submit-btn'/>
+                <span className='example-favorites'>
+                    Like '100' or list of paper ids '100, 101, ...''
                 </span>
             </form>
-            <Stack direction="horizontal">
+            <Stack direction="horizontal" className="current-favorites-bar">
                 <span>Current Favorites</span>
-                <button onClick={() => {
+                <Button variant="warning" onClick={() => {
                     changeFavorites([])
                     flash("Favorites deleted.", "success")
-                 }}>Delete All</button>
+                 }} className="delete-all-btn">Delete All</Button>
             </Stack>
-            <ul>
+            <ul className='current-favorites-container'>
                 {
                     favorites.map((favorite, index) => {
                         return(
                             <li key={index}>
                                 <Stack direction="horizontal" gap={3}>
-                                    <span>{favorite}</span>
-                                    <button onClick={() => {
+                                    <span className='current-favorite-id'>{favorite}</span>
+                                    <Button variant="light" onClick={() => {
                                         changeFavorites(oldFav => {
                                             return oldFav.filter((_, i) => i !== index)
                                         })
                                     }   
-                                    }>Delete</button>
+                                    } className="delete-btn">Delete</Button>
                                 </Stack>
                             </li>
                         )

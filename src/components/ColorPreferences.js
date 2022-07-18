@@ -6,6 +6,7 @@ import { useColors, useChangeColor, useDefaultColors, useTextColors, useChangeTe
 import { SketchPresetColors } from 'react-color/lib/components/sketch/SketchPresetColors';
 import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
+import Button from 'react-bootstrap/Button'
 
 export default function ColorPreferences(){
 
@@ -40,7 +41,7 @@ export default function ColorPreferences(){
                 />
             </Stack>
             <Container>
-                <button onClick={() => changeToDefaultColors()}>Go Back to Default Colors</button>
+                <Button variant="secondary" onClick={() => changeToDefaultColors()}>Go Back to Default Colors</Button>
             </Container>
         </Container>
     );

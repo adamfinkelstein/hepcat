@@ -46,7 +46,7 @@ export default function AdminQueueControls() {
                             <Dropdown.Item as="button" key={index}
                                 onClick={() => setNewStatus(newStatus)}>
                                 <Stack direction="horizontal">
-                                    <div className={"rectangle " + newStatus.toLowerCase()}/>
+                                    <div className={"rectangle " + newStatus}/>
                                     <span>{newStatus}</span>
                                 </Stack>
                             </Dropdown.Item>
