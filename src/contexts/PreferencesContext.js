@@ -33,6 +33,8 @@ const TextColorsContext = React.createContext()
 const ChangeTextColorsContext = React.createContext()
 const FontInfoContext = React.createContext()
 const ChangeFontSizeContext = React.createContext()
+const FavoritesContext = React.createContext()
+const ChangeFavoritesContext = React.createContext()
 
 const DefaultColorsContext = React.createContext()
 
@@ -64,17 +66,28 @@ export function useChangeFontSize(){
   return useContext(ChangeFontSizeContext)
 }
 
+export function useFavorites(){
+  return useContext(FavoritesContext)
+}
+
+export function useChangeFavorites(){
+  return useContext(ChangeFavoritesContext)
+}
+
 export default function PreferencesContext({children}){
   const [colors, setColors] = useState(defaultColors)
   const [textColors, setTextColors] = useState(defaultTextColors)
   const [fontSize, setFontSize] = useState("Medium")
   // not sure if this is the best approach (avoiding overwriting of data on load with this variable)
   const [prefUpdated, setPrefUpdated] = useState(false)
+  const [favorites, setFavorites] = useState([])
+
 
   useEffect(() => {
     const colorData = localStorage.getItem("colors")
     const textColorData = localStorage.getItem("textColors")
     const fontSizeData = localStorage.getItem("fontSize")
+    const favoritesData = localStorage.getItem("favorites")
 
     if(colorData){
         setColors(JSON.parse(colorData))
@@ -85,6 +98,9 @@ export default function PreferencesContext({children}){
     if(fontSizeData){
       setFontSize(JSON.parse(fontSizeData))
     }
+    if(favoritesData){
+      setFavorites(JSON.parse(favoritesData))
+    }
     setPrefUpdated(true)
     }, [])
 
@@ -93,6 +109,7 @@ export default function PreferencesContext({children}){
           localStorage.setItem("colors", JSON.stringify(colors));
           localStorage.setItem("textColors", JSON.stringify(textColors));
           localStorage.setItem("fontSize", JSON.stringify(fontSize));
+          localStorage.setItem("favorites", JSON.stringify(favorites));
       }
       var cssStyle = document.createElement('style');
       cssStyle.type = 'text/css';
@@ -133,7 +150,11 @@ export default function PreferencesContext({children}){
                 <ChangeTextColorsContext.Provider value={changeTextColors}>
                   <FontInfoContext.Provider value={{"currentFontSize": fontSize, "fontSizes": fontSizes}}>
                     <ChangeFontSizeContext.Provider value={setFontSize}>
-                      {children}
+                      <FavoritesContext.Provider value={favorites}>
+                        <ChangeFavoritesContext.Provider value={setFavorites}>
+                          {children}
+                        </ChangeFavoritesContext.Provider>
+                      </FavoritesContext.Provider>
                     </ChangeFontSizeContext.Provider>
                   </FontInfoContext.Provider>
                 </ChangeTextColorsContext.Provider>
