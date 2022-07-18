@@ -1,5 +1,6 @@
 import os
-import random
+# import random
+from datetime import datetime
 from flask_socketio import emit, disconnect
 from flask_login import current_user
 # from sqlalchemy import true
@@ -26,10 +27,14 @@ def get_user_or_force_disconnect():
     if current_user and not current_user.is_anonymous:
         return current_user
     if allow_cors: # hack to allow React to run in a different port without a login
-        if random.choice([False,True]):
+        now = datetime.now()
+        seconds_since_epoch = now.timestamp()
+        ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
+        # formerly: if random.choice([False,True]):
+        if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
             user = User.query.first() # guaranteed Admin
         else:
-            user = User.query.order_by(func.random()).first() # for PostgreSQL, SQLite
+            user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
         return user
     print('user is not logged in: forcing disconnect here.')
     disconnect()

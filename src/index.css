@@ -394,3 +394,10 @@ a.nav-link {
 .about-container {
   margin-top: 20px;
 }
+
+#waiting-for-server {
+  margin-top: 20px;
+  font-size: 20px;
+  font-style: italic;
+  color: #888;
+}

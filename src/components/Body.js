@@ -29,7 +29,7 @@ export default function Body(){
     return(
         <Container className='Body'>
             {(!user) ? (
-                <p>User not connected.</p>
+                <p id="waiting-for-server">Waiting for server connection...</p>
             ) : (
                     <Split 
                     direction='horizontal'
