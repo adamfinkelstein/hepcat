@@ -73,7 +73,7 @@ export default function SetQueue(){
                 </Stack>
 
             </div>
-            <hr className="divider"/>
+            <hr className="horizontal-divider"/>
             <div>
                 <Form>
                     <Stack direction="horizontal" gap={5}>
@@ -183,7 +183,7 @@ export default function SetQueue(){
                 </Form>
             </div>
             <Button variant="primary" onClick={handleSendQ} style={{marginTop: "30px"}}>Request Queue</Button>
-            <hr className="divider"/>
+            <hr className="horizontal-divider"/>
             <div>
                 <Stack direction = "horizontal">
                     <input
@@ -211,7 +211,7 @@ export default function SetQueue(){
                     flash("Queue explicitly set with " + queueExplicitList.join(", "))
                 }} className="queue-explicit-btn">Set Queue Explicit</Button>
             </div>
-            <hr className="divider"/>
+            <hr className="horizontal-divider"/>
             <div>
                 <Stack direction = "horizontal">
                     <Button variant="primary" onClick={() => setBar(barRef)} className="change-bar-btn">Change Bar</Button>

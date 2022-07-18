@@ -47,6 +47,12 @@ a.nav-link {
   padding: 0;
 }
 
+.Queue ul li{
+  list-style: none;
+  padding: 0;
+  height: 50px;
+}
+
 .expand-buttons{
   margin-left: auto;
 }
@@ -219,6 +225,10 @@ a.nav-link {
   opacity: 0.2
 }
 
+.set-stickie{
+  margin-left: 40px;
+}
+
 /* Preferences Page Styling */
 
 .grid_colors_preferences{
@@ -294,10 +304,17 @@ a.nav-link {
   margin-right: 10px;
 }
 
-.divider{
+.horizontal-divider{
   border-top: 3px solid #000;
   border-radius: 2px;
   margin: 20px 0;
+}
+
+.vertical-divider{
+  border-left: 3px solid #000;
+  border-radius: 2px;
+  margin: 0 0px 0 40px;
+  height: 150px !important;
 }
 
 .hideQ-text{
