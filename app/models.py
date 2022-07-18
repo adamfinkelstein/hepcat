@@ -4,7 +4,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.orm import column_property
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql import func
 from . import db, ma, login_manager
 
@@ -222,8 +222,6 @@ class FileUpload(db.Model):
     file = db.Column(db.String(64))
     count = db.Column(db.Integer, default=0)
     when = db.Column(db.DateTime, server_default=func.now())
-    # user_id = db.Column(db.Integer, db.ForeignKey('users.id')) AF removed this
-
 
 ######################
 # Marshmallo schemas

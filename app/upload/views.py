@@ -391,8 +391,7 @@ csvLinklings = {
     'conflicts' : 'conflicts.csv',
     'clusters' : 'clusters.csv',
     'reviews' : 'status.csv',
-    'summaries' : 'commitee_notes.csv',
-    'history' : 'n/a' }
+    'summaries' : 'commitee_notes.csv' }
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
@@ -448,15 +447,16 @@ def get_csv_type(header):
     return None
 
 def delete_prev_file_uploads(headerType):
-    print('about to delete headerType: ', headerType)
     if headerType not in csvDependence:
+        print('about to delete headerType: ', headerType)
         FileUpload.query.filter_by(file=headerType).delete()
         return
     del_list = csvDependence[headerType]
     del_list = list(del_list)
     del_list.append(headerType)
-    print('about to delete these file upload types: ', del_list)
-    FileUpload.query.filter(FileUpload.file in del_list).delete()
+    for name in del_list:
+        num_deleted = FileUpload.query.filter_by(file=name).delete()
+        print(f'delete {num_deleted} file of types {name}')
 
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
@@ -479,7 +479,7 @@ def read_csv(filename):
 
 def pending_uploads(uploads):
     already = [upload.file for upload in uploads]
-    keys = list(csvTypes.keys())
+    keys = list(csvLinklings.keys())
     pending = [key for key in keys if key not in already]
     # print(already, keys, pending)
     return pending
