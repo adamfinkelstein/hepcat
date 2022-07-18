@@ -63,14 +63,7 @@ export default function AppContext({children}){
     const receiveQueue = (data) => {
       console.log('received queue:');
       console.log(data);
-      const maxSize = 50;
-      let queue = data.paper_list; // modified below temp ???
-      const len = queue.length;
-      if (len > maxSize) { // AF: just temp cut down ???
-        console.log('cutting queue size down from ' + len + ' to ' + maxSize);
-        queue = queue.slice(0,maxSize);
-      }
-      setQueue(queue);
+      setQueue(data.paper_list);
       receiveGlobs(data.globs);
     };
 
@@ -88,7 +81,7 @@ export default function AppContext({children}){
         socket.off('server_set_globs', receiveGlobs);
       }
     };
-  }, [socket]);
+  }, [queue, socket]);
 
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {

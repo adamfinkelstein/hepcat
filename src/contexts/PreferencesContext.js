@@ -1,4 +1,4 @@
-import { text } from '@fortawesome/fontawesome-svg-core'
+//import { text } from '@fortawesome/fontawesome-svg-core'
 import React, {useState, useContext, useEffect} from 'react'
 
 const defaultColors = {

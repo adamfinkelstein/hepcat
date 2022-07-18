@@ -1,7 +1,7 @@
 //import { Container } from "react-bootstrap";
 import {useAppGlobals} from '../contexts/AppContext'
 import { useFavorites } from '../contexts/PreferencesContext';
-import FavoritePreferences from './FavoritePreferences';
+//import FavoritePreferences from './FavoritePreferences';
 
 export default function Grid({isAbove,gridDisplay}){
     const globals = useAppGlobals();
@@ -22,15 +22,14 @@ export default function Grid({isAbove,gridDisplay}){
         let className = "grid-item";
         let paperStatus = gridElem.status_full
    
-
-        if(gridDisplay == "Stickie"){
+        if(gridDisplay === "Stickie"){
             if(gridElem.stickie){
                 className += " stickie"
             }else{
                 className += " non-stickie"
             }
         }
-        else if(gridDisplay == "Favorites"){
+        else if(gridDisplay === "Favorites"){
             if(favorites.includes(gridElem.nid)){
                 className += " " + paperStatus;
             }

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
-import { useColors, useChangeColor, useDefaultColors, useTextColors, useChangeTextColors } from '../contexts/PreferencesContext';
-import { SketchPresetColors } from 'react-color/lib/components/sketch/SketchPresetColors';
-import { Col } from 'react-bootstrap';
+import { useColors, useChangeColor, useDefaultColors, useChangeTextColors } from '../contexts/PreferencesContext';
+// import { SketchPresetColors } from 'react-color/lib/components/sketch/SketchPresetColors';
+// import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
 import Button from 'react-bootstrap/Button'
 
@@ -14,7 +14,7 @@ export default function ColorPreferences(){
   let changeColor = useChangeColor()
   let defaultColors = Object.values(useDefaultColors()["defaultColors"])
   let changeToDefaultColors = useDefaultColors()["changeToDefaultColors"]
-  let textColors = useTextColors()
+  // let textColors = useTextColors()
   let changeTextColors = useChangeTextColors()
   let [pickingFor, setPickingFor] = useState("Unseen")
 

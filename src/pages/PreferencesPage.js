@@ -8,7 +8,7 @@ import Collapse from 'react-bootstrap/Collapse';
 
 export default function PreferencesPage() {
     let flasher = useFlasher()
-    let flash = flasher["flash"]
+    // let flash = flasher["flash"]
     let visible = flasher["visible"]
     let hideFlash = flasher["hideFlash"];
     let flashMessage = flasher["flashMessage"]
