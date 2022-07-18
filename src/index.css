@@ -49,8 +49,7 @@ a.nav-link {
 
 .Queue ul li{
   list-style: none;
-  padding: 0;
-  height: 50px;
+  padding: 5px;
 }
 
 .expand-buttons{

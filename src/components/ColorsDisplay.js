@@ -21,10 +21,9 @@ export default function ColorsDisplay({clickable, pickingFor, setPickingFor}){
             {        
                 Object.keys(colors).map(key => {
                     return (
-                        <li key={key} className="legend-container">
+                        <li key={key} className="legend-container" onClick={() => {if(clickable){setPickingFor(key)}}}>
                             <Stack direction="horizontal" className={pickingFor == key ? "picking-for" : ""}>
-                                <div className={"rectangle" + " " + key} 
-                                     onClick={() => {if(clickable){setPickingFor(key)}}}>
+                                <div className={"rectangle" + " " + key}>
                                 </div>
                                 <span>{toTitleCase(key)}</span>
                             </Stack>
