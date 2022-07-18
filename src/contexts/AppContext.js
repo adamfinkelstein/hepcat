@@ -23,7 +23,7 @@ export default function AppContext({children}){
       current_history: Array[History obj]
       current_show: Boolean
       current_start: DateTime
-      current_status: String (Conference, Journal, Reject, Tabled)
+      current_status: String (Conference, Journal, Reject, Tabled) - maybe not needed???
       hide_queue: Boolean
       message: String
 
@@ -49,6 +49,32 @@ export default function AppContext({children}){
       setGrid(data.grid);
     };
 
+    function updateGridList(grid_list, nid, status) {
+      for (let i = 0; i < grid_list.length; i++) {
+        let grid_item = grid_list[i];
+        if (grid_item.nid === nid) {
+          grid_item.status_full = status;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    const receiveUpdate = (data) => {
+      console.log('received update:');
+      console.log(data); // queue_index, grid_nid, status
+      //const queue_index = data.queue_index;
+      const above = [...grid.above]; // shallow copies
+      const below = [...grid.below]; // shallow copies
+      const updated = updateGridList(above, data.grid_nid, data.status);
+      if (!updated) {
+        updateGridList(below, data.grid_nid, data.status);
+      }
+      const new_grid = {above, below};
+      setGrid(new_grid);
+      // also update queue entry based on data.queue_index
+    };
+
     const receiveGlobs = (data) => {
       console.log('received globs:');
       console.log(data);
@@ -72,6 +98,7 @@ export default function AppContext({children}){
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_globs', receiveGlobs);
+      socket.on('server_send_update', receiveUpdate);
     }
 
     return () => {
@@ -79,6 +106,7 @@ export default function AppContext({children}){
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_globs', receiveGlobs);
+        socket.off('server_send_update', receiveUpdate);
       }
     };
   }, [queue, socket]);

@@ -210,7 +210,8 @@ def update_current_paper_status(new_status):
     history = History(paper=paper,
                     context_enum=context_plenary,
                     status_enum=status_enum)
-    db.session.add(history)
+    db.session.add(history) # commit will follow on setting current index
+    return current_index, paper
 
 def get_globs_dump():
     gq = GlobQueue.query.first()
@@ -237,15 +238,19 @@ def get_globs_dump_with_status():
     return globs
 
 def get_queue():
+    globs = get_globs_dump()
+    current_index = globs['current']
     papers = Paper.query.filter(Paper.queue_order > 0) \
                     .order_by(Paper.queue_order).all()
     paper_list = []
     paper_prev = None
-    for paper in papers:
+    for index,paper in enumerate(papers):
         # conflicts = get_paper_conflicts_dump(paper)
         _,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper)
         paper_dump = paper_schema.dump(paper)
         # paper_dump['history'] = history_dump
+        if index <= current_index:
+            paper_dump['status'] = get_latest_history_status(paper)
         paper_dump['conflicts'] = get_user_list_dump(conf_curr)
         paper_dump['enter'] = get_user_list_dump(enter)
         paper_dump['leave'] = get_user_list_dump(leave)
@@ -287,12 +292,16 @@ def admin_prev_paper():
 @socketio.on('admin_next_paper')
 def admin_next_paper(status_update):
     print('admin request for next paper with status:', status_update)
-    update_current_paper_status(status_update)
+    before_index, paper = update_current_paper_status(status_update)
     zero_or_inc_current_index(+1) # also "hides" current
     # other things this should do:
     # - set color and sticky status on prev (for grid)
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs)
+    # server_send_update
+    # queue_index, grid_nid, status
+    data = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
+    emit('server_send_update', data)
 
 @socketio.on('admin_show_current')
 def admin_show_current():
