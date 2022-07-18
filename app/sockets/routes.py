@@ -6,7 +6,8 @@ from flask_login import current_user
 # from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, HistoryStatus, HistorySchema, GlobQueue, GlobQueueSchema
+from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, \
+    HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -201,9 +202,11 @@ def zero_or_inc_current_index(zero_or_inc):
     db.session.commit()
 
 def update_current_paper_status(new_status):
-    _, paper = get_globs_and_paper_at_current_index()
+    globs = get_globs_dump()
+    current_index = globs['current']
+    paper = get_paper_at_queue_index(current_index)
     context_plenary = int(HistoryContext.Plenary)
-    status_enum = int(HistoryStatus[new_status])
+    status_enum = status_str_to_enum(new_status)
     history = History(paper=paper,
                     context_enum=context_plenary,
                     status_enum=status_enum)
@@ -214,20 +217,17 @@ def get_globs_dump():
     globs = global_schema.dump(gq)
     return globs
 
-def get_globs_and_paper_at_current_index():
-    globs = get_globs_dump()
-    index = globs['current']
-    if index >= 0:
-        papers = Paper.query.filter(Paper.queue_order > 0) \
-                      .order_by(Paper.queue_order).limit(index+1)
-        papers = list(papers)
-        if index < len(papers):
-            paper = papers[index]
-            return globs, paper
-    return globs, None
+def get_paper_at_queue_index(index):
+    if index < 0:
+        return None
+    add_one = index + 1
+    paper = Paper.query.filter_by(queue_order=add_one).first()
+    return paper
 
 def get_globs_dump_with_status():
-    globs, paper = get_globs_and_paper_at_current_index()
+    globs = get_globs_dump()
+    current_index = globs['current']
+    paper = get_paper_at_queue_index(current_index)
     if paper:
         status = get_latest_history_status(paper)
         globs['current_status'] = status
