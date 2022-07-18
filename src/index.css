@@ -241,6 +241,12 @@ a.nav-link {
   margin-top: 30px;
 }
 
+.picking-for{
+  border-radius: 6px;
+  border: 1px solid black;
+  padding: 3px 3px 3px 0;
+}
+
 .favorite-preferences-container{
   margin-top: 30px;
 }
@@ -275,6 +281,36 @@ a.nav-link {
   margin-bottom: 20px;
 }
 
+/* Set GUI Styling */
+.change-bar-btn{
+  margin-right: 10px;
+}
+
+.queue-explicit-btn{
+  margin-top: 10px;
+}
+
+.queue-explicit-input{
+  margin-right: 10px;
+}
+
+.divider{
+  border-top: 3px solid #000;
+  border-radius: 2px;
+  margin: 20px 0;
+}
+
+.hideQ-text{
+  margin-left: 10px;
+}
+
+.message-input{
+  margin-left: 10px;
+}
+
+.set-message-row{
+  margin-top: 10px;
+}
 /* AF added the ones below -- need to integrate above */
 
 #noPapersInQueue {

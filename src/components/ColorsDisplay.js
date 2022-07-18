@@ -2,7 +2,7 @@ import { Container } from "react-bootstrap";
 import Stack from 'react-bootstrap/Stack'
 import { useColors } from "../contexts/PreferencesContext";
 
-export default function ColorsDisplay({clickable, setPickingFor}){
+export default function ColorsDisplay({clickable, pickingFor, setPickingFor}){
 
     let colors = useColors()
 
@@ -22,7 +22,7 @@ export default function ColorsDisplay({clickable, setPickingFor}){
                 Object.keys(colors).map(key => {
                     return (
                         <li key={key} className="legend-container">
-                            <Stack direction="horizontal">
+                            <Stack direction="horizontal" className={pickingFor == key ? "picking-for" : ""}>
                                 <div className={"rectangle" + " " + key} 
                                      onClick={() => {if(clickable){setPickingFor(key)}}}>
                                 </div>

@@ -9,6 +9,7 @@ import PreferencesPage from "./pages/PreferencesPage.js";
 import AboutPage from "./pages/AboutPage.js";
 import ChangePasswordPage from "./pages/ChangePasswordPage.js";
 import FlasherContext from './contexts/FlasherContext.js';
+import GUIContext from "./contexts/GUIContext.js";
 
 export default function App() {
   
@@ -18,14 +19,16 @@ export default function App() {
         <FlasherContext>
           <PreferencesContext>
               <AppContext>
-                <Navbar/>
-                <Routes>
-                    <Route path="/" element={<MainPage/>}/>
-                    <Route path="/about" element={<AboutPage/>}/>
-                    <Route path="/preferences" element={<PreferencesPage/>}/>
-                    <Route path="/change_password" element={<ChangePasswordPage/>}/>
-                    <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
+                <GUIContext>
+                  <Navbar/>
+                  <Routes>
+                      <Route path="/" element={<MainPage/>}/>
+                      <Route path="/about" element={<AboutPage/>}/>
+                      <Route path="/preferences" element={<PreferencesPage/>}/>
+                      <Route path="/change_password" element={<ChangePasswordPage/>}/>
+                      <Route path="*" element={<Navigate to="/" />} />
+                  </Routes>
+                </GUIContext>
               </AppContext>
             </PreferencesContext>
         </FlasherContext>

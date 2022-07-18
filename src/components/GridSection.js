@@ -24,7 +24,7 @@ export default function GridSection(){
             <div className="grid-container">
                 <Grid isAbove gridDisplay={gridDisplay}/>
             </div> 
-            <hr style={{ borderTop: "3px solid #000", borderRadius: "2px"}}/>
+            <hr className="divider"/>
             <div className="grid-container">
                 <Grid gridDisplay={gridDisplay}/>
             </div>

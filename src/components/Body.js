@@ -61,7 +61,7 @@ export default function Body(){
                                 </Tab>
                                 {
                                     user && user.role_name === "Admin" && (
-                                        <Tab eventKey="set-queue" title="Set Queue">
+                                        <Tab eventKey="admin" title="Admin Controls">
                                             <SetQueue/>
                                         </Tab>
                                     )

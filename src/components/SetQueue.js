@@ -1,9 +1,10 @@
 import { Container } from "react-bootstrap";
 import {useAppGlobals} from '../contexts/AppContext'
+import {useGUI} from '../contexts/GUIContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
-import {useState} from 'react'
+import {useRef} from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack";
@@ -17,10 +18,13 @@ export default function SetQueue(){
     // let queue = globals.queue;
     let flasher = useFlasher()
     let flash = flasher["flash"]
-    let [scoreSelection, setScoreSelection] = useState("At/Above Bar")
-    let [lowRange, setLowRange] = useState(0)
-    let [highRange, setHighRange] = useState(5.1)
-    let [adminConflicts, setAdminConflicts] = useState("Never")
+    const barRef = useRef(null);
+    const explicitRef = useRef(null);
+
+    const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
+        hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
+        adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList, bar, setBar} = useGUI()
+
 
     function handleSendQ(event){
         event.preventDefault(); // do not send the form!
@@ -37,15 +41,39 @@ export default function SetQueue(){
     }
 
     function handleInputChange(event){
-        console.log("hiii")
         event.preventDefault(); // do not send the form!
         const target = event.target;
-        if(target.name === "lowRange") setLowRange(target.value)
-        else if(target.name === "highRange") setHighRange(target.value)
+        const value = target.value;
+        if(target.name === "lowRange") setLowRange(value)
+        else if(target.name === "highRange") setHighRange(value)
+        else if(target.name === "message") setMessage(value)
     }
 
     return(
         <Container>
+            <div>
+                <Stack direction="horizontal">
+                    <Form.Check
+                        type="checkbox"
+                        defaultChecked={hideQ}
+                        onChange={() => {
+                            setHideQ(!hideQ)
+                        }}
+                    />
+                    <span className="hideQ-text">Hide queue from everyone except admin</span>
+                </Stack>
+                <Stack direction="horizontal" className="set-message-row">
+                    <span>Message: </span>
+                    <input
+                        name="message"
+                        value={message}
+                        onChange={handleInputChange}
+                        className="message-input"
+                    />
+                </Stack>
+
+            </div>
+            <hr className="divider"/>
             <div>
                 <Form>
                     <Stack direction="horizontal" gap={5}>
@@ -61,6 +89,19 @@ export default function SetQueue(){
                                     label={label}
                                     type="checkbox"
                                     id={`status-checkbox-`+index}
+                                    checked = {statusCheckbox.includes(label)}
+                                    onChange={() => {
+                                        if(statusCheckbox.includes(label)){
+                                            console.log("includes")
+                                            setStatusCheckbox((oldStatusCheckbox) => {
+                                                return oldStatusCheckbox.filter((oldStatus, i) => oldStatus !== label)
+                                            })
+                                        }else{
+                                            setStatusCheckbox((oldStatusCheckbox) => {
+                                                return [...oldStatusCheckbox, label]
+                                            })
+                                        }
+                                    }}
                                     />
                                     </div>
                                 )
@@ -79,6 +120,18 @@ export default function SetQueue(){
                                     label={label}
                                     type="checkbox"
                                     id={`only-checkbox-`+index}
+                                    checked = {onlyCheckbox.includes(label)}
+                                    onChange={() => {
+                                        if(onlyCheckbox.includes(label)){
+                                            setOnlyCheckbox((oldOnlyCheckbox) => {
+                                                return oldOnlyCheckbox.filter((oldOnly, i) => oldOnly !== label)
+                                            })
+                                        }else{
+                                            setOnlyCheckbox((oldOnlyCheckbox) => {
+                                                return [...oldOnlyCheckbox, label]
+                                            })
+                                        }
+                                    }}
                                     />
                                     </div>
                                 )
@@ -130,6 +183,45 @@ export default function SetQueue(){
                 </Form>
             </div>
             <Button variant="primary" onClick={handleSendQ} style={{marginTop: "30px"}}>Request Queue</Button>
+            <hr className="divider"/>
+            <div>
+                <Stack direction = "horizontal">
+                    <input
+                        name="explicit-queue"
+                        defaultValue={queueExplicitList.join(", ")}
+                        ref={explicitRef}
+                        className="queue-explicit-input"
+                    />
+                    <span>(like '2' or '2,3,5,7')</span>
+                </Stack>
+                <Button onClick={() => {
+                    let value = explicitRef;
+                    let values = value.split(",")
+                    let newValues = []
+
+                    for(let i = 0; i < values.length; i++){
+                        const num = Number(values[i].trim())
+                        console.log(num)
+                        if(!Number.isInteger(num)){
+                            flash("Queue could not be set explicitly. You supplied an invalid value.", "warning")
+                            return
+                        }
+                        newValues.push(num)
+                    }
+                    flash("Queue explicitly set with " + queueExplicitList.join(", "))
+                }} className="queue-explicit-btn">Set Queue Explicit</Button>
+            </div>
+            <hr className="divider"/>
+            <div>
+                <Stack direction = "horizontal">
+                    <Button variant="primary" onClick={() => setBar(barRef)} className="change-bar-btn">Change Bar</Button>
+                    <input
+                        ref={barRef}
+                        name="bar"
+                        defaultValue={bar}
+                    />
+                </Stack>
+            </div>
         </Container>
     )
 }

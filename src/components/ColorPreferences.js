@@ -15,7 +15,7 @@ export default function ColorPreferences(){
   let changeToDefaultColors = useDefaultColors()["changeToDefaultColors"]
   let textColors = useTextColors()
   let changeTextColors = useChangeTextColors()
-  let [pickingFor, setPickingFor] = useState("reject")
+  let [pickingFor, setPickingFor] = useState("Unseen")
 
   let handleChangeComplete = (type, color) => {
         console.log(color)
@@ -30,7 +30,7 @@ export default function ColorPreferences(){
         <Container className="color-preferences-container">
             <h3>Color Preferences</h3>
             <Stack direction='horizontal'>
-                <ColorsDisplay clickable setPickingFor={setPickingFor}/>
+                <ColorsDisplay clickable setPickingFor={setPickingFor} pickingFor={pickingFor}/>
                 <SketchPicker
                     disableAlpha
                     color={ colors[pickingFor] }
