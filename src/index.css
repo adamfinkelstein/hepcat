@@ -254,10 +254,17 @@ a.nav-link {
   margin-top: 30px;
 }
 
-.picking-for{
-  border-radius: 6px;
+/* this is the hstack for a legend that is not currently picked */
+.legend-stack {
+  padding: 3px;
+  border: 1px solid white;
+}
+
+/* this is the hstack for a legend that is currently picked */
+.picking-for {
+  padding: 3px;
   border: 1px solid black;
-  padding: 3px 3px 3px 0;
+  border-radius: 6px;
 }
 
 .favorite-preferences-container{
