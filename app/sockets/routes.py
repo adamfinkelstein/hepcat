@@ -41,7 +41,7 @@ def get_user_or_force_disconnect():
     disconnect()
     return None
 
-def get_grid_dump_bar(above):
+def get_grid_dump_above_bar(above):
     bar = 0.0
     if above:
         papers = Paper.query.filter(Paper.sort_score >= bar).order_by(Paper.sort_score.desc()).all()
@@ -68,10 +68,24 @@ def get_grid_dump_bar(above):
         papers_dump.append(paper_dump)
     return papers_dump
 
+def get_grid_indices_and_above(above, below):
+    above_indices = []
+    grid_indices = {}
+    for index,entry in enumerate(above):
+        nid = entry['nid']
+        grid_indices[nid] = index
+        above_indices.append(nid)
+    for index,entry in enumerate(below):
+        nid = entry['nid']
+        grid_indices[nid] = index
+    return grid_indices, above_indices
+
 def get_grid_dump():
-    above = get_grid_dump_bar(True)
-    below = get_grid_dump_bar(False)
-    grid_dump = { 'above': above, 'below': below }
+    above = get_grid_dump_above_bar(True)
+    below = get_grid_dump_above_bar(False)
+    grid_indices, above_indices = get_grid_indices_and_above(above, below)
+    grid_dump = { 'above': above, 'below': below, 
+        'grid_indices':grid_indices, 'above_indices': above_indices}
     return grid_dump
 
 def get_user_dump(user):
