@@ -30,18 +30,16 @@ export default function Queue(){
     }
     const [queueExpanded, setQueueExpanded] = useState(allClosed);
 
-    function currentClass(index){
+    function currentClass(index, paper){
         let className = "queue_element"
         if (index === globals.queueCurrent){
             className += " Current"
         }
-        else {
-            if (index < globals.queueCurrent){
-              className += " past"
-            }
-            if (index % 2) {
-              className += " odd_row"
-            }
+        else if (index < globals.queueCurrent){
+            className += " " + paper.status;
+        }
+        else if (index % 2) { // future - odd?
+            className += " odd_row"
         }
         return className
     }
@@ -78,8 +76,8 @@ export default function Queue(){
                     {
                     queueSlice.map((paper, index) => {
                         return(
-                            <li key={index} className={currentClass(index+start_index)}>
-                                <QueueElement paper={paper} active={queueExpanded[index]}/>
+                            <li key={index} className={currentClass(index+start_index, paper)}>
+                                <QueueElement paper={paper} active={queueExpanded[index]} />
                             </li> 
                         )
                     })

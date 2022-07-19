@@ -101,6 +101,7 @@ a.nav-link {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
 }
+
 .queue-element-container{
   width: 100%
 }
@@ -114,7 +115,7 @@ a.nav-link {
 }
 
 .queue_element.odd_row{
-  background-color: #eec;
+  background-color: #eee;
 }
 
 .current{
@@ -122,6 +123,7 @@ a.nav-link {
   background-color: cyan;
 }
 
+/*
 .past{
   background-color: #dfd;
 }
@@ -129,7 +131,7 @@ a.nav-link {
 .past.odd_row{
   background-color: #beb;
 }
-
+*/
 
 .AdminQueueControls{
   margin-top: 15px;

@@ -49,30 +49,45 @@ export default function AppContext({children}){
       setGrid(data.grid);
     };
 
-    function updateGridList(grid_list, nid, status) {
-      for (let i = 0; i < grid_list.length; i++) {
-        let grid_item = grid_list[i];
-        if (grid_item.nid === nid) {
-          grid_item.status_full = status;
-          return true;
-        }
+    function locateGridEntry(grid_index, grid_list, nid) {
+      const index = grid_index.indexOf(nid);
+      if (index >= 0 && index < grid_list.length) {
+        return grid_list[index];
       }
-      return false;
+      return null;
+    }
+
+    function updateGridEntry(nid, status) {
+      let grid_entry = locateGridEntry(grid.above_nids, grid.above, nid);
+      if (!grid_entry) {
+        grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
+      }
+      if (!grid_entry) {
+        console.log('cannot find grid entry for nid:',nid);
+        return;
+      }
+      //console.log('about to update grid entry:', grid_entry)
+      grid_entry.status_full = status;
+      //console.log('just updated grid entry:', grid_entry)
+      const newGrid = { ...grid };
+      setGrid(newGrid); // force update
+    }
+
+    function updateQueueEntry(queue_index, status) {
+      if (queue_index < 0 || queue_index >= queue.length) {
+        console.log('cannot updateQueueEntry at queue_index ', queue_index);
+        return;
+      }
+      queue[queue_index].status = status;
+      const newQueue = [...queue];
+      setQueue(newQueue);
     }
 
     const receiveUpdate = (data) => {
       console.log('received update:');
       console.log(data); // queue_index, grid_nid, status
-      //const queue_index = data.queue_index;
-      const above = [...grid.above]; // shallow copies
-      const below = [...grid.below]; // shallow copies
-      const updated = updateGridList(above, data.grid_nid, data.status);
-      if (!updated) {
-        updateGridList(below, data.grid_nid, data.status);
-      }
-      const new_grid = {above, below};
-      setGrid(new_grid);
-      // also update queue entry based on data.queue_index
+      updateGridEntry(data.grid_nid, data.status);
+      updateQueueEntry(data.queue_index, data.status)
     };
 
     const receiveGlobs = (data) => {

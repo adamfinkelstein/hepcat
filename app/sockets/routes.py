@@ -68,24 +68,20 @@ def get_grid_dump_above_bar(above):
         papers_dump.append(paper_dump)
     return papers_dump
 
-def get_grid_indices_and_above(above, below):
-    above_indices = []
-    grid_indices = {}
-    for index,entry in enumerate(above):
-        nid = entry['nid']
-        grid_indices[nid] = index
-        above_indices.append(nid)
-    for index,entry in enumerate(below):
-        nid = entry['nid']
-        grid_indices[nid] = index
-    return grid_indices, above_indices
+def get_grid_nids(above):
+    nids = [entry['nid'] for entry in above]
+    return nids
 
 def get_grid_dump():
     above = get_grid_dump_above_bar(True)
     below = get_grid_dump_above_bar(False)
-    grid_indices, above_indices = get_grid_indices_and_above(above, below)
-    grid_dump = { 'above': above, 'below': below, 
-        'grid_indices':grid_indices, 'above_indices': above_indices}
+    above_nids = get_grid_nids(above)
+    below_nids = get_grid_nids(below)
+    grid_dump = { 
+        'above': above, 
+        'below': below, 
+        'above_nids': above_nids, 
+        'below_nids': below_nids}
     return grid_dump
 
 def get_user_dump(user):

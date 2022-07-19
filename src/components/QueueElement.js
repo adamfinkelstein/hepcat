@@ -8,13 +8,16 @@ import PaperConflict from './PaperConflict'
 export default function QueueElement({paper, active}){
 
     const globals = useAppGlobals();
-    const user = globals.user;
-    // const queue = useQueue();
     const content = useRef(null);
-    // const index = paper ? paper.queue_order - 1 : -1;
+    const user = globals.user;
     const conflicted = user.conflict_papers.includes(paper.nid);
+    const queueIndex = paper ? paper.queue_order - 1 : -1;
+    const isCurrent = (queueIndex === globals.queueCurrent)
+    const isPast = (queueIndex < globals.queueCurrent)
+    const status = paper.status && !isCurrent ? paper.status : "";
+    const showTitle = isPast ? "" : paper.title;
     const qLine = conflicted ? ': CONFLICTED!' : 
-            ( ' (' + paper.nid + '): ' + paper.title );
+            ( ' (' + paper.nid + '): ' + status + showTitle );
     // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
     return(
