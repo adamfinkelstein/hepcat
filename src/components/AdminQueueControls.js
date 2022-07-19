@@ -1,6 +1,8 @@
 import Stack from "react-bootstrap/Stack"
 import { useAppGlobals } from "../contexts/AppContext"
-import DropdownButton from "react-bootstrap/DropdownButton"
+//import DropdownButton from "react-bootstrap/DropdownButton"
+import Button from 'react-bootstrap/Button'
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from "react-bootstrap/Dropdown"
 // import {useState} from 'react'
 
@@ -39,8 +41,16 @@ export default function AdminQueueControls() {
             Next
             </button>
 
-            <DropdownButton id="status-dropdown-menu" title={newStatus}
-                    variant="outline">
+            <Dropdown as={ButtonGroup} id="status-dropdown-menu">
+            <Button variant="outline">
+            <Stack direction="horizontal">
+                <div className={"rectangle " + newStatus}/>
+                <span>{newStatus}</span>
+            </Stack>
+            </Button>
+            <Dropdown.Toggle split variant="outline" id="dropdown-split-basic" />
+
+            <Dropdown.Menu>
                 {
                     statusList.map((status, index) => {
                         return(
@@ -55,7 +65,8 @@ export default function AdminQueueControls() {
                     })
                     
                 }
-            </DropdownButton>
+            </Dropdown.Menu>
+            </Dropdown>
         </Stack>
     )
 }
