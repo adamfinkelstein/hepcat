@@ -7,7 +7,7 @@ from flask_login import current_user
 # from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, UserSchema, PaperSchema, History, HistoryContext, \
+from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
@@ -212,11 +212,18 @@ def parse_explicit_queue(exp):
     return None, nums
 
 def set_queue_explicit(exp):
-    name, nid_list = parse_explicit_queue(exp)
-    print('explicit queue:', name, nid_list)
+    label_name, nid_list = parse_explicit_queue(exp)
+    print('explicit queue:', label_name, nid_list)
     papers = Paper.query.all()
     p_list = list(papers)
-    filter_papers = [p for p in p_list if p.nid in nid_list]
+    if label_name:
+        label = Label.query.filter_by(name=label_name).first()
+        if not label:
+            print('No matched label for explicit queue: ', label_name)
+            return # probably should flash something here ???
+        filter_papers = list(label.tag_papers)
+    else:
+        filter_papers = [p for p in p_list if p.nid in nid_list]
     set_queue_to_paper_list(p_list, filter_papers)
 
 def show_current_paper():

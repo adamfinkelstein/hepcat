@@ -201,7 +201,11 @@ export default function SetQueue(){
                         className="queue-explicit-input"
                         onChange={handleInputChange}
                     />
-                    <span>(cluster name like 'Radiosity', or paper numer(s) like '2' or '2,3,5,7')</span>
+                    <ul>
+                    <li>Cluster name like 'Cluster-A'.</li>
+                    <li>Area name like 'Area-Rendering'.</li>
+                    <li>Paper numer(s) like '101' or '101,103,105,107'.</li>
+                    </ul>
                 </Stack>
                 <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
             </div>
