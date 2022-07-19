@@ -2,15 +2,16 @@ import Stack from "react-bootstrap/Stack"
 import { useAppGlobals } from "../contexts/AppContext"
 import DropdownButton from "react-bootstrap/DropdownButton"
 import Dropdown from "react-bootstrap/Dropdown"
-import {useState} from 'react'
+// import {useState} from 'react'
 
 // this var also in SetQueue - consolidate?
 const statusList = ['Tabled','Reject','Conference','Journal'];
 
 export default function AdminQueueControls() {
     const globals = useAppGlobals();
+    const newStatus = globals.newStatus;
+    const setNewStatus = globals.setNewStatus;
     const socketEmit = globals.socketEmit;
-    const [newStatus, setNewStatus] = useState("Reject");
     const completed = globals.queueCurrent >= globals.queue.length;
     const disablePrev = globals.queueCurrent === 0 ? "disabled" : "";
     const disableShow = completed || globals.serverGlobs.current_show ? "disabled" : "";
@@ -41,13 +42,13 @@ export default function AdminQueueControls() {
             <DropdownButton id="status-dropdown-menu" title={newStatus}
                     variant="outline">
                 {
-                    statusList.map((newStatus, index) => {
+                    statusList.map((status, index) => {
                         return(
                             <Dropdown.Item as="button" key={index}
-                                onClick={() => setNewStatus(newStatus)}>
+                                onClick={() => setNewStatus(status)}>
                                 <Stack direction="horizontal">
-                                    <div className={"rectangle " + newStatus}/>
-                                    <span>{newStatus}</span>
+                                    <div className={"rectangle " + status}/>
+                                    <span>{status}</span>
                                 </Stack>
                             </Dropdown.Item>
                         )

@@ -303,15 +303,14 @@ def admin_prev_paper():
 def admin_next_paper(status_update):
     print('admin request for next paper with status:', status_update)
     before_index, paper = update_current_paper_status(status_update)
+    # queue_index, grid_nid, status
+    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
     zero_or_inc_current_index(+1) # also "hides" current
     # other things this should do:
     # - set color and sticky status on prev (for grid)
     globs = get_globs_dump_with_status()
+    globs['update'] = update
     emit('server_set_globs', globs)
-    # server_send_update
-    # queue_index, grid_nid, status
-    data = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
-    emit('server_send_update', data)
 
 @socketio.on('admin_show_current')
 def admin_show_current():

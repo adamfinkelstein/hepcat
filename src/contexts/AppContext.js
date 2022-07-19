@@ -15,7 +15,8 @@ export default function AppContext({children}){
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
-  
+  const [newStatus, setNewStatus] = useState("Tabled");
+
   /* 
     serverGlobs Fields:
       bar: Float
@@ -68,6 +69,7 @@ export default function AppContext({children}){
       }
       //console.log('about to update grid entry:', grid_entry)
       grid_entry.status_full = status;
+      grid_entry.stickie = false;
       //console.log('just updated grid entry:', grid_entry)
       const newGrid = { ...grid };
       setGrid(newGrid); // force update
@@ -93,12 +95,17 @@ export default function AppContext({children}){
     const receiveGlobs = (data) => {
       console.log('received globs:');
       console.log(data);
-      console.log(queue)
       setQueueCurrent(data.current);
       setServerGlobs(data);
-
-      // set status of previous paper by using setQueue (current)
-      // set status of previous paper by using setGrid (nid)
+      const status = data.current_status;
+      const update = data.update;
+      if (status) {
+        setNewStatus(status);
+      }
+      if (update) {
+        // set status of previous paper in grid and queue
+        receiveUpdate(update);
+      }
     }
 
     const receiveQueue = (data) => {
@@ -109,11 +116,10 @@ export default function AppContext({children}){
     };
 
     if (socket && 'on' in socket) {
-      console.log('register welcome etc');
+      // console.log('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_globs', receiveGlobs);
-      socket.on('server_send_update', receiveUpdate);
     }
 
     return () => {
@@ -121,7 +127,6 @@ export default function AppContext({children}){
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_globs', receiveGlobs);
-        socket.off('server_send_update', receiveUpdate);
       }
     };
   }, [queue, socket]);
@@ -145,6 +150,8 @@ export default function AppContext({children}){
           "queue": queue,
           "grid": grid,
           "queueCurrent": queueCurrent,
+          "newStatus": newStatus,
+          "setNewStatus": setNewStatus,
           "socketEmit": socketEmit,
           "serverGlobs": serverGlobs,
         }}>
