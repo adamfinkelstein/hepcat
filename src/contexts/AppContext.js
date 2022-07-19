@@ -129,7 +129,7 @@ export default function AppContext({children}){
         socket.off('server_set_globs', receiveGlobs);
       }
     };
-  }, [queue, socket]);
+  }, [queue, grid, socket]);
 
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {

@@ -1,4 +1,5 @@
 import os
+import re
 # import random
 from datetime import datetime
 from flask_socketio import emit, disconnect
@@ -174,18 +175,49 @@ def clear_queue():
         db.session.add(paper)
     db.session.commit()
 
+def zero_or_inc_current_index(zero_or_inc):
+    gq = GlobQueue.query.first()
+    if zero_or_inc == 0:
+        gq.current = 0
+    else:
+        gq.current += zero_or_inc
+    gq.current_show = False
+    db.session.add(gq)
+    db.session.commit()
+
+def set_queue_to_paper_list(all_papers, paper_list):
+    order_papers = order_q(paper_list)
+    for paper in all_papers:
+        paper.queue_order = 0
+    for index,paper in enumerate(order_papers):
+        paper.queue_order = (index+1)
+    for paper in all_papers:
+        db.session.add(paper)
+    zero_or_inc_current_index(0) # does commit!
+
 def set_queue(filters):
     papers = Paper.query.all()
     p_list = list(papers)
     filter_papers = [p for p in p_list if include_paper_in_queue(p,filters)]
-    order_papers = order_q(filter_papers)
-    for paper in p_list:
-        paper.queue_order = 0
-    for index,paper in enumerate(order_papers):
-        paper.queue_order = (index+1)
-    for paper in p_list:
-        db.session.add(paper)
-    zero_or_inc_current_index(0) # does commit!
+    set_queue_to_paper_list(p_list, filter_papers)
+
+def parse_explicit_queue(exp):
+    exp = exp.strip()
+    nums = re.sub('[^0-9,]', "", exp)
+    alpha = re.sub('[0-9,]', "", exp)
+    if len(nums) < len(alpha):
+        return exp, None
+    nums = nums.split(',')
+    nums = [int(n) for n in nums]
+    return None, nums
+
+def set_queue_explicit(exp):
+    name, nid_list = parse_explicit_queue(exp)
+    print('explicit queue:', name, nid_list)
+    papers = Paper.query.all()
+    p_list = list(papers)
+    filter_papers = [p for p in p_list if p.nid in nid_list]
+    set_queue_to_paper_list(p_list, filter_papers)
 
 def show_current_paper():
     gq = GlobQueue.query.first()
@@ -198,16 +230,6 @@ def hide_queue(hide, message):
     gq = GlobQueue.query.first()
     gq.hide_all = hide
     gq.message = message
-    db.session.add(gq)
-    db.session.commit()
-
-def zero_or_inc_current_index(zero_or_inc):
-    gq = GlobQueue.query.first()
-    if zero_or_inc == 0:
-        gq.current = 0
-    else:
-        gq.current += zero_or_inc
-    gq.current_show = False
     db.session.add(gq)
     db.session.commit()
 
@@ -330,6 +352,13 @@ def admin_hide_queue(data):
 def admin_set_queue(filters):
     print('admin request for set queue:', filters)
     set_queue(filters)
+    queue = get_queue()
+    emit('server_set_queue', queue)
+
+@socketio.on('admin_set_queue_explicit')
+def admin_set_queue_explicit(data):
+    print('admin request for set explicit queue:', data)
+    set_queue_explicit(data)
     queue = get_queue()
     emit('server_set_queue', queue)
 

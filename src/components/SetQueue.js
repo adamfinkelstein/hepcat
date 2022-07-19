@@ -26,7 +26,7 @@ export default function SetQueue(){
         adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList, bar, setBar} = useGUI()
 
 
-    function handleSendQ(event){
+    function handleSetQueueButton(event) {
         event.preventDefault(); // do not send the form!
         const statuses = statusList.filter( (s,index) =>
             document.getElementById("status-checkbox-"+index).checked
@@ -35,9 +35,19 @@ export default function SetQueue(){
             document.getElementById("only-checkbox-"+index).checked
         );
         const data = { statuses, only, lowRange, highRange, adminConflicts };
+        console.log('sending queue request:');
         console.log(data);
         socketEmit("admin_set_queue", data)
         flash("Sent queue request.", "success");
+    }
+
+    function handleSetQueueExplicitButton(event) {
+        event.preventDefault(); // do not send the form! (Is this in form?!?)
+        // get value from text field
+        // save using: setQueueExplicitList(field)
+        console.log('sending explicit queue request: '+queueExplicitList);
+        socketEmit("admin_set_queue_explicit", queueExplicitList)
+        flash("Sent explicit queue request.", "success");
     }
 
     function handleInputChange(event){
@@ -47,6 +57,7 @@ export default function SetQueue(){
         if(target.name === "lowRange") setLowRange(value)
         else if(target.name === "highRange") setHighRange(value)
         else if(target.name === "message") setMessage(value)
+        else if(target.name === "queueExplicit") setQueueExplicitList(value)
     }
 
     return(
@@ -180,34 +191,19 @@ export default function SetQueue(){
                     </Stack>
                 </div>
             </div>
-            <Button variant="primary" onClick={handleSendQ} style={{marginTop: "30px"}}>Request Queue</Button>
+            <Button variant="primary" onClick={handleSetQueueButton} style={{marginTop: "30px"}}>Set Filtered Queue</Button>
             <hr className="horizontal-divider"/>
             <div>
                 <Stack direction = "horizontal">
                     <input
-                        name="explicit-queue"
-                        defaultValue={queueExplicitList.join(", ")}
-                        ref={explicitRef}
+                        name="queueExplicit"
+                        value={queueExplicitList}
                         className="queue-explicit-input"
+                        onChange={handleInputChange}
                     />
-                    <span>(like '2' or '2,3,5,7')</span>
+                    <span>(cluster name like 'Radiosity', or paper numer(s) like '2' or '2,3,5,7')</span>
                 </Stack>
-                <Button onClick={() => {
-                    let value = explicitRef;
-                    let values = value.split(",")
-                    let newValues = []
-
-                    for(let i = 0; i < values.length; i++){
-                        const num = Number(values[i].trim())
-                        console.log(num)
-                        if(!Number.isInteger(num)){
-                            flash("Queue could not be set explicitly. You supplied an invalid value.", "warning")
-                            return
-                        }
-                        newValues.push(num)
-                    }
-                    flash("Queue explicitly set with " + queueExplicitList.join(", "))
-                }} className="queue-explicit-btn">Set Queue Explicit</Button>
+                <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
             </div>
             <hr className="horizontal-divider"/>
             <div>

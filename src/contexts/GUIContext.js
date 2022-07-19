@@ -14,7 +14,7 @@ export default function GUIContext({children}){
   const [lowRange, setLowRange] = useState(0);
   const [highRange, setHighRange] = useState(5.1);
   const [adminConflicts, setAdminConflicts] = useState("Never");
-  const [queueExplicitList, setQueueExplicitList] = useState([]);
+  const [queueExplicitList, setQueueExplicitList] = useState("");
   const [bar, setBar] = useState(0);
 
   return(
