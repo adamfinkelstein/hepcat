@@ -15,7 +15,12 @@ export default function AppContext({children}){
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
-  const [newStatus, setNewStatus] = useState("Tabled");
+  const [newStatus, setNewStatus] = useState("Tabled")
+
+  // for modal dialog 
+  const [showModal, setShowModal] = useState(false)
+  const [modalTitle, setModalTitle] = useState("")
+  const [modalBody, setModalBody] = useState("")
 
   /* 
     serverGlobs Fields:
@@ -126,12 +131,19 @@ export default function AppContext({children}){
       receiveGlobs(data.globs);
     };
 
+    const receiveAlert = (data) => {
+      setModalTitle(data.title);
+      setModalBody(data.body);
+      setShowModal(true);
+    }
+
     if (socket && 'on' in socket) {
       // console.log('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_globs', receiveGlobs);
       socket.on('server_set_stickie', receiveStickie);
+      socket.on('server_send_alert', receiveAlert);
     }
 
     return () => {
@@ -140,6 +152,7 @@ export default function AppContext({children}){
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_globs', receiveGlobs);
         socket.off('server_set_stickie', receiveStickie);
+        socket.off('server_send_alert', receiveAlert);
       }
     };
   }, [queue, grid, socket]);
@@ -167,8 +180,13 @@ export default function AppContext({children}){
           "setNewStatus": setNewStatus,
           "socketEmit": socketEmit,
           "serverGlobs": serverGlobs,
+          "showModal": showModal,
+          "setShowModal": setShowModal,
+          "modalTitle": modalTitle,
+          "modalBody": modalBody,
         }}>
         {children}
       </AppGlobalsContext.Provider>
   )
 }
+

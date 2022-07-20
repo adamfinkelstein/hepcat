@@ -1,5 +1,6 @@
 import Container from "react-bootstrap/Container"
 import Navbar from './components/Navbar.js'
+import ModalDialog from './components/ModalDialog.js'
 // import Body from './components/Body.js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainPage from './pages/MainPage.js'
@@ -20,6 +21,7 @@ export default function App() {
           <PreferencesContext>
               <AppContext>
                 <GUIContext>
+                  <ModalDialog/>
                   <Navbar/>
                   <Routes>
                       <Route path="/" element={<MainPage/>}/>

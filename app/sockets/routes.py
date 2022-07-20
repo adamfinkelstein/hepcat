@@ -379,6 +379,8 @@ def admin_set_queue_explicit(data):
     set_queue_explicit(data)
     queue = get_queue()
     emit('server_set_queue', queue, broadcast=True)
+    reply = { 'title': 'Set Queue', 'body': 'Set queue to: '+data}
+    emit('server_send_alert', reply)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
