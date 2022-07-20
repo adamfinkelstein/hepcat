@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from flask_socketio import emit, disconnect
 from flask_login import current_user
+from numpy import broadcast
 # from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
@@ -326,48 +327,45 @@ def admin_prev_paper():
     print('admin request for prev paper')
     zero_or_inc_current_index(-1) # also "hides" current
     globs = get_globs_dump_with_status()
-    emit('server_set_globs', globs)
+    emit('server_set_globs', globs, broadcast=True)
 
 @socketio.on('admin_next_paper')
 def admin_next_paper(status_update):
     print('admin request for next paper with status:', status_update)
     before_index, paper = update_current_paper_status(status_update)
-    # queue_index, grid_nid, status
-    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
     zero_or_inc_current_index(+1) # also "hides" current
-    # other things this should do:
-    # - set color and stickie status on prev (for grid)
+    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
     globs = get_globs_dump_with_status()
     globs['update'] = update
-    emit('server_set_globs', globs)
+    emit('server_set_globs', globs, broadcast=True)
 
 @socketio.on('admin_show_current')
 def admin_show_current():
     print('admin request for show paper')
     show_current_paper()
     globs = get_globs_dump_with_status()
-    emit('server_set_globs', globs)
+    emit('server_set_globs', globs, broadcast=True)
 
 @socketio.on('admin_hide_queue')
 def admin_hide_queue(data):
     print(f'admin request for hide queue: {data.hide} {data.message}')
     hide_queue(data.hide, data.message)
     globs = get_globs_dump_with_status()
-    emit('server_set_globs', globs)
+    emit('server_set_globs', globs, broadcast=True)
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
     print('admin request for set queue:', filters)
     set_queue(filters)
     queue = get_queue()
-    emit('server_set_queue', queue)
+    emit('server_set_queue', queue, broadcast=True)
 
 @socketio.on('admin_set_queue_explicit')
 def admin_set_queue_explicit(data):
     print('admin request for set explicit queue:', data)
     set_queue_explicit(data)
     queue = get_queue()
-    emit('server_set_queue', queue)
+    emit('server_set_queue', queue, broadcast=True)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
@@ -385,7 +383,7 @@ def user_set_stickie(data):
                     status_enum=status_enum)
     db.session.add(history)
     db.session.commit()
-    emit('server_set_stickie', nid) # send back to client - ??? should broadcast
+    emit('server_set_stickie', nid, broadcast=True)
 
 @socketio.on('user_change_password')
 def user_change_password(new_password):
@@ -397,20 +395,6 @@ def user_change_password(new_password):
     db.session.commit()
 
 '''
-* server_queue_hide (broadcast with message)
-* server_set_queue
-    * default current paper: the first in queue
-    * can be just reply to admin 
-    * broadcasted on "show queue"
-* server_update_papers (from next button)
-    * current paper (qid, nid, status for pulldown and hide)
-    * prev paper (history, queue and grid status: color and clear stickie)
-    * current status (for pulldown)
-* server_update_stickie (QID and boolean)
-
-Note:
-* grid (and user) is sent with welcome
-
 Later add:
 * admin_queue_propbe
 * server_queue_length (from probe)
