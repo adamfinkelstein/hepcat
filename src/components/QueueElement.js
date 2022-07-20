@@ -4,10 +4,12 @@ import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
 //import Chevron from './Chevron.js'
 import PaperConflict from './PaperConflict'
+import { useFavorites } from '../contexts/PreferencesContext'
 
 export default function QueueElement({paper, active}){
 
     const globals = useAppGlobals();
+    const favorites = useFavorites()
     const content = useRef(null);
     const user = globals.user;
     const conflicted = user.conflict_papers.includes(paper.nid);
@@ -15,6 +17,7 @@ export default function QueueElement({paper, active}){
     const isCurrent = (queueIndex === globals.queueCurrent)
     const isPast = (queueIndex < globals.queueCurrent)
     const status = paper.status && !isCurrent ? paper.status : "";
+    const starSymbol = favorites.includes(paper.nid) ? '\u2605' : '';
     const showTitle = isPast ? "" : paper.title;
     const qLine = conflicted ? ': CONFLICTED!' : 
             ( ' (' + paper.nid + '): ' + status + showTitle );
@@ -25,7 +28,7 @@ export default function QueueElement({paper, active}){
             <Stack direction="horizontal" className="queue-element-container">
                 <div>
                     <span className="accordion_title">
-                        Q{paper.queue_order}{qLine}
+                    {starSymbol} Q{paper.queue_order}{qLine}
                     </span>
                 </div>
             </Stack>
