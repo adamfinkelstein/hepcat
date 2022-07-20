@@ -12,14 +12,17 @@ export default function QueueElement({paper, active}){
     const favorites = useFavorites()
     const content = useRef(null);
     const user = globals.user;
-    const conflicted = user.conflict_papers.includes(paper.nid);
     const queueIndex = paper ? paper.queue_order - 1 : -1;
     const isCurrent = (queueIndex === globals.queueCurrent)
     const isPast = (queueIndex < globals.queueCurrent)
+    const isConflict = user.conflict_papers.includes(paper.nid);
+    const isFavorite = favorites.includes(paper.nid);
     const status = paper.status && !isCurrent ? paper.status : "";
-    const starSymbol = favorites.includes(paper.nid) ? '\u2605' : '';
+    const starSymbol = '\u2605';
+    const confSymbol = '\u26D4';
+    const prefixSym = isConflict ? confSymbol : (isFavorite ? starSymbol : '');
     const showTitle = isPast ? "" : paper.title;
-    const qLine = conflicted ? ': CONFLICTED!' : 
+    const qLine = isConflict ? ': CONFLICTED!' : 
             ( ' (' + paper.nid + '): ' + status + showTitle );
     // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
@@ -28,7 +31,7 @@ export default function QueueElement({paper, active}){
             <Stack direction="horizontal" className="queue-element-container">
                 <div>
                     <span className="accordion_title">
-                    {starSymbol} Q{paper.queue_order}{qLine}
+                    {prefixSym} Q{paper.queue_order}{qLine}
                     </span>
                 </div>
             </Stack>
