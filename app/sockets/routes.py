@@ -180,8 +180,12 @@ def zero_or_inc_current_index(zero_or_inc):
     gq = GlobQueue.query.first()
     if zero_or_inc == 0:
         gq.current = 0
+    elif zero_or_inc == -1:
+        gq.current -= 1
+    elif zero_or_inc == +1:
+        gq.current += 1
     else:
-        gq.current += zero_or_inc
+        gq.current = -1 # default = no current 
     gq.current_show = False
     db.session.add(gq)
     db.session.commit()
@@ -194,7 +198,10 @@ def set_queue_to_paper_list(all_papers, paper_list):
         paper.queue_order = (index+1)
     for paper in all_papers:
         db.session.add(paper)
-    zero_or_inc_current_index(0) # does commit!
+    if len(paper_list):
+        zero_or_inc_current_index(0) # does commit!
+    else:
+        zero_or_inc_current_index(-100) # empty queue = no current
 
 def set_queue(filters):
     papers = Paper.query.all()
@@ -204,6 +211,8 @@ def set_queue(filters):
 
 def parse_explicit_queue(exp):
     exp = exp.strip()
+    if not exp or exp == '_CLEAR_':
+        return None, []
     nums = re.sub('[^0-9,]', "", exp)
     alpha = re.sub('[0-9,]', "", exp)
     if len(nums) < len(alpha):

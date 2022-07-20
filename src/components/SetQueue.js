@@ -46,7 +46,8 @@ export default function SetQueue(){
         // get value from text field
         // save using: setQueueExplicitList(field)
         console.log('sending explicit queue request: '+queueExplicitList);
-        socketEmit("admin_set_queue_explicit", queueExplicitList)
+        const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_'
+        socketEmit("admin_set_queue_explicit", explicit)
         flash("Sent explicit queue request.", "success");
     }
 
@@ -195,19 +196,22 @@ export default function SetQueue(){
             <hr className="horizontal-divider"/>
             <div>
                 <Stack direction = "horizontal">
+                    <div>
                     <input
                         name="queueExplicit"
                         value={queueExplicitList}
                         className="queue-explicit-input"
                         onChange={handleInputChange}
                     />
+                    <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
+                    </div>
                     <ul>
+                    <li>Empty string ('') to clear queue.</li>
                     <li>Cluster name like 'Cluster-A'.</li>
                     <li>Area name like 'Area-Rendering'.</li>
                     <li>Paper numer(s) like '101' or '101,103,105,107'.</li>
                     </ul>
                 </Stack>
-                <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
             </div>
             <hr className="horizontal-divider"/>
             <div>
