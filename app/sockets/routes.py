@@ -389,8 +389,11 @@ def user_set_stickie(data):
     status = data['status']
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
-        print('sticky--->unrecognized paper!')
-        return # ???? should send warning back to sender!
+        msg = f'Cannot find paper with ID: {nid}'
+        print('Stickie Error-- ', msg)
+        reply = { 'title': 'Stickie Error', 'body': msg}
+        emit('server_send_alert', reply)
+        return
     context_stickie = int(HistoryContext.Stickie)
     status_enum = status_str_to_enum(status)
     history = History(paper=paper,
