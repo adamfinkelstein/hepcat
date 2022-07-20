@@ -336,7 +336,7 @@ def admin_next_paper(status_update):
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
     zero_or_inc_current_index(+1) # also "hides" current
     # other things this should do:
-    # - set color and sticky status on prev (for grid)
+    # - set color and stickie status on prev (for grid)
     globs = get_globs_dump_with_status()
     globs['update'] = update
     emit('server_set_globs', globs)
@@ -372,6 +372,20 @@ def admin_set_queue_explicit(data):
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
     print('user request for set stickie:', data)
+    nid = data['nid']
+    status = data['status']
+    paper = Paper.query.filter_by(nid=nid).first()
+    if not paper:
+        print('sticky--->unrecognized paper!')
+        return # ???? should send warning back to sender!
+    context_stickie = int(HistoryContext.Stickie)
+    status_enum = status_str_to_enum(status)
+    history = History(paper=paper,
+                    context_enum=context_stickie,
+                    status_enum=status_enum)
+    db.session.add(history)
+    db.session.commit()
+    emit('server_set_stickie', nid) # send back to client - ??? should broadcast
 
 @socketio.on('user_change_password')
 def user_change_password(new_password):
@@ -379,6 +393,8 @@ def user_change_password(new_password):
     # security! later: disable printing pass:
     print(f'user {user.full_name} changes password to {new_password}')
     user.password = new_password
+    db.session.add(user)
+    db.session.commit()
 
 '''
 * server_queue_hide (broadcast with message)
@@ -388,7 +404,7 @@ def user_change_password(new_password):
     * broadcasted on "show queue"
 * server_update_papers (from next button)
     * current paper (qid, nid, status for pulldown and hide)
-    * prev paper (history, queue and grid status: color and clear sticky)
+    * prev paper (history, queue and grid status: color and clear stickie)
     * current status (for pulldown)
 * server_update_stickie (QID and boolean)
 

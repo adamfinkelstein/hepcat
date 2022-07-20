@@ -68,8 +68,13 @@ export default function AppContext({children}){
         return;
       }
       //console.log('about to update grid entry:', grid_entry)
-      grid_entry.status_full = status;
-      grid_entry.stickie = false;
+      if (status) {
+        grid_entry.status_full = status;
+        grid_entry.stickie = false;
+      }
+      else {
+        grid_entry.stickie = true;
+      }
       //console.log('just updated grid entry:', grid_entry)
       const newGrid = { ...grid };
       setGrid(newGrid); // force update
@@ -91,6 +96,12 @@ export default function AppContext({children}){
       updateGridEntry(data.grid_nid, data.status);
       updateQueueEntry(data.queue_index, data.status)
     };
+
+    const receiveStickie = (grid_nid) => {
+      console.log('received stickie: '+grid_nid);
+      updateGridEntry(grid_nid, null); // null status -> set stickie
+    }
+    
 
     const receiveGlobs = (data) => {
       console.log('received globs:');
@@ -120,6 +131,7 @@ export default function AppContext({children}){
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_globs', receiveGlobs);
+      socket.on('server_set_stickie', receiveStickie);
     }
 
     return () => {
@@ -127,6 +139,7 @@ export default function AppContext({children}){
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_globs', receiveGlobs);
+        socket.off('server_set_stickie', receiveStickie);
       }
     };
   }, [queue, grid, socket]);

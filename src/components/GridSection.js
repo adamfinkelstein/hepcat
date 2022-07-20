@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
 import Grid from './Grid.js'
 import {useState} from 'react'
+import { useAppGlobals } from "../contexts/AppContext"
 import ColorsDisplay from './ColorsDisplay';
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
@@ -9,10 +10,29 @@ import Button from 'react-bootstrap/Button'
 
 export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
+    const globals = useAppGlobals();
+    const socketEmit = globals.socketEmit;
 
-    const [stickie, setStickie] = useState("Tabled, Needs Discussion")
-    const [ID, setID] = useState(null)
-    const stickieList = ["Tabled, Needs Discussion", "Converged to Journal", "Converged to Conference", "Converged to Reject"]
+    const stickieOptions = [
+        "Tabled (Needs discussion)", 
+        "Reject (Converged)", 
+        "Conference (Converged)", 
+        "Journal (Converged)"]
+    const [stickie, setStickie] = useState(stickieOptions[0])
+    const [ID, setID] = useState("")
+
+    function sendStickie() {
+        const words = stickie.split(' ');
+        const status = words[0];
+        const nid = parseInt(ID);
+        if(!nid){
+            alert("Please choose a paper id.");
+            return;
+        }
+        console.log("Send stickie " + status + " to paper with id: " + nid);
+        const data = {status, nid};
+        socketEmit('user_set_stickie', data);
+    }
 
     return(
         <Container>
@@ -38,14 +58,14 @@ export default function GridSection(){
                 <ColorsDisplay/>
                 <hr className="vertical-divider"></hr>
                 <Container className="set-stickie">
-                    <span>Set Stickie Messages Here: </span>
-                    <Stack direction = "horizontal">
-                        <DropdownButton title={stickie}
-                                        variant="outline">
+                    <Stack direction = "vertical" className="send-stickie-column">
+                        <div className="stickie-step">Step 1 &mdash; choose a stickie type:</div>
+                        <DropdownButton title={stickie} 
+                                        variant="secondary">
                             {
-                                stickieList.map((newStickie, index) => {
+                                stickieOptions.map((newStickie, index) => {
                                     return(
-                                        <Dropdown.Item as="button" key={index}
+                                        <Dropdown.Item as="button" key={index} 
                                             onClick={() => setStickie(newStickie)}>
                                             <span>{newStickie}</span>
                                         </Dropdown.Item>
@@ -54,20 +74,15 @@ export default function GridSection(){
                                 
                             }
                         </DropdownButton>
-                        <span>ID: </span>
-                        <input
+                        <div className="stickie-step">Step 2 &mdash; type the numeric paper ID:</div>
+                        <div>
+                        <input maxLength={3}
                             name="id"
-                            onChange={(event) => {
-                                setID(event.target.value)
-                            }}
+                            onChange={(event) => { setID(event.target.value) }}
                         />
-                        <Button variant="primary" onClick={()=>{
-                            if(!ID){
-                                console.log("Please choose a paper id.")
-                            }else{
-                                console.log("Send stickie " + stickie + " to paper with id: " + ID)
-                            }
-                        }}>Send</Button>
+                        </div>
+                        <div className="stickie-step">Step 3 &mdash; click to send stickie:</div>
+                        <Button variant="primary" onClick={sendStickie}>Send Stickie</Button>
                     </Stack>
                 </Container>
             </Stack>

@@ -19,7 +19,7 @@ export default function SetQueue(){
     let flasher = useFlasher()
     let flash = flasher["flash"]
     const barRef = useRef(null);
-    const explicitRef = useRef(null);
+    // const explicitRef = useRef(null);
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
         hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
