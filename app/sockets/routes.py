@@ -190,8 +190,11 @@ def zero_or_inc_current_index(zero_or_inc):
     db.session.add(gq)
     db.session.commit()
 
-def set_queue_to_paper_list(all_papers, paper_list):
-    order_papers = order_q(paper_list)
+def set_queue_to_paper_list(all_papers, paper_list, solve_tsp = True):
+    if solve_tsp:
+        order_papers = order_q(paper_list)
+    else:
+        order_papers = paper_list
     for paper in all_papers:
         paper.queue_order = 0
     for index,paper in enumerate(order_papers):
@@ -201,7 +204,7 @@ def set_queue_to_paper_list(all_papers, paper_list):
     if len(paper_list):
         zero_or_inc_current_index(0) # does commit!
     else:
-        zero_or_inc_current_index(-100) # empty queue = no current
+        zero_or_inc_current_index(-100) # empty queue = no current 
 
 def set_queue(filters):
     papers = Paper.query.all()
@@ -232,9 +235,11 @@ def set_queue_explicit(exp):
             print('No matched label for explicit queue: ', label_name)
             return # probably should flash something here ???
         filter_papers = list(label.tag_papers)
+        solve_tsp = True
     else:
         filter_papers = [p for p in p_list if p.nid in nid_list]
-    set_queue_to_paper_list(p_list, filter_papers)
+        solve_tsp = False # do not reorder papers on explicit numeric list
+    set_queue_to_paper_list(p_list, filter_papers, solve_tsp)
 
 def show_current_paper():
     gq = GlobQueue.query.first()
