@@ -69,7 +69,7 @@ export default function AppContext({children}){
       }
       //console.log('about to update grid entry:', grid_entry)
       if (status) {
-        grid_entry.status_full = status;
+        grid_entry.status = status;
         grid_entry.stickie = false;
       }
       else {

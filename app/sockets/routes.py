@@ -54,7 +54,7 @@ def get_grid_dump_above_bar(above):
     context_stickie = int(HistoryContext.Stickie)
     context_plenary = int(HistoryContext.Plenary)
     for paper in papers:
-        status_full = 'Unseen'
+        status = 'Unseen'
         stickie = False
         history = list(paper.history)
         for h in history:
@@ -62,11 +62,10 @@ def get_grid_dump_above_bar(above):
                 stickie = True
             elif h.context_enum == context_plenary:
                 stickie = False
-                status_full = h.status
-        status_short = status_full[:1] # first letter
+                status = h.status
         paper_dump = { 'nid': paper.nid, \
-            'status': status_short, \
-            'status_full': status_full, 'stickie': stickie }
+            'status': status, \
+            'stickie': stickie }
         papers_dump.append(paper_dump)
     return papers_dump
 
