@@ -36,7 +36,7 @@ export default function Paper(){
                 </div>
                 ) : (
                 <div>
-                    <div className="paper-timer">1:36</div>
+                    <div className="debug-timer">{currentShow} {isPaper}</div>
                     <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
                     <br/>
                     <p className='custom-font-size'>Showed: {currentStart}</p>

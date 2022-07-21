@@ -39,7 +39,11 @@ export default function Body(){
     function dateToSecs(date) {
         return moment.utc(date).local().unix()
     }
+    
     function formatTime(date) {
+        if (!currentShow || !currentStart) {
+            return ""
+        }
         const sec1 = dateToSecs(currentStart)
         const sec2 = dateToSecs(date)
         const msDiff = Math.max(0, sec2 - sec1) * 1000
@@ -88,8 +92,10 @@ export default function Body(){
                                     )
                                 }
                                 {
-                                    currentShow &&
-                                    (<Tab tabClassName="timer-tab" title={formatTime(currentTime)} className="foofoo" disabled></Tab>)
+                                    (currentShow) ?
+                                    (<Tab tabClassName="timer-tab" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
+                                    :
+                                    (" ")
                                 }
                             </Tabs>
                         </Container>

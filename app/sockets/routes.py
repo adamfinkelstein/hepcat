@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
-from ..orderq import order_q, get_paper_conficts_set, get_enter_leave_conf_sets
+from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
