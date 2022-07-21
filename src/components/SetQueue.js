@@ -209,7 +209,7 @@ export default function SetQueue(){
                     <li>Empty string ('') to clear queue.</li>
                     <li>Cluster name like 'Cluster-A'.</li>
                     <li>Area name like 'Area-Rendering'.</li>
-                    <li>Paper numer(s) like '101' or '101,103,105,107'.</li>
+                    <li>Paper number(s) like '101' or '101,103,105,107'.</li>
                     </ul>
                 </Stack>
             </div>

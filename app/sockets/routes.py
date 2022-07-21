@@ -223,6 +223,13 @@ def parse_explicit_queue(exp):
     nums = [int(n) for n in nums]
     return None, nums
 
+def get_paper_from_list_by_nid(p_list, nid):
+    filter_papers = [p for p in p_list if p.nid == nid]
+    if len(filter_papers) == 1:
+        return filter_papers[0]
+    print(f'weird error: more than one paper with id {nid}')
+    return None
+
 def set_queue_explicit(exp):
     label_name, nid_list = parse_explicit_queue(exp)
     print('explicit queue:', label_name, nid_list)
@@ -236,7 +243,8 @@ def set_queue_explicit(exp):
         filter_papers = list(label.tag_papers)
         solve_tsp = True
     else:
-        filter_papers = [p for p in p_list if p.nid in nid_list]
+        select_papers = [p for p in p_list if p.nid in nid_list]
+        filter_papers = [get_paper_from_list_by_nid(select_papers, nid) for nid in nid_list]
         solve_tsp = False # do not reorder papers on explicit numeric list
     set_queue_to_paper_list(p_list, filter_papers, solve_tsp)
 
