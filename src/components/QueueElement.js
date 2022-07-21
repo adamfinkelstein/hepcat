@@ -30,9 +30,10 @@ export default function QueueElement({paper, active}){
         <Container>
             <Stack direction="horizontal" className="queue-element-container">
                 <div>
-                    <span className="accordion_title">
-                    {prefixSym} Q{paper.queue_order}{qLine}
-                    </span>
+                    <div className="accordion_title">
+                    Q{paper.queue_order}{qLine}
+                    </div>
+                    <div className="qSymbol">{prefixSym}</div>
                 </div>
             </Stack>
             <div ref={content} style={{ maxHeight: `${(active === "" || content === null) ? "0px" : "100px"}` }} className="accordion_content">

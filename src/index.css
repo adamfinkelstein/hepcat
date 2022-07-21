@@ -78,6 +78,12 @@ a.nav-link {
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
   text-align: left;
+  display: inline-block;
+}
+
+#qSymbol {
+  float: right;
+  display: inline-block;
 }
 
 /* Style the accordion chevron icon */
@@ -424,3 +430,4 @@ a.nav-link {
   font-style: italic;
   color: #888;
 }
+
