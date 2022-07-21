@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>Hepcat Conflictbut Debugger</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+    </head>
+    <body>
+    
+    <h1>Hepcat Conflictbut Debugger</h1>
+    
+    Current Paper:
+    <ul>
+        <li>Paper: <span id="paper"></span></li>
+        <li>Show: <span id="show"></span></li>
+    </ul>
+
+    Current Conflicts:
+    <ul id="conflict-list">
+    </ul>
+    
+    All Users:
+    <ul id="user-list">
+    </ul>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js" crossorigin="anonymous"></script>
+
+    <script>
+    
+    // This function displays the list of conflicts/users in the UL on the page
+    // (for debugging)
+    function setUL(element, mylist, isObject) {
+        var ul = document.getElementById(element);
+        ul.innerHTML = ''; // clears any existing names from list
+    
+        // add names to the list one at a time
+        for (var i = 0; i < mylist.length; i++) {
+            var li = document.createElement('li');
+            var item = mylist[i];
+            var html = isObject ? item.full_name + ' ' + item.email : item;
+            li.innerHTML = html;
+            ul.appendChild(li);
+        }
+    }
+    
+    function setPaper(paper, show) {
+        console.log('Show paper: ' + paper + " = " + show);
+        var liPaper = document.getElementById('paper');
+        var liShow = document.getElementById('show');
+        liPaper.innerHTML = paper;
+        liShow.innerHTML = show;
+    }
+
+    console.log('in lurker.js');
+    
+    //var socket = io();
+    var socket = io("/lurk_NxtCmHS8aDj6");
+    
+    console.log('opened LURKER socket namespace');
+    
+    // This is not necessary - just here to check for connection
+    socket.on('connect', function() {
+      console.log('Socket connected on id: ' + socket.id);
+    });
+    
+    socket.on('conflicts', function(data) {
+        console.log('Got conflicts:');
+        console.log(data);
+        var paper = data.paper;
+        var emails = data.emails;
+        var show = data.show;
+        setUL("conflict-list", emails, false);
+        setPaper(paper, show);
+    });
+    
+    socket.on('user-list', function(users) {
+        console.log('Got users:');
+        console.log(users);
+        setUL("user-list", users, true);
+    });
+    
+    </script>
+    
+    </body>
+    </html>
+
+

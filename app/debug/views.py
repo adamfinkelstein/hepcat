@@ -2,7 +2,7 @@ import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
-from ..models import Role, User, Paper, PaperSchema, num_to_sid
+from ..models import Role, User, Paper, PaperSchema, GlobQueue, num_to_sid
 
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
@@ -186,3 +186,7 @@ def debugGQ():
     else:
         debug_output = 'No GQ !!!'
     return render_debug(debug_title, debug_output)
+
+@debug.route('/conflictbot/')
+def debug_conflictbot():
+    return render_template('debug-conflictbot.html')

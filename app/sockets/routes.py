@@ -2,15 +2,15 @@ import os
 import re
 # import random
 from datetime import datetime
-from flask_socketio import emit, disconnect
+from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
-from numpy import broadcast
+# from numpy import broadcast
 # from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
-from ..orderq import order_q, get_enter_leave_conf_sets
+from ..orderq import order_q, get_paper_conficts_set, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -97,11 +97,24 @@ def get_user_list_dump(users, sort=True):
     if sort:
         # currently sorts on full name. later: last name???
         user_list = sorted(user_list, key=lambda u: u.full_name)
+    # later see if we can use users schema for this...???
     list_dump = []
     for user in user_list:
         user_dump = user_schema.dump(user)
         list_dump.append(user_dump)
     return list_dump
+
+def get_user_list_emails(users):
+    user_list = list(users) # in case it was a set
+    emails = []
+    for user in user_list:
+        emails.append(user.email)
+    return emails
+
+def get_all_user_list_dump():
+    users = User.query.all()
+    dump = get_user_list_dump(users)
+    return dump
 
 def get_paper_conflicts_dump(paper):
     user_list = paper.conf_users
@@ -296,7 +309,7 @@ def get_globs_dump_with_status():
         if globs['current_show']:
             history = get_paper_history_dump(paper)
             globs['current_history'] = history
-    return globs
+    return globs, paper
 
 def get_queue():
     globs = get_globs_dump()
@@ -317,7 +330,7 @@ def get_queue():
         paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
         paper_prev = paper
-    globs = get_globs_dump_with_status()
+    globs,_ = get_globs_dump_with_status()
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue
 
@@ -347,8 +360,9 @@ def io_disconnect():
 def admin_prev_paper():
     print('admin request for prev paper')
     zero_or_inc_current_index(-1) # also "hides" current
-    globs = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
+    conflictbots_broadcast_conflicts(current_paper, False)
 
 @socketio.on('admin_next_paper')
 def admin_next_paper(status_update):
@@ -356,16 +370,18 @@ def admin_next_paper(status_update):
     before_index, paper = update_current_paper_status(status_update)
     zero_or_inc_current_index(+1) # also "hides" current
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
-    globs = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status()
     globs['update'] = update
     emit('server_set_globs', globs, broadcast=True)
+    conflictbots_broadcast_conflicts(current_paper, False)
 
 @socketio.on('admin_show_current')
 def admin_show_current():
     print('admin request for show paper')
     show_current_paper()
-    globs = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
+    conflictbots_broadcast_conflicts(current_paper, True)
 
 @socketio.on('admin_hide_queue')
 def admin_hide_queue(data):
@@ -373,6 +389,7 @@ def admin_hide_queue(data):
     hide_queue(data.hide, data.message)
     globs = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
+    conflictbots_broadcast_conflicts(None, False)
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
@@ -425,3 +442,42 @@ Later add:
 * admin_queue_propbe
 * server_queue_length (from probe)
 '''
+conflictbot_sockets = []
+
+class Conflictbot(Namespace):
+    def on_connect(self):
+        print('conflictbot connected:', self)
+        print('sending user list.')
+        users_dump = get_all_user_list_dump()
+        emit('user-list', users_dump)
+        conflictbot_sockets.append(self)
+
+    def on_disconnect(self):
+        print('conflictbot disconnected')
+        if self in conflictbot_sockets:
+            conflictbot_sockets.remove(self)
+        else:
+            print('error: cannot remove conflictbot socket')
+
+    # def on_send_conflicts(self, data):
+    #     print('send conflicts:', data)
+    #     emit('conflicts', data)
+
+    # def on_my_event(self, data):
+    #     emit('my_response', data)
+
+def conflictbots_broadcast_conflicts(current_paper, show):
+    if not current_paper or not current_paper.conf_users:
+        nid = 0
+        conflict_emails = []
+    else:
+        nid = current_paper.nid
+        conflict_list = list(current_paper.conf_users)
+        conflict_emails = get_user_list_emails(conflict_list)
+    data = { 'paper': nid, 'show': show, 'emails': conflict_emails}
+    for socket in conflictbot_sockets:
+        # socket.on_send_conflicts(data)
+        print('send conflicts to:', socket)
+        socket.emit('conflicts', data)
+
+socketio.on_namespace(Conflictbot('/lurk_NxtCmHS8aDj6'))
