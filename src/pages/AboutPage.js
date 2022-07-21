@@ -5,7 +5,7 @@ import smartquotes from 'smartquotes';
 
 export default function AboutPage() {
 
-    const aboutFile = 'about.md'
+    const aboutFile = 'about/about.md'
     const [aboutText, setAboutText] = useState('')
 
     useEffect(() => {

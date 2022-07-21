@@ -30,16 +30,12 @@ Baris Onat (Princeton '24) and Adam Finkelstein using modern web development too
 
 The Preferences page lets you choose your own font sizes and color palette. This may be helpful for differences in how colors are displayed on different devices, or how colors are perceived by individual people.
 
+![](about/color-preferences.png)
+
+Choose one of the paper categories on the left (Unseen, Tabled, etc) and then use the color picker to change the color scheme for that paper. Text automatically switches from black to white when appearing over dark colors. The palette at the bottom of the color picker shows the default colors (in order of paper categories on the left), and so you can restore the defaults of any individual color by clicking on one of those. Or you can restore all defaults using the obvious button below.
+
 In addition, you can choose a set of "favorites" and they will be highlighted in the papers "queue," and can optionally be highlighted in the "grid." This may be helpful for the primary reviewer to be able to note an upcoming paper in the queue for which they need to prepare to speak. It can also be helpful to track the progress of all papers assigned to a particular PC member.
 
-Note that preferences are saved in local storage in your browser, which has several implications. First, you can set different preferences for different computers (or even different browsers), which may be helpful for different monitors etc. Second, your preferences are not trasfered to the Hepcat server,
+Note that all preferences are saved in local storage in your browser, which has several implications. First, you can set different preferences for different computers (or even different browsers), which may be helpful for different monitors etc. Second, your preferences are not trasfered to the Hepcat server,
 meaning there is no way for this information to be "leaked" by the server to another user -- important because "favorites" should be considered sensitive.
 
-
-### Image example
-
-It turns out that you can insert an image easily in Markdown:
-
-![](logo512.png)
-
-Wow!

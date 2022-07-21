@@ -48,12 +48,12 @@ export default function FavoritePreferences(){
             <h3>Add Favorites</h3>
             <form onSubmit={handleSubmit}>
                 <label>
-                    New Favorites:
+                    Paper IDs:
                     <input type="text" name="favorites" className='favorites-input'/>
                 </label>
-                <input type="submit" value="Submit" className='favorites-submit-btn'/>
+                <button type="submit" className="btn btn-primary favorites-submit-btn">Add</button>
                 <span className='example-favorites'>
-                    Like '100' or list of paper ids '100, 101, ...''
+                (Like '101' or '101,102,103'.)
                 </span>
             </form>
             <Stack direction="horizontal" className="current-favorites-bar">
