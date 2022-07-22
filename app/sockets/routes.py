@@ -388,7 +388,7 @@ def admin_show_current():
 def admin_hide_queue(data):
     print(f'admin request for hide queue: {data.hide} {data.message}')
     hide_queue(data.hide, data.message)
-    globs = get_globs_dump_with_status()
+    globs,_ = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(None, False)
 
@@ -454,6 +454,10 @@ class Conflictbot(Namespace):
         users_dump = get_all_user_list_dump()
         emit('user-list', users_dump)
         conflictbot_sockets.append(self)
+        # next we can broadcast status to all conflictbots, including this
+        globs,current_paper = get_globs_dump_with_status()
+        show = globs['current_show']
+        conflictbots_broadcast_conflicts(current_paper, show)
 
     def on_disconnect(self):
         print('conflictbot disconnected')
