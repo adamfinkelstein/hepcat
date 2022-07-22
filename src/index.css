@@ -394,11 +394,9 @@ a.nav-link {
 
 #noPapersInQueue {
   color: purple;
-  margin: 40px;
-  padding-top: 20px;
+  margin: 30px;
+  padding: 20px;
   font-size: 20px;
-  width: 200px;
-  height: 80px;
   border-radius: 6px;
   border: 1px dashed purple;
   text-align: center;

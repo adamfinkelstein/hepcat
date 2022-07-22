@@ -269,9 +269,9 @@ def show_current_paper():
     db.session.add(gq)
     db.session.commit()
 
-def hide_queue(hide, message):
+def set_hide_queue(hide, message):
     gq = GlobQueue.query.first()
-    gq.hide_all = hide
+    gq.hide_queue = hide
     gq.message = message
     db.session.add(gq)
     db.session.commit()
@@ -366,7 +366,7 @@ def admin_prev_paper():
     zero_or_inc_current_index(-1) # also "hides" current
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
-    conflictbots_broadcast_conflicts(current_paper, False)
+    conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_next_paper')
 def admin_next_paper(status_update):
@@ -377,7 +377,7 @@ def admin_next_paper(status_update):
     globs,current_paper = get_globs_dump_with_status()
     globs['update'] = update
     emit('server_set_globs', globs, broadcast=True)
-    conflictbots_broadcast_conflicts(current_paper, False)
+    conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_show_current')
 def admin_show_current():
@@ -385,15 +385,17 @@ def admin_show_current():
     show_current_paper()
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
-    conflictbots_broadcast_conflicts(current_paper, True)
+    conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_hide_queue')
 def admin_hide_queue(data):
-    print(f'admin request for hide queue: {data.hide} {data.message}')
-    hide_queue(data.hide, data.message)
-    globs,_ = get_globs_dump_with_status()
+    hide = data['hide']
+    message = data['message']
+    print(f'admin request for hide queue: {hide} {message}')
+    set_hide_queue(hide, message)
+    globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
-    conflictbots_broadcast_conflicts(None, False)
+    conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
@@ -401,7 +403,8 @@ def admin_set_queue(filters):
     set_queue(filters)
     queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
-    conflictbots_broadcast_conflicts(current_paper, False)
+    globs = queue['globs']
+    conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_set_queue_explicit')
 def admin_set_queue_explicit(data):
@@ -409,7 +412,8 @@ def admin_set_queue_explicit(data):
     set_queue_explicit(data)
     queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
-    conflictbots_broadcast_conflicts(current_paper, False)
+    globs = queue['globs']
+    conflictbots_broadcast_conflicts(globs,current_paper)
     reply = { 'title': 'Set Queue', 'body': 'Set queue to: '+data}
     emit('server_send_alert', reply)
 
@@ -457,8 +461,7 @@ class Conflictbot(Namespace):
         emit('user-list', users_dump)
         # next we can broadcast status to all conflictbots, including this
         globs,current_paper = get_globs_dump_with_status()
-        show = globs['current_show']
-        conflictbots_broadcast_conflicts(current_paper, show)
+        conflictbots_broadcast_conflicts(globs,current_paper)
 
     def on_disconnect(self):
         print('conflictbot disconnected')
@@ -466,8 +469,12 @@ class Conflictbot(Namespace):
 # ??? later change this lurk variable to environment
 conflictbot_namespace = '/lurk_NxtCmHS8aDj6'
 
-def conflictbots_broadcast_conflicts(current_paper, show):
-    if not current_paper or not current_paper.conf_users:
+def conflictbots_broadcast_conflicts(globs, current_paper):
+    hide = globs['hide_queue']
+    show = globs['current_show']
+    if hide:
+        show = False
+    if hide or not current_paper or not current_paper.conf_users:
         nid = 0
         conflict_emails = []
     else:

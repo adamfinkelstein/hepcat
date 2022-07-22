@@ -69,7 +69,12 @@ export default function SetQueue(){
                         type="checkbox"
                         defaultChecked={hideQ}
                         onChange={() => {
+                            const newHideQ = !hideQ
                             setHideQ(!hideQ)
+                            console.log('checkbox after negate: '+newHideQ)
+                            // {data.hide} {data.message}
+                            const data = { hide:newHideQ, message:message }
+                            socketEmit("admin_hide_queue", data)
                         }}
                     />
                     <span className="hideQ-text">Hide queue from everyone except admin</span>

@@ -1,33 +1,35 @@
 import {useState, useEffect} from 'react'
 import Container from 'react-bootstrap/Container'
-import Split from 'react-split';
+import Split from 'react-split'
 import {useAppGlobals} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Queue from './Queue'
 import Paper from './Paper'
 import GridSection from './GridSection'
-import SetQueue from './SetQueue';
-import Alert from 'react-bootstrap/Alert';
-import Collapse from 'react-bootstrap/Collapse';
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
+import SetQueue from './SetQueue'
+import Alert from 'react-bootstrap/Alert'
+import Collapse from 'react-bootstrap/Collapse'
+import Tab from 'react-bootstrap/Tab'
+import Tabs from 'react-bootstrap/Tabs'
 import moment from 'moment'
 
 export default function Body(){
-    const globals = useAppGlobals();
-    const user = globals.user;
-    const queue = globals.queue;
+    const globals = useAppGlobals()
+    const user = globals.user
+    const queue = globals.queue
 
     const flasher = useFlasher()
     //const flash = flasher["flash"]
     const visible = flasher["visible"]
-    const hideFlash = flasher["hideFlash"];
+    const hideFlash = flasher["hideFlash"]
     const flashMessage = flasher["flashMessage"]
 
-    const [currentTime, setCurrentTime] = useState(Date.now());
-    const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
-    const currentShow = isPaper && globals.serverGlobs.current_show;
+    const [currentTime, setCurrentTime] = useState(Date.now())
+    const isPaper = queue && queue.length && globals.queueCurrent < queue.length
+    const currentShow = isPaper && globals.serverGlobs.current_show
     const currentStart = isPaper && globals.serverGlobs.current_start
+    const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
+    const message = hideQueue ? globals.serverGlobs.message : "No papers in queue."
 
     useEffect(() => {
         const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
@@ -64,7 +66,11 @@ export default function Body(){
                     minSize={[500, 500]}
                     >
                         <Container>
-                            {queue.length ? <Queue/> : <div id="noPapersInQueue">No papers in queue.</div>}
+                            { queue.length && !hideQueue ? 
+                                <Queue/> 
+                                : 
+                                <div id="noPapersInQueue">{message}</div>
+                            }
                         </Container>
                         <Container className='right-panel'>
                             <Collapse in={visible}>
