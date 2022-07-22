@@ -16,6 +16,7 @@ import moment from 'moment'
 export default function Body(){
     const globals = useAppGlobals()
     const user = globals.user
+    const isAdmin = user && user.role_name === "Admin"
     const queue = globals.queue
 
     const flasher = useFlasher()
@@ -28,8 +29,9 @@ export default function Body(){
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length
     const currentShow = isPaper && globals.serverGlobs.current_show
     const currentStart = isPaper && globals.serverGlobs.current_start
-    const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
-    const message = hideQueue ? globals.serverGlobs.message : "No papers in queue."
+    const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
+    const hideMessage = globals.serverGlobs && globals.serverGlobs.message ? globals.serverGlobs.message : "The queue is hidden."
+    const message = hideQueue ? hideMessage : "No papers in queue."
 
     useEffect(() => {
         const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
@@ -91,7 +93,7 @@ export default function Body(){
                                     <GridSection />
                                 </Tab>
                                 {
-                                    user && user.role_name === "Admin" && (
+                                    isAdmin && (
                                         <Tab eventKey="admin" title="Admin Controls">
                                             <SetQueue/>
                                         </Tab>
