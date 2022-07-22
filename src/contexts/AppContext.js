@@ -16,6 +16,7 @@ export default function AppContext({children}){
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
   const [newStatus, setNewStatus] = useState("Tabled")
+  const [guiBar, setGuiBar] = useState('');
 
   // for modal dialog 
   const [showModal, setShowModal] = useState(false)
@@ -106,7 +107,6 @@ export default function AppContext({children}){
       console.log('received stickie: '+grid_nid);
       updateGridEntry(grid_nid, null); // null status -> set stickie
     }
-    
 
     const receiveGlobs = (data) => {
       console.log('received globs:');
@@ -122,6 +122,9 @@ export default function AppContext({children}){
         // set status of previous paper in grid and queue
         receiveUpdate(update);
       }
+      const barString = data.bar + ''
+      setGuiBar(barString)
+      console.log('got globs and set bar to:', barString);
     }
 
     const receiveQueue = (data) => {
@@ -129,6 +132,12 @@ export default function AppContext({children}){
       console.log(data);
       setQueue(data.paper_list);
       receiveGlobs(data.globs);
+    };
+
+    const receiveGrid = (data) => {
+      console.log('received grid:');
+      console.log(data);
+      setGrid(data);
     };
 
     const receiveAlert = (data) => {
@@ -141,6 +150,7 @@ export default function AppContext({children}){
       // console.log('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
+      socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
       socket.on('server_set_stickie', receiveStickie);
       socket.on('server_send_alert', receiveAlert);
@@ -150,6 +160,7 @@ export default function AppContext({children}){
       if (socket && 'off' in socket) {
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
+        socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
         socket.off('server_set_stickie', receiveStickie);
         socket.off('server_send_alert', receiveAlert);
@@ -184,6 +195,8 @@ export default function AppContext({children}){
           "setShowModal": setShowModal,
           "modalTitle": modalTitle,
           "modalBody": modalBody,
+          "guiBar": guiBar,
+          "setGuiBar": setGuiBar,
         }}>
         {children}
       </AppGlobalsContext.Provider>

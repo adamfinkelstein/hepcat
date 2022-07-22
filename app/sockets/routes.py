@@ -45,7 +45,8 @@ def get_user_or_force_disconnect():
     return None
 
 def get_grid_dump_above_bar(above):
-    bar = 0.0
+    gq = GlobQueue.query.first()
+    bar = gq.bar
     if above:
         papers = Paper.query.filter(Paper.sort_score >= bar).order_by(Paper.sort_score.desc()).all()
     else:
@@ -202,6 +203,14 @@ def zero_or_inc_current_index(zero_or_inc):
     gq.current_show = False
     db.session.add(gq)
     db.session.commit()
+
+def set_bar(bar):
+    bar = float(bar)
+    gq = GlobQueue.query.first()
+    gq.bar = bar
+    db.session.add(gq)
+    db.session.commit()
+    
 
 def set_queue_to_paper_list(all_papers, paper_list, solve_tsp = True):
     if solve_tsp:
@@ -416,6 +425,15 @@ def admin_set_queue_explicit(data):
     conflictbots_broadcast_conflicts(globs,current_paper)
     reply = { 'title': 'Set Queue', 'body': 'Set queue to: '+data}
     emit('server_send_alert', reply)
+
+@socketio.on('admin_set_bar')
+def admin_set_bar(bar):
+    print(f'admin request set bar to {bar}')
+    set_bar(bar)
+    globs,_ = get_globs_dump_with_status()
+    emit('server_set_globs', globs, broadcast=True)
+    grid_dump = get_grid_dump()
+    emit('server_set_grid', grid_dump, broadcast=True)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):

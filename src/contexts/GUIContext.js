@@ -15,7 +15,6 @@ export default function GUIContext({children}){
   const [highRange, setHighRange] = useState(5.1);
   const [adminConflicts, setAdminConflicts] = useState("Never");
   const [queueExplicitList, setQueueExplicitList] = useState("");
-  const [bar, setBar] = useState(0);
 
   return(
     <GUIFiltersContext.Provider value={{
@@ -37,8 +36,6 @@ export default function GUIContext({children}){
         "setAdminConflicts": setAdminConflicts,
         "queueExplicitList": queueExplicitList,
         "setQueueExplicitList": setQueueExplicitList,
-        "bar": bar,
-        "setBar": setBar
     }}>
         {children}
     </GUIFiltersContext.Provider>

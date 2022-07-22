@@ -1,30 +1,32 @@
-import { Container } from "react-bootstrap";
+import { Container } from "react-bootstrap"
 import {useAppGlobals} from '../contexts/AppContext'
 import {useGUI} from '../contexts/GUIContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
-import {useRef} from 'react'
+// import {useRef} from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
-import Stack from "react-bootstrap/Stack";
+import Stack from "react-bootstrap/Stack"
 
-const statusList = ['Tabled','Reject','Conference','Journal'];
-const filterList = ['Stickie Only','Unseen Only','No Clusters'];
+const statusList = ['Tabled','Reject','Conference','Journal']
+const filterList = ['Stickie Only','Unseen Only','No Clusters']
 
 export default function SetQueue(){
     const globals = useAppGlobals()
-    const socketEmit = globals.socketEmit;
+    const guiBarString = globals.guiBar+''
+    const setGuiBar = globals.setGuiBar
+    const socketEmit = globals.socketEmit
+
     // let queue = globals.queue;
     let flasher = useFlasher()
     let flash = flasher["flash"]
-    const barRef = useRef(null);
+    // const barRef = useRef(null);
     // const explicitRef = useRef(null);
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
         hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
-        adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList, bar, setBar} = useGUI()
-
+        adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList} = useGUI()
 
     function handleSetQueueButton(event) {
         event.preventDefault(); // do not send the form!
@@ -59,25 +61,30 @@ export default function SetQueue(){
         else if(target.name === "highRange") setHighRange(value)
         else if(target.name === "message") setMessage(value)
         else if(target.name === "queueExplicit") setQueueExplicitList(value)
+        else if(target.name === "bar") setGuiBar(value)
+    }
+
+    function handleHideQueueCheckbox(){
+        const newHideQ = !hideQ
+        setHideQ(!hideQ)
+        console.log('checkbox after negate: '+newHideQ)
+        const data = { hide:newHideQ, message:message }
+        socketEmit("admin_hide_queue", data)
+    }
+
+    function handleSetBarButton(){
+        console.log('bar set:', guiBarString)
+        socketEmit("admin_set_bar", guiBarString)
     }
 
     return(
         <Container>
             <div>
                 <Stack direction="horizontal">
-                    <Form.Check
-                        type="checkbox"
-                        defaultChecked={hideQ}
-                        onChange={() => {
-                            const newHideQ = !hideQ
-                            setHideQ(!hideQ)
-                            console.log('checkbox after negate: '+newHideQ)
-                            // {data.hide} {data.message}
-                            const data = { hide:newHideQ, message:message }
-                            socketEmit("admin_hide_queue", data)
-                        }}
+                    <Form.Check type="checkbox" defaultChecked={hideQ}
+                        onChange={handleHideQueueCheckbox}
                     />
-                    <span className="hideQ-text">Hide queue from everyone except admin</span>
+                    <span className="hideQ-text">Hide queue from everyone except admin.</span>
                 </Stack>
                 <Stack direction="horizontal" className="set-message-row">
                     <span>Message: </span>
@@ -221,11 +228,12 @@ export default function SetQueue(){
             <hr className="horizontal-divider"/>
             <div>
                 <Stack direction = "horizontal">
-                    <Button variant="primary" onClick={() => setBar(barRef)} className="change-bar-btn">Change Bar</Button>
+                    <Button variant="primary" onClick={handleSetBarButton} 
+                        className="change-bar-btn">Change Bar</Button>
                     <input
-                        ref={barRef}
                         name="bar"
-                        defaultValue={bar}
+                        value={guiBarString}
+                        onChange={handleInputChange}
                     />
                 </Stack>
             </div>
