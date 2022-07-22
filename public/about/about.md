@@ -18,13 +18,13 @@ Hepcat is an application designed to help the ACM SIGGRAPH Technical Papers PC m
 
 The two main components of the application are (1) a "queue" of papers to be discussed in sequence, and (2) a "grid" showing the progress of all papers.
 
-### History
+* show picture here.
 
-This application was originally designed and written by
-[Ben Edelman](https://www.benjaminedelman.com/) (Princeton '18) and
-[Adam Finkelstein](http://www.cs.princeton.edu/~af/) for use during the SIGGRAPH 2014 PC meeting, and it has been incremementally adapted for every SIGGRAPH PC since then. 
-In summer 2022, the software was rebuilt from the ground up by
-Baris Onat (Princeton '24) and Adam Finkelstein using modern web development tools.
+The Papers Chair uses an administrative interface (not seen by most users) to fill the queue with papers meeting specific criteria (eg, not yet discussed, marked as "Tabled", etc). Hepcat reorders the list of papers using a Traveling Salesperson (TSP) solver, to minimize flow in and out of the meeting.
+
+PC members can mark papers as ready to be discussed by filing a "stickie". (Prior to 2014 this was done by writing the paper ID on an actual "stickie note" and passing it to an administrator.)
+
+* show picture here.
 
 ### Customization
 
@@ -39,3 +39,19 @@ In addition, you can choose a set of "favorites" and they will be highlighted in
 Note that all preferences are saved in local storage in your browser, which has several implications. First, you can set different preferences for different computers (or even different browsers), which may be helpful for different monitors etc. Second, your preferences are not trasfered to the Hepcat server,
 meaning there is no way for this information to be "leaked" by the server to another user -- important because "favorites" should be considered sensitive.
 
+### History
+
+This application was originally designed and written by
+[Ben Edelman](https://www.benjaminedelman.com/) (Princeton '18) and
+[Adam Finkelstein](http://www.cs.princeton.edu/~af/) for use during the SIGGRAPH 2014 PC meeting, and it has been incremementally adapted for every SIGGRAPH PC since then. 
+
+In spring 2020, the PC meeting shifted from in person to online in Zoom.
+[Szymon Rusinkiewicz](http://www.cs.princeton.edu/~smr/) wrote an application
+called "Conflictbot" that listens to Hepcat's server communication and 
+moved participants in and out of the plenary Zoom room based on their conflicts.
+Subsequent meetings switched to using Ohyay for the online meeting, and 
+Conflictbot was rewritten for Ohyay by 
+[Kayvon Fatahalian](https://graphics.stanford.edu/~kayvonf/).
+
+In summer 2022, the software was rebuilt from the ground up by
+Baris Onat (Princeton '24) and Adam Finkelstein using modern web development tools.

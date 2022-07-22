@@ -14,31 +14,26 @@ export default function FavoritePreferences(){
 
     function handleSubmit(event) {
         event.preventDefault();
-
-        let value = event.target[0].value;
-
-        let values = value.split(",")
         let newValues = []
+        let values = event.target[0].value;
+        values = values.replace("'","").replace(" ","") // remove quotes and spaces
+        values = values.split(",")
         for(let i = 0; i < values.length; i++){
-            const num = Number(values[i].trim())
+            const num = Number(values[i])
             console.log(num)
             if(!Number.isInteger(num)){
                 flash("Favorites could not be updated. You supplied an invalid value.", "warning")
                 return
             }
-            else if(favorites.includes(num)){
-                flash("Favorites could not be updated. You supplied an id that is already in your favorites.", "warning")
-                return
-            }
-            else if(newValues.includes(num)){
-                flash("Favorites could not be updated. You supplied a duplicate value.", "warning")
-                return
-            }
             newValues.push(num)
         }
         changeFavorites(oldFav => {
-            console.log(newValues)
-            return [...oldFav, ...newValues]
+            let newSet = [...oldFav, ...newValues] // put them all together
+            newSet = [...new Set(newSet)]; // use set to remove duplicates
+            newSet.sort();
+            console.log('update favorites set to:')
+            console.log(newSet)
+            return newSet
         })
         flash("Favorites are updated.", "success")
     }
@@ -57,7 +52,7 @@ export default function FavoritePreferences(){
                 </span>
             </form>
             <Stack direction="horizontal" className="current-favorites-bar">
-                <span>Current Favorites</span>
+                <span><u>Current Favorites</u></span>
                 <Button variant="warning" onClick={() => {
                     changeFavorites([])
                     flash("Favorites deleted.", "success")
