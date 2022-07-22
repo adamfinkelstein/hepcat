@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
+from numpy import broadcast
 # from numpy import broadcast
 # from sqlalchemy import true
 from sqlalchemy.sql.expression import func
@@ -334,6 +335,8 @@ def get_queue():
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue,current_paper
 
+########### mostly decorator functions below here:
+
 @socketio.on('connect')
 def io_connect():
     user = get_user_or_force_disconnect()
@@ -445,7 +448,6 @@ Later add:
 * admin_queue_propbe
 * server_queue_length (from probe)
 '''
-conflictbot_sockets = []
 
 class Conflictbot(Namespace):
     def on_connect(self):
@@ -453,7 +455,6 @@ class Conflictbot(Namespace):
         print('sending user list.')
         users_dump = get_all_user_list_dump()
         emit('user-list', users_dump)
-        conflictbot_sockets.append(self)
         # next we can broadcast status to all conflictbots, including this
         globs,current_paper = get_globs_dump_with_status()
         show = globs['current_show']
@@ -461,17 +462,9 @@ class Conflictbot(Namespace):
 
     def on_disconnect(self):
         print('conflictbot disconnected')
-        if self in conflictbot_sockets:
-            conflictbot_sockets.remove(self)
-        else:
-            print('error: cannot remove conflictbot socket')
 
-    # def on_send_conflicts(self, data):
-    #     print('send conflicts:', data)
-    #     emit('conflicts', data)
-
-    # def on_my_event(self, data):
-    #     emit('my_response', data)
+# ??? later change this lurk variable to environment
+conflictbot_namespace = '/lurk_NxtCmHS8aDj6'
 
 def conflictbots_broadcast_conflicts(current_paper, show):
     if not current_paper or not current_paper.conf_users:
@@ -482,9 +475,6 @@ def conflictbots_broadcast_conflicts(current_paper, show):
         conflict_list = list(current_paper.conf_users)
         conflict_emails = get_user_list_emails(conflict_list)
     data = { 'paper': nid, 'show': show, 'emails': conflict_emails}
-    for socket in conflictbot_sockets:
-        # socket.on_send_conflicts(data)
-        print('send conflicts to:', socket)
-        socket.emit('conflicts', data)
+    emit('conflicts', data, namespace=conflictbot_namespace, broadcast=True)
 
-socketio.on_namespace(Conflictbot('/lurk_NxtCmHS8aDj6'))
+socketio.on_namespace(Conflictbot(conflictbot_namespace))

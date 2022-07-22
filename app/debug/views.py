@@ -2,6 +2,7 @@ import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
+from .. import socketio
 from ..models import Role, User, Paper, PaperSchema, GlobQueue, num_to_sid
 
 paper_schema = PaperSchema()
