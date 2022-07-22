@@ -25,9 +25,25 @@ export default function Paper(){
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
                 <div>
-                <h2>Conflicts</h2>
+                <h2>Conflicts:</h2>
                 <ul>
                     {cp.conflicts.map( (user,index) => {
+                        return (
+                            <li key={index}>{user.full_name}</li>
+                        )
+                    })}
+                </ul>
+                <h2>Leave:</h2>
+                <ul>
+                    {cp.leave.map( (user,index) => {
+                        return (
+                            <li key={index}>{user.full_name}</li>
+                        )
+                    })}
+                </ul>
+                <h2>Return:</h2>
+                <ul>
+                    {cp.enter.map( (user,index) => {
                         return (
                             <li key={index}>{user.full_name}</li>
                         )
