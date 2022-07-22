@@ -20,9 +20,10 @@ login_manager.login_view = 'auth.login'
 static_folder = '' # this global is set in create_app below
 
 allow_cors = os.getenv('ALLOW_CORS')
-if allow_cors:
+allow_cors_socket = os.getenv('ALLOW_CORS_SOCKET')
+if allow_cors or allow_cors_socket:
+    print('ALLOW_CORS - allowing cross origin requests on SOCKET')
     socketio = SocketIO(cors_allowed_origins="*")
-    print('FLASK_ALLOW_CORS - allowing cross origin requests')
 else:
     socketio = SocketIO()
 
@@ -34,6 +35,7 @@ def create_app(config_name, build_path):
     static_folder = build_path # save this for use in app/main
     if allow_cors:
         CORS(app)
+        print('ALLOW_CORS - allowing cross origin requests on APP')
     app.config.from_object(config[config_name])
     # config[config_name].init_app(app) # AF not needed (just pass)
 

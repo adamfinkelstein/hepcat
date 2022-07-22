@@ -330,9 +330,9 @@ def get_queue():
         paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
         paper_prev = paper
-    globs,_ = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status()
     queue = { 'paper_list': paper_list, 'globs': globs }
-    return queue
+    return queue,current_paper
 
 @socketio.on('connect')
 def io_connect():
@@ -346,8 +346,9 @@ def io_connect():
     # later: 'config': config_vars }
     data = {'user': user_dump, 'grid': grid_dump } 
     emit('server_welcome', data)
-    data = get_queue()
+    data,_ = get_queue()
     emit('server_set_queue', data)
+    # no need to send to conflictbot here
 
 @socketio.on('disconnect')
 def io_disconnect():
@@ -395,15 +396,17 @@ def admin_hide_queue(data):
 def admin_set_queue(filters):
     print('admin request for set queue:', filters)
     set_queue(filters)
-    queue = get_queue()
+    queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
+    conflictbots_broadcast_conflicts(current_paper, False)
 
 @socketio.on('admin_set_queue_explicit')
 def admin_set_queue_explicit(data):
     print('admin request for set explicit queue:', data)
     set_queue_explicit(data)
-    queue = get_queue()
+    queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
+    conflictbots_broadcast_conflicts(current_paper, False)
     reply = { 'title': 'Set Queue', 'body': 'Set queue to: '+data}
     emit('server_send_alert', reply)
 
