@@ -17,6 +17,7 @@ export default function Body(){
     const globals = useAppGlobals()
     const user = globals.user
     const isAdmin = user && user.role_name === "Admin"
+    const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 
     const flasher = useFlasher()
@@ -89,9 +90,13 @@ export default function Body(){
                                 <Tab eventKey="paper" title="Paper">
                                     <Paper />
                                 </Tab>
-                                <Tab eventKey="grid" title="Grid">
-                                    <GridSection />
-                                </Tab>
+                                {
+                                    !isScreen && (
+                                        <Tab eventKey="grid" title="Grid">
+                                        <GridSection />
+                                        </Tab>
+                                    )
+                                }
                                 {
                                     isAdmin && (
                                         <Tab eventKey="admin" title="Admin Controls">

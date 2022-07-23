@@ -8,22 +8,27 @@ import { useFavorites } from '../contexts/PreferencesContext'
 
 export default function QueueElement({paper, active}){
 
-    const globals = useAppGlobals();
+    const globals = useAppGlobals()
     const favorites = useFavorites()
-    const content = useRef(null);
+    const content = useRef(null)
     const user = globals.user;
-    const queueIndex = paper ? paper.queue_order - 1 : -1;
+    const queueIndex = paper ? paper.queue_order - 1 : -1
     const isCurrent = (queueIndex === globals.queueCurrent)
     const isPast = (queueIndex < globals.queueCurrent)
-    const isConflict = user.conflict_papers.includes(paper.nid);
-    const isFavorite = favorites.includes(paper.nid);
-    const status = paper.status && !isCurrent ? paper.status : "";
-    const starSymbol = '\u2605';
-    const confSymbol = '\u26D4';
-    const prefixSym = isConflict ? confSymbol : (isFavorite ? starSymbol : '');
-    const showTitle = isPast ? "" : paper.title;
-    const qLine = isConflict ? ': CONFLICTED!' : 
-            ( ' (' + paper.nid + '): ' + status + showTitle );
+    const isConflict = user.conflict_papers.includes(paper.nid)
+    const isFavorite = favorites.includes(paper.nid)
+    const isScreen = user && user.role_name === "Screen"
+    const showStatus = paper.status && !isCurrent && !isScreen
+    const status =  showStatus ? paper.status : ""
+    const starSymbol = '\u2605'
+    const confSymbol = '\u26D4'
+    const prefixSym = isConflict ? confSymbol : (isFavorite ? starSymbol : '')
+    const showTitle = isPast ? "" : paper.title
+    let qLine =  ' (' + paper.nid + '): ' + status + showTitle 
+
+    if (isScreen) qLine = ''
+    else if (isConflict) qLine = ': CONFLICTED!'
+
     // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
     return(

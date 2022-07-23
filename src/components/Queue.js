@@ -13,7 +13,8 @@ export default function Queue(){
     const current = globals.queueCurrent;
     const counter = current + 1;
     const currentCount = counter > queue.length ? "completed" : counter + " of";
-    const past_max = 3;
+    const isScreen = user && user.role_name === "Screen"
+    const past_max = isScreen ? 0 : 3;
     const future_max = 12;
     const start_index = Math.max(0, current - past_max);
     const end_index = Math.min(counter + future_max, queue.length);
@@ -35,7 +36,7 @@ export default function Queue(){
         if (index === globals.queueCurrent){
             className += " Current"
         }
-        else if (index < globals.queueCurrent){
+        else if (!isScreen && index < globals.queueCurrent){
             className += " " + paper.status;
         }
         else if (index % 2) { // future - odd?
