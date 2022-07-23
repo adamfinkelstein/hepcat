@@ -64,7 +64,7 @@ This works in python version 3.9.13 (generally 3.9.x):
 
 	* In terminal before you use `npm start` (next step) do: 
 	`export REACT_APP_SOCKET_ENDPOINT=http://127.0.0.1:5000/` 
-	(or whatever the port Flask is running on).
+	(or whatever the port Flask is running on). Also `export HOST="localhost"` and `export REACT_APP_SHOW_LOGS=True` (if you want to see console logs).
 
 	* Now, while Flask server is running, you can also use `npm start` to launch a React server to serve the React app, and it will connect by socketio to the Flask server (CORS required). 
 	

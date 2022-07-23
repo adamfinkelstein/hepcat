@@ -9,9 +9,14 @@ export function useFlasher(){
 }
 
 export default function FlashContext({ children }) {
-    const noneVisible = {"stickie": false, "hide_queue": false, "set_queue": false, 
-    "set_explicit": false, "change_bar": false, "favorites": false,
-    "change_password": false};
+    const noneVisible = {
+        "stickie": false, 
+        "hide_queue": false, 
+        "set_queue": false, 
+        "set_explicit": false, 
+        "change_bar": false, 
+        "favorites": false,
+        "change_password": false};
 
     const [flashMessage, setFlashMessage] = useState({});
     const [visible, setVisible] = useState(noneVisible);
@@ -26,7 +31,6 @@ export default function FlashContext({ children }) {
         setFlashMessage({message, type});
         setVisible(() => {
             let copyVisible = { ...noneVisible };
-            console.log(" i am here " + which)
             copyVisible[which] = true;              
             return copyVisible;
         })

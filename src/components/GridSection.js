@@ -16,8 +16,11 @@ export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
-    let controlledLog = useAppGlobals()["controlledLog"]
-
+    const controlledLog = globals["controlledLog"]
+    const checkValidNID = globals["checkValidNID"]
+    const setModalTitle = globals["setModalTitle"]
+    const setModalBody = globals["setModalBody"]
+    const setShowModal = globals["setShowModal"]
     const [stickie, setStickie] = useState("Tabled")
     const [ID, setID] = useState("")
 
@@ -25,20 +28,23 @@ export default function GridSection(){
     let visible = flasher["visible"]
     let hideFlash = flasher["hideFlash"];
     let flashMessage = flasher["flashMessage"]
-    let flash = flasher["flash"]
 
     function sendStickie() {
         const words = stickie.split(' ');
         const status = words[0];
         const nid = parseInt(ID);
-        if(!nid){
-            alert("Please choose a paper id.");
+        controlledLog(nid);
+        if(!checkValidNID(nid)){
+            setModalTitle("ERROR");
+            setModalBody("Please choose a valid paper id.");
+            setShowModal(true);
             return;
         }
         controlledLog("Send stickie " + status + " to paper with id: " + nid);
         const data = {status, nid};
         socketEmit('user_set_stickie', data);
-        flash("Stickie sent for " + nid + " with " + status + ".", "success", "stickie")
+        // now stickie confirmation sent from server
+        // flash("Stickie sent for " + nid + " with " + status + ".", "success", "stickie")
     }
 
     return(

@@ -1,5 +1,6 @@
 import React, {useState, useContext, useEffect} from 'react'
 import socketIOClient from "socket.io-client";
+import {useFlasher} from './FlasherContext'
 
 const AppGlobalsContext = React.createContext() 
 
@@ -17,6 +18,8 @@ export default function AppContext({children}){
   const [serverGlobs, setServerGlobs] = useState(null)
   const [newStatus, setNewStatus] = useState("Tabled")
   const [guiBar, setGuiBar] = useState('');
+  const flasher = useFlasher()
+  const flash = flasher["flash"]
 
   // for modal dialog 
   const [showModal, setShowModal] = useState(false)
@@ -148,6 +151,12 @@ export default function AppContext({children}){
       setShowModal(true);
     }
 
+    const receiveFlasher = (data) => {
+      controlledLog('got flasher:')
+      controlledLog(data)
+      flash(data.message, data.type, data.which)
+    }
+
     if (socket && 'on' in socket) {
       // controlledLog('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
@@ -156,6 +165,7 @@ export default function AppContext({children}){
       socket.on('server_set_globs', receiveGlobs);
       socket.on('server_set_stickie', receiveStickie);
       socket.on('server_send_alert', receiveAlert);
+      socket.on('server_send_flasher', receiveFlasher);
     }
 
     return () => {
@@ -166,6 +176,7 @@ export default function AppContext({children}){
         socket.off('server_set_globs', receiveGlobs);
         socket.off('server_set_stickie', receiveStickie);
         socket.off('server_send_alert', receiveAlert);
+        socket.off('server_send_flasher', receiveFlasher);
       }
     };
   }, [queue, grid, socket]);

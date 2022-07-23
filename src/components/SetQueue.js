@@ -70,14 +70,6 @@ export default function SetQueue(){
     function handleHideQueueCheckbox(){
         const newHideQ = !hideQ
         setHideQ(!hideQ)
-
-        if(hideQ){
-            flash("Queue is now visible for everyone.", "success", "hide_queue")
-        }
-        else{
-            flash("Queue is now hidden for everyone except the admin.", "success", "hide_queue")
-        }
-
         controlledLog('checkbox after negate: '+newHideQ)
         const data = { hide:newHideQ, message:message }
         socketEmit("admin_hide_queue", data)
@@ -86,7 +78,7 @@ export default function SetQueue(){
     function handleSetBarButton(){
         controlledLog('bar set:', guiBarString)
         socketEmit("admin_set_bar", guiBarString)
-        flash("Bar set to " + guiBarString + ".", "success", "change_bar")
+        // flash("Bar set to " + guiBarString + ".", "success", "change_bar")
     }
 
     return(

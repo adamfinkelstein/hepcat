@@ -33,8 +33,11 @@ export default function ChangePasswordPage(){
             return;
           }
         controlledLog("changing password to " + password)
-        flash("You have successfully changed your password", "success", "change_password")
+        // now flash comes from server instead of here:
+        // flash("You have successfully changed your password", "success", "change_password")
         socketEmit("user_change_password", password)
+        setPassword('')
+        setPasswordAgain('')
     }
 
     function handleInputChange(event){
@@ -63,6 +66,7 @@ export default function ChangePasswordPage(){
                             <input
                                 name="password"
                                 value={password}
+                                type="password"
                                 onChange={handleInputChange}
                                 style={{marginLeft: "15px"}}
                                 />
@@ -72,6 +76,7 @@ export default function ChangePasswordPage(){
                             <input
                                 name="passwordAgain"
                                 value={passwordAgain}
+                                type="password"
                                 onChange={handleInputChange}
                                 style={{marginLeft: "15px"}}
                                 />

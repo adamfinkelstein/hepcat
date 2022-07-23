@@ -405,6 +405,12 @@ def admin_hide_queue(data):
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
+    if hide:
+        reply = "Queue is now hidden for everyone except the admin."
+    else:
+        reply = "Queue is now visible for everyone."
+    data = { 'message': reply, 'type': 'success', 'which': 'hide_queue'}
+    emit('server_send_flasher', data)
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
@@ -423,8 +429,6 @@ def admin_set_queue_explicit(data):
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
-    reply = { 'title': 'Set Queue', 'body': 'Set queue to: '+data}
-    emit('server_send_alert', reply)
 
 @socketio.on('admin_set_bar')
 def admin_set_bar(bar):
@@ -434,6 +438,12 @@ def admin_set_bar(bar):
     emit('server_set_globs', globs, broadcast=True)
     grid_dump = get_grid_dump()
     emit('server_set_grid', grid_dump, broadcast=True)
+    message = f'Bar is now updated ({bar}).'
+    data = { 'message': message, 'type': 'success', 'which': 'change_bar'}
+    emit('server_send_flasher', data)
+    # old version used modal:
+    # data = {'title':'Bar Set', 'body':'You set the bar to '+bar}
+    # emit('server_send_alert',data)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
@@ -442,11 +452,7 @@ def user_set_stickie(data):
     status = data['status']
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
-        msg = f'Cannot find paper with ID: {nid}'
-        print('Stickie Error-- ', msg)
-        reply = { 'title': 'Stickie Error', 'body': msg}
-        emit('server_send_alert', reply)
-        return
+        return # should never happen because it is now checked at the client
     context_stickie = int(HistoryContext.Stickie)
     status_enum = status_str_to_enum(status)
     history = History(paper=paper,
@@ -455,6 +461,9 @@ def user_set_stickie(data):
     db.session.add(history)
     db.session.commit()
     emit('server_set_stickie', nid, broadcast=True)
+    message = f'Stickie filed for paper {nid} ({status}).'
+    data = { 'message': message, 'type': 'success', 'which': 'stickie'}
+    emit('server_send_flasher', data)
 
 @socketio.on('user_change_password')
 def user_change_password(new_password):
@@ -464,6 +473,9 @@ def user_change_password(new_password):
     user.password = new_password
     db.session.add(user)
     db.session.commit()
+    message = "You have successfully changed your password."
+    data = { 'message': message, 'type': 'success', 'which': 'change_password'}
+    emit('server_send_flasher', data)
 
 '''
 Later add:
