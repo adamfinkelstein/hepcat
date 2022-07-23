@@ -8,6 +8,9 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Button from 'react-bootstrap/Button'
 import ChooseStatusDropdown from './ChooseStatusDropdown.js'
+import {useFlasher} from '../contexts/FlasherContext'
+import Alert from 'react-bootstrap/Alert';
+import Collapse from 'react-bootstrap/Collapse';
 
 export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
@@ -23,6 +26,12 @@ export default function GridSection(){
     const [stickie, setStickie] = useState(stickieOptions[0])
     const [ID, setID] = useState("")
 
+    let flasher = useFlasher()
+    let visible = flasher["visible"]
+    let hideFlash = flasher["hideFlash"];
+    let flashMessage = flasher["flashMessage"]
+    let flash = flasher["flash"]
+
     function sendStickie() {
         const words = stickie.split(' ');
         const status = words[0];
@@ -34,6 +43,7 @@ export default function GridSection(){
         controlledLog("Send stickie " + status + " to paper with id: " + nid);
         const data = {status, nid};
         socketEmit('user_set_stickie', data);
+        flash("Stickie sent for " + nid + " with " + status + ".", "success", "stickie")
     }
 
     return(
@@ -56,6 +66,15 @@ export default function GridSection(){
             <div className="grid-container">
                 <Grid gridDisplay={gridDisplay}/>
             </div>
+            <hr className="horizontal-divider"/>
+            <Collapse in={visible["stickie"]}>
+                <div>
+                    <Alert variant={flashMessage.type || 'info'} dismissible
+                    onClose={hideFlash}>
+                        {flashMessage.message}
+                    </Alert>
+                </div>
+            </Collapse>
             <Stack direction="horizontal">
                 <ColorsDisplay/>
                 <hr className="vertical-divider"></hr>
@@ -65,10 +84,10 @@ export default function GridSection(){
                         <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
                         <div className="stickie-step">Step 2 &mdash; type the numeric paper ID:</div>
                         <div>
-                        <input maxLength={3}
-                            name="id"
-                            onChange={(event) => { setID(event.target.value) }}
-                        />
+                            <input maxLength={3}
+                                name="id"
+                                onChange={(event) => { setID(event.target.value) }}
+                            />
                         </div>
                         <div className="stickie-step">Step 3 &mdash; click to send stickie:</div>
                         <Button variant="primary" onClick={sendStickie}>Send Stickie</Button>

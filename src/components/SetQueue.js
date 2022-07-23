@@ -8,6 +8,8 @@ import Form from 'react-bootstrap/Form'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack"
+import Alert from 'react-bootstrap/Alert';
+import Collapse from 'react-bootstrap/Collapse';
 
 export default function SetQueue(){
     const globals = useAppGlobals()
@@ -16,18 +18,18 @@ export default function SetQueue(){
     const socketEmit = globals.socketEmit
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    // let queue = globals.queue;
-    let flasher = useFlasher()
-    let flash = flasher["flash"]
-    // const barRef = useRef(null);
-    // const explicitRef = useRef(null);
-
     const filterList = ['Stickie Only','Unseen Only','No Clusters']
     const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
         hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
         adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList} = useGUI()
+
+    let flasher = useFlasher()
+    let visible = flasher["visible"]
+    let hideFlash = flasher["hideFlash"];
+    let flashMessage = flasher["flashMessage"]
+    let flash = flasher["flash"]
 
     function handleSetQueueButton(event) {
         event.preventDefault(); // do not send the form!
@@ -41,7 +43,7 @@ export default function SetQueue(){
         controlledLog('sending queue request:');
         controlledLog(data);
         socketEmit("admin_set_queue", data)
-        flash("Sent queue request.", "success");
+        flash("Sent queue request.", "success", "set_queue");
     }
 
     function handleSetQueueExplicitButton(event) {
@@ -51,7 +53,7 @@ export default function SetQueue(){
         controlledLog('sending explicit queue request: '+queueExplicitList);
         const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_'
         socketEmit("admin_set_queue_explicit", explicit)
-        flash("Sent explicit queue request.", "success");
+        flash("Sent explicit queue request.", "success", "set_explicit");
     }
 
     function handleInputChange(event){
@@ -68,6 +70,14 @@ export default function SetQueue(){
     function handleHideQueueCheckbox(){
         const newHideQ = !hideQ
         setHideQ(!hideQ)
+
+        if(hideQ){
+            flash("Queue is now visible for everyone.", "success", "hide_queue")
+        }
+        else{
+            flash("Queue is now hidden for everyone except the admin.", "success", "hide_queue")
+        }
+
         controlledLog('checkbox after negate: '+newHideQ)
         const data = { hide:newHideQ, message:message }
         socketEmit("admin_hide_queue", data)
@@ -76,10 +86,19 @@ export default function SetQueue(){
     function handleSetBarButton(){
         controlledLog('bar set:', guiBarString)
         socketEmit("admin_set_bar", guiBarString)
+        flash("Bar set to " + guiBarString + ".", "success", "change_bar")
     }
 
     return(
         <Container>
+            <Collapse in={visible["hide_queue"]}>
+                <div>
+                    <Alert variant={flashMessage.type || 'info'} dismissible
+                    onClose={hideFlash}>
+                        {flashMessage.message}
+                    </Alert>
+                </div>
+            </Collapse>
             <div>
                 <Stack direction="horizontal">
                     <Form.Check type="checkbox" defaultChecked={hideQ}
@@ -99,6 +118,14 @@ export default function SetQueue(){
 
             </div>
             <hr className="horizontal-divider"/>
+            <Collapse in={visible["set_queue"]}>
+                <div>
+                    <Alert variant={flashMessage.type || 'info'} dismissible
+                    onClose={hideFlash}>
+                        {flashMessage.message}
+                    </Alert>
+                </div>
+            </Collapse>
             <div>
                 <Stack direction="horizontal" gap={5}>
                     <div>&nbsp;</div>
@@ -207,6 +234,14 @@ export default function SetQueue(){
             </div>
             <Button variant="primary" onClick={handleSetQueueButton} style={{marginTop: "30px"}}>Set Filtered Queue</Button>
             <hr className="horizontal-divider"/>
+            <Collapse in={visible["set_explicit"]}>
+                <div>
+                    <Alert variant={flashMessage.type || 'info'} dismissible
+                    onClose={hideFlash}>
+                        {flashMessage.message}
+                    </Alert>
+                </div>
+            </Collapse>
             <div>
                 <Stack direction = "horizontal">
                     <div>
@@ -227,6 +262,14 @@ export default function SetQueue(){
                 </Stack>
             </div>
             <hr className="horizontal-divider"/>
+            <Collapse in={visible["change_bar"]}>
+                <div>
+                    <Alert variant={flashMessage.type || 'info'} dismissible
+                    onClose={hideFlash}>
+                        {flashMessage.message}
+                    </Alert>
+                </div>
+            </Collapse>
             <div>
                 <Stack direction = "horizontal">
                     <Button variant="primary" onClick={handleSetBarButton} 

@@ -10,24 +10,34 @@ export function useFlasher(){
 
 export default function FlashContext({ children }) {
     const [flashMessage, setFlashMessage] = useState({});
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState({"stickie": false, "hide_queue": false, "set_queue": false, 
+                                            "set_explicit": false, "change_bar": false, "favorites": false});
 
-    const flash = (message, type, duration = 3) => {
+    const noneVisible = {"stickie": false, "hide_queue": false, "set_queue": false, 
+                        "set_explicit": false, "change_bar": false, "favorites": false};
+
+    const flash = (message, type, which) => {
+        const duration = 3
         if (flashTimer) {
             clearTimeout(flashTimer);
             flashTimer = undefined;
         }
 
         setFlashMessage({message, type});
-        setVisible(true);
+        setVisible(() => {
+            let copyVisible = { ...noneVisible };
+            console.log(" i am here " + which)
+            copyVisible[which] = true;              
+            return copyVisible;
+        })
 
         if (duration) {
-        flashTimer = setTimeout(hideFlash, duration * 1000);
+            flashTimer = setTimeout(hideFlash, duration * 1000);
         }
     };
 
     const hideFlash = () => {
-        setVisible(false);
+        setVisible(noneVisible)
     };
 
     return (

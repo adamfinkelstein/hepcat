@@ -24,7 +24,7 @@ export default function FavoritePreferences(){
             const num = Number(values[i])
             controlledLog(num)
             if(!Number.isInteger(num)){
-                flash("Favorites could not be updated. You supplied an invalid value.", "warning")
+                flash("Favorites could not be updated. You supplied an invalid value.", "warning", "favorites")
                 return
             }
             newValues.push(num)
@@ -37,7 +37,7 @@ export default function FavoritePreferences(){
             controlledLog(newSet)
             return newSet
         })
-        flash("Favorites are updated.", "success")
+        flash("Favorites are updated.", "success", "favorites")
     }
 
     return(
@@ -57,7 +57,7 @@ export default function FavoritePreferences(){
                 <span><u>Current Favorites</u></span>
                 <Button variant="warning" onClick={() => {
                     changeFavorites([])
-                    flash("Favorites deleted.", "success")
+                    flash("Favorites deleted.", "success", "favorites")
                  }} className="delete-all-btn">Delete All</Button>
             </Stack>
             <ul className='current-favorites-container'>

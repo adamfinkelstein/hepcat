@@ -2,13 +2,10 @@ import {useState, useEffect} from 'react'
 import Container from 'react-bootstrap/Container'
 import Split from 'react-split'
 import {useAppGlobals} from '../contexts/AppContext'
-import {useFlasher} from '../contexts/FlasherContext'
 import Queue from './Queue'
 import Paper from './Paper'
 import GridSection from './GridSection'
 import SetQueue from './SetQueue'
-import Alert from 'react-bootstrap/Alert'
-import Collapse from 'react-bootstrap/Collapse'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import moment from 'moment'
@@ -19,12 +16,6 @@ export default function Body(){
     const isAdmin = user && user.role_name === "Admin"
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
-
-    const flasher = useFlasher()
-    //const flash = flasher["flash"]
-    const visible = flasher["visible"]
-    const hideFlash = flasher["hideFlash"]
-    const flashMessage = flasher["flashMessage"]
 
     const [currentTime, setCurrentTime] = useState(Date.now())
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length
@@ -76,14 +67,6 @@ export default function Body(){
                             }
                         </Container>
                         <Container className='right-panel'>
-                            <Collapse in={visible}>
-                                <div>
-                                    <Alert variant={flashMessage.type || 'info'} dismissible
-                                    onClose={hideFlash}>
-                                        {flashMessage.message}
-                                    </Alert>
-                                </div>
-                            </Collapse>
                             <Tabs defaultActiveKey="paper"
                                   id="paper-tabs"
                                   className="mb-3">
