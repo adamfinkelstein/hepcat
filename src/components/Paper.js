@@ -9,13 +9,9 @@ export default function Paper(){
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
     const queueCurrent = globals.queueCurrent;
     const currentShow = globals.serverGlobs.current_show;
-    const currentStart = moment.utc(globals.serverGlobs.current_start).local().format('ddd LT');
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
     const hist = globals.serverGlobs.current_history;
-    const histSafe = hist ? hist : [];
-    const histMap = histSafe.map( h => 
-        h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")" );
-    const histJoin = histMap.join(', ');
+    const showHist = hist && hist.length > 0
     const safeScores = cp ? cp.all_scores : ''
     const scoresHTML = formatScoresInHTML(safeScores);
 
@@ -32,6 +28,16 @@ export default function Paper(){
         html = extraSpaceBefore(html, 'bbs:')
         const ret = {__html: html}
         return ret
+    }
+
+    function formatHistoryElement(h) {
+        return h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")"
+    }
+
+    function formatHistoryList(histList) {
+        if (!histList) return ''
+        const fmt = histList.map(formatHistoryElement).join(', ');
+        return fmt
     }
 
     return(
@@ -72,9 +78,10 @@ export default function Paper(){
                     <div className="debug-timer">{currentShow} {isPaper}</div>
                     <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
                     <br/>
-                    <p className='custom-font-size'>Showed: {currentStart}</p>
                     <p className='custom-font-size'>Reviews: <span dangerouslySetInnerHTML={scoresHTML}/></p>
-                    <p className='custom-font-size'>History: {histJoin}</p>
+                    { showHist &&
+                        (<p className='custom-font-size'>History: {formatHistoryList(hist)}</p>)
+                    }
                     <p className='custom-font-size'>Summary: {cp.summary}</p>
                     <p className='custom-font-size'>Abstract: {cp.abstract}</p>
                     <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
