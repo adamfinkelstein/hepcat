@@ -21,11 +21,19 @@ const defaultTextColors = {
 }
                           
 const fontSizes = {
-  "Extra Small": 0.70,
-  "Small": 0.85,
+  "Extra Small": 0.80,
+  "Small": 0.90,
   "Medium": 1.0,
-  "Large": 1.15,
-  "Extra Large": 1.30
+  "Large": 1.25,
+  "Extra Large": 1.50
+}
+
+
+const baseFontSizes = {
+  "font-size-1": 42,
+  "font-size-2": 30,
+  "font-size-3": 22,
+  "font-size-4": 19
 }
 
 const ColorsContext = React.createContext()
@@ -112,19 +120,13 @@ export default function PreferencesContext({children}){
     cssStyle.type = 'text/css';
 
     let multiplier = fontSizes[fontSize]
-    //${100*fontSizes[fontSize]}%
+    Object.keys(baseFontSizes).forEach((fontType) => {
 
-    var fontSize1Rule = document.createTextNode(`.font-size-1{font-size:${35*multiplier}px}`)
-    cssStyle.appendChild(fontSize1Rule);
+      let baseFontSize = baseFontSizes[fontType]
 
-    var fontSize2Rule = document.createTextNode(`.font-size-2{font-size:${28*multiplier}px}`)
-    cssStyle.appendChild(fontSize2Rule);
-
-    var fontSize3Rule = document.createTextNode(`.font-size-3{font-size:${20*multiplier}px}`)
-    cssStyle.appendChild(fontSize3Rule);
-
-    var fontSize4Rule = document.createTextNode(`.font-size-4{font-size:${15*multiplier}px}`)
-    cssStyle.appendChild(fontSize4Rule);
+      var fontSize1Rule = document.createTextNode(`.${fontType}{font-size:${baseFontSize*multiplier}px}`)
+      cssStyle.appendChild(fontSize1Rule);
+    })
 
     document.getElementsByTagName("head")[0].appendChild(cssStyle);
   }, [fontSize])
