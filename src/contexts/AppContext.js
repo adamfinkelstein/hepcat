@@ -57,6 +57,8 @@ export default function AppContext({children}){
 
     controlledLog(socket);
 
+    controlledLog(1, 2, 3);
+
     const receiveWelcome = (data) => {
       controlledLog('received welcome:');
       controlledLog(data);
@@ -200,9 +202,9 @@ export default function AppContext({children}){
     socket.emit(message);
   }
 
-  function controlledLog(output){
+  function controlledLog(...output){
     if(showLogs){
-      console.log(output)
+      console.log(...output)
     }
   }
 
