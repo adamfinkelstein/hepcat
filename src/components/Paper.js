@@ -16,6 +16,23 @@ export default function Paper(){
     const histMap = histSafe.map( h => 
         h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")" );
     const histJoin = histMap.join(', ');
+    const safeScores = cp ? cp.all_scores : ''
+    const scoresHTML = formatScoresInHTML(safeScores);
+
+    function extraSpaceBefore(scores, before) {
+        const after = '&nbsp;&nbsp;&nbsp;' + before
+        const ret = scores.replace(before,after)
+        return ret
+    }
+
+    function formatScoresInHTML(scores) {
+        let html = scores.replaceAll('_R_','<b>R</b>')
+        html = extraSpaceBefore(html, ' j[')
+        html = extraSpaceBefore(html, 'c[')
+        html = extraSpaceBefore(html, 'bbs:')
+        const ret = {__html: html}
+        return ret
+    }
 
     return(
         <Container className="Paper">
@@ -25,9 +42,25 @@ export default function Paper(){
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
                 <div>
-                <h2>Conflicts</h2>
+                <h2>Conflicts:</h2>
                 <ul>
                     {cp.conflicts.map( (user,index) => {
+                        return (
+                            <li key={index}>{user.full_name}</li>
+                        )
+                    })}
+                </ul>
+                <h2>Leave:</h2>
+                <ul>
+                    {cp.leave.map( (user,index) => {
+                        return (
+                            <li key={index}>{user.full_name}</li>
+                        )
+                    })}
+                </ul>
+                <h2>Return:</h2>
+                <ul>
+                    {cp.enter.map( (user,index) => {
                         return (
                             <li key={index}>{user.full_name}</li>
                         )
@@ -40,7 +73,7 @@ export default function Paper(){
                     <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
                     <br/>
                     <p className='custom-font-size'>Showed: {currentStart}</p>
-                    <p className='custom-font-size'>Reviews: {cp.all_scores}&nbsp;Sort:{cp.sort_score}</p>
+                    <p className='custom-font-size'>Reviews: <span dangerouslySetInnerHTML={scoresHTML}/></p>
                     <p className='custom-font-size'>History: {histJoin}</p>
                     <p className='custom-font-size'>Summary: {cp.summary}</p>
                     <p className='custom-font-size'>Abstract: {cp.abstract}</p>
