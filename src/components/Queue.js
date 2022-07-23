@@ -18,17 +18,8 @@ export default function Queue(){
     const start_index = Math.max(0, current - past_max);
     const end_index = Math.min(counter + future_max, queue.length);
     const queueSlice = queue.slice(start_index, end_index);
-
-    let allClosed = []
-    for(let i = 0; i < queue.length; i++){
-        allClosed.push("")
-    }
-
-    let allOpen = []
-    for(let i = 0; i < queue.length; i++){
-        allOpen.push("active")
-    }
-    const [queueExpanded, setQueueExpanded] = useState(allClosed);
+    
+    const [queueExpanded, setQueueExpanded] = useState(false);
 
     function currentClass(index, paper){
         let className = "queue_element"
@@ -55,15 +46,15 @@ export default function Queue(){
                     <span className='current-text'>Current: {currentCount} {queue.length}</span>
                     <div className="expand-buttons">
                         {
-                            !queueExpanded[0] && 
-                            <button onClick={() => setQueueExpanded(allOpen)}
+                            !queueExpanded && 
+                            <button onClick={() => setQueueExpanded(true)}
                                     type="button" className="btn btn-light expand-button"> 
                                 Expand all 
                             </button>
                         }
                         {
-                            queueExpanded[0] && 
-                            <button onClick={() => setQueueExpanded(allClosed)}
+                            queueExpanded && 
+                            <button onClick={() => setQueueExpanded(false)}
                                     type="button" className="btn btn-light collapse-button" style={{marginLeft: "10px"}}> 
                                 Collapse all 
                             </button>
@@ -77,7 +68,7 @@ export default function Queue(){
                     queueSlice.map((paper, index) => {
                         return(
                             <li key={index} className={currentClass(index+start_index, paper)}>
-                                <QueueElement paper={paper} active={queueExpanded[index]} />
+                                <QueueElement paper={paper} active={queueExpanded} />
                             </li> 
                         )
                     })

@@ -1,5 +1,6 @@
 //import { text } from '@fortawesome/fontawesome-svg-core'
 import React, {useState, useContext, useEffect} from 'react'
+import { useAppGlobals } from '../contexts/AppContext';
 
 const defaultColors = {
   "Unseen": "#F4F4F4", 
@@ -82,6 +83,8 @@ export default function PreferencesContext({children}){
   const [prefUpdated, setPrefUpdated] = useState(false)
   const [favorites, setFavorites] = useState([])
 
+  let controlledLog = useAppGlobals()["controlledLog"]
+
 
   useEffect(() => {
     const colorData = localStorage.getItem("colors")
@@ -120,7 +123,7 @@ export default function PreferencesContext({children}){
       })
       var fontSizeRule = document.createTextNode(`.custom-font-size{font-size:${100*fontSizes[fontSize]}%}`)
       cssStyle.appendChild(fontSizeRule);
-      console.log(cssStyle)
+      controlledLog(cssStyle)
       document.getElementsByTagName("head")[0].appendChild(cssStyle);
   });
 

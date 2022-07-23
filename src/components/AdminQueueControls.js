@@ -1,13 +1,7 @@
 import Stack from "react-bootstrap/Stack"
 import { useAppGlobals } from "../contexts/AppContext"
 //import DropdownButton from "react-bootstrap/DropdownButton"
-import Button from 'react-bootstrap/Button'
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Dropdown from "react-bootstrap/Dropdown"
-// import {useState} from 'react'
-
-// this var also in SetQueue - consolidate?
-const statusList = ['Tabled','Reject','Conference','Journal'];
+import ChooseStatusDropdown from './ChooseStatusDropdown.js'
 
 export default function AdminQueueControls() {
     const globals = useAppGlobals();
@@ -40,33 +34,7 @@ export default function AdminQueueControls() {
                     }}>
             Next
             </button>
-
-            <Dropdown as={ButtonGroup} id="status-dropdown-menu">
-            <Button variant="outline">
-            <Stack direction="horizontal">
-                <div className={"rectangle " + newStatus}/>
-                <span>{newStatus}</span>
-            </Stack>
-            </Button>
-            <Dropdown.Toggle split variant="outline" id="dropdown-split-basic" />
-
-            <Dropdown.Menu>
-                {
-                    statusList.map((status, index) => {
-                        return(
-                            <Dropdown.Item as="button" key={index}
-                                onClick={() => setNewStatus(status)}>
-                                <Stack direction="horizontal">
-                                    <div className={"rectangle " + status}/>
-                                    <span>{status}</span>
-                                </Stack>
-                            </Dropdown.Item>
-                        )
-                    })
-                    
-                }
-            </Dropdown.Menu>
-            </Dropdown>
+            <ChooseStatusDropdown currentStatus={newStatus} setValue={setNewStatus}/>
         </Stack>
     )
 }

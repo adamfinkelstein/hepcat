@@ -3,6 +3,7 @@ import Stack from 'react-bootstrap/Stack'
 import { useChangeFavorites, useFavorites } from '../contexts/PreferencesContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
+import { useAppGlobals } from '../contexts/AppContext'
 
 export default function FavoritePreferences(){
     let favorites = useFavorites()
@@ -11,6 +12,7 @@ export default function FavoritePreferences(){
     let flasher = useFlasher()
     let flash = flasher["flash"]
 
+    let controlledLog = useAppGlobals()["controlledLog"]
 
     function handleSubmit(event) {
         event.preventDefault();
@@ -20,7 +22,7 @@ export default function FavoritePreferences(){
         values = values.split(",")
         for(let i = 0; i < values.length; i++){
             const num = Number(values[i])
-            console.log(num)
+            controlledLog(num)
             if(!Number.isInteger(num)){
                 flash("Favorites could not be updated. You supplied an invalid value.", "warning")
                 return
@@ -31,8 +33,8 @@ export default function FavoritePreferences(){
             let newSet = [...oldFav, ...newValues] // put them all together
             newSet = [...new Set(newSet)]; // use set to remove duplicates
             newSet.sort();
-            console.log('update favorites set to:')
-            console.log(newSet)
+            controlledLog('update favorites set to:')
+            controlledLog(newSet)
             return newSet
         })
         flash("Favorites are updated.", "success")

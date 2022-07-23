@@ -23,6 +23,8 @@ export default function AppContext({children}){
   const [modalTitle, setModalTitle] = useState("")
   const [modalBody, setModalBody] = useState("")
 
+  const [showLogs, setShowLogs] = useState(false)
+
   /* 
     serverGlobs Fields:
       bar: Float
@@ -46,12 +48,18 @@ export default function AppContext({children}){
   }, [setSocket]);
 
   useEffect(() => {
+    console.log("i am here " + process.env.SHOW_LOGS)
+    const showLogsEnv = process.env.SHOW_LOGS;
+    setShowLogs(showLogsEnv === undefined ? false : showLogsEnv);
+  }, [])
 
-    console.log(socket);
+  useEffect(() => {
+
+    controlledLog(socket);
 
     const receiveWelcome = (data) => {
-      console.log('received welcome:');
-      console.log(data);
+      controlledLog('received welcome:');
+      controlledLog(data);
       setUser(data.user);
       setGrid(data.grid);
     };
@@ -70,10 +78,10 @@ export default function AppContext({children}){
         grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
       }
       if (!grid_entry) {
-        console.log('cannot find grid entry for nid:',nid);
+        controlledLog('cannot find grid entry for nid:',nid);
         return;
       }
-      //console.log('about to update grid entry:', grid_entry)
+      //controlledLog('about to update grid entry:', grid_entry)
       if (status) {
         grid_entry.status = status;
         grid_entry.stickie = false;
@@ -81,14 +89,14 @@ export default function AppContext({children}){
       else {
         grid_entry.stickie = true;
       }
-      //console.log('just updated grid entry:', grid_entry)
+      //controlledLog('just updated grid entry:', grid_entry)
       const newGrid = { ...grid };
       setGrid(newGrid); // force update
     }
 
     function updateQueueEntry(queue_index, status) {
       if (queue_index < 0 || queue_index >= queue.length) {
-        console.log('cannot updateQueueEntry at queue_index ', queue_index);
+        controlledLog('cannot updateQueueEntry at queue_index ', queue_index);
         return;
       }
       queue[queue_index].status = status;
@@ -97,20 +105,20 @@ export default function AppContext({children}){
     }
 
     const receiveUpdate = (data) => {
-      console.log('received update:');
-      console.log(data); // queue_index, grid_nid, status
+      controlledLog('received update:');
+      controlledLog(data); // queue_index, grid_nid, status
       updateGridEntry(data.grid_nid, data.status);
       updateQueueEntry(data.queue_index, data.status)
     };
 
     const receiveStickie = (grid_nid) => {
-      console.log('received stickie: '+grid_nid);
+      controlledLog('received stickie: '+grid_nid);
       updateGridEntry(grid_nid, null); // null status -> set stickie
     }
 
     const receiveGlobs = (data) => {
-      console.log('received globs:');
-      console.log(data);
+      controlledLog('received globs:');
+      controlledLog(data);
       setQueueCurrent(data.current);
       setServerGlobs(data);
       const status = data.current_status;
@@ -124,19 +132,19 @@ export default function AppContext({children}){
       }
       const barString = data.bar + ''
       setGuiBar(barString)
-      console.log('got globs and set bar to:', barString);
+      controlledLog('got globs and set bar to:', barString);
     }
 
     const receiveQueue = (data) => {
-      console.log('received queue:');
-      console.log(data);
+      controlledLog('received queue:');
+      controlledLog(data);
       setQueue(data.paper_list);
       receiveGlobs(data.globs);
     };
 
     const receiveGrid = (data) => {
-      console.log('received grid:');
-      console.log(data);
+      controlledLog('received grid:');
+      controlledLog(data);
       setGrid(data);
     };
 
@@ -147,7 +155,7 @@ export default function AppContext({children}){
     }
 
     if (socket && 'on' in socket) {
-      // console.log('register welcome etc');
+      // controlledLog('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_grid', receiveGrid);
@@ -170,7 +178,7 @@ export default function AppContext({children}){
 
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {
-      console.log("socket does not exist, message not sent.");
+      controlledLog("socket does not exist, message not sent.");
       return;
     }
     if (data) {
@@ -178,6 +186,12 @@ export default function AppContext({children}){
       return;
     }
     socket.emit(message);
+  }
+
+  function controlledLog(output){
+    if(showLogs){
+      console.log(output)
+    }
   }
 
   return (
@@ -197,6 +211,8 @@ export default function AppContext({children}){
           "modalBody": modalBody,
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
+          "controlledLog": controlledLog,
+          "statusList": ['Tabled','Reject','Conference','Journal']
         }}>
         {children}
       </AppGlobalsContext.Provider>

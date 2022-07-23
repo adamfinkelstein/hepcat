@@ -18,8 +18,9 @@ export default function App() {
     <Container fluid className="App">
       <BrowserRouter>
         <FlasherContext>
-          <PreferencesContext>
-              <AppContext>
+          <AppContext>
+            <PreferencesContext>
+   
                 <GUIContext>
                   <ModalDialog/>
                   <Navbar/>
@@ -31,8 +32,8 @@ export default function App() {
                       <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </GUIContext>
-              </AppContext>
-            </PreferencesContext>
+              </PreferencesContext>
+            </AppContext>
         </FlasherContext>
       </BrowserRouter>
     </Container>

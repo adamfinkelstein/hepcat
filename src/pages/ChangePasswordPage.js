@@ -15,6 +15,8 @@ export default function ChangePasswordPage(){
     let hideFlash = flasher["hideFlash"];
     let flashMessage = flasher["flashMessage"]
 
+    let controlledLog = useAppGlobals()["controlledLog"]
+
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
 
@@ -30,7 +32,7 @@ export default function ChangePasswordPage(){
             flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning")
             return;
           }
-        console.log("changing password to " + password)
+        controlledLog("changing password to " + password)
         flash("You have successfully changed your password", "success")
         socketEmit("user_change_password", password)
     }

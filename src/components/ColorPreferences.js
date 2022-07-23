@@ -7,6 +7,7 @@ import { useColors, useChangeColor, useDefaultColors, useChangeTextColors } from
 // import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
 import Button from 'react-bootstrap/Button'
+import { useAppGlobals } from '../contexts/AppContext';
 
 export default function ColorPreferences(){
 
@@ -18,8 +19,10 @@ export default function ColorPreferences(){
   let changeTextColors = useChangeTextColors()
   let [pickingFor, setPickingFor] = useState("Unseen")
 
+  let controlledLog = useAppGlobals()["controlledLog"]
+
   let handleChangeComplete = (type, color) => {
-        console.log(color)
+        controlledLog(color)
         const blackWhiteThresh = 0.7; // threshold between black or white text
         const textBlack = color.hsl.l > blackWhiteThresh ? true : false; 
         changeTextColors(type, textBlack)

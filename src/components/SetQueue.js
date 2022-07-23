@@ -9,20 +9,21 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack"
 
-const statusList = ['Tabled','Reject','Conference','Journal']
-const filterList = ['Stickie Only','Unseen Only','No Clusters']
-
 export default function SetQueue(){
     const globals = useAppGlobals()
     const guiBarString = globals.guiBar+''
     const setGuiBar = globals.setGuiBar
     const socketEmit = globals.socketEmit
+    let controlledLog = useAppGlobals()["controlledLog"]
 
     // let queue = globals.queue;
     let flasher = useFlasher()
     let flash = flasher["flash"]
     // const barRef = useRef(null);
     // const explicitRef = useRef(null);
+
+    const filterList = ['Stickie Only','Unseen Only','No Clusters']
+    const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
         hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
@@ -37,8 +38,8 @@ export default function SetQueue(){
             document.getElementById("only-checkbox-"+index).checked
         );
         const data = { statuses, only, lowRange, highRange, adminConflicts };
-        console.log('sending queue request:');
-        console.log(data);
+        controlledLog('sending queue request:');
+        controlledLog(data);
         socketEmit("admin_set_queue", data)
         flash("Sent queue request.", "success");
     }
@@ -47,7 +48,7 @@ export default function SetQueue(){
         event.preventDefault(); // do not send the form! (Is this in form?!?)
         // get value from text field
         // save using: setQueueExplicitList(field)
-        console.log('sending explicit queue request: '+queueExplicitList);
+        controlledLog('sending explicit queue request: '+queueExplicitList);
         const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_'
         socketEmit("admin_set_queue_explicit", explicit)
         flash("Sent explicit queue request.", "success");
@@ -67,13 +68,13 @@ export default function SetQueue(){
     function handleHideQueueCheckbox(){
         const newHideQ = !hideQ
         setHideQ(!hideQ)
-        console.log('checkbox after negate: '+newHideQ)
+        controlledLog('checkbox after negate: '+newHideQ)
         const data = { hide:newHideQ, message:message }
         socketEmit("admin_hide_queue", data)
     }
 
     function handleSetBarButton(){
-        console.log('bar set:', guiBarString)
+        controlledLog('bar set:', guiBarString)
         socketEmit("admin_set_bar", guiBarString)
     }
 
@@ -115,7 +116,7 @@ export default function SetQueue(){
                                 checked = {statusCheckbox.includes(label)}
                                 onChange={() => {
                                     if(statusCheckbox.includes(label)){
-                                        console.log("includes")
+                                        controlledLog("includes")
                                         setStatusCheckbox((oldStatusCheckbox) => {
                                             return oldStatusCheckbox.filter((oldStatus, i) => oldStatus !== label)
                                         })

@@ -36,7 +36,7 @@ export default function QueueElement({paper, active}){
                     <div className="qSymbol">{prefixSym}</div>
                 </div>
             </Stack>
-            <div ref={content} style={{ maxHeight: `${(active === "" || content === null) ? "0px" : "100px"}` }} className="accordion_content">
+            <div ref={content} style={{ maxHeight: `${(active === false || content === null) ? "0px" : "100px"}` }} className="accordion_content">
                 <div className="accordion_text">
                     <PaperConflict header="Conflicted" conflicts={paper.conflicts}></PaperConflict>
                 </div>

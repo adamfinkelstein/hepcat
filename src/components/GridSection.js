@@ -7,11 +7,13 @@ import ColorsDisplay from './ColorsDisplay';
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Button from 'react-bootstrap/Button'
+import ChooseStatusDropdown from './ChooseStatusDropdown.js'
 
 export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
+    let controlledLog = useAppGlobals()["controlledLog"]
 
     const stickieOptions = [
         "Tabled (Needs discussion)", 
@@ -29,7 +31,7 @@ export default function GridSection(){
             alert("Please choose a paper id.");
             return;
         }
-        console.log("Send stickie " + status + " to paper with id: " + nid);
+        controlledLog("Send stickie " + status + " to paper with id: " + nid);
         const data = {status, nid};
         socketEmit('user_set_stickie', data);
     }
@@ -60,20 +62,7 @@ export default function GridSection(){
                 <Container className="set-stickie">
                     <Stack direction = "vertical" className="send-stickie-column">
                         <div className="stickie-step">Step 1 &mdash; choose a stickie type:</div>
-                        <DropdownButton title={stickie} 
-                                        variant="secondary">
-                            {
-                                stickieOptions.map((newStickie, index) => {
-                                    return(
-                                        <Dropdown.Item as="button" key={index} 
-                                            onClick={() => setStickie(newStickie)}>
-                                            <span>{newStickie}</span>
-                                        </Dropdown.Item>
-                                    )
-                                })
-                                
-                            }
-                        </DropdownButton>
+                        <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
                         <div className="stickie-step">Step 2 &mdash; type the numeric paper ID:</div>
                         <div>
                         <input maxLength={3}
