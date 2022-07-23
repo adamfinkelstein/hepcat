@@ -20,7 +20,14 @@ This app uses the following major components:
 
 ## To clone and set up locally:
 
-This works in python version 3.9.13 (generally 3.9.x):
+First, you need Postgres. If you skip this step, you will get an error like `pg_config is required to build psycopg2 from source` when doing the pip install below. On mac you can install it several ways, including:
+
+* [Postgres.app](https://postgresapp.com/downloads.html)
+* Homebrew
+* Build from source (probably slower)
+
+
+Next this works, at least in python version 3.9.13 (generally 3.9.x):
 
 ```
 git clone https://github.com/adamfinkelstein/hepcat.git
