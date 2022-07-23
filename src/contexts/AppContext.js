@@ -70,7 +70,7 @@ export default function AppContext({children}){
         grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
       }
       if (!grid_entry) {
-        controlledLog('cannot find grid entry for nid:',nid);
+        controlledLog('cannot find grid entry for nid:', nid);
         return;
       }
       //controlledLog('about to update grid entry:', grid_entry)

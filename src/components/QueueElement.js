@@ -34,16 +34,14 @@ export default function QueueElement({paper, active}){
     return(
         <Container>
             <Stack direction="horizontal" className="queue-element-container">
-                <div>
-                    <div className="accordion_title">
+                <div className="accordion_title">
                     Q{paper.queue_order}{qLine}
-                    </div>
-                    <div className="qSymbol">{prefixSym}</div>
                 </div>
+                <div className="qSymbol">{prefixSym}</div>
             </Stack>
             {
                 !isPast &&
-                (<div ref={content} style={{ maxHeight: `${(active === false || content === null) ? "0px" : "100px"}` }} className="accordion_content">
+                (<div ref={content} style={{ maxHeight: `${(active === false || content === null) ? "0px" : (content.current.scrollHeight + "px")}`}} className="accordion_content">
                     <div className="accordion_text">
                         <PaperConflict header="Conflicts:" conflicts={paper.conflicts}></PaperConflict>
                     </div>

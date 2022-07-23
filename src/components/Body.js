@@ -48,7 +48,7 @@ export default function Body(){
     }
 
     return(
-        <Container className='Body'>
+        <Container fluid className='Body'>
             {(!user) ? (
                 <p id="waiting-for-server">Waiting for server connection...</p>
             ) : (
@@ -59,7 +59,7 @@ export default function Body(){
                     cursor="col-resize"
                     minSize={[500, 500]}
                     >
-                        <Container>
+                        <Container className='left-panel'>
                             { queue.length && !hideQueue ? 
                                 <Queue/> 
                                 : 
