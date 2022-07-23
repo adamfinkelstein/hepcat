@@ -32,7 +32,7 @@ export default function ColorPreferences(){
     return (
         // Color Preferences
         <Container className="color-preferences-container">
-            <h3>Color Preferences</h3>
+            <span className="font-size-2">Color</span>
             <Stack direction='horizontal'>
                 <ColorsDisplay clickable setPickingFor={setPickingFor} pickingFor={pickingFor}/>
                 <SketchPicker

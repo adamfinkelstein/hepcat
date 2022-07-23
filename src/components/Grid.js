@@ -49,7 +49,7 @@ export default function Grid({isAbove,gridDisplay}){
 
     return(
         notConflicted.map((gridElem, index) => {
-            return <div key={index} className={gridClass(gridElem)}>{gridElem.nid}</div>
+            return <div key={index} className={gridClass(gridElem)}><span className='font-size-4'>{gridElem.nid}</span></div>
         })
     )
 }

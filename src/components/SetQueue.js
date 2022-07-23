@@ -104,10 +104,10 @@ export default function SetQueue(){
                     <Form.Check type="checkbox" defaultChecked={hideQ}
                         onChange={handleHideQueueCheckbox}
                     />
-                    <span className="hideQ-text">Hide queue from everyone except admin.</span>
+                    <span className="hideQ-text font-size-4">Hide queue from everyone except admin.</span>
                 </Stack>
                 <Stack direction="horizontal" className="set-message-row">
-                    <span>Message: </span>
+                    <span className="font-size-4">Message: </span>
                     <input
                         name="message"
                         value={message}
@@ -130,7 +130,7 @@ export default function SetQueue(){
                 <Stack direction="horizontal" gap={5}>
                     <div>&nbsp;</div>
                     <div>
-                        <span style={{fontSize:"18px"}}><u>Include All</u>:</span>
+                        <span className="font-size-3"><u>Include All</u>:</span>
                         <br />
                         <div key={`status-checkbox`} className="mb-4">
                         { statusList.map((label, index) => {
@@ -161,7 +161,7 @@ export default function SetQueue(){
                     </div>
                     <div className="vr" />
                     <div>
-                        <span style={{fontSize:"18px"}}><u>Include Only</u>:</span>
+                        <span className="font-size-3"><u>Include Only</u>:</span>
                         <br />
                         <div key={`only-checkbox`} className="mb-4">
                         { filterList.map((label, index) => {
@@ -219,7 +219,7 @@ export default function SetQueue(){
                 </div>
                 <div>
                     <Stack direction = "horizontal">
-                        <span style={{fontSize:"18px"}}>Gather admin/chair conflicts: </span>
+                        <span className="font-size-3">Gather admin/chair conflicts: </span>
                         <DropdownButton id="dropdown-item-button" 
                             title={adminConflicts} className="new-status-dropdown"
                             variant="secondary" type="button">
@@ -254,10 +254,10 @@ export default function SetQueue(){
                     <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
                     </div>
                     <ul>
-                    <li>Empty string ('') to clear queue.</li>
-                    <li>Cluster name like 'Cluster-A'.</li>
-                    <li>Area name like 'Area-Rendering'.</li>
-                    <li>Paper number(s) like '101' or '101,103,105,107'.</li>
+                    <li className="font-size-4">Empty string ('') to clear queue.</li>
+                    <li className="font-size-4">Cluster name like 'Cluster-A'.</li>
+                    <li className="font-size-4">Area name like 'Area-Rendering'.</li>
+                    <li className="font-size-4">Paper number(s) like '101' or '101,103,105,107'.</li>
                     </ul>
                 </Stack>
             </div>

@@ -9,12 +9,12 @@ export function useFlasher(){
 }
 
 export default function FlashContext({ children }) {
-    const [flashMessage, setFlashMessage] = useState({});
-    const [visible, setVisible] = useState({"stickie": false, "hide_queue": false, "set_queue": false, 
-                                            "set_explicit": false, "change_bar": false, "favorites": false});
-
     const noneVisible = {"stickie": false, "hide_queue": false, "set_queue": false, 
-                        "set_explicit": false, "change_bar": false, "favorites": false};
+    "set_explicit": false, "change_bar": false, "favorites": false,
+    "change_password": false};
+
+    const [flashMessage, setFlashMessage] = useState({});
+    const [visible, setVisible] = useState(noneVisible);
 
     const flash = (message, type, which) => {
         const duration = 3

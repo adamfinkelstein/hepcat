@@ -44,7 +44,7 @@ export default function Queue(){
             }
             <Container className="expand-bar">
                 <Stack direction="horizontal">
-                    <span className='current-text'>Current: {currentCount} {queue.length}</span>
+                    <span className='font-size-2'>Current: {currentCount} {queue.length}</span>
                     <div className="expand-buttons">
                         {
                             !queueExpanded && 

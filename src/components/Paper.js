@@ -48,42 +48,42 @@ export default function Paper(){
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
                 <div>
-                <h2>Conflicts:</h2>
-                <ul>
-                    {cp.conflicts.map( (user,index) => {
-                        return (
-                            <li key={index}>{user.full_name}</li>
-                        )
-                    })}
-                </ul>
-                <h2>Leave:</h2>
-                <ul>
-                    {cp.leave.map( (user,index) => {
-                        return (
-                            <li key={index}>{user.full_name}</li>
-                        )
-                    })}
-                </ul>
-                <h2>Return:</h2>
-                <ul>
-                    {cp.enter.map( (user,index) => {
-                        return (
-                            <li key={index}>{user.full_name}</li>
-                        )
-                    })}
-                </ul>
+                    <span className='font-size-2'>Conflicts:</span>
+                    <ul>
+                        {cp.conflicts.map( (user,index) => {
+                            return (
+                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                            )
+                        })}
+                    </ul>
+                    <span className='font-size-2'>Leave:</span>
+                    <ul>
+                        {cp.leave.map( (user,index) => {
+                            return (
+                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                            )
+                        })}
+                    </ul>
+                    <span className='font-size-2'>Return:</span>
+                    <ul>
+                        {cp.enter.map( (user,index) => {
+                            return (
+                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                            )
+                        })}
+                    </ul>
                 </div>
                 ) : (
                 <div>
                     <div className="debug-timer">{currentShow} {isPaper}</div>
-                    <h2 className='paper-title custom-font-size'>Q{cp.queue_order} ({cp.nid}): {cp.title}</h2>
+                    <span className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</span>
                     <br/>
-                    <p className='custom-font-size'>Reviews: <span dangerouslySetInnerHTML={scoresHTML}/></p>
+                    <p className='font-size-3' >Reviews: <span className='font-size-4' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&
-                        (<p className='custom-font-size'>History: {formatHistoryList(hist)}</p>)
+                        (<p className='font-size-3'>History: <span className='font-size-4'>{formatHistoryList(hist)}</span></p>)
                     }
-                    <p className='custom-font-size'>Summary: {cp.summary}</p>
-                    <p className='custom-font-size'>Abstract: {cp.abstract}</p>
+                    <p className='font-size-3'>Summary: <span className='font-size-4'>{cp.summary}</span></p>
+                    <p className='font-size-3'>Abstract: <span className='font-size-4'>{cp.abstract}</span></p>
                     <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
                 </div>
             ))}

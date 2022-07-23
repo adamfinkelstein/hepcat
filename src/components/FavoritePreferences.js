@@ -48,19 +48,19 @@ export default function FavoritePreferences(){
 
     return(
         <Container className="favorite-preferences-container">
-            <h3>Add Favorites</h3>
+            <span className='font-size-2'>Favorites</span>
             <form onSubmit={handleSubmit}>
-                <label>
+                <label className="font-size-3">
                     Paper IDs:
                     <input type="text" name="favorites" className='favorites-input'/>
                 </label>
                 <button type="submit" className="btn btn-primary favorites-submit-btn">Add</button>
-                <span className='example-favorites'>
+                <span className='example-favorites font-size-4'>
                 (Like '101' or '101,102,103'.)
                 </span>
             </form>
             <Stack direction="horizontal" className="current-favorites-bar">
-                <span><u>Current Favorites</u></span>
+                <span className='font-size-3'><u>Current Favorites</u></span>
                 <Button variant="warning" onClick={() => {
                     changeFavorites([])
                     flash("Favorites deleted.", "success", "favorites")
@@ -72,7 +72,7 @@ export default function FavoritePreferences(){
                         return(
                             <li key={index}>
                                 <Stack direction="horizontal" gap={3}>
-                                    <span className='current-favorite-id'>{favorite}</span>
+                                    <span className='current-favorite-id font-size-4'>{favorite}</span>
                                     <Button variant="light" onClick={() => {
                                         changeFavorites(oldFav => {
                                             return oldFav.filter((_, i) => i !== index)

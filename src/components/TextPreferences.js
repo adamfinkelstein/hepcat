@@ -9,9 +9,9 @@ export default function TextPreferences(){
 
     return(
         <Container>
-            <h3>Text Preferences</h3>
+            <span className="font-size-2">Text</span>
             <Stack direction="horizontal">
-                <h5>Choose font size</h5>
+                <span className="font-size-3">Choose font size</span>
                 <DropdownButton id="dropdown-item-button" title={fontInfo["currentFontSize"]} className="font-size-dropdown">
                     {
                         Object.keys(fontInfo["fontSizes"]).map((fontSizeKey, index) => {

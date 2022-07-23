@@ -18,12 +18,7 @@ export default function GridSection(){
     const socketEmit = globals.socketEmit;
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    const stickieOptions = [
-        "Tabled (Needs discussion)", 
-        "Reject (Converged)", 
-        "Conference (Converged)", 
-        "Journal (Converged)"]
-    const [stickie, setStickie] = useState(stickieOptions[0])
+    const [stickie, setStickie] = useState("Tabled")
     const [ID, setID] = useState("")
 
     let flasher = useFlasher()
@@ -80,16 +75,16 @@ export default function GridSection(){
                 <hr className="vertical-divider"></hr>
                 <Container className="set-stickie">
                     <Stack direction = "vertical" className="send-stickie-column">
-                        <div className="stickie-step">Step 1 &mdash; choose a stickie type:</div>
+                        <p className="stickie-step font-size-3">Step 1 &mdash; choose a stickie type:</p>
                         <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
-                        <div className="stickie-step">Step 2 &mdash; type the numeric paper ID:</div>
+                        <p className="stickie-step font-size-3">Step 2 &mdash; type the numeric paper ID:</p>
                         <div>
                             <input maxLength={3}
                                 name="id"
                                 onChange={(event) => { setID(event.target.value) }}
                             />
                         </div>
-                        <div className="stickie-step">Step 3 &mdash; click to send stickie:</div>
+                        <p className="stickie-step font-size-3">Step 3 &mdash; click to send stickie:</p>
                         <Button variant="primary" onClick={sendStickie}>Send Stickie</Button>
                     </Stack>
                 </Container>

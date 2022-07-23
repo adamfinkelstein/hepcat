@@ -25,7 +25,7 @@ export default function ChooseStatusDropdown({currentStatus, setValue}){
                                 onClick={() => setValue(status)}>
                                 <Stack direction="horizontal">
                                     <div className={"rectangle " + status}/>
-                                    <span>{status}</span>
+                                    <span className='font-size-4'>{status}</span>
                                 </Stack>
                             </Dropdown.Item>
                         )

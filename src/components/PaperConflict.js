@@ -12,7 +12,7 @@ export default function PaperConflict({header,conflicts}){
                 {
                     conflicts.map((conflict, index) => {
                         return(
-                            <li key={index}>{conflict.full_name}</li>
+                            <li key={index}><span className="font-size-3">{conflict.full_name}</span></li>
                         )
                     })
                 }

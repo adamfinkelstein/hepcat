@@ -24,7 +24,7 @@ export default function ColorsDisplay({clickable, pickingFor, setPickingFor}){
                         <li key={key} className="legend-container" onClick={() => {if(clickable){setPickingFor(key)}}}>
                             <Stack direction="horizontal" className={pickingFor === key ? "picking-for" : "legend-stack"}>
                                 <div className={"rectangle " + key}></div>
-                                <div className="legend-label">{toTitleCase(key)}</div>
+                                <div className="legend-label font-size-4">{toTitleCase(key)}</div>
                             </Stack>
                         </li>
                     )

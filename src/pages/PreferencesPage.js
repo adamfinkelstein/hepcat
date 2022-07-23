@@ -14,6 +14,7 @@ export default function PreferencesPage() {
 
     return (
         <Container className='preferences-page'>
+            <span className='font-size-1'>Preferences</span>
             <Container className='preferences-container'>
                 <TextPreferences/>
                 <hr className="horizontal-divider"/>

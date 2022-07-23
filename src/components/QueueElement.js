@@ -34,9 +34,9 @@ export default function QueueElement({paper, active}){
     return(
         <Container>
             <Stack direction="horizontal" className="queue-element-container">
-                <div className="accordion_title">
+                <span className="accordion_title font-size-4">
                     Q{paper.queue_order}{qLine}
-                </div>
+                </span>
                 <div className="qSymbol">{prefixSym}</div>
             </Stack>
             {

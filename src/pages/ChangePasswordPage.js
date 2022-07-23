@@ -24,16 +24,16 @@ export default function ChangePasswordPage(){
         event.preventDefault();
         // Verify that the passwords match
         if (password !== passwordAgain) {
-            flash("Passwords don't match.", "warning")
+            flash("Passwords don't match.", "warning", "change_password")
             return;
         }
         var regularExpression = new RegExp('^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$');
         if (!regularExpression.test(password)) {
-            flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning")
+            flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning", "change_password")
             return;
           }
         controlledLog("changing password to " + password)
-        flash("You have successfully changed your password", "success")
+        flash("You have successfully changed your password", "success", "change_password")
         socketEmit("user_change_password", password)
     }
 
@@ -46,7 +46,7 @@ export default function ChangePasswordPage(){
 
     return(
         <Container className="ChangePasswordPage">
-            <Collapse in={visible}>
+            <Collapse in={visible["change_password"]}>
                 <div>
                     <Alert variant={flashMessage.type || 'info'} dismissible
                     onClose={hideFlash}>
@@ -55,7 +55,7 @@ export default function ChangePasswordPage(){
                 </div>
             </Collapse>
             <Container className="change-password-main-container">
-                <h1>Change Password</h1>
+                <span className='font-size-1'>Change Password</span>
                 <div className="password-fields">
                     <form onSubmit={handleSubmit}>
                         <div className="reset-password-row">

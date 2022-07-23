@@ -25,11 +25,12 @@ code {
 
 .left-panel{
   overflow-y: auto;
-  margin-top: 15px;
+  padding-top: 15px;
+  padding-bottom: 100px;
 }
 .right-panel{
   overflow-y: auto;
-  margin-top: 15px;
+  padding-top: 15px;
   padding-bottom: 100px;
 }
 
@@ -72,9 +73,6 @@ a.nav-link {
   border: 1px solid black;
 }
 
-.current-text{
-  font-size: 25px;
-}
 /* Queue Item Styling */
 
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap");
@@ -132,11 +130,6 @@ a.nav-link {
 
 .queue_element.odd_row{
   background-color: #eee;
-}
-
-.current{
-  border: 1px solid black;
-  background-color: cyan;
 }
 
 /*
@@ -264,12 +257,12 @@ a.nav-link {
 }
 
 .preferences-container{
-  margin-top: 40px;
+  margin-top: 20px;
   padding: 20px 5px;
 }
 
 .preferences-page{
-  margin-top: 15px;
+  margin-top: 35px;
 }
 
 .font-size-dropdown{

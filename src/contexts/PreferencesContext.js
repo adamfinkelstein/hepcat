@@ -108,6 +108,28 @@ export default function PreferencesContext({children}){
     }, [])
 
   useEffect(() => {
+    var cssStyle = document.createElement('style');
+    cssStyle.type = 'text/css';
+
+    let multiplier = fontSizes[fontSize]
+    //${100*fontSizes[fontSize]}%
+
+    var fontSize1Rule = document.createTextNode(`.font-size-1{font-size:${35*multiplier}px}`)
+    cssStyle.appendChild(fontSize1Rule);
+
+    var fontSize2Rule = document.createTextNode(`.font-size-2{font-size:${28*multiplier}px}`)
+    cssStyle.appendChild(fontSize2Rule);
+
+    var fontSize3Rule = document.createTextNode(`.font-size-3{font-size:${20*multiplier}px}`)
+    cssStyle.appendChild(fontSize3Rule);
+
+    var fontSize4Rule = document.createTextNode(`.font-size-4{font-size:${15*multiplier}px}`)
+    cssStyle.appendChild(fontSize4Rule);
+
+    document.getElementsByTagName("head")[0].appendChild(cssStyle);
+  }, [fontSize])
+
+  useEffect(() => {
       if(prefUpdated){
           localStorage.setItem("colors", JSON.stringify(colors));
           localStorage.setItem("textColors", JSON.stringify(textColors));
@@ -121,8 +143,7 @@ export default function PreferencesContext({children}){
           color:${textColors[colorKey] ? "#000" : "#fff"}}`);
           cssStyle.appendChild(prefRule);
       })
-      var fontSizeRule = document.createTextNode(`.custom-font-size{font-size:${100*fontSizes[fontSize]}%}`)
-      cssStyle.appendChild(fontSizeRule);
+
       controlledLog(cssStyle)
       document.getElementsByTagName("head")[0].appendChild(cssStyle);
   });
