@@ -64,14 +64,6 @@ export default function AppContext({children}){
       setGrid(data.grid);
     };
 
-    function locateGridEntry(grid_index, grid_list, nid) {
-      const index = grid_index.indexOf(nid);
-      if (index >= 0 && index < grid_list.length) {
-        return grid_list[index];
-      }
-      return null;
-    }
-
     function updateGridEntry(nid, status) {
       let grid_entry = locateGridEntry(grid.above_nids, grid.above, nid);
       if (!grid_entry) {
@@ -176,6 +168,26 @@ export default function AppContext({children}){
     };
   }, [queue, grid, socket]);
 
+
+  function locateGridEntry(grid_index, grid_list, nid) {
+    const index = grid_index.indexOf(nid);
+    if (index >= 0 && index < grid_list.length) {
+      return grid_list[index];
+    }
+    return null;
+  }
+
+  function checkValidNID(nid){
+    let grid_entry = locateGridEntry(grid.above_nids, grid.above, nid);
+    if (!grid_entry) {
+      grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
+    }
+    if (!grid_entry) {
+      return false
+    }
+    return true
+  }
+
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {
       controlledLog("socket does not exist, message not sent.");
@@ -212,7 +224,8 @@ export default function AppContext({children}){
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
           "controlledLog": controlledLog,
-          "statusList": ['Tabled','Reject','Conference','Journal']
+          "statusList": ['Tabled','Reject','Conference','Journal'],
+          "checkValidNID": checkValidNID
         }}>
         {children}
       </AppGlobalsContext.Provider>

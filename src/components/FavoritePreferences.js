@@ -12,7 +12,9 @@ export default function FavoritePreferences(){
     let flasher = useFlasher()
     let flash = flasher["flash"]
 
-    let controlledLog = useAppGlobals()["controlledLog"]
+    let globals = useAppGlobals()
+    let controlledLog = globals["controlledLog"]
+    let checkValidNID = globals["checkValidNID"]
 
     function handleSubmit(event) {
         event.preventDefault();
@@ -25,6 +27,10 @@ export default function FavoritePreferences(){
             controlledLog(num)
             if(!Number.isInteger(num)){
                 flash("Favorites could not be updated. You supplied an invalid value.", "warning", "favorites")
+                return
+            }
+            else if(!checkValidNID(num)){
+                flash("Favorites could not be updated. You supplied a paper ID that doesn't exist.", "warning", "favorites")
                 return
             }
             newValues.push(num)
