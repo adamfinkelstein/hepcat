@@ -48,9 +48,9 @@ export default function AppContext({children}){
   }, [setSocket]);
 
   useEffect(() => {
-    console.log("i am here " + process.env.SHOW_LOGS)
-    const showLogsEnv = process.env.SHOW_LOGS;
-    setShowLogs(showLogsEnv === undefined ? false : showLogsEnv);
+    const showLogsEnv = process.env.REACT_APP_SHOW_LOGS;
+    console.log(showLogsEnv);
+    setShowLogs(showLogsEnv);
   }, [])
 
   useEffect(() => {
