@@ -1,4 +1,5 @@
 import { Container } from "react-bootstrap"
+import {useState} from 'react'
 import {useAppGlobals} from '../contexts/AppContext'
 import {useGUI} from '../contexts/GUIContext'
 import {useFlasher} from '../contexts/FlasherContext'
@@ -11,7 +12,14 @@ import Stack from "react-bootstrap/Stack"
 import Alert from 'react-bootstrap/Alert';
 import Collapse from 'react-bootstrap/Collapse';
 
+const scoreOptionAll = "All Scores"
+const scoreOptionAbove = "At/Above Bar"
+const scoreOptionBelow = "Below Bar"
+const scoreOptionRange = "In Range"
+const scoreOptions = [scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange]
+
 export default function SetQueue(){
+    const [disableScoreInputs, setDisableScoreInputs] = useState("")
     const globals = useAppGlobals()
     const guiBarString = globals.guiBar+''
     const setGuiBar = globals.setGuiBar
@@ -30,6 +38,36 @@ export default function SetQueue(){
     let hideFlash = flasher["hideFlash"];
     let flashMessage = flasher["flashMessage"]
     let flash = flasher["flash"]
+
+    /* This function handles the values of the range inputs
+         scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange:
+     All scores: lowRange=min, highRange=max
+     Above bar: lowRange=bar, highRange=max
+     Below bar: lowRange=min, highRange=bar
+     In range: both are enabled for freeform input 
+    */
+    function handleScoreSelectionUpdate(selection) {
+        const minScore = "-100.0"
+        const maxScore = "100.0"
+        const disable = (selection !== scoreOptionRange) ? "disabled" : "";
+        // by default (scoreOptionRange) low and high range values remain
+        let lowInput = lowRange 
+        let highInput = highRange
+        if (selection === scoreOptionAll) {
+            lowInput = minScore
+            highInput = maxScore
+        } else if (selection === scoreOptionAbove) {
+            lowInput = guiBarString
+            highInput = maxScore
+        } else if (selection === scoreOptionBelow) {
+            lowInput = minScore
+            highInput = guiBarString
+        }
+        setScoreSelection(selection)
+        setDisableScoreInputs(disable)
+        setLowRange(lowInput)
+        setHighRange(highInput)
+    }
 
     function handleSetQueueButton(event) {
         event.preventDefault(); // do not send the form!
@@ -182,16 +220,16 @@ export default function SetQueue(){
                         </div>
                         <div>&nbsp;</div>
                     </div>
-                </Stack>
+                    <div className="vr" />
                 <div style={{marginBottom: "20px"}}>
-                    <Stack direction="horizontal" gap={4}>
+                    <Stack direction="vertical" gap={4}>
                         <DropdownButton id="dropdown-item-button" 
                             title={scoreSelection} className="new-status-dropdown"
                             variant="secondary" type="button">
                             {
-                                ["All Scores", "At/Above Bar", "Below Bar", "In Range"].map((scoreSelection, index) => {
+                                scoreOptions.map((selection, index) => {
                                     return(
-                                        <Dropdown.Item key={index} as="button" onClick={() => setScoreSelection(scoreSelection)}>{scoreSelection}</Dropdown.Item>
+                                        <Dropdown.Item key={index} as="button" onClick={() => handleScoreSelectionUpdate(selection)}>{selection}</Dropdown.Item>
                                     )
                                 })
                             }
@@ -200,18 +238,24 @@ export default function SetQueue(){
                             name="lowRange"
                             value={lowRange}
                             onChange={handleInputChange}
+                            disabled={disableScoreInputs}
                         />
-                        <span style={{fontSize: "18px"}}>&le; Avg &le;</span>
+                        <span style={{fontSize: "18px"}}>&le; (paper ave score) &lt;</span>
                         <input
                             name="highRange"
                             value={highRange}
                             onChange={handleInputChange}
+                            disabled={disableScoreInputs}
                         />
                     </Stack>
                 </div>
+                </Stack>
                 <div>
                     <Stack direction = "horizontal">
-                        <span className="font-size-3">Gather admin/chair conflicts: </span>
+                        <Button variant="primary" onClick={handleSetQueueButton} 
+                            style={{marginTop: "30px"}}>Set Filtered Queue
+                        </Button>
+                        <span className="font-size-3 gather-conflicts-label">Gather Chair conflicts:&nbsp;</span>
                         <DropdownButton id="dropdown-item-button" 
                             title={adminConflicts} className="new-status-dropdown"
                             variant="secondary" type="button">
@@ -224,7 +268,6 @@ export default function SetQueue(){
                     </Stack>
                 </div>
             </div>
-            <Button variant="primary" onClick={handleSetQueueButton} style={{marginTop: "30px"}}>Set Filtered Queue</Button>
             <hr className="horizontal-divider"/>
             <Collapse in={visible["set_explicit"]}>
                 <div>

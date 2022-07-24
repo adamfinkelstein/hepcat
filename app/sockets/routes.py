@@ -164,9 +164,11 @@ def include_paper_in_queue(paper, filters):
     highRange = float(filters['highRange'])
     filter_statuses = filters['statuses']
     filter_only = filters['only']
-    if sort_score < lowRange: ### ???? decide which is >=
+    # interface: true(low <= score)  <==>  test here: false(score < low)
+    # interface: true(score < high)  <==>  test here: false(score >= high)
+    if sort_score < lowRange:
         return False
-    if sort_score > highRange:
+    if sort_score >= highRange:
         return False
     status = get_latest_history_status(paper)
     if status not in filter_statuses:

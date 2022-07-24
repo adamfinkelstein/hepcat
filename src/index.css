@@ -153,7 +153,12 @@ a.nav-link {
 }
 
 .new-status-dropdown{
-  margin-left: auto
+  /* margin-left: auto; sends to right margin */
+}
+
+.gather-conflicts-label {
+  margin-left: 30px;
+  margin-right: 10px;
 }
 
 /* Paper Styling (right panel) */

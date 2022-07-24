@@ -10,7 +10,7 @@ export default function GUIContext({children}){
   const [onlyCheckbox, setOnlyCheckbox] = useState([]);
   const [message, setMessage] = useState("");
   const [hideQ, setHideQ] = useState(false);
-  const [scoreSelection, setScoreSelection] = useState("At/Above Bar");
+  const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
   const [lowRange, setLowRange] = useState(0);
   const [highRange, setHighRange] = useState(5.1);
   const [adminConflicts, setAdminConflicts] = useState("Never");
