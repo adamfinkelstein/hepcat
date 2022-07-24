@@ -1,11 +1,10 @@
 import os
 import csv
 from datetime import datetime, timedelta
-
 from flask import render_template, flash, redirect, url_for, send_file, current_app
-from flask_login import current_user
+# from flask_login import current_user
 from werkzeug.utils import secure_filename
-from sqlalchemy import func
+# from sqlalchemy import func
 from . import upload
 from .forms import UploadForm
 from .. import db
@@ -239,10 +238,13 @@ def review_role_to_num(role):
         return 2
     return 3
 
+def float_str_to_int(s):
+    return int(round(float(s)))
+
 def review_str_to_num(s):
     s = s.strip()
     if len(s):
-        return int(s)
+        return float_str_to_int(s)
     return 0
 
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'', 1:'a', 3:'A', 5:'_A_'}
@@ -267,7 +269,11 @@ def scores_to_string(scores):
     return brackets
 
 def average_scores(scores):
-    return 1.0 * sum(scores) / len(scores)
+    n = len(scores)
+    if n:
+        ave = 1.0 * sum(scores) / n
+        return ave
+    return 0.0
 
 def non_zero_scores(scores):
     scores = [ score for score in scores if score != 0 ]
@@ -304,7 +310,7 @@ def reviews_to_score_lists(reviews):
 def consensus_num_code_to_enum(str):
     if not len(str):
         return status_str_to_enum('Tabled') # default
-    num = int(str)
+    num = float_str_to_int(str)
     if num == -1:
         return status_str_to_enum('Reject')
     elif num == 1:
@@ -411,7 +417,7 @@ csvTypes = {
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation',
-    'summaries' : 'Submission ID,Summary',
+    'summaries' : 'Submission ID,Committee Notes',
     'history' : 'Submission ID,Seconds,Context,Status' }
 
 csvFunctions = {
@@ -438,12 +444,18 @@ def make_path_if_needed(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def csv_row_total_content_len(row):
+    lengths = [len(item) for item in row]
+    total = sum(lengths)
+    return total
+
 def read_csv_rows(filename):
     with open(filename) as f:
         csvReader = csv.reader(f)
         rows = []
         for row in csvReader:
-            rows.append(row)
+            if csv_row_total_content_len(row) > 3: # arb min
+                rows.append(row)
     if len(rows) < 1:
         return None, None
     header = rows[0]
@@ -456,8 +468,14 @@ def get_csv_type(header):
     for typ in csvTypes:
         knownHeader = csvTypes[typ].lower() # lower case
         if header.startswith(knownHeader):
-            return typ
-    return None
+            cols = knownHeader.split(',')
+            ncols = len(cols)
+            return typ, ncols
+    return None, 0
+
+def omit_extra_cols(rows, ncols):
+    rows = [ cols[:ncols] for cols in rows ]
+    return rows
 
 def delete_prev_file_uploads(headerType):
     if headerType not in csvDependence:
@@ -473,7 +491,8 @@ def delete_prev_file_uploads(headerType):
 
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
-    headerType = get_csv_type(header)
+    headerType, ncols = get_csv_type(header)
+    rows = omit_extra_cols(rows, ncols)
     if headerType in csvFunctions:
         func = csvFunctions[headerType]
         if not func:

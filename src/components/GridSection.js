@@ -55,10 +55,10 @@ export default function GridSection(){
     return(
         <Container>
             <Stack direction="horizontal">
-            <div className="font-size-3">Bar: {guiBar} 
-                &nbsp;&nbsp; Above: {gridCountAbove}
-                &nbsp;&nbsp; Below: {gridCountBelow}
-                &nbsp;&nbsp; Total: {papersTotal}
+            <div className="font-size-3">Bar:&nbsp;{guiBar} 
+                &nbsp;&nbsp; Above:&nbsp;{gridCountAbove}
+                &nbsp;&nbsp; Below:&nbsp;{gridCountBelow}
+                &nbsp;&nbsp; Total:&nbsp;{papersTotal}
             </div>
             <DropdownButton id="dropdown-item-button" 
                             title={gridDisplay}

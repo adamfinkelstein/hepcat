@@ -17,7 +17,7 @@ if not os.path.exists(dataDir):
 # conflicts: Submission ID,Email
 # clusters: Submission ID,Cluster
 # reviews: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-# summaries: Submission ID,Summary
+# summaries: Submission ID,Committee Notes
 # history: Submission ID,Seconds,Status
 
 def write_file(fname, contents):
@@ -196,9 +196,9 @@ def fake_reviews(papers, fname):
     write_file(fname, output)
     return recs
 
-# summary: Submission ID,Summary
+# summary: Submission ID,Committee Notes
 def fake_summaries(papers, fname):
-    output = 'Submission ID,Summary\n'
+    output = 'Submission ID,Committee Notes\n'
     for pid in papers:
         summary = csv_safe_string( fake.sentence(nb_words=12) )
         line = f'{pid},{summary}\n'
