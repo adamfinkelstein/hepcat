@@ -283,6 +283,13 @@ def journal_only(conference_scores):
     nz = non_zero_scores(conference_scores)
     return len(nz) > 0
 
+def weird_conf_scores(conference_scores):
+    nz = len(non_zero_scores(conference_scores))
+    total = len(conference_scores)
+    if (nz > 0) and (total-nz) > 1:
+        return True
+    return False
+
 def all_scores_to_sort_score(conference_scores,journal_scores):
     journal_ave = average_scores(journal_scores)
     conference_ave = average_scores(conference_scores)
@@ -320,27 +327,40 @@ def consensus_num_code_to_enum(str):
     return status_str_to_enum('Tabled') # default
 
 def papers_set_all_scores_and_status_from_reviews():
-    now = datetime.now()
+    # now = datetime.now()
     papers = Paper.query.all()
+    missing_review_nids = []
+    weird_conf_nids = []
     for paper in papers:
         # add score summaries to paper
         reviews = paper.reviews.order_by(Review.role)
-        conference_scores,journal_scores,consensus_recs = \
-            reviews_to_score_lists(reviews)
-        consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-        paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
-        paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str)
+        if len(list(reviews)):
+            conference_scores,journal_scores,consensus_recs = \
+                reviews_to_score_lists(reviews)
+            consensus_enum,consensus_str = get_consensus_info(consensus_recs)
+            paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
+            paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str)
+            paper.journal_only = journal_only(conference_scores)
+            paper.missing_reviews = False
+            if weird_conf_scores(conference_scores):
+                weird_conf_nids.append(paper.nid)
+        else:
+            paper.sort_score = 0
+            paper.all_scores = 'This paper has no reviews.'
+            paper.journal_only = False
+            paper.missing_reviews = True
+            missing_review_nids.append(paper.nid)
         db.session.add(paper)
 
         # add BBS history ### ??? later: fix time below...
-        then = now - timedelta(days = 7) # pretend this is a week ago (for debug)
+        # then = now - timedelta(days = 7) # pretend this is a week ago (for debug)
         context_enum = int(HistoryContext.BBS)
         history = History(paper=paper,
-                        when=then,
                         context_enum=context_enum,
                         status_enum=consensus_enum)
         db.session.add(history)
-
+    print('papers missing reviews: ', missing_review_nids)
+    print('weird conf scores: ', weird_conf_nids)
     db.session.commit()
 
 # old: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
@@ -386,16 +406,16 @@ def insert_history_rows(rows):
     for row in rows:
         if len(row) < 4:
             continue
-        sid,secs,context,status = row
+        sid,_,context,status = row
         nid = sid_to_num(sid)
-        secs = int(secs)
+        # secs = int(secs) # Now ignoring time which was hack for debugging
         paper = Paper.query.filter_by(nid=nid).first()
         if paper:
-            then = now - timedelta(seconds=secs)
+            # then = now - timedelta(seconds=secs)
             context_enum = context_str_to_enum(context)
             status_enum = consensus_num_code_to_enum(status)
             history = History(paper=paper,
-                            when=then,
+                            # when=then,
                             context_enum=context_enum,
                             status_enum=status_enum)
             db.session.add(history)

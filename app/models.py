@@ -140,6 +140,8 @@ class Paper(db.Model):
     abstract = db.Column(db.String())
     summary = db.Column(db.String())
     all_scores = db.Column(db.String(64))
+    journal_only = db.Column(db.Boolean, default=False)
+    missing_reviews = db.Column(db.Boolean, default=True)
     reviews = db.relationship('Review', backref='paper', lazy='dynamic')
     conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', 
         order_by='(User.last_name,User.first_name)',
@@ -234,6 +236,7 @@ class UserSchema(ma.Schema):
 class PaperSchema(ma.Schema):
     class Meta:
         fields = ("nid", "sid", "sort_score", "all_scores", "queue_order", 
+                "missing_reviews", "journal_only", 
                 "thumbnail", "title", "abstract", "summary")
 
 class HistorySchema(ma.Schema):
