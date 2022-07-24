@@ -1,12 +1,8 @@
 import os
 import re
-# import random
 from datetime import datetime
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
-from numpy import broadcast
-# from numpy import broadcast
-# from sqlalchemy import true
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
@@ -210,7 +206,6 @@ def set_bar(bar):
     gq.bar = bar
     db.session.add(gq)
     db.session.commit()
-    
 
 def set_queue_to_paper_list(all_papers, paper_list, solve_tsp = True):
     if solve_tsp:

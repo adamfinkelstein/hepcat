@@ -1,17 +1,12 @@
-from math import dist
+import os
 import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
-from python_tsp.exact import solve_tsp_dynamic_programming
 
-# for exact solution (only for small matrices)...
-# from python_tsp.exact import solve_tsp_dynamic_programming
-# distance_matrix = np.array([
-#     [0,  5, 4, 10],
-#     [5,  0, 8,  5],
-#     [4,  8, 0,  3],
-#     [10, 5, 3,  0]
-# ])
-# permutation, distance = solve_tsp_dynamic_programming(distance_matrix)
+use_ortools=os.environ.get('HEPCAT_USE_ORTOOLS')
+
+if use_ortools:
+    from ortools.constraint_solver import routing_enums_pb2
+    from ortools.constraint_solver import pywrapcp
 
 def get_paper_conficts_set(p):
     if not p or not p.conf_users:
@@ -65,19 +60,110 @@ def debug_order(distance_matrix, permutation, distance, ordered_papers):
         pj = ordered_papers[i+1]
         get_paper_distance(pi,pj,True)
 
-def order_q(papers, optimal=False, verbose=False):
-    maxn = 100
+########### ORTOOLS ############
+
+def pack_data(distance_matrix):
+    data = {}
+    data['distance_matrix'] = distance_matrix.tolist()
+    data['num_vehicles'] = 1
+    data['depot'] = 0
+    return data
+
+# mylist = [1, 3, 5, 7, 9]
+# rotate_list_left(mylist, 2)  # rotate left:  [5, 7, 9, 1, 3]
+# rotate_list_left(mylist, -2) # rotate right: [7, 9, 1, 3, 5]
+def rotate_list_left(arr, shift):
+    return arr[shift:] + arr[:shift]
+
+def split_tour_at_max_cost(nodes, costs):
+    maxindex = np.argmax(costs)
+    leftshift = maxindex + 1
+    cost = costs[maxindex]
+    print(f'splitting tour at location {maxindex} (leftshift {leftshift}) with max cost {cost}')
+    nodes = rotate_list_left(nodes, leftshift)
+    costs = rotate_list_left(costs, leftshift)
+    return nodes, costs
+
+# Two potential improvements to a circular tour:
+# 1. Since we do not return to the starting paper, split at the most expensive transition.
+# 2. Once split, we can tour in either order, so possibly reverse to put more conflicts at end
+def improve_tour(nodes, costs):
+    nodes, costs = split_tour_at_max_cost(nodes, costs)
+    # later add second opt here
+    return nodes, costs
+
+def get_tsp_solution(manager, routing, solution):
+    nodes = []
+    costs = []
+    index = routing.Start(0)
+    while not routing.IsEnd(index):
+        node = manager.IndexToNode(index)
+        previous_index = index
+        index = solution.Value(routing.NextVar(index))
+        cost = routing.GetArcCostForVehicle(previous_index, index, 0)
+        nodes.append(node)
+        costs.append(cost)
+    return nodes, costs
+
+def solve_tsp(distance_matrix):
+    data = pack_data(distance_matrix)
+    manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
+                                           data['num_vehicles'], data['depot'])
+    routing = pywrapcp.RoutingModel(manager)
+    def distance_callback(from_index, to_index):
+        """Returns the distance between the two nodes."""
+        # Convert from routing variable Index to distance matrix NodeIndex.
+        from_node = manager.IndexToNode(from_index)
+        to_node = manager.IndexToNode(to_index)
+        return data['distance_matrix'][from_node][to_node]
+    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    search_parameters.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+    solution = routing.SolveWithParameters(search_parameters)
+    if solution:
+        nodes, costs = get_tsp_solution(manager, routing, solution)
+        nodes, costs = improve_tour(nodes, costs)
+        return nodes, costs
+    return None, None
+
+def order_q_ortools(distance_matrix):
+    nodes, costs = solve_tsp(distance_matrix)
+    if not nodes:
+        return None, 0
+    costs_minus_last = costs[:-1]
+    distance = sum(costs_minus_last)
+    return nodes, distance
+
+######## END #########
+
+def order_q(papers, verbose=False):
     n = len(papers)
-    if n < 3 or n > maxn:
-        print(f'skip ordering {n} papers because it is too few, or too many/slow (max={maxn}).')
+    maxn = 100
+    remainder = None
+    if n < 3:
+        print(f'skip ordering {n} papers because it is too few.')
         return papers
+    if n > maxn:
+        n = maxn
+        remainder = papers[maxn:] # slice off the ones after max
+        papers = papers[:maxn] # only optimize these first ones
     distance_matrix = get_distance_matrix(papers)
-    if optimal:
-        permutation, distance = solve_tsp_dynamic_programming(distance_matrix)
+    if use_ortools:
+        print('solving tsp using ortools')
+        permutation, distance = order_q_ortools(distance_matrix)
     else:
+        print('solving tsp using local search')
         permutation, distance = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
-    ordered_papers = permute_papers(papers, permutation)
+    if permutation:
+        ordered_papers = permute_papers(papers, permutation)
+    else:
+        ordered_papers = papers
     if verbose:
         debug_order(distance_matrix, permutation, distance, ordered_papers)
     print(f'ordered {n} papers with total cost {distance}')
+    if remainder:
+        print('(The other papers were not ordered and just appended.)')
+        ordered_papers += remainder
     return ordered_papers

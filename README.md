@@ -90,6 +90,7 @@ Also set environment variables at Heroku, at least:
 * `MAIL_PASSWORD`
 * `HEPCAT_ADMIN_LOGIN`
 * `HEPCAT_ADMIN_PASSWD`
+* `HEPCAT_USE_ORTOOLS=True`
 
 Then:
 
