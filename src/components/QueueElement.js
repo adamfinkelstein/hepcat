@@ -42,7 +42,7 @@ export default function QueueElement({paper, active}){
             {
                 !isPast &&
                 (<div ref={content} style={ // this next line was broken so AF comment it out:
-                    { maxHeight: "300px" //`${(active === false || content === null) ? "0px" : (content.current.scrollHeight + "px")}`
+                    { maxHeight: "0px" //`${(active === false || content === null) ? "0px" : (content.current.scrollHeight + "px")}`
                     }} className="accordion_content">
                     <div className="accordion_text">
                         <PaperConflict header="Conflicts:" conflicts={paper.conflicts}></PaperConflict>

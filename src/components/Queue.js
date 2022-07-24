@@ -22,12 +22,13 @@ export default function Queue(){
     
     const [queueExpanded, setQueueExpanded] = useState(false);
 
-    function currentClass(index, paper){
+    function currentClass(index, paper, nid){
+        const isConflict = user.conflict_papers.includes(paper.nid)
         let className = "queue_element"
         if (index === globals.queueCurrent){
             className += " Current"
         }
-        else if (!isScreen && index < globals.queueCurrent){
+        else if (!isScreen && !isConflict && index < globals.queueCurrent){
             className += " " + paper.status;
         }
         else if (index % 2) { // future - odd?
