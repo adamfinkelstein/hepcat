@@ -247,7 +247,7 @@ def review_str_to_num(s):
         return float_str_to_int(s)
     return 0
 
-rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'', 1:'a', 3:'A', 5:'_A_'}
+rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'?', 1:'a', 3:'A', 5:'_A_'}
 
 def get_rating_code(rating):
     if rating in rating_codes_dict:

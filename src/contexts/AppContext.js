@@ -60,8 +60,6 @@ export default function AppContext({children}){
 
     controlledLog(socket);
 
-    controlledLog(1, 2, 3);
-
     const receiveWelcome = (data) => {
       controlledLog('received welcome:');
       controlledLog(data);

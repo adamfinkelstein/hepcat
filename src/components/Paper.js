@@ -22,7 +22,10 @@ export default function Paper(){
     }
 
     function formatScoresInHTML(scores) {
-        let html = scores.replaceAll('_R_','<b>R</b>')
+        let html = scores
+        html = html.replace('c[ ? ? ? ? ? ]','c[X]')
+        html = html.replaceAll('_A_','<b>A</b>')
+        html = html.replaceAll('_R_','<b>R</b>')
         html = extraSpaceBefore(html, ' j[')
         html = extraSpaceBefore(html, 'c[')
         html = extraSpaceBefore(html, 'bbs:')
