@@ -15,12 +15,17 @@ import Collapse from 'react-bootstrap/Collapse';
 export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
     const globals = useAppGlobals();
-    const socketEmit = globals.socketEmit;
-    const controlledLog = globals["controlledLog"]
-    const checkValidNID = globals["checkValidNID"]
-    const setModalTitle = globals["setModalTitle"]
-    const setModalBody = globals["setModalBody"]
-    const setShowModal = globals["setShowModal"]
+    const guiBar = globals.guiBar
+    const grid = globals.grid
+    const gridCountAbove = grid && grid.above ? grid.above.length : 0
+    const gridCountBelow = grid && grid.below ? grid.below.length : 0
+    const papersTotal = gridCountAbove + gridCountBelow
+    const socketEmit = globals.socketEmit
+    const controlledLog = globals.controlledLog
+    const checkValidNID = globals.checkValidNID
+    const setModalTitle = globals.setModalTitle
+    const setModalBody = globals.setModalBody
+    const setShowModal = globals.setShowModal
     const [stickie, setStickie] = useState("Tabled")
     const [ID, setID] = useState("")
 
@@ -49,6 +54,12 @@ export default function GridSection(){
 
     return(
         <Container>
+            <Stack direction="horizontal">
+            <div className="font-size-3">Bar: {guiBar} 
+                &nbsp;&nbsp; Above: {gridCountAbove}
+                &nbsp;&nbsp; Below: {gridCountBelow}
+                &nbsp;&nbsp; Total: {papersTotal}
+            </div>
             <DropdownButton id="dropdown-item-button" 
                             title={gridDisplay}
                             variant="secondary" className='grid-display-dropdown'>
@@ -60,6 +71,7 @@ export default function GridSection(){
                     })
                 }
             </DropdownButton>
+            </Stack>
             <div className="grid-container">
                 <Grid isAbove gridDisplay={gridDisplay}/>
             </div> 

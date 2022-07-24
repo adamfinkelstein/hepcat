@@ -204,7 +204,8 @@ a.nav-link {
 }
 
 .grid-display-dropdown{
-  margin: 5px;
+  margin: 20px;
+  margin-left: auto;
 }
 .grid-controls{
   padding: 20px 5px;
