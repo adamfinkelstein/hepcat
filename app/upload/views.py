@@ -301,6 +301,18 @@ def reviews_to_score_lists(reviews):
             consensus_recs.append(review.consensus)
     return conference_scores,journal_scores,consensus_recs
 
+def consensus_num_code_to_enum(str):
+    if not len(str):
+        return status_str_to_enum('Tabled') # default
+    num = int(str)
+    if num == -1:
+        return status_str_to_enum('Reject')
+    elif num == 1:
+        return status_str_to_enum('Conference')
+    elif num == 2:
+        return status_str_to_enum('Journal')
+    return status_str_to_enum('Tabled') # default
+
 def papers_set_all_scores_and_status_from_reviews():
     now = datetime.now()
     papers = Paper.query.all()
@@ -325,26 +337,28 @@ def papers_set_all_scores_and_status_from_reviews():
 
     db.session.commit()
 
-# Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# old: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 def insert_review_rows(rows):
     delete_all_reviews()
     count = 0
     for row in rows:
         if len(row) < 4:
             continue
-        sid,role,conference,journal,consensus = row
+        # expertise ignored for now (col bet journal and consensus):
+        sid,role,conference,journal,_,consensus = row
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
             # add review
             role_num = review_role_to_num(role)
             conference = review_str_to_num(conference)
             journal = review_str_to_num(journal)
-            consensus = status_str_to_enum(consensus)
+            consensus_enum = consensus_num_code_to_enum(consensus)
             review = Review(paper=paper,
                             role=role_num,
                             conference=conference,
                             journal=journal,
-                            consensus=consensus)
+                            consensus=consensus_enum)
             db.session.add(review)
             count += 1
     db.session.commit()
@@ -373,9 +387,7 @@ def insert_history_rows(rows):
         if paper:
             then = now - timedelta(seconds=secs)
             context_enum = context_str_to_enum(context)
-            status_enum = status_str_to_enum(status)
-            if not context_enum:
-                print(f'adding history for paper {paper.id} and zero context')
+            status_enum = consensus_num_code_to_enum(status)
             history = History(paper=paper,
                             when=then,
                             context_enum=context_enum,
@@ -398,7 +410,7 @@ csvTypes = {
     'papers' : 'Submission ID,Thumbnail URL,Title,Area,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
-    'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation',
+    'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation',
     'summaries' : 'Submission ID,Summary',
     'history' : 'Submission ID,Seconds,Context,Status' }
 
@@ -440,9 +452,10 @@ def read_csv_rows(filename):
     return header, rows
 
 def get_csv_type(header):
+    header = header.lower() # only check lower case
     for typ in csvTypes:
-        typeHeader = csvTypes[typ]
-        if header.lower() == typeHeader.lower():
+        knownHeader = csvTypes[typ].lower() # lower case
+        if header.startswith(knownHeader):
             return typ
     return None
 

@@ -16,7 +16,7 @@ if not os.path.exists(dataDir):
 # papers: Submission ID,Thumbnail URL,Title,Abstract
 # conflicts: Submission ID,Email
 # clusters: Submission ID,Cluster
-# reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# reviews: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # summaries: Submission ID,Summary
 # history: Submission ID,Seconds,Status
 
@@ -161,13 +161,14 @@ def revs_to_rec(revs):
 
 def gen_status(rec):
     if rec == 0:
-        return 'Tabled'
+        return '0' # Tabled
     if rec > 0:
-        return random.choice(['Conference','Journal'])
-    return 'Reject'
+        return random.choice(['1','2']) # Conf or Jour
+    return '-1' # Reject
 
+# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 def fmt_review(pid, rev, conf_score, jour_score, rec):
-    line = f'{pid},{rev},{conf_score},{jour_score},{rec}\n'
+    line = f'{pid},{rev},{conf_score},{jour_score},0,{rec}\n' # expertise ignored for now
     return line
 
 def fake_paper_reviews(pid):
@@ -184,8 +185,9 @@ def fake_paper_reviews(pid):
     return result, rec
 
 # reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 def fake_reviews(papers, fname):
-    output = 'Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation\n'
+    output = 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation\n'
     recs = {}
     for pid in papers:
         line,rec = fake_paper_reviews(pid)
