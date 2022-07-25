@@ -9,12 +9,21 @@ export default function Paper(){
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
     const queueCurrent = globals.queueCurrent;
     const currentShow = globals.serverGlobs.current_show;
+    const currentShowEnter = globals.serverGlobs.current_show_enter;
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
     const hist = globals.serverGlobs.current_history;
     const showHist = hist && hist.length > 0
     const safeScores = cp ? cp.all_scores : ''
     const scoresHTML = formatScoresInHTML(safeScores);
 
+    let np = null // next paper
+    let current_enter = currentShowEnter == 1 ? cp.enter : []
+    let current_leave = currentShowEnter == 1 ? cp.leave : []
+    if (isPaper && currentShowEnter == -1) {
+        np = queue[queueCurrent+1]
+        current_enter = np.leave // note backward because of prev button
+        current_leave = np.enter
+    }
     function extraSpaceBefore(scores, before) {
         const after = '&nbsp;&nbsp;&nbsp;' + before
         const ret = scores.replace(before,after)
@@ -23,8 +32,9 @@ export default function Paper(){
 
     function formatScoresInHTML(scores) {
         let html = scores
-        // const re = /c\[( \?)+ \]/; // regexp to replace empty conf reviews
-        // html = html.replace(re,'c[x]'); // now this is done at server
+        // // now this is done at server: replace empty conf reviews
+        // const re = /c\[( \?)+ \]/; // regexp match 
+        // html = html.replace(re,'c[x]');
         html = html.replaceAll('_A_','<b>A</b>')
         html = html.replaceAll('_R_','<b>R</b>')
         html = extraSpaceBefore(html, ' j[')
@@ -52,30 +62,39 @@ export default function Paper(){
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
                 <div>
-                    <span className='font-size-2'>Conflicts:</span>
-                    <ul>
-                        {cp.conflicts.map( (user,index) => {
-                            return (
-                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
-                            )
-                        })}
-                    </ul>
-                    <span className='font-size-2'>Leave:</span>
-                    <ul>
-                        {cp.leave.map( (user,index) => {
-                            return (
-                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
-                            )
-                        })}
-                    </ul>
-                    <span className='font-size-2'>Return:</span>
-                    <ul>
-                        {cp.enter.map( (user,index) => {
-                            return (
-                                <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
-                            )
-                        })}
-                    </ul>
+                    <div><span className='font-size-2'>Conflicts:</span>
+                        { cp.conflicts.length ?
+                        (<ul>
+                            {cp.conflicts.map( (user,index) => {
+                                return (
+                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                                )
+                            })}
+                        </ul>) : (<p>(none)</p>)
+                        }
+                    </div>
+                    {current_leave && current_leave.length ?
+                        (<div><span className='font-size-2'>Leave:</span>
+                        <ul>
+                            {current_leave.map( (user,index) => {
+                                return (
+                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                                )
+                            })}
+                        </ul>
+                        </div>) : ("")
+                    }
+                    {current_enter && current_enter.length ?
+                        (<div><span className='font-size-2'>Return:</span>
+                        <ul>
+                            {current_enter.map( (user,index) => {
+                                return (
+                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                                )
+                            })}
+                        </ul>
+                        </div>) : ("")
+                    }
                 </div>
                 ) : (
                 <div>
