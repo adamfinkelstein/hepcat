@@ -116,16 +116,14 @@ export default function PreferencesContext({children}){
     }, [])
 
   useEffect(() => {
-    var cssStyle = document.createElement('style');
+    let cssStyle = document.createElement('style');
     cssStyle.type = 'text/css';
-
     let multiplier = fontSizes[fontSize]
     Object.keys(baseFontSizes).forEach((fontType) => {
-
-      let baseFontSize = baseFontSizes[fontType]
-
-      var fontSize1Rule = document.createTextNode(`.${fontType}{font-size:${baseFontSize*multiplier}px}`)
-      cssStyle.appendChild(fontSize1Rule);
+      const baseFontSize = baseFontSizes[fontType]
+      const fontPX = baseFontSize*multiplier
+      const fontSizeRule = document.createTextNode(`.${fontType}{font-size:${fontPX}px}`)
+      cssStyle.appendChild(fontSizeRule);
     })
 
     document.getElementsByTagName("head")[0].appendChild(cssStyle);

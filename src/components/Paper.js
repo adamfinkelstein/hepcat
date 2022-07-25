@@ -80,8 +80,7 @@ export default function Paper(){
                 ) : (
                 <div>
                     <div className="debug-timer">{currentShow} {isPaper}</div>
-                    <span className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</span>
-                    <br/>
+                    <p className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</p>
                     <p className='font-size-3' >Reviews: <span className='font-size-4' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&
                         (<p className='font-size-3'>History: <span className='font-size-4'>{formatHistoryList(hist)}</span></p>)

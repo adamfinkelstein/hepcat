@@ -7,6 +7,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.font-size-1 {
+  font-style: bold;
+}
+
+.font-size-2 {
+  font-style: bold;
+}
+
+.font-size-3 {
+  line-height: 95%;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -152,16 +164,21 @@ a.nav-link {
   border: 1px solid black;
 }
 
+/* sends to the right margin, which doesn't look good:
 .new-status-dropdown{
-  /* margin-left: auto; sends to right margin */
+  margin-left: auto; 
 }
-
+*/
 .gather-conflicts-label {
   margin-left: 30px;
   margin-right: 10px;
 }
 
 /* Paper Styling (right panel) */
+
+.paper-title {
+  line-height: 100%;
+}
 
 .paper-image{
   width: 75%;
