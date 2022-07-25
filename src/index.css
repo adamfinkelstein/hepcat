@@ -92,6 +92,14 @@ a.nav-link {
 /* Style the buttons that are used to open and close the accordion panel */
 
 /* Style the accordion content title */
+
+.queue-hidden-for-non{
+  color: purple;
+  font-style: bold;
+  margin: 15px;
+  margin-bottom: 20px;
+}
+
 .accordion_title {
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
@@ -162,6 +170,15 @@ a.nav-link {
   margin-right: 10px;
   border-radius: 4px;
   border: 1px solid black;
+}
+
+.paper-change-button:hover {
+  border: 1px solid black;
+  background: lightyellow;
+}
+
+.paper-change-button:disabled {
+  border: 1px dashed gray;
 }
 
 /* sends to the right margin, which doesn't look good:

@@ -19,6 +19,7 @@ export default function Queue(){
     const start_index = Math.max(0, current - past_max);
     const end_index = Math.min(counter + future_max, queue.length);
     const queueSlice = queue.slice(start_index, end_index);
+    const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
     
     const [queueExpanded, setQueueExpanded] = useState(false);
 
@@ -44,20 +45,23 @@ export default function Queue(){
                 <AdminQueueControls/>
             }
             <Container className="expand-bar">
+                { hideQueue &&
+                  (<div className="font-size-3 queue-hidden-for-non">(Queue is hidden for non-admin users.)</div>)
+                }
                 <Stack direction="horizontal">
                     <span className='font-size-2'>Current: {currentCount} {queue.length}</span>
                     <div className="expand-buttons">
                         {
                             !queueExpanded && 
                             <button onClick={() => setQueueExpanded(true)}
-                                    type="button" className="btn btn-light expand-button"> 
+                                    type="button" className="btn btn-light expand-button paper-change-button"> 
                                 Expand all 
                             </button>
                         }
                         {
                             queueExpanded && 
                             <button onClick={() => setQueueExpanded(false)}
-                                    type="button" className="btn btn-light collapse-button" style={{marginLeft: "10px"}}> 
+                                    type="button" className="btn btn-light collapse-button paper-change-button" style={{marginLeft: "10px"}}> 
                                 Collapse all 
                             </button>
                         }
