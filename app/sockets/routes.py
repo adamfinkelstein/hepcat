@@ -190,6 +190,7 @@ def clear_queue():
 
 def zero_or_inc_current_index(zero_or_inc):
     gq = GlobQueue.query.first()
+    gq.current_show_enter = zero_or_inc
     if zero_or_inc == 0:
         gq.current = 0
     elif zero_or_inc == -1:
@@ -198,6 +199,7 @@ def zero_or_inc_current_index(zero_or_inc):
         gq.current += 1
     else:
         gq.current = -1 # default = no current 
+        gq.current_show_enter = 0
     gq.current_show = False
     db.session.add(gq)
     db.session.commit()

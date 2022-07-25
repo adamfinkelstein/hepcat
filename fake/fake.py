@@ -71,12 +71,12 @@ def rand_color():
 def csv_safe_string(s):
     return s.replace(',', '').replace('"', '').replace("'", '')
 
-area_options = ['Animation/Simulation','Imaging/Video','Interaction/VR','Modeling/Geometry','Rendering/Visualization'
-]
+area_options = ['Animation/Simulation','Imaging/Video','Interaction/VR','Modeling/Geometry','Rendering/Visualization']
+
 def fake_area():
     return random.choice(area_options)
 
-# papers: Submission ID,Thumbnail URL,Title,Area,Abstract
+# papers: Submission ID,Thumbnail URL,Title,Area,Conference,Abstract
 # assumes n is a 3-digit number
 def fake_paper(pid):
     c1 = rand_color()
@@ -89,19 +89,24 @@ def fake_paper(pid):
     title = title[:-1] # remove trailing period
     title = title.title() # each word caps
     area = fake_area()
-    result = f'{pid},{url},{title},{area},{abstract}\n'
-    return result
+    conf = random.choice(['yes','no'])
+    result = f'{pid},{url},{title},{area},{conf},{abstract}\n'
+    return result,conf
 
 def fake_papers(n, fname):
+    conf_pids = []
     pids = []
-    papers = 'Submission ID,Thumbnail URL,Title,Area,Abstract\n'
+    papers = 'Submission ID,Thumbnail URL,Title,Area,Conference,Abstract\n'
     start = 101
     for i in range(start, start+n):
         pid = f'papers_{i}'
-        papers += fake_paper(pid)
+        paper_line,conf = fake_paper(pid)
+        papers += paper_line
         pids.append(pid)
+        if conf == 'yes':
+            conf_pids.append(pid)
     write_file(fname,papers)
-    return pids
+    return pids,conf_pids
 
 def rand_num_conflicts():
     n = math.floor( np.random.poisson(3) )
@@ -145,13 +150,14 @@ def rand_reviews(n):
         weights.append(w)
     revs = random.choices(options, weights, k=n)
     # dumpOptions(weights, revs)
-    if random.uniform(0.0,1.0) > 0.5:
-        for i in range(5):
-            revs[i] = 0
+    # if random.uniform(0.0,1.0) > 0.5:
+    #     for i in range(5):
+    #         revs[i] = 0
     return revs
 
 def revs_to_rec(revs):
-    tot = 1.0 * sum(revs) / len(revs)
+    journal_revs = revs[5:]
+    tot = 1.0 * sum(journal_revs) / len(journal_revs)
     if tot > 1.6:
         return 1
     elif tot < -1:
@@ -171,11 +177,15 @@ def fmt_review(pid, rev, conf_score, jour_score, rec):
     line = f'{pid},{rev},{conf_score},{jour_score},0,{rec}\n' # expertise ignored for now
     return line
 
-def fake_paper_reviews(pid):
+def fake_paper_reviews(pid,conf):
     pri = 'Technical Papers Committee Member (lead)'
     sec = 'Technical Papers Committee Member'
     ter = 'Technical Papers Tertiary Reviewer'
-    revs = rand_reviews(10)
+    if conf:
+        revs = rand_reviews(10)
+    else:
+        revs = [0, 0, 0, 0, 0] + rand_reviews(5)
+    # print(conf, revs)
     rec = gen_status(revs_to_rec(revs))
     result  = fmt_review(pid, pri, revs[0], revs[5], rec)
     result += fmt_review(pid, sec, revs[1], revs[6], rec)
@@ -186,11 +196,14 @@ def fake_paper_reviews(pid):
 
 # reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-def fake_reviews(papers, fname):
+def fake_reviews(papers, conf_papers, fname):
     output = 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation\n'
     recs = {}
     for pid in papers:
-        line,rec = fake_paper_reviews(pid)
+        conf = False
+        if pid in conf_papers:
+            conf = True
+        line,rec = fake_paper_reviews(pid,conf)
         output += line
         recs[pid] = rec
     write_file(fname, output)
@@ -248,9 +261,9 @@ def fake_history(recs, fname):
 
 def main():
     emails = fake_users(50, 'users.csv')
-    papers = fake_papers(500, 'papers.csv')
+    papers,conf_papers = fake_papers(500, 'papers.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
-    recs = fake_reviews(papers, 'reviews.csv')
+    recs = fake_reviews(papers, conf_papers, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')
     fake_clusters(papers, 'clusters.csv')
     fake_history(recs, 'history.csv')

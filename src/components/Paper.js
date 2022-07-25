@@ -23,8 +23,8 @@ export default function Paper(){
 
     function formatScoresInHTML(scores) {
         let html = scores
-        const re = /c\[( \?)+ \]/; // regexp to replace empty conf reviews
-        html = html.replace(re,'c[x]');
+        // const re = /c\[( \?)+ \]/; // regexp to replace empty conf reviews
+        // html = html.replace(re,'c[x]'); // now this is done at server
         html = html.replaceAll('_A_','<b>A</b>')
         html = html.replaceAll('_R_','<b>R</b>')
         html = extraSpaceBefore(html, ' j[')

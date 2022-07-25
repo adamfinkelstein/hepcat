@@ -4,7 +4,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.orm import column_property
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from . import db, ma, login_manager
 
@@ -216,7 +216,7 @@ class GlobQueue(db.Model):
     current = db.Column(db.Integer, default=-1) # 0-base index into queue
     current_show = db.Column(db.Boolean, default=False)
     current_start = db.Column(db.DateTime, server_default=func.now())
-    current_show_enter = db.Column(db.Boolean, default=False)
+    current_show_enter = db.Column(db.Integer, default=0)
 
 class FileUpload(db.Model):
     __tablename__ = 'file_upload'

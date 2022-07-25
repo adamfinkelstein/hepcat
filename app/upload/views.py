@@ -144,6 +144,9 @@ def insert_user_rows(rows):
     dump_users_papers_and_conflicts('After insertion')
     return count
 
+def journal_only_from_conf(conf):
+    return conf != "yes"
+
 # Submission ID,Thumbnail URL,Title,Area,Abstract
 def insert_paper_rows(rows):
     delete_all_papers()
@@ -151,12 +154,14 @@ def insert_paper_rows(rows):
     for row in rows:
         if len(row) < 5:
             continue
-        sid,thumbnail,title,areas,abstract = row
+        sid,thumbnail,title,areas,conf,abstract = row
+        journal_only = journal_only_from_conf(conf)
         nid = sid_to_num(sid)
         paper = Paper(nid=nid, 
                     sid=sid,
                     thumbnail=thumbnail,
                     title=title,
+                    journal_only=journal_only,
                     abstract=abstract)
         db.session.add(paper)
         count += 1
@@ -279,9 +284,10 @@ def non_zero_scores(scores):
     scores = [ score for score in scores if score != 0 ]
     return scores
 
-def journal_only(conference_scores):
-    nz = non_zero_scores(conference_scores)
-    return len(nz) > 0
+# before it was in papers.csv, we computed this from conf scores:
+# def journal_only(conference_scores):
+#     nz = non_zero_scores(conference_scores)
+#     return len(nz) > 0
 
 def weird_conf_scores(conference_scores):
     nz = len(non_zero_scores(conference_scores))
@@ -290,17 +296,20 @@ def weird_conf_scores(conference_scores):
         return True
     return False
 
-def all_scores_to_sort_score(conference_scores,journal_scores):
+def all_scores_to_sort_score(conference_scores,journal_scores,journal_only):
     journal_ave = average_scores(journal_scores)
     conference_ave = average_scores(conference_scores)
-    if journal_only(conference_scores):
+    if journal_only:
         return journal_ave
     return max(conference_ave, journal_ave)
 
-def all_scores_to_string(conference_scores,journal_scores,consensus_code):
-    score_string = 'c' + scores_to_string(conference_scores) + \
-                   ' j' + scores_to_string(journal_scores) + \
-                   ' bbs: ' + consensus_code
+def all_scores_to_string(conference_scores,journal_scores,consensus_code,journal_only):
+    if journal_only:
+        score_string = 'c[x]'
+    else:
+        score_string =  'c' + scores_to_string(conference_scores)
+    score_string += ' j' + scores_to_string(journal_scores) + \
+                    ' bbs: ' + consensus_code
     return score_string
 
 def reviews_to_score_lists(reviews):
@@ -338,16 +347,14 @@ def papers_set_all_scores_and_status_from_reviews():
             conference_scores,journal_scores,consensus_recs = \
                 reviews_to_score_lists(reviews)
             consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-            paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores)
-            paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str)
-            paper.journal_only = journal_only(conference_scores)
+            paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores,paper.journal_only)
+            paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str,paper.journal_only)
             paper.missing_reviews = False
             if weird_conf_scores(conference_scores):
                 weird_conf_nids.append(paper.nid)
         else:
             paper.sort_score = 0
             paper.all_scores = 'This paper has no reviews.'
-            paper.journal_only = False
             paper.missing_reviews = True
             missing_review_nids.append(paper.nid)
         db.session.add(paper)
@@ -433,7 +440,7 @@ csvLinklings = {
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
-    'papers' : 'Submission ID,Thumbnail URL,Title,Area,Abstract',
+    'papers' : 'Submission ID,Thumbnail URL,Title,Area,Conference,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
     'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation',
