@@ -201,7 +201,7 @@ export default function AppContext({children}){
 
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {
-      controlledLog("socket does not exist, message not sent.");
+      controlledLog("socket does not eaxist, message not sent.");
       return;
     }
     if (data) {
