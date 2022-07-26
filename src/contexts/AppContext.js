@@ -137,10 +137,11 @@ export default function AppContext({children}){
     }
 
     const receiveQueue = (data) => {
-      controlledLog('received queue:');
-      controlledLog(data);
-      setQueue(data.paper_list);
-      receiveGlobs(data.globs);
+      controlledLog('received queue:')
+      controlledLog(data)
+      setQueue(data.paper_list)
+      receiveGlobs(data.globs)
+      setProbeWhen('') // when queue arrives, invalidate probe
     };
 
     const receiveProbe = (count) => {

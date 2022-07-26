@@ -211,9 +211,9 @@ def set_bar(bar):
     db.session.add(gq)
     db.session.commit()
 
-def set_queue_to_paper_list(all_papers, paper_list, solve_tsp = True):
+def set_queue_to_paper_list(all_papers, paper_list, gather_admin, solve_tsp):
     if solve_tsp:
-        order_papers = order_q(paper_list)
+        order_papers = order_q(paper_list, gather_admin)
     else:
         order_papers = paper_list
     for paper in all_papers:
@@ -235,7 +235,9 @@ def get_all_and_filter_papers(filters):
 
 def set_queue(filters):
     all_papers, filter_papers = get_all_and_filter_papers(filters)
-    set_queue_to_paper_list(all_papers, filter_papers)
+    gather_admin = filters['adminConflicts']
+    solve_tsp = True
+    set_queue_to_paper_list(all_papers, filter_papers, gather_admin, solve_tsp)
 
 def get_filter_paper_count(filters):
     _, filter_papers = get_all_and_filter_papers(filters)
@@ -276,7 +278,7 @@ def set_queue_explicit(exp):
         select_papers = [p for p in p_list if p.nid in nid_list]
         filter_papers = [get_paper_from_list_by_nid(select_papers, nid) for nid in nid_list]
         solve_tsp = False # do not reorder papers on explicit numeric list
-    set_queue_to_paper_list(p_list, filter_papers, solve_tsp)
+    set_queue_to_paper_list(p_list, filter_papers, None, solve_tsp)
 
 def show_current_paper():
     gq = GlobQueue.query.first()
@@ -358,7 +360,11 @@ def get_about_md():
         md = file.read()
     return md
 
+###########
+###########
 ########### mostly decorator functions below here:
+###########
+###########
 
 @socketio.on('connect')
 def io_connect():

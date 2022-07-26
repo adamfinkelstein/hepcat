@@ -21,26 +21,36 @@ def get_enter_leave_conf_sets(paper_prev,paper_curr):
     leave = conf_curr - conf_prev
     return conf_prev,conf_curr,enter,leave
 
+def get_user_cost(user):
+    if user.is_admin:
+        # print('big cost for admin user with name ', user.full_name)
+        return 100
+    return 1
+
+def get_enter_leave_cost(users):
+    costs = [get_user_cost(user) for user in users]
+    total = sum(costs)
+    return total
+
 def get_paper_distance(paper_prev,paper_curr,verbose=False):
     conf_prev,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper_curr)
-    sum = len(enter) + len(leave)
+    total = get_enter_leave_cost(enter) + get_enter_leave_cost(leave)
     if verbose:
         stay = conf_curr.intersection(conf_prev)
         print('stay out: ', stay)
         print('enter: ', enter)
         print('leave: ', leave)
-        print('sum: ', sum)
-    return sum
+        print('total: ', total)
+    return total
 
 def get_distance_matrix(papers):
     n = len(papers)
     distance_matrix = np.zeros((n,n))
-    verbose = False
     for i in range(n-1):
         pi = papers[i]
         for j in range(i+1,n):
             pj = papers[j]
-            d = get_paper_distance(pi,pj,verbose)
+            d = get_paper_distance(pi,pj)
             distance_matrix[i][j] = d
             distance_matrix[j][i] = d
     return distance_matrix
@@ -86,7 +96,7 @@ def split_tour_at_max_cost(nodes, costs):
 
 # Two potential improvements to a circular tour:
 # 1. Since we do not return to the starting paper, split at the most expensive transition.
-# 2. Once split, we can tour in either order, so possibly reverse to put more conflicts at end
+# 2. Once split, we can tour in either order, so possibly reverse to put most conflicts at end
 def improve_tour(nodes, costs):
     nodes, costs = split_tour_at_max_cost(nodes, costs)
     # later add second opt here
@@ -138,7 +148,7 @@ def order_q_ortools(distance_matrix):
 
 ######## END #########
 
-def order_q(papers, verbose=False):
+def order_q(papers, gather_admin_start, verbose=False):
     n = len(papers)
     maxn = 100
     remainder = None
@@ -149,6 +159,7 @@ def order_q(papers, verbose=False):
         n = maxn
         remainder = papers[maxn:] # slice off the ones after max
         papers = papers[:maxn] # only optimize these first ones
+    print('get distance matrix for gather: ', gather_admin_start)
     distance_matrix = get_distance_matrix(papers)
     if use_ortools:
         print('solving tsp using ortools')

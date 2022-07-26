@@ -121,10 +121,16 @@ export default function SetQueue(){
 
     function handleHideQueueCheckbox(){
         const newHideQ = !hideQ
-        setHideQ(!hideQ)
-        controlledLog('checkbox after negate: '+newHideQ)
+        setHideQ(newHideQ)
+        controlledLog('hide queue after click: '+newHideQ)
         const data = { hide:newHideQ, message:message }
         socketEmit("admin_hide_queue", data)
+    }
+
+    function handleGatherAdminConflicts(){
+        const newAdminConflicts = !adminConflicts
+        setAdminConflicts(newAdminConflicts)
+        controlledLog('admin conflicts after click: '+newAdminConflicts)
     }
 
     function handleSetBarButton(){
@@ -256,19 +262,14 @@ export default function SetQueue(){
                         </Button>
                         <span className="font-size-3 get-filtered-count-text">Count:&nbsp;{probeMessage}</span>
                     </Stack>
-                    <Stack direction = "horizontal" className="set-filtered-queue-bar">
-                        <Button variant="primary" onClick={handleSetQueueButton}>Set Filtered Queue
+                    <Stack direction = "horizontal" className="set-filtered-queue-stack">
+                        <Button variant="primary" className="set-filtered-queue-button"
+                            onClick={handleSetQueueButton}>Set Filtered Queue
                         </Button>
-                        <span className="font-size-3 gather-conflicts-label">Gather Chair conflicts:&nbsp;</span>
-                        <DropdownButton id="dropdown-item-button" 
-                            title={adminConflicts} className="new-status-dropdown"
-                            variant="secondary" type="button">
-                            {
-                                ["Start", "End", "Never"].map((conflictSelection, index) => {
-                                    return <Dropdown.Item key={index} as="button" onClick={() => setAdminConflicts(conflictSelection)}>{conflictSelection}</Dropdown.Item>
-                                })
-                            }
-                        </DropdownButton>
+                        <Form.Check type="checkbox" defaultChecked={adminConflicts}
+                            onChange={handleGatherAdminConflicts}
+                        />
+                        <span className="gather-admin-text font-size-3">&nbsp;Gather Admin conflicts at start.</span>
                     </Stack>
                 </div>
             </div>

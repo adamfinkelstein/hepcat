@@ -91,7 +91,14 @@ class User(UserMixin, db.Model):
 
     @hybrid_property
     def role_name(self):
-        return self.role.name
+        if self.role:
+            return self.role.name
+        else:
+            return ""
+
+    @hybrid_property
+    def is_admin(self):
+        return (self.role_name == 'Admin')
 
     @property
     def password(self):

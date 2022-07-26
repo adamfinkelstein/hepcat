@@ -475,8 +475,12 @@ a.nav-link {
   margin-right: 10px;
 }
 
-.set-filtered-queue-bar{
+.set-filtered-queue-stack {
   margin-top: 30px;
+}
+
+.set-filtered-queue-button {
+  margin-right: 15px;
 }
 
 /* About Page */

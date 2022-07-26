@@ -13,7 +13,7 @@ export default function GUIContext({children}){
   const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
   const [lowRange, setLowRange] = useState(0);
   const [highRange, setHighRange] = useState(5.1);
-  const [adminConflicts, setAdminConflicts] = useState("Never");
+  const [adminConflicts, setAdminConflicts] = useState(false);
   const [queueExplicitList, setQueueExplicitList] = useState("");
 
   return(
