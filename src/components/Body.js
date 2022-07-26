@@ -94,7 +94,7 @@ export default function Body(){
                                 }
                                 {
                                     (currentShow) ?
-                                    (<Tab className="timer-tab font-size-3" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
+                                    (<Tab className="timer-tab font-size-3 tab" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
                                     :
                                     (" ")
                                 }
