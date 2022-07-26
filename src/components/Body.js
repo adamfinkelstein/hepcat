@@ -12,7 +12,7 @@ import { useSplitWidth, useChangeSplitWidth } from '../contexts/PreferencesConte
 export default function Body(){
     const globals = useAppGlobals()
     const user = globals.user
-    const isAdmin = user && user.role_name === "Admin"
+    const isAdmin = globals.isAdmin
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 

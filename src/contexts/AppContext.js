@@ -13,8 +13,10 @@ export function useAppGlobals(){
 export default function AppContext({children}){
     
   const [user, setUser] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
+  const [allUsers, setAllUsers] = useState([])
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [probeCount, setProbeCount] = useState(0)
   const [probeWhen, setProbeWhen] = useState('')
@@ -69,6 +71,13 @@ export default function AppContext({children}){
       controlledLog('received welcome:')
       controlledLog(data)
       setUser(data.user)
+      const isAdmin = data.user.role_name && data.user.role_name === "Admin"
+      if (isAdmin) {
+        setIsAdmin(true);
+        if (data.all_users && data.all_users.length) {
+          setAllUsers(data.all_users);
+        }
+      }
       setGrid(data.grid)
       setAboutMD(smartquotes(data.about))
     };
@@ -238,6 +247,8 @@ export default function AppContext({children}){
       <AppGlobalsContext.Provider 
         value={{
           "user": user,
+          "isAdmin": isAdmin,
+          "allUsers": allUsers,
           "queue": queue,
           "grid": grid,
           "aboutMD": aboutMD,

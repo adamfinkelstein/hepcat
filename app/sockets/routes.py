@@ -379,6 +379,9 @@ def io_connect():
     # config_vars = get_react_env_vars()
     # later: 'config': config_vars }
     data = {'user': user_dump, 'grid': grid_dump, 'about':about_md } 
+    if user.is_admin:
+        all_users = get_all_user_list_dump()
+        data['all_users'] = all_users
     emit('server_welcome', data)
     data,_ = get_queue()
     emit('server_set_queue', data)

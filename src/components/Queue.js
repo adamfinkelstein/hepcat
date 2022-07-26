@@ -10,6 +10,7 @@ export default function Queue(){
     const globals = useAppGlobals();
     const queue = globals.queue;
     const user = globals.user;
+    const isAdmin = globals.isAdmin
     const current = globals.queueCurrent;
     const counter = current + 1;
     const currentCount = counter > queue.length ? "completed" : counter + " of";
@@ -41,7 +42,7 @@ export default function Queue(){
     return(
         <Container className="Queue">
             {
-                user && user.role_name === "Admin" &&
+                user && isAdmin &&
                 <AdminQueueControls/>
             }
             <Container className="expand-bar">

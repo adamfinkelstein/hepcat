@@ -13,6 +13,7 @@ export default function Header() {
 
   const globals = useAppGlobals();
   const user = globals.user;
+  const isAdmin = globals.isAdmin;
   return (
     <Navbar bg="dark" variant="dark" fixed="top">
       <Container>
@@ -30,7 +31,7 @@ export default function Header() {
                 <NavDropdown.Item as={NavLink} to="about">About</NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {
-                  user.role_name === "Admin" &&
+                  isAdmin &&
                   <NavDropdown.Item onClick={() => {window.location.href = '/upload'}}>Upload Files</NavDropdown.Item>
                 }
                 <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>

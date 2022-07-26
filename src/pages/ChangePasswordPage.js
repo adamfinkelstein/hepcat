@@ -15,13 +15,15 @@ export default function ChangePasswordPage(){
     let flash = flasher["flash"]
     
     let [forWho, setForWho] = useState("Select a user")
+    let [forEmail, setForEmail] = useState("")
     let [isForOther, setIsForOther] = useState(false)
 
     let controlledLog = useAppGlobals()["controlledLog"]
 
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
-    const user = globals.user
+    const isAdmin = globals.isAdmin
+    const allUsers = globals.allUsers
 
     function handleSubmit(){
         // Verify that the passwords match
@@ -48,6 +50,11 @@ export default function ChangePasswordPage(){
         setPasswordAgain('')
     }
 
+    function handleSetFor(user) {
+        setForWho(user.full_name)
+        setForEmail(user.email)
+    }
+
     function handleInputChange(event){
         event.preventDefault();
         const target = event.target;
@@ -61,6 +68,27 @@ export default function ChangePasswordPage(){
             <Container className="change-password-main-container">
                 <span className='font-size-1'>Change Password</span>
                 <div className="password-fields">
+
+                    { isAdmin && (
+                        <Stack direction="horizontal" className="password-switch">
+                            <Form.Check type="switch" defaultChecked={isForOther}
+                                        onChange={() => setIsForOther(!isForOther)}/>
+                            <span className="font-size-4">Change for someone else</span>
+                        </Stack>)}
+                    { isAdmin && isForOther && (
+                        <DropdownButton title={forWho} type="button"
+                                        variant="secondary" className='grid-display-dropdown'>
+                            {
+                                allUsers.map((user, index) => {
+                                    return(
+                                        <Dropdown.Item key={index} as="button" onClick={() => handleSetFor(user)}>{user.full_name}</Dropdown.Item>
+                                    )
+                                })
+                            }
+                        </DropdownButton>)
+                    }
+
+
                     <div className="reset-password-row">
                         <label>Password:</label>
                         <input
@@ -81,26 +109,6 @@ export default function ChangePasswordPage(){
                             style={{marginLeft: "15px"}}
                             />
                     </div> 
-
-                    {user.role_name === "Admin" && (
-                        <Stack direction="horizontal" className="password-switch">
-                            <Form.Check type="switch" defaultChecked={isForOther}
-                                        onChange={() => setIsForOther(!isForOther)}/>
-                            <span className="font-size-4">Change for someone else</span>
-                        </Stack>)}
-                    {
-                        user.role_name === "Admin" && isForOther && (
-                        <DropdownButton title={forWho} type="button"
-                                        variant="secondary" className='grid-display-dropdown'>
-                            {
-                                ["Baris", "Adam"].map((user, index) => {
-                                    return(
-                                        <Dropdown.Item key={index} as="button" onClick={() => setForWho(user)}>{user}</Dropdown.Item>
-                                    )
-                                })
-                            }
-                        </DropdownButton>)
-                    }
                     
                     <Stack direction="horizontal">
                         <div>

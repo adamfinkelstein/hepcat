@@ -6,6 +6,7 @@ import { useAppGlobals } from "../contexts/AppContext"
 export default function GridControls({showingStickie, setShowingStickie, showGrid, setShowGrid, showingQueueGUI, setShowingQueueGUI}){
     const globals = useAppGlobals();
     const user = globals.user;
+    const isAdmin = globals.isAdmin
     return(
         <Stack direction="horizontal" className="grid-controls">
             {
@@ -25,7 +26,7 @@ export default function GridControls({showingStickie, setShowingStickie, showGri
                 )
             }
             {
-                user && user.role_name === "Admin" && (
+                user && isAdmin && (
                     <button style={{margin: "0 auto"}} 
                             onClick={() => {setShowingQueueGUI(showingQueueGUI === true ? false : true)}}
                             type="button" className="btn btn-primary">
