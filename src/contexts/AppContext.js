@@ -231,6 +231,8 @@ export default function AppContext({children}){
           "showModal": showModal,
           "setShowModal": setShowModal,
           "modalTitle": modalTitle,
+          "setModalTitle": setModalTitle,
+          "setModalBody": setModalBody,
           "modalBody": modalBody,
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
