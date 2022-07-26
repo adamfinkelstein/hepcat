@@ -1,8 +1,11 @@
 import moment from 'moment'
 import Container from 'react-bootstrap/Container';
 import {useAppGlobals} from '../contexts/AppContext'
+import {useState, useEffect} from 'react'
 
 export default function Paper(){
+
+    const [currentTime, setCurrentTime] = useState(Date.now())
 
     const globals = useAppGlobals();
     const queue = globals.queue;
@@ -15,6 +18,7 @@ export default function Paper(){
     const showHist = hist && hist.length > 0
     const safeScores = cp ? cp.all_scores : ''
     const scoresHTML = formatScoresInHTML(safeScores);
+    const currentStart = isPaper && globals.serverGlobs.current_start
 
     let np = null // next paper
     let current_enter = currentShowEnter == 1 ? cp.enter : []
@@ -52,6 +56,30 @@ export default function Paper(){
         if (!histList) return ''
         const fmt = histList.map(formatHistoryElement).join(', ');
         return fmt
+    }
+
+    useEffect(() => {
+        const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
+
+    // FOR TIMER:
+
+    function dateToSecs(date) {
+        return moment.utc(date).local().unix()
+    }
+    
+    function formatTime(date) {
+        if (!currentShow || !currentStart) {
+            return ""
+        }
+        const sec1 = dateToSecs(currentStart)
+        const sec2 = dateToSecs(date)
+        const msDiff = Math.max(0, sec2 - sec1) * 1000
+        const format = moment.utc(msDiff).format('mm:ss');
+        return format
     }
 
     return(
@@ -98,7 +126,7 @@ export default function Paper(){
                 </div>
                 ) : (
                 <div>
-                    <div className="debug-timer">{currentShow} {isPaper}</div>
+                    <div className="paper-timer font-size-3">{formatTime(currentTime)}</div>
                     <p className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</p>
                     <p className='font-size-3' >Reviews: <span className='font-size-4' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&

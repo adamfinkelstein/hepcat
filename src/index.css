@@ -58,14 +58,6 @@ code {
 .tab{
   margin-top: 100px;
 }
-.timer-tab {
-  position: absolute;
-  right: 50px;
-  width: 80px;
-  text-align: left;
-  color: blue;
-}
-
 
 /* Navbar styling */
 .Navbar {
@@ -219,8 +211,21 @@ a.nav-link {
 
 /* Paper Styling (right panel) */
 
+
+.paper-timer {
+  position: absolute;
+  right: 16px;
+  text-align: left;
+  color: purple;
+  background-color: #eee;
+  padding: 8px;
+  border-radius: 5px;
+  font-family: monospace;
+}
+
 .paper-title {
   line-height: 100%;
+  margin-right: 80px;
 }
 
 .paper-image{

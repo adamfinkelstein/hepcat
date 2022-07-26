@@ -8,7 +8,6 @@ import GridSection from './GridSection'
 import SetQueue from './SetQueue'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
-import moment from 'moment'
 import { useSplitWidth, useChangeSplitWidth } from '../contexts/PreferencesContext'
 
 export default function Body(){
@@ -18,38 +17,13 @@ export default function Body(){
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 
-    const [currentTime, setCurrentTime] = useState(Date.now())
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length
-    const currentShow = isPaper && globals.serverGlobs.current_show
-    const currentStart = isPaper && globals.serverGlobs.current_start
     const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
     const hideMessage = globals.serverGlobs && globals.serverGlobs.message ? globals.serverGlobs.message : "The queue is hidden."
     const message = hideQueue ? hideMessage : "No papers in queue."
 
     const splitWidth = useSplitWidth()
     const changeSplitWidth = useChangeSplitWidth()
-
-    useEffect(() => {
-        const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
-
-    function dateToSecs(date) {
-        return moment.utc(date).local().unix()
-    }
-    
-    function formatTime(date) {
-        if (!currentShow || !currentStart) {
-            return ""
-        }
-        const sec1 = dateToSecs(currentStart)
-        const sec2 = dateToSecs(date)
-        const msDiff = Math.max(0, sec2 - sec1) * 1000
-        const format = moment.utc(msDiff).format('mm:ss');
-        return format
-    }
 
     return(
         <Container fluid className='Body'>
@@ -91,12 +65,6 @@ export default function Body(){
                                             <SetQueue/>
                                         </Tab>
                                     )
-                                }
-                                {
-                                    (currentShow) ?
-                                    (<Tab className="timer-tab font-size-3 tab" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
-                                    :
-                                    (" ")
                                 }
                             </Tabs>
                         </Container>
