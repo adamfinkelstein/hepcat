@@ -227,11 +227,19 @@ def set_queue_to_paper_list(all_papers, paper_list, solve_tsp = True):
     else:
         zero_or_inc_current_index(-100) # empty queue = no current 
 
-def set_queue(filters):
+def get_all_and_filter_papers(filters):
     papers = Paper.query.all()
-    p_list = list(papers)
-    filter_papers = [p for p in p_list if include_paper_in_queue(p,filters)]
-    set_queue_to_paper_list(p_list, filter_papers)
+    list_papers = list(papers)
+    filter_papers = [p for p in list_papers if include_paper_in_queue(p,filters)]
+    return list_papers, filter_papers
+
+def set_queue(filters):
+    all_papers, filter_papers = get_all_and_filter_papers(filters)
+    set_queue_to_paper_list(all_papers, filter_papers)
+
+def get_filter_paper_count(filters):
+    _, filter_papers = get_all_and_filter_papers(filters)
+    return len(filter_papers)
 
 def parse_explicit_queue(exp):
     exp = exp.strip()
@@ -428,6 +436,12 @@ def admin_set_queue(filters):
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
+
+@socketio.on('admin_probe_queue')
+def admin_probe_queue(filters):
+    print('admin probe queue:', filters)
+    count = get_filter_paper_count(filters)
+    emit('server_probe_count', count)
 
 @socketio.on('admin_set_queue_explicit')
 def admin_set_queue_explicit(data):

@@ -2,6 +2,7 @@ import React, {useState, useContext, useEffect} from 'react'
 import socketIOClient from "socket.io-client";
 import {useFlasher} from './FlasherContext'
 import smartquotes from 'smartquotes';
+import moment from 'moment'
 
 const AppGlobalsContext = React.createContext() 
 
@@ -15,6 +16,8 @@ export default function AppContext({children}){
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
   const [queueCurrent, setQueueCurrent] = useState(0)
+  const [probeCount, setProbeCount] = useState(0)
+  const [probeWhen, setProbeWhen] = useState('')
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
   const [newStatus, setNewStatus] = useState("Tabled")
@@ -140,6 +143,14 @@ export default function AppContext({children}){
       receiveGlobs(data.globs);
     };
 
+    const receiveProbe = (count) => {
+      const now = Date.now()
+      const fmt = moment.utc(now).local().format('ddd h:mm:ss')
+      controlledLog('received probe count: '+count+" "+fmt)
+      setProbeCount(count)
+      setProbeWhen(fmt)
+    };
+
     const receiveGrid = (data) => {
       controlledLog('received grid:');
       controlledLog(data);
@@ -167,6 +178,7 @@ export default function AppContext({children}){
       socket.on('server_set_stickie', receiveStickie);
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_send_flasher', receiveFlasher);
+      socket.on('server_probe_count', receiveProbe);
     }
 
     return () => {
@@ -178,6 +190,7 @@ export default function AppContext({children}){
         socket.off('server_set_stickie', receiveStickie);
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_send_flasher', receiveFlasher);
+        socket.off('server_probe_count', receiveProbe);
       }
     };
   }, [queue, grid, socket]);
@@ -238,6 +251,8 @@ export default function AppContext({children}){
           "setModalTitle": setModalTitle,
           "setModalBody": setModalBody,
           "modalBody": modalBody,
+          "probeCount": probeCount,
+          "probeWhen": probeWhen,
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
           "controlledLog": controlledLog,

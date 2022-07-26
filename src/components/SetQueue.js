@@ -20,6 +20,9 @@ const scoreOptions = [scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreO
 export default function SetQueue(){
     const [disableScoreInputs, setDisableScoreInputs] = useState("")
     const globals = useAppGlobals()
+    const probeCount = globals.probeCount
+    const probeWhen = globals.probeWhen
+    const probeMessage = probeWhen ? probeCount + " (" + probeWhen + ")" : "(not set)"
     const guiBarString = globals.guiBar+''
     const setGuiBar = globals.setGuiBar
     const socketEmit = globals.socketEmit
@@ -65,19 +68,34 @@ export default function SetQueue(){
         setHighRange(highInput)
     }
 
-    function handleSetQueueButton(event) {
-        event.preventDefault(); // do not send the form!
+    function getQueueFilterInfo() {
         const statuses = statusList.filter( (s,index) =>
             document.getElementById("status-checkbox-"+index).checked
-        );
+        )
         const only = filterList.filter( (f,index) =>
             document.getElementById("only-checkbox-"+index).checked
-        );
-        const data = { statuses, only, lowRange, highRange, adminConflicts };
-        controlledLog('sending queue request:');
-        controlledLog(data);
+        )
+        const data = { statuses, only, lowRange, highRange, adminConflicts }
+        return data
+    }
+
+    function handleGetFilteredCount(event) {
+        event.preventDefault() // do not send the form!
+        const data = getQueueFilterInfo()
+        controlledLog('sending queue probe:')
+        controlledLog(data)
+        socketEmit("admin_probe_queue", data)
+        // feels like too much here:
+        // flash("Request sent for queue count.", "success", "set_queue")
+    }
+
+    function handleSetQueueButton(event) {
+        event.preventDefault() // do not send the form!
+        const data = getQueueFilterInfo()
+        controlledLog('sending queue request:')
+        controlledLog(data)
         socketEmit("admin_set_queue", data)
-        flash("Sent queue request.", "success", "set_queue");
+        flash("Sent queue request.", "success", "set_queue")
     }
 
     function handleSetQueueExplicitButton(event) {
@@ -233,6 +251,11 @@ export default function SetQueue(){
                 </div>
                 </Stack>
                 <div>
+                    <Stack direction = "horizontal" className="get-filtered-count">
+                        <Button variant="primary" onClick={handleGetFilteredCount}>Get Filtered Count
+                        </Button>
+                        <span className="font-size-3 get-filtered-count-text">Count:&nbsp;{probeMessage}</span>
+                    </Stack>
                     <Stack direction = "horizontal" className="set-filtered-queue-bar">
                         <Button variant="primary" onClick={handleSetQueueButton}>Set Filtered Queue
                         </Button>
@@ -259,10 +282,10 @@ export default function SetQueue(){
                         value={queueExplicitList}
                         className="queue-explicit-input"
                         onChange={handleInputChange}
-                    />
+                    /><br/>
                     <Button onClick={handleSetQueueExplicitButton} className="queue-explicit-btn">Set Explicit Queue</Button>
                     </div>
-                    <ul>
+                    <ul className="queue-explicit-instructions">
                     <li className="font-size-4">Empty string ('') to clear queue.</li>
                     <li className="font-size-4">Cluster name like 'Cluster-A'.</li>
                     <li className="font-size-4">Area name like 'Area-Rendering'.</li>

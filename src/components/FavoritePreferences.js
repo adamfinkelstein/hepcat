@@ -57,7 +57,7 @@ export default function FavoritePreferences(){
             <form onSubmit={handleSubmit}>
                 <label className="font-size-3">
                     Paper IDs:
-                    <input type="text" name="favorites" className='favorites-input'/>
+                    <input type="text" name="favorites" className="favorites-input"/>
                 </label>
                 <button type="submit" className="btn btn-primary favorites-submit-btn">Add</button>
                 <span className='example-favorites font-size-4'>
