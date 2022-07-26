@@ -10,7 +10,7 @@ export default function ChooseStatusDropdown({currentStatus, setValue}){
     return(
         <Dropdown as={ButtonGroup} id="status-dropdown-menu">
             <Button variant="outline">
-                <Stack direction="horizontal">
+                <Stack direction="horizontal" className='font-size-3'>
                     <div className={"rectangle " + currentStatus}/>
                     <span>{currentStatus}</span>
                 </Stack>

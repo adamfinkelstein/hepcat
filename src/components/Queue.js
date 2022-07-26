@@ -54,14 +54,15 @@ export default function Queue(){
                         {
                             !queueExpanded && 
                             <button onClick={() => setQueueExpanded(true)}
-                                    type="button" className="btn btn-light expand-button paper-change-button"> 
+                                    type="button" className="btn btn-light expand-button paper-change-button font-size-3"> 
                                 Expand all 
                             </button>
                         }
                         {
                             queueExpanded && 
                             <button onClick={() => setQueueExpanded(false)}
-                                    type="button" className="btn btn-light collapse-button paper-change-button" style={{marginLeft: "10px"}}> 
+                                    type="button" className="btn btn-light collapse-button paper-change-button 
+                                    font-size-3" style={{marginLeft: "10px"}}> 
                                 Collapse all 
                             </button>
                         }

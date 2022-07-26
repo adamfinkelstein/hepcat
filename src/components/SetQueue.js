@@ -9,8 +9,7 @@ import Form from 'react-bootstrap/Form'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack"
-import Alert from 'react-bootstrap/Alert';
-import Collapse from 'react-bootstrap/Collapse';
+import Flasher from "./Flasher"
 
 const scoreOptionAll = "All Scores"
 const scoreOptionAbove = "At/Above Bar"
@@ -34,9 +33,6 @@ export default function SetQueue(){
         adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList} = useGUI()
 
     let flasher = useFlasher()
-    let visible = flasher["visible"]
-    let hideFlash = flasher["hideFlash"];
-    let flashMessage = flasher["flashMessage"]
     let flash = flasher["flash"]
 
     /* This function handles the values of the range inputs
@@ -121,14 +117,7 @@ export default function SetQueue(){
 
     return(
         <Container>
-            <Collapse in={visible["hide_queue"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="hide_queue"/>
             <div>
                 <Stack direction="horizontal">
                     <Form.Check type="checkbox" defaultChecked={hideQ}
@@ -148,14 +137,7 @@ export default function SetQueue(){
 
             </div>
             <hr className="horizontal-divider"/>
-            <Collapse in={visible["set_queue"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="set_queue"/>
             <div>
                 <Stack direction="horizontal" gap={5}>
                     <div>&nbsp;</div>
@@ -251,9 +233,8 @@ export default function SetQueue(){
                 </div>
                 </Stack>
                 <div>
-                    <Stack direction = "horizontal">
-                        <Button variant="primary" onClick={handleSetQueueButton} 
-                            style={{marginTop: "30px"}}>Set Filtered Queue
+                    <Stack direction = "horizontal" className="set-filtered-queue-bar">
+                        <Button variant="primary" onClick={handleSetQueueButton}>Set Filtered Queue
                         </Button>
                         <span className="font-size-3 gather-conflicts-label">Gather Chair conflicts:&nbsp;</span>
                         <DropdownButton id="dropdown-item-button" 
@@ -269,14 +250,7 @@ export default function SetQueue(){
                 </div>
             </div>
             <hr className="horizontal-divider"/>
-            <Collapse in={visible["set_explicit"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="set_explicit"/>
             <div>
                 <Stack direction = "horizontal">
                     <div>
@@ -297,14 +271,7 @@ export default function SetQueue(){
                 </Stack>
             </div>
             <hr className="horizontal-divider"/>
-            <Collapse in={visible["change_bar"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="change_bar"/>
             <div>
                 <Stack direction = "horizontal">
                     <Button variant="primary" onClick={handleSetBarButton} 

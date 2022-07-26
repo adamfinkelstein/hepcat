@@ -18,6 +18,7 @@ export default function FavoritePreferences(){
 
     function handleSubmit(event) {
         event.preventDefault();
+
         let newValues = []
         let values = event.target[0].value;
         values = values.replace("'","").replace(" ","") // remove quotes and spaces
@@ -43,6 +44,10 @@ export default function FavoritePreferences(){
             controlledLog(newSet)
             return newSet
         })
+
+        let input = document.getElementsByClassName("favorites-input")[0]
+
+        input.value = ""
         flash("Favorites are updated.", "success", "favorites")
     }
 
@@ -61,7 +66,7 @@ export default function FavoritePreferences(){
             </form>
             <Stack direction="horizontal" className="current-favorites-bar">
                 <span className='font-size-3'><u>Current Favorites</u></span>
-                <Button variant="warning" onClick={() => {
+                <Button variant="danger" onClick={() => {
                     changeFavorites([])
                     flash("Favorites deleted.", "success", "favorites")
                  }} className="delete-all-btn">Delete All</Button>
@@ -70,15 +75,15 @@ export default function FavoritePreferences(){
                 {
                     favorites.map((favorite, index) => {
                         return(
-                            <li key={index}>
-                                <Stack direction="horizontal" gap={3}>
+                            <li key={index} className="favorites-list">
+                                <Stack direction="horizontal" gap={1}>
+                                    <Button variant="danger" onClick={() => {
+                                            changeFavorites(oldFav => {
+                                                return oldFav.filter((_, i) => i !== index)
+                                            })
+                                        }   
+                                    } className="delete-btn">x</Button>
                                     <span className='current-favorite-id font-size-4'>{favorite}</span>
-                                    <Button variant="light" onClick={() => {
-                                        changeFavorites(oldFav => {
-                                            return oldFav.filter((_, i) => i !== index)
-                                        })
-                                    }   
-                                    } className="delete-btn">Delete</Button>
                                 </Stack>
                             </li>
                         )

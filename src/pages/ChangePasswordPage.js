@@ -2,26 +2,28 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import {useState} from 'react'
 import {useFlasher} from '../contexts/FlasherContext'
+import Flasher from '../components/Flasher'
 import {useAppGlobals} from '../contexts/AppContext'
-import Alert from 'react-bootstrap/Alert';
-import Collapse from 'react-bootstrap/Collapse';
+import Dropdown from 'react-bootstrap/Dropdown'
+import DropdownButton from 'react-bootstrap/DropdownButton'
+import Form from 'react-bootstrap/Form'
 
 export default function ChangePasswordPage(){
     let [password, setPassword] = useState("")
     let [passwordAgain, setPasswordAgain] = useState("")
     let flasher = useFlasher()
     let flash = flasher["flash"]
-    let visible = flasher["visible"]
-    let hideFlash = flasher["hideFlash"];
-    let flashMessage = flasher["flashMessage"]
+    
+    let [forWho, setForWho] = useState("Select a user")
+    let [isForOther, setIsForOther] = useState(false)
 
     let controlledLog = useAppGlobals()["controlledLog"]
 
     const globals = useAppGlobals();
     const socketEmit = globals.socketEmit;
+    const user = globals.user
 
-    function handleSubmit(event){
-        event.preventDefault();
+    function handleSubmit(){
         // Verify that the passwords match
         if (password !== passwordAgain) {
             flash("Passwords don't match.", "warning", "change_password")
@@ -31,7 +33,13 @@ export default function ChangePasswordPage(){
         if (!regularExpression.test(password)) {
             flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning", "change_password")
             return;
-          }
+        }
+
+        if(isForOther && forWho == "Select a user"){
+            flash("Please pick a user.", "warning", "change_password")
+            return;
+        }
+
         controlledLog("changing password to " + password)
         // now flash comes from server instead of here:
         // flash("You have successfully changed your password", "success", "change_password")
@@ -49,45 +57,56 @@ export default function ChangePasswordPage(){
 
     return(
         <Container className="ChangePasswordPage">
-            <Collapse in={visible["change_password"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="change_password"/>
             <Container className="change-password-main-container">
                 <span className='font-size-1'>Change Password</span>
                 <div className="password-fields">
-                    <form onSubmit={handleSubmit}>
-                        <div className="reset-password-row">
-                            <label>Password:</label>
-                            <input
-                                name="password"
-                                value={password}
-                                type="password"
-                                onChange={handleInputChange}
-                                style={{marginLeft: "15px"}}
-                                />
+                    <div className="reset-password-row">
+                        <label>Password:</label>
+                        <input
+                            name="password"
+                            value={password}
+                            type="password"
+                            onChange={handleInputChange}
+                            style={{marginLeft: "15px"}}
+                            />
+                    </div>
+                    <div className="reset-password-row"> 
+                        <label>Re-enter Password:</label>
+                        <input
+                            name="passwordAgain"
+                            value={passwordAgain}
+                            type="password"
+                            onChange={handleInputChange}
+                            style={{marginLeft: "15px"}}
+                            />
+                    </div> 
+
+                    {user.role_name === "Admin" && (
+                        <Stack direction="horizontal" className="password-switch">
+                            <Form.Check type="switch" defaultChecked={isForOther}
+                                        onChange={() => setIsForOther(!isForOther)}/>
+                            <span className="font-size-4">Change for someone else</span>
+                        </Stack>)}
+                    {
+                        user.role_name === "Admin" && isForOther && (
+                        <DropdownButton title={forWho} type="button"
+                                        variant="secondary" className='grid-display-dropdown'>
+                            {
+                                ["Baris", "Adam"].map((user, index) => {
+                                    return(
+                                        <Dropdown.Item key={index} as="button" onClick={() => setForWho(user)}>{user}</Dropdown.Item>
+                                    )
+                                })
+                            }
+                        </DropdownButton>)
+                    }
+                    
+                    <Stack direction="horizontal">
+                        <div>
+                            <button type="submit" className="btn btn-primary reset-password-button" onClick={() => handleSubmit()}>Reset Password</button>
                         </div>
-                        <div className="reset-password-row"> 
-                            <label>Re-enter Password:</label>
-                            <input
-                                name="passwordAgain"
-                                value={passwordAgain}
-                                type="password"
-                                onChange={handleInputChange}
-                                style={{marginLeft: "15px"}}
-                                />
-                        </div> 
-                        <Stack direction="horizontal">
-                            <div>
-                                <button type="submit" className="btn btn-primary reset-button">Reset Password</button>
-                            </div>
-                        </Stack>
-                        
-                    </form>
+                    </Stack>
                 </div>
             </Container>
         </Container>

@@ -32,9 +32,9 @@ export default function QueueElement({paper, active}){
     // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
     return(
-        <Container>
-            <Stack direction="horizontal" className="queue-element-container">
-                <span className="accordion_title font-size-4">
+        <Container className="queue-element-container">
+            <Stack direction="horizontal">
+                <span className="queue-title font-size-4">
                     Q{paper.queue_order}{qLine}
                 </span>
                 <div className="qSymbol">{prefixSym}</div>
@@ -42,10 +42,10 @@ export default function QueueElement({paper, active}){
             {
                 !isPast &&
                 (<div ref={content} style={ // this next line was broken so AF comment it out:
-                    { maxHeight: "0px" //`${(active === false || content === null) ? "0px" : (content.current.scrollHeight + "px")}`
-                    }} className="accordion_content">
-                    <div className="accordion_text">
-                        <PaperConflict header="Conflicts:" conflicts={paper.conflicts}></PaperConflict>
+                    { maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
+                    }} className="queue-conflicts">
+                    <div>
+                        <PaperConflict conflicts={paper.conflicts}></PaperConflict>
                     </div>
                 </div>)
             }

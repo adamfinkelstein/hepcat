@@ -46,6 +46,13 @@ code {
   padding-bottom: 100px;
 }
 
+.timer-tab {
+  position: absolute;
+  right: 50px;
+  width: 80px;
+  text-align: left;
+}
+
 /* Navbar styling */
 .Navbar {
   border-bottom: 1px solid #ddd;
@@ -83,6 +90,21 @@ a.nav-link {
 
 .expand-button, .collapse-button{
   border: 1px solid black;
+}
+
+.conflict-element{
+  line-height: 90%;
+}
+
+#noPapersInQueue {
+  color: purple;
+  margin: 30px;
+  padding: 20px;
+  font-size: 20px;
+  border-radius: 6px;
+  border: 1px dashed purple;
+  text-align: center;
+  font-style: italic;
 }
 
 /* Queue Item Styling */
@@ -125,18 +147,17 @@ a.nav-link {
 }
 
 /* Style the accordion content panel. Note: hidden by default */
-.accordion_content {
-  overflow: auto;
+.queue-conflicts {
+  overflow: hidden;
   transition: max-height 0.6s ease;
 }
 
-/* Style the accordion content text */
-.accordion_text {
-  font-family: "Open Sans", sans-serif;
-  font-weight: 400;
+.queue-title{
+  line-height: 110%;
 }
 
 .queue-element-container{
+  padding: 5px;
   width: 100%
 }
 
@@ -169,6 +190,7 @@ a.nav-link {
 .paper-change-button {
   margin-right: 10px;
   border-radius: 4px;
+  padding: 8px;
   border: 1px solid black;
 }
 
@@ -179,16 +201,6 @@ a.nav-link {
 
 .paper-change-button:disabled {
   border: 1px dashed gray;
-}
-
-/* sends to the right margin, which doesn't look good:
-.new-status-dropdown{
-  margin-left: auto; 
-}
-*/
-.gather-conflicts-label {
-  margin-left: 30px;
-  margin-right: 10px;
 }
 
 /* Paper Styling (right panel) */
@@ -229,7 +241,7 @@ a.nav-link {
 .grid-container{
   display: grid;
   grid-gap: 2px;
-  grid-template-columns: repeat(auto-fit, 50px);
+  grid-template-columns: repeat(auto-fit, 65px);
   text-align: center;
 }
 
@@ -262,6 +274,7 @@ a.nav-link {
   border: 1px solid black;
   margin-right: 10px;
   margin-left: 5px;
+  display: inline-block;
 }
 
 .stickie{
@@ -274,7 +287,7 @@ a.nav-link {
 }
 
 .stickie-step {
-  margin-left: -20px;
+  margin-top: 20px;
 }
 
 .non-stickie{
@@ -338,6 +351,10 @@ a.nav-link {
   margin-left: 10px;
 }
 
+.favorites-list{
+  list-style: none;
+}
+
 .example-favorites{
   margin-left: 10px;
 }
@@ -346,17 +363,8 @@ a.nav-link {
   margin-left: 10px;
 }
 
-.delete-btn{
-  color: red;
-  margin-left: 10px;
-}
-
 .current-favorites-bar{
   margin-top: 10px;
-}
-
-.current-favorite-id{
-  width: 50px;
 }
 
 .current-favorites-container{
@@ -384,6 +392,10 @@ a.nav-link {
   margin: 0 auto;
 }
 
+.password-switch{
+  margin-bottom: 10px;
+}
+
 .password-fields{
   margin: 100px 0 0 100px;
 }
@@ -401,12 +413,9 @@ a.nav-link {
   margin-right: 10px;
 }
 
-.queue-explicit-btn{
-  margin-top: 10px;
-}
 
-.queue-explicit-input{
-  margin-right: 10px;
+.queue-explicit-btn{
+  margin-left: 10px;
 }
 
 .horizontal-divider{
@@ -433,27 +442,27 @@ a.nav-link {
 .set-message-row{
   margin-top: 10px;
 }
-/* AF added the ones below -- need to integrate above */
 
-#noPapersInQueue {
-  color: purple;
-  margin: 30px;
-  padding: 20px;
-  font-size: 20px;
-  border-radius: 6px;
-  border: 1px dashed purple;
-  text-align: center;
-  font-style: italic;
+.gather-conflicts-label {
+  margin-left: 40px;
+  margin-right: 10px;
 }
 
+.set-filtered-queue-bar{
+  margin-top: 30px;
+}
+
+/* About Page */
+.about-container {
+  margin-top: 20px;
+}
+
+/* Misc. */
+/* this eliminates the blue outline on select button - not ideal for accessibility */
 #status-dropdown-menu {
   /* width: 160px; */
   border: 1px solid black;
   border-radius: 4px;
-}
-
-/* this eliminates the blue outline on select button - not ideal for accessibility */
-#status-dropdown-menu {
   outline:0;
 }
 
@@ -461,20 +470,10 @@ a.nav-link {
   background: lightyellow;
 }
 
-.about-container {
-  margin-top: 20px;
-}
-
 #waiting-for-server {
   margin-top: 20px;
+  margin-left: 20px;
   font-size: 20px;
   font-style: italic;
   color: #888;
-}
-
-.timer-tab {
-  position: absolute;
-  right: 50px;
-  width: 80px;
-  text-align: left;
 }

@@ -8,6 +8,7 @@ import { useColors, useChangeColor, useDefaultColors, useChangeTextColors } from
 import ColorsDisplay from './ColorsDisplay';
 import Button from 'react-bootstrap/Button'
 import { useAppGlobals } from '../contexts/AppContext';
+import {useFlasher} from '../contexts/FlasherContext'
 
 export default function ColorPreferences(){
 
@@ -20,6 +21,9 @@ export default function ColorPreferences(){
   let [pickingFor, setPickingFor] = useState("Unseen")
 
   let controlledLog = useAppGlobals()["controlledLog"]
+
+  let flasher = useFlasher()
+  let flash = flasher["flash"]
 
   let handleChangeComplete = (type, color) => {
         controlledLog(color)
@@ -44,7 +48,10 @@ export default function ColorPreferences(){
                 />
             </Stack>
             <Container>
-                <Button variant="secondary" onClick={() => changeToDefaultColors()}>Go Back to Default Colors</Button>
+                <Button variant="secondary" onClick={() => {
+                    flash("Changed to default colors.", "success", "colors")
+                    changeToDefaultColors()
+                }}>Go Back to Default Colors</Button>
             </Container>
         </Container>
     );

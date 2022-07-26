@@ -44,6 +44,8 @@ const FontInfoContext = React.createContext()
 const ChangeFontSizeContext = React.createContext()
 const FavoritesContext = React.createContext()
 const ChangeFavoritesContext = React.createContext()
+const SplitWidthContext = React.createContext()
+const ChangeSplitWidthContext = React.createContext()
 
 const DefaultColorsContext = React.createContext()
 
@@ -83,6 +85,14 @@ export function useChangeFavorites(){
   return useContext(ChangeFavoritesContext)
 }
 
+export function useSplitWidth(){
+  return useContext(SplitWidthContext)
+}
+
+export function useChangeSplitWidth(){
+  return useContext(ChangeSplitWidthContext)
+}
+
 export default function PreferencesContext({children}){
   const [colors, setColors] = useState(defaultColors)
   const [textColors, setTextColors] = useState(defaultTextColors)
@@ -90,6 +100,7 @@ export default function PreferencesContext({children}){
   // not sure if this is the best approach (avoiding overwriting of data on load with this variable)
   const [prefUpdated, setPrefUpdated] = useState(false)
   const [favorites, setFavorites] = useState([])
+  const [splitWidth, setSplitWidth] = useState([40, 60])
 
   let controlledLog = useAppGlobals()["controlledLog"]
 
@@ -99,6 +110,7 @@ export default function PreferencesContext({children}){
     const textColorData = localStorage.getItem("textColors")
     const fontSizeData = localStorage.getItem("fontSize")
     const favoritesData = localStorage.getItem("favorites")
+    const splitWidthData = localStorage.getItem("splitWidth")
 
     if(colorData){
         setColors(JSON.parse(colorData))
@@ -112,6 +124,9 @@ export default function PreferencesContext({children}){
     if(favoritesData){
       setFavorites(JSON.parse(favoritesData))
     }
+    if(splitWidthData){
+      setSplitWidth(JSON.parse(splitWidthData))
+    }
     setPrefUpdated(true)
     }, [])
 
@@ -124,6 +139,25 @@ export default function PreferencesContext({children}){
       const fontPX = baseFontSize*multiplier
       const fontSizeRule = document.createTextNode(`.${fontType}{font-size:${fontPX}px}`)
       cssStyle.appendChild(fontSizeRule);
+
+      let fontSizeRuleMD = null;
+
+      switch(fontType){
+        case "font-size-1":
+          fontSizeRuleMD = document.createTextNode(`.about-container h1{font-size:${fontPX}px}`)
+          break;
+        case "font-size-2":
+          fontSizeRuleMD = document.createTextNode(`.about-container h3{font-size:${fontPX}px}`)
+          cssStyle.appendChild(fontSizeRuleMD)
+          break;
+        case "font-size-4":
+          fontSizeRuleMD = document.createTextNode(`.about-container li, .about-container p{font-size:${fontPX}px}`)
+          break;
+      }
+
+      if(fontSizeRuleMD){
+        cssStyle.appendChild(fontSizeRuleMD)
+      }
     })
 
     document.getElementsByTagName("head")[0].appendChild(cssStyle);
@@ -135,6 +169,7 @@ export default function PreferencesContext({children}){
           localStorage.setItem("textColors", JSON.stringify(textColors));
           localStorage.setItem("fontSize", JSON.stringify(fontSize));
           localStorage.setItem("favorites", JSON.stringify(favorites));
+          localStorage.setItem("splitWidth", JSON.stringify(splitWidth));
       }
       var cssStyle = document.createElement('style');
       cssStyle.type = 'text/css';
@@ -176,7 +211,11 @@ export default function PreferencesContext({children}){
                     <ChangeFontSizeContext.Provider value={setFontSize}>
                       <FavoritesContext.Provider value={favorites}>
                         <ChangeFavoritesContext.Provider value={setFavorites}>
-                          {children}
+                          <SplitWidthContext.Provider value={splitWidth}>
+                            <ChangeSplitWidthContext.Provider value={setSplitWidth}>
+                              {children}
+                            </ChangeSplitWidthContext.Provider>
+                          </SplitWidthContext.Provider>
                         </ChangeFavoritesContext.Provider>
                       </FavoritesContext.Provider>
                     </ChangeFontSizeContext.Provider>

@@ -20,7 +20,6 @@ export default function App() {
         <FlasherContext>
           <AppContext>
             <PreferencesContext>
-   
                 <GUIContext>
                   <ModalDialog/>
                   <Navbar/>

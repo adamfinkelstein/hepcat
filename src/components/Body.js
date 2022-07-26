@@ -9,6 +9,7 @@ import SetQueue from './SetQueue'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import moment from 'moment'
+import { useSplitWidth, useChangeSplitWidth } from '../contexts/PreferencesContext'
 
 export default function Body(){
     const globals = useAppGlobals()
@@ -24,6 +25,9 @@ export default function Body(){
     const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
     const hideMessage = globals.serverGlobs && globals.serverGlobs.message ? globals.serverGlobs.message : "The queue is hidden."
     const message = hideQueue ? hideMessage : "No papers in queue."
+
+    const splitWidth = useSplitWidth()
+    const changeSplitWidth = useChangeSplitWidth()
 
     useEffect(() => {
         const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
@@ -55,9 +59,10 @@ export default function Body(){
                     <Split 
                     direction='horizontal'
                     className='split'
-                    sizes={[40, 60]}
+                    sizes={[splitWidth[0], splitWidth[1]]}
                     cursor="col-resize"
-                    minSize={[500, 500]}
+                    minSize={[500, 550]}
+                    onDragEnd={(sizes) => changeSplitWidth(sizes)}
                     >
                         <Container className='left-panel'>
                             { queue.length && !hideQueue ? 
@@ -69,27 +74,27 @@ export default function Body(){
                         <Container className='right-panel'>
                             <Tabs defaultActiveKey="paper"
                                   id="paper-tabs"
-                                  className="mb-3">
-                                <Tab eventKey="paper" title="Paper">
+                                  className="mb-3 font-size-3 tabs">
+                                <Tab eventKey="paper" title="Paper" className='tab'>
                                     <Paper />
                                 </Tab>
                                 {
                                     !isScreen && (
-                                        <Tab eventKey="grid" title="Grid">
-                                        <GridSection />
+                                        <Tab eventKey="grid" title="Grid" className='tab'>
+                                            <GridSection />
                                         </Tab>
                                     )
                                 }
                                 {
                                     isAdmin && (
-                                        <Tab eventKey="admin" title="Admin Controls">
+                                        <Tab eventKey="admin" title="Admin Controls" className='tab'>
                                             <SetQueue/>
                                         </Tab>
                                     )
                                 }
                                 {
                                     (currentShow) ?
-                                    (<Tab tabClassName="timer-tab font-size-3" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
+                                    (<Tab className="timer-tab font-size-3" title={formatTime(currentTime)} disabled>This content should never appear.</Tab>)
                                     :
                                     (" ")
                                 }

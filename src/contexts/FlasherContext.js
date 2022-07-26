@@ -16,7 +16,8 @@ export default function FlashContext({ children }) {
         "set_explicit": false, 
         "change_bar": false, 
         "favorites": false,
-        "change_password": false};
+        "change_password": false,
+        "colors": false};
 
     const [flashMessage, setFlashMessage] = useState({});
     const [visible, setVisible] = useState(noneVisible);

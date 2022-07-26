@@ -9,7 +9,7 @@ export default function AboutPage() {
     const [aboutText, setAboutText] = useState('')
 
     useEffect(() => {
-        fetch(aboutFile).then(res => res.text()).then(text => setAboutText(smartquotes(text)))
+        fetch(aboutFile).then(res => res.text()).then(text => setAboutText((text))).catch(() =>  setAboutText("error"))
     },[])
 
     return (

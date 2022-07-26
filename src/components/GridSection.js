@@ -8,9 +8,7 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Button from 'react-bootstrap/Button'
 import ChooseStatusDropdown from './ChooseStatusDropdown.js'
-import {useFlasher} from '../contexts/FlasherContext'
-import Alert from 'react-bootstrap/Alert';
-import Collapse from 'react-bootstrap/Collapse';
+import Flasher from './Flasher'
 
 export default function GridSection(){
     const [gridDisplay, setGridDisplay] = useState("Normal");
@@ -28,11 +26,6 @@ export default function GridSection(){
     const setShowModal = globals.setShowModal
     const [stickie, setStickie] = useState("Tabled")
     const [ID, setID] = useState("")
-
-    let flasher = useFlasher()
-    let visible = flasher["visible"]
-    let hideFlash = flasher["hideFlash"];
-    let flashMessage = flasher["flashMessage"]
 
     function sendStickie() {
         const words = stickie.split(' ');
@@ -60,8 +53,7 @@ export default function GridSection(){
                 &nbsp;&nbsp; Below:&nbsp;{gridCountBelow}
                 &nbsp;&nbsp; Total:&nbsp;{papersTotal}
             </div>
-            <DropdownButton id="dropdown-item-button" 
-                            title={gridDisplay}
+            <DropdownButton title={gridDisplay}
                             variant="secondary" className='grid-display-dropdown'>
                 {
                     ["Normal", "Stickie", "Favorites"].map((gridDisplay, index) => {
@@ -80,31 +72,25 @@ export default function GridSection(){
                 <Grid gridDisplay={gridDisplay}/>
             </div>
             <hr className="horizontal-divider"/>
-            <Collapse in={visible["stickie"]}>
-                <div>
-                    <Alert variant={flashMessage.type || 'info'} dismissible
-                    onClose={hideFlash}>
-                        {flashMessage.message}
-                    </Alert>
-                </div>
-            </Collapse>
+            <Flasher type="stickie"></Flasher>
+
+
+
             <Stack direction="horizontal">
                 <ColorsDisplay/>
                 <hr className="vertical-divider"></hr>
                 <Container className="set-stickie">
-                    <Stack direction = "vertical" className="send-stickie-column">
-                        <p className="stickie-step font-size-3">Step 1 &mdash; choose a stickie type:</p>
-                        <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
-                        <p className="stickie-step font-size-3">Step 2 &mdash; type the numeric paper ID:</p>
-                        <div>
-                            <input maxLength={3}
-                                name="id"
-                                onChange={(event) => { setID(event.target.value) }}
-                            />
-                        </div>
-                        <p className="stickie-step font-size-3">Step 3 &mdash; click to send stickie:</p>
-                        <Button variant="primary" onClick={sendStickie}>Send Stickie</Button>
-                    </Stack>
+                    <p className="stickie-step font-size-3">Step 1 &mdash; choose a stickie type:</p>
+                    <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
+                    <p className="stickie-step font-size-3">Step 2 &mdash; type the numeric paper ID:</p>
+                    <div>
+                        <input maxLength={3}
+                            name="id"
+                            onChange={(event) => { setID(event.target.value) }}
+                        />
+                    </div>
+                    <p className="stickie-step font-size-3">Step 3 &mdash; click to send stickie:</p>
+                    <Button variant="primary" onClick={sendStickie}>Send Stickie</Button>
                 </Container>
             </Stack>
         </Container>
