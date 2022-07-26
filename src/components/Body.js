@@ -1,4 +1,3 @@
-import {useState, useEffect} from 'react'
 import Container from 'react-bootstrap/Container'
 import Split from 'react-split'
 import {useAppGlobals} from '../contexts/AppContext'

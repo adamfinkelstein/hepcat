@@ -512,6 +512,7 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     show = globs['current_show']
     if hide:
         show = False
+    # if hide: queue is hidden so there are NO CONFLICTS:
     if hide or not current_paper or not current_paper.conf_users:
         nid = 0
         conflict_emails = []

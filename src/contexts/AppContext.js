@@ -1,6 +1,7 @@
 import React, {useState, useContext, useEffect} from 'react'
 import socketIOClient from "socket.io-client";
 import {useFlasher} from './FlasherContext'
+import smartquotes from 'smartquotes';
 
 const AppGlobalsContext = React.createContext() 
 
@@ -66,7 +67,7 @@ export default function AppContext({children}){
       controlledLog(data)
       setUser(data.user)
       setGrid(data.grid)
-      setAboutMD(data.about)
+      setAboutMD(smartquotes(data.about))
     };
 
     function updateGridEntry(nid, status) {

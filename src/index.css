@@ -476,6 +476,16 @@ a.nav-link {
   margin-top: 20px;
 }
 
+.about-container img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* width: 50%;*/
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+}
+
 /* Misc. */
 /* this eliminates the blue outline on select button - not ideal for accessibility */
 #status-dropdown-menu {
