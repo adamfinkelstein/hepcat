@@ -24,13 +24,13 @@ The Papers Chair uses an administrative interface (not seen by most users) to fi
 
 PC members can mark papers as ready to be discussed by filing a "stickie". (Prior to 2014 this was done by writing the paper ID on an actual "stickie note" and passing it to an administrator.)
 
-* show picture here.
+* another pic show picture here....!
 
 ### Customization
 
 The Preferences page lets you choose your own font sizes and color palette. This may be helpful for differences in how colors are displayed on different devices, or how colors are perceived by individual people.
 
-![](about/color-preferences.png)
+![](color-preferences.png)
 
 Choose one of the paper categories on the left (Unseen, Tabled, etc) and then use the color picker to change the color scheme for that paper. Text automatically switches from black to white when appearing over dark colors. The palette at the bottom of the color picker shows the default colors (in order of paper categories on the left), and so you can restore the defaults of any individual color by clicking on one of those. Or you can restore all defaults using the obvious button below.
 

@@ -18,6 +18,7 @@ export default function AppContext({children}){
   const [serverGlobs, setServerGlobs] = useState(null)
   const [newStatus, setNewStatus] = useState("Tabled")
   const [guiBar, setGuiBar] = useState('');
+  const [aboutMD, setAboutMD] = useState('');
   const flasher = useFlasher()
   const flash = flasher["flash"]
 
@@ -51,9 +52,9 @@ export default function AppContext({children}){
   }, [setSocket]);
 
   useEffect(() => {
-    const showLogsEnv = process.env.REACT_APP_SHOW_LOGS;
-    console.log(showLogsEnv);
-    setShowLogs(showLogsEnv);
+    const showLogsEnv = process.env.REACT_APP_SHOW_LOGS
+    console.log(showLogsEnv)
+    setShowLogs(showLogsEnv)
   }, [])
 
   useEffect(() => {
@@ -61,10 +62,11 @@ export default function AppContext({children}){
     controlledLog(socket);
 
     const receiveWelcome = (data) => {
-      controlledLog('received welcome:');
-      controlledLog(data);
-      setUser(data.user);
-      setGrid(data.grid);
+      controlledLog('received welcome:')
+      controlledLog(data)
+      setUser(data.user)
+      setGrid(data.grid)
+      setAboutMD(data.about)
     };
 
     function updateGridEntry(nid, status) {
@@ -223,6 +225,7 @@ export default function AppContext({children}){
           "user": user,
           "queue": queue,
           "grid": grid,
+          "aboutMD": aboutMD,
           "queueCurrent": queueCurrent,
           "newStatus": newStatus,
           "setNewStatus": setNewStatus,

@@ -343,6 +343,13 @@ def get_queue():
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue,current_paper
 
+def get_about_md():
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    about_file = os.path.join(basedir, '../../public/about/about.md')
+    with open(about_file, "r") as file:
+        md = file.read()
+    return md
+
 ########### mostly decorator functions below here:
 
 @socketio.on('connect')
@@ -353,9 +360,11 @@ def io_connect():
     print(f'{user.full_name} - client connected')
     user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
+    about_md = get_about_md()
+    # print(about_md)
     # config_vars = get_react_env_vars()
     # later: 'config': config_vars }
-    data = {'user': user_dump, 'grid': grid_dump } 
+    data = {'user': user_dump, 'grid': grid_dump, 'about':about_md } 
     emit('server_welcome', data)
     data,_ = get_queue()
     emit('server_set_queue', data)
