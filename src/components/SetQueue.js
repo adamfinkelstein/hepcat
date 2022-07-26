@@ -46,8 +46,8 @@ export default function SetQueue(){
      In range: both are enabled for freeform input 
     */
     function handleScoreSelectionUpdate(selection) {
-        const minScore = "-100.0"
-        const maxScore = "100.0"
+        const minScore = "-9.0"
+        const maxScore = "9.0"
         const disable = (selection !== scoreOptionRange) ? "disabled" : "";
         // by default (scoreOptionRange) low and high range values remain
         let lowInput = lowRange 
@@ -163,7 +163,7 @@ export default function SetQueue(){
             <hr className="horizontal-divider"/>
             <Flasher type="set_queue"/>
             <div>
-                <Stack direction="horizontal" gap={5}>
+                <Stack direction="horizontal" gap={4}>
                     <div>&nbsp;</div>
                     <div>
                         <span className="font-size-3"><u>Include All</u>:</span>
@@ -227,7 +227,7 @@ export default function SetQueue(){
                         <div>&nbsp;</div>
                     </div>
                     <div className="vr" />
-                <div style={{marginBottom: "20px"}}>
+                <div>
                     <Stack direction="vertical" gap={4}>
                         <DropdownButton id="dropdown-item-button" 
                             title={scoreSelection} className="new-status-dropdown"
@@ -240,19 +240,23 @@ export default function SetQueue(){
                                 })
                             }
                         </DropdownButton>
-                        <input
-                            name="lowRange"
-                            value={lowRange}
-                            onChange={handleInputChange}
-                            disabled={disableScoreInputs}
-                        />
-                        <span style={{fontSize: "18px"}}>&le; (paper ave score) &lt;</span>
-                        <input
-                            name="highRange"
-                            value={highRange}
-                            onChange={handleInputChange}
-                            disabled={disableScoreInputs}
-                        />
+                        <div>
+                            <input
+                                name="lowRange"
+                                value={lowRange}
+                                onChange={handleInputChange}
+                                disabled={disableScoreInputs}
+                                className="score-box"
+                            />
+                            <span>&nbsp;&le;&nbsp;score&nbsp;&lt;&nbsp;</span>
+                            <input
+                                name="highRange"
+                                value={highRange}
+                                onChange={handleInputChange}
+                                disabled={disableScoreInputs}
+                                className="score-box"
+                            />
+                        </div>
                     </Stack>
                 </div>
                 </Stack>

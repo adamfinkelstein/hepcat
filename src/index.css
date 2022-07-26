@@ -272,6 +272,12 @@ a.nav-link {
   margin: 20px;
   margin-left: auto;
 }
+
+.dropdown-menu {
+  max-height: 200px;
+  overflow: scroll;
+}
+
 .grid-controls{
   padding: 20px 5px;
 }
@@ -481,6 +487,10 @@ a.nav-link {
 
 .set-filtered-queue-button {
   margin-right: 15px;
+}
+
+.score-box {
+  width: 50px;
 }
 
 /* About Page */

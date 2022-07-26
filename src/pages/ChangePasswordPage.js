@@ -81,7 +81,9 @@ export default function ChangePasswordPage(){
                             {
                                 allUsers.map((user, index) => {
                                     return(
-                                        <Dropdown.Item key={index} as="button" onClick={() => handleSetFor(user)}>{user.full_name}</Dropdown.Item>
+                                        <Dropdown.Item key={index} as="button" onClick={
+                                            () => handleSetFor(user)}
+                                            >{user.full_name}</Dropdown.Item>
                                     )
                                 })
                             }
