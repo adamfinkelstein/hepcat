@@ -81,7 +81,7 @@ export default function ChangePasswordPage(){
                         { isForOther && (
                             <><span>&nbsp;&mdash;&nbsp;</span>
                             <DropdownButton title={forWho} type="button"
-                                            variant="secondary" className='grid-display-dropdown'>
+                                            variant="secondary" className='select-user-dropdown'>
                                 {
                                     allUsers.map((user, index) => {
                                         return(
