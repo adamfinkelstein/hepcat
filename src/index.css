@@ -106,6 +106,10 @@ a.nav-link {
   */
 }
 
+.queue-paper-conf-header {
+  font-weight: bold;
+}
+
 #noPapersInQueue {
   color: purple;
   margin: 30px;
@@ -157,6 +161,11 @@ a.nav-link {
 }
 
 /* Style the accordion content panel. Note: hidden by default */
+
+.queue-paper-conf-list {
+  line-height: 100%;
+}
+
 .queue-conflicts {
   overflow: hidden;
   transition: max-height 0.6s ease;
@@ -196,7 +205,11 @@ a.nav-link {
 }
 
 .admin-user {
-  color: blue
+  color: blue;
+}
+
+.current-admin-user {
+  color: #8DCEE6;
 }
 
 .AdminQueueControls{

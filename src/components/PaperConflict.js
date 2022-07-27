@@ -1,29 +1,38 @@
 import Container from 'react-bootstrap/Container';
 
-export default function PaperConflict({conflicts}){
+export default function PaperConflict({conflicts,isCurrent}){
 
     function userToClass(user) {
         let className = 'font-size-4'
         if (user.role_name === 'Admin') {
-            className += ' admin-user'
+            className += isCurrent ? ' current-admin-user' : ' admin-user'
         }
         return className
     }
 
+    function userToName(user,index) {
+        let name = user.full_name
+        if (index < conflicts.length-1) {
+            name += ', '
+        }
+        return name
+    }
+
     return(
-        <Container className="PaperConflict">
+        <Container>
             { conflicts.length === 0 ? 
-                <div> (none)</div>
+                (<div>(no conflicts)</div>)
                 :
-                <ul>
+                <div className="queue-paper-conf-list">
+                    <span className="queue-paper-conf-header">Conflicts: </span>
                 {
                     conflicts.map((conflict, index) => {
                         return(
-                            <li key={index} className="conflict-element"><span className={userToClass(conflict)}>{conflict.full_name}</span></li>
+                            <span key={index} className={userToClass(conflict)}>{userToName(conflict,index)}</span>
                         )
                     })
                 }
-                </ul>
+                </div>
             }
         </Container>
     )
