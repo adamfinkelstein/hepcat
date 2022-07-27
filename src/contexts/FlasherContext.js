@@ -23,7 +23,7 @@ export default function FlashContext({ children }) {
     const [visible, setVisible] = useState(noneVisible);
 
     const flash = (message, type, which) => {
-        const duration = 3
+        const duration = 4
         if (flashTimer) {
             clearTimeout(flashTimer);
             flashTimer = undefined;

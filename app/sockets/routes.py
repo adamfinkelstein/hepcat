@@ -497,22 +497,37 @@ def user_set_stickie(data):
     emit('server_send_flasher', data)
 
 @socketio.on('user_change_password')
-def user_change_password(new_password):
+def user_change_password(data):
+    print('pass:')
+    print(data)
     user = get_user_or_force_disconnect()
-    # security! later: disable printing pass:
-    print(f'user {user.full_name} changes password to {new_password}')
-    user.password = new_password
-    db.session.add(user)
-    db.session.commit()
-    message = "You have successfully changed your password."
-    data = { 'message': message, 'type': 'success', 'which': 'change_password'}
-    emit('server_send_flasher', data)
+    new_password = data['password']
+    for_email = data['forEmail']
+    if for_email:
+        for_user = User.query.filter_by(email=for_email).first()
+        if not user.is_admin or not for_user:
+            success = False
+        else:
+            success = True
+            for_name = for_user.full_name
+            message = f"You have changed the password for {for_name}."
+    else:
+        success = True
+        for_user = user # self
+        message = "You have successfully changed your password."
+    if success:
+        # security! later: disable printing pass:
+        print(f'user {for_user.full_name} changes password to {new_password}')
+        for_user.password = new_password
+        db.session.add(for_user)
+        db.session.commit()
+        message_type = 'success'
+    else:
+        message = "Error setting password."
+        message_type = 'warning'
+    reply = { 'message': message, 'type': message_type, 'which': 'change_password'}
+    emit('server_send_flasher', reply)
 
-'''
-Later add:
-* admin_queue_propbe
-* server_queue_length (from probe)
-'''
 
 class Conflictbot(Namespace):
     def on_connect(self):

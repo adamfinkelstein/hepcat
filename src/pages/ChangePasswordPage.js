@@ -14,7 +14,8 @@ export default function ChangePasswordPage(){
     let flasher = useFlasher()
     let flash = flasher["flash"]
     
-    let [forWho, setForWho] = useState("Select a user")
+    const defaultForWho = "Select a user"
+    let [forWho, setForWho] = useState(defaultForWho)
     let [forEmail, setForEmail] = useState("")
     let [isForOther, setIsForOther] = useState(false)
 
@@ -37,17 +38,20 @@ export default function ChangePasswordPage(){
             return;
         }
 
-        if(isForOther && forWho == "Select a user"){
+        if(isForOther && forEmail == ""){
             flash("Please pick a user.", "warning", "change_password")
             return;
         }
 
-        controlledLog("changing password to " + password)
-        // now flash comes from server instead of here:
-        // flash("You have successfully changed your password", "success", "change_password")
-        socketEmit("user_change_password", password)
+        const data = {password, forEmail}
+
+        controlledLog("changing password data:")
+        controlledLog(data)
+        socketEmit("user_change_password", data)
         setPassword('')
         setPasswordAgain('')
+        setForEmail('')
+        setForWho(defaultForWho)
     }
 
     function handleSetFor(user) {
@@ -70,25 +74,26 @@ export default function ChangePasswordPage(){
                 <div className="password-fields">
 
                     { isAdmin && (
-                        <Stack direction="horizontal" className="password-switch">
-                            <Form.Check type="switch" defaultChecked={isForOther}
+                        <Stack direction="horizontal" className="password-switch-stack">
+                            <Form.Check type="switch" defaultChecked={isForOther} className="password-switch"
                                         onChange={() => setIsForOther(!isForOther)}/>
                             <span className="font-size-4">Change for someone else</span>
+                        { isForOther && (
+                            <><span>&nbsp;&mdash;&nbsp;</span>
+                            <DropdownButton title={forWho} type="button"
+                                            variant="secondary" className='grid-display-dropdown'>
+                                {
+                                    allUsers.map((user, index) => {
+                                        return(
+                                            <Dropdown.Item key={index} as="button" onClick={
+                                                () => handleSetFor(user)}
+                                                >{user.full_name}</Dropdown.Item>
+                                        )
+                                    })
+                                }
+                            </DropdownButton></>)
+                        }
                         </Stack>)}
-                    { isAdmin && isForOther && (
-                        <DropdownButton title={forWho} type="button"
-                                        variant="secondary" className='grid-display-dropdown'>
-                            {
-                                allUsers.map((user, index) => {
-                                    return(
-                                        <Dropdown.Item key={index} as="button" onClick={
-                                            () => handleSetFor(user)}
-                                            >{user.full_name}</Dropdown.Item>
-                                    )
-                                })
-                            }
-                        </DropdownButton>)
-                    }
 
 
                     <div className="reset-password-row">

@@ -269,8 +269,7 @@ a.nav-link {
 }
 
 .grid-display-dropdown{
-  margin: 20px;
-  margin-left: auto;
+  margin-left: 5px;
 }
 
 .dropdown-menu {
@@ -418,7 +417,7 @@ a.nav-link {
 }
 
 .password-switch{
-  margin-bottom: 20px;
+  margin: 20px 5px 20px 0px;
 }
 
 .password-fields{
@@ -430,7 +429,7 @@ a.nav-link {
 }
 
 .reset-password-row{
-  margin-bottom: 20px;
+  margin: 20px 5px 20px 0px;
 }
 
 /* Set GUI Styling */
