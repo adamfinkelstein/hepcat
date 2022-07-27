@@ -24,16 +24,16 @@ const fontSizes = {
   "Extra Small": 0.80,
   "Small": 0.90,
   "Medium": 1.0,
-  "Large": 1.25,
-  "Extra Large": 1.50
+  "Large": 1.2,
+  "Extra Large": 1.4
 }
 
 
 const baseFontSizes = {
-  "font-size-1": 42,
-  "font-size-2": 30,
-  "font-size-3": 22,
-  "font-size-4": 19
+  "font-size-1": 36,
+  "font-size-2": 25,
+  "font-size-3": 20,
+  "font-size-4": 16
 }
 
 const ColorsContext = React.createContext()

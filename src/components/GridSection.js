@@ -47,7 +47,7 @@ export default function GridSection(){
 
     return(
         <Container>
-            <Stack direction="horizontal">
+            <Stack direction="horizontal" className="grid-control-bar">
             <div className="font-size-3">Bar:&nbsp;{guiBar} 
                 &nbsp;&nbsp; Above:&nbsp;{gridCountAbove}
                 &nbsp;&nbsp; Below:&nbsp;{gridCountBelow}

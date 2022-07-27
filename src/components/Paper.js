@@ -128,12 +128,12 @@ export default function Paper(){
                 <div>
                     <div className="paper-timer font-size-3">{formatTime(currentTime)}</div>
                     <p className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</p>
-                    <p className='font-size-3' >Reviews: <span className='font-size-4' dangerouslySetInnerHTML={scoresHTML}/></p>
+                    <p className='font-size-4'><span className="paper-par-header">Reviews: </span><span className='paper-reviews-text' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&
-                        (<p className='font-size-3'>History: <span className='font-size-4'>{formatHistoryList(hist)}</span></p>)
+                        (<p className='font-size-4'><span className="paper-par-header">History:</span> <span className='paper-history-text'>{formatHistoryList(hist)}</span></p>)
                     }
-                    <p className='font-size-3'>Summary: <span className='font-size-4'>{cp.summary}</span></p>
-                    <p className='font-size-3'>Abstract: <span className='font-size-4'>{cp.abstract}</span></p>
+                    <p className='font-size-4'><span className="paper-par-header">Summary: </span><span className='paper-summary-text'>{cp.summary}</span></p>
+                    <p className='font-size-4'><span className="paper-par-header">Abstract: </span><span className='paper-abstract-text'>{cp.abstract}</span></p>
                     <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
                 </div>
             ))}

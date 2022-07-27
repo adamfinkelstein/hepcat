@@ -30,8 +30,11 @@ export default function Queue(){
         if (index === globals.queueCurrent){
             className += " Current"
         }
-        else if (!isScreen && !isConflict && index < globals.queueCurrent){
-            className += " " + paper.status;
+        else if (index < globals.queueCurrent){
+            className += " Past";
+            if (!isScreen && !isConflict) {
+                className += " " + paper.status;
+            }
         }
         else if (index % 2) { // future - odd?
             className += " odd_row"

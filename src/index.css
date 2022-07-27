@@ -168,11 +168,23 @@ a.nav-link {
 }
 
 .queue_element{
-  border: 1px solid #aaa;
-  margin-top:-2px; /* this avoids double-border between elements */
+  /* margin-top:-1px; this avoids double-border between elements */
   padding: 10px 5px;
   cursor: pointer;
-  margin-top:-1px;
+  border-right:  1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  border-left:   1px solid #aaa;
+}
+
+.queue_element.Past{
+  border-top: 1px solid black;
+  border-right:  1px solid black;
+  border-left:   1px solid black;
+  border-bottom: 0;
+}
+
+.queue_element.Current{
+  border: 1px solid black;
 }
 
 .queue_element.odd_row{
@@ -237,6 +249,10 @@ a.nav-link {
   text-align: center;
 }
 
+.paper-par-header {
+  font-weight: bold;
+}
+
 /* Split Screen CSS */
 
 .split{
@@ -257,10 +273,11 @@ a.nav-link {
 }
 
 /* Grid Styling */
+
 .grid-container{
   display: grid;
   grid-gap: 2px;
-  grid-template-columns: repeat(auto-fit, 65px);
+  grid-template-columns: repeat(auto-fit, 50px);
   text-align: center;
 }
 
@@ -269,7 +286,7 @@ a.nav-link {
 }
 
 .grid-display-dropdown{
-  margin-left: 5px;
+  margin-left: auto;
 }
 
 .dropdown-menu {
@@ -279,6 +296,10 @@ a.nav-link {
 
 .grid-controls{
   padding: 20px 5px;
+}
+
+.grid-control-bar{
+  margin-bottom: 20px;
 }
 
 .legend-container{
@@ -421,7 +442,7 @@ a.nav-link {
 }
 
 .password-fields{
-  margin: 100px 0 0 100px;
+  margin: 40px 0 0 40px;
 }
 
 .form-title{
