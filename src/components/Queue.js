@@ -23,9 +23,11 @@ export default function Queue(){
     const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
     
     const [queueExpanded, setQueueExpanded] = useState(false);
+    const expandButtonLabel = queueExpanded ? "Hide Conflicts" : "Show Conflicts"
 
     function currentClass(index, paper, nid){
         const isConflict = user.conflict_papers.includes(paper.nid)
+
         let className = "queue_element"
         if (index === globals.queueCurrent){
             className += " Current"
@@ -55,21 +57,11 @@ export default function Queue(){
                 <Stack direction="horizontal">
                     <span className='font-size-2'>Current: {currentCount} {queue.length}</span>
                     <div className="expand-buttons">
-                        {
-                            !queueExpanded && 
-                            <button onClick={() => setQueueExpanded(true)}
-                                    type="button" className="btn btn-light expand-button paper-change-button font-size-3"> 
-                                Expand all 
-                            </button>
-                        }
-                        {
-                            queueExpanded && 
-                            <button onClick={() => setQueueExpanded(false)}
-                                    type="button" className="btn btn-light collapse-button paper-change-button 
-                                    font-size-3" style={{marginLeft: "10px"}}> 
-                                Collapse all 
-                            </button>
-                        }
+                        <button onClick={() => setQueueExpanded(!queueExpanded)}
+                                type="button" className="btn btn-light expand-button paper-change-button 
+                                font-size-3"> 
+                            {expandButtonLabel}
+                        </button>
                     </div>
                 </Stack>
             </Container>

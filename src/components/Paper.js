@@ -20,14 +20,38 @@ export default function Paper(){
     const scoresHTML = formatScoresInHTML(safeScores);
     const currentStart = isPaper && globals.serverGlobs.current_start
 
-    let np = null // next paper
-    let current_enter = currentShowEnter == 1 ? cp.enter : []
-    let current_leave = currentShowEnter == 1 ? cp.leave : []
-    if (isPaper && currentShowEnter == -1) {
-        np = queue[queueCurrent+1]
-        current_enter = np.leave // note backward because of prev button
-        current_leave = np.enter
+    let current_enter = isPaper && currentShowEnter === 1 ? cp.enter : []
+    let current_leave = isPaper && currentShowEnter === 1 ? cp.leave : []
+    if (isPaper && currentShowEnter === -1) {
+        current_enter = []
+        current_leave = []
+        if (queueCurrent < queue.length - 1) {
+            let np = queue[queueCurrent+1] // next paper
+            current_enter = np.leave // note backward because of prev button
+            current_leave = np.enter
+        }
     }
+    const conflicts_arrays = [
+        {
+            show: true,
+            title: 'Conflicts:',
+            array: isPaper ? cp.conflicts : [],
+            default: '(none)'
+        },
+        {
+            show: current_leave && current_leave.length,
+            title: 'Leave:',
+            array: current_leave,
+            default: ''
+        },
+        {
+            show: current_enter && current_enter.length,
+            title: 'Return:',
+            array: current_enter,
+            default: ''
+        }
+    ]
+
     function extraSpaceBefore(scores, before) {
         const after = '&nbsp;&nbsp;&nbsp;' + before
         const ret = scores.replace(before,after)
@@ -82,6 +106,14 @@ export default function Paper(){
         return format
     }
 
+    function userToClass(user) {
+        let className = 'font-size-3'
+        if (user.role_name === 'Admin') {
+            className += ' admin-user'
+        }
+        return className
+    }
+
     return(
         <Container className="Paper">
 
@@ -90,39 +122,18 @@ export default function Paper(){
                 (<p>No current paper.</p>)
             ) : ( !currentShow ? (
                 <div>
-                    <div><span className='font-size-2'>Conflicts:</span>
-                        { cp.conflicts.length ?
-                        (<ul>
-                            {cp.conflicts.map( (user,index) => {
-                                return (
-                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
-                                )
-                            })}
-                        </ul>) : (<p>(none)</p>)
-                        }
-                    </div>
-                    {current_leave && current_leave.length ?
-                        (<div><span className='font-size-2'>Leave:</span>
+                    { conflicts_arrays.map( (conf_arr,conf_ind) => {
+                        return ( conf_arr.show ?
+                        (<div key={conf_ind}><span className='font-size-2'>{conf_arr.title}</span>
                         <ul>
-                            {current_leave.map( (user,index) => {
+                            {conf_arr.array.map( (user,user_ind) => {
                                 return (
-                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
+                                    <li key={user_ind}><span className={userToClass(user)}>{user.full_name}</span></li>
                                 )
                             })}
                         </ul>
-                        </div>) : ("")
-                    }
-                    {current_enter && current_enter.length ?
-                        (<div><span className='font-size-2'>Return:</span>
-                        <ul>
-                            {current_enter.map( (user,index) => {
-                                return (
-                                    <li key={index}><span className='font-size-3'>{user.full_name}</span></li>
-                                )
-                            })}
-                        </ul>
-                        </div>) : ("")
-                    }
+                        </div>) : (<p key={conf_ind}>{conf_arr.default}</p>)
+                    )})}
                 </div>
                 ) : (
                 <div>

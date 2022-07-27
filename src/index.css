@@ -100,6 +100,10 @@ a.nav-link {
 
 .conflict-element{
   line-height: 90%;
+  /* these do nothing:
+  display: list-item;
+  list-style-type: circle;
+  */
 }
 
 #noPapersInQueue {
@@ -121,7 +125,7 @@ a.nav-link {
 
 /* Style the accordion content title */
 
-.queue-hidden-for-non{
+.queue-hidden-for-non {
   color: purple;
   font-style: bold;
   margin: 15px;
@@ -191,15 +195,9 @@ a.nav-link {
   background-color: #eee;
 }
 
-/*
-.past{
-  background-color: #dfd;
+.admin-user {
+  color: blue
 }
-
-.past.odd_row{
-  background-color: #beb;
-}
-*/
 
 .AdminQueueControls{
   margin-top: 15px;
