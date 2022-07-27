@@ -55,6 +55,10 @@ def get_distance_matrix(papers):
             distance_matrix[j][i] = d
     return distance_matrix
 
+def get_node_costs(papers, nodes):
+    costs = [get_enter_leave_cost(get_paper_conficts_set(papers[n])) for n in nodes]
+    return costs
+
 def permute_papers(papers, permutation):
     result = []
     for i in permutation:
@@ -85,22 +89,53 @@ def pack_data(distance_matrix):
 def rotate_list_left(arr, shift):
     return arr[shift:] + arr[:shift]
 
-def split_tour_at_max_cost(nodes, costs):
-    maxindex = np.argmax(costs)
+def split_tour_at_max_cost(nodes, trans_costs):
+    maxindex = np.argmax(trans_costs)
     leftshift = maxindex + 1
-    cost = costs[maxindex]
+    cost = trans_costs[maxindex]
     print(f'splitting tour at location {maxindex} (leftshift {leftshift}) with max cost {cost}')
     nodes = rotate_list_left(nodes, leftshift)
-    costs = rotate_list_left(costs, leftshift)
-    return nodes, costs
+    trans_costs = rotate_list_left(trans_costs, leftshift)
+    return nodes, trans_costs
+
+def split_tour_at_last_high_cost(nodes, trans_costs):
+    high_index = -1
+    n = len(nodes)
+    for i in range(n):
+        if trans_costs[i] >= 100:
+            high_index = i
+    if high_index < 0:
+        return nodes, trans_costs
+    cost = trans_costs[high_index]
+    leftshift = high_index + 1
+    print(f'splitting tour at location {high_index} (leftshift {leftshift}) with high cost {cost}')
+    nodes = rotate_list_left(nodes, leftshift)
+    trans_costs = rotate_list_left(trans_costs, leftshift)
+    return nodes, trans_costs
 
 # Two potential improvements to a circular tour:
 # 1. Since we do not return to the starting paper, split at the most expensive transition.
 # 2. Once split, we can tour in either order, so possibly reverse to put most conflicts at end
-def improve_tour(nodes, costs):
-    nodes, costs = split_tour_at_max_cost(nodes, costs)
-    # later add second opt here
-    return nodes, costs
+# later add second opt here
+def improve_tour(papers, distance_matrix, nodes, gather_admin_start):
+    trans_costs = tsp_transition_costs(nodes, distance_matrix)
+    print('before split... trans_costs:')
+    print(trans_costs)
+    # nodes, trans_costs = split_tour_at_max_cost(nodes, trans_costs)
+    nodes, trans_costs = split_tour_at_last_high_cost(nodes, trans_costs)
+    node_costs = get_node_costs(papers, nodes)
+    print('after split... trans_costs and node_costs:')
+    print(trans_costs)
+    print(node_costs)
+    costs_minus_last = trans_costs[:-1]
+    distance = sum(costs_minus_last)
+    if gather_admin_start:
+        print('nodes before reverse:')
+        print(nodes)
+        nodes.reverse()
+        print('nodes after reverse:')
+        print(nodes)
+    return nodes, distance
 
 def get_tsp_solution(manager, routing, solution):
     nodes = []
@@ -115,7 +150,7 @@ def get_tsp_solution(manager, routing, solution):
         costs.append(cost)
     return nodes, costs
 
-def solve_tsp(distance_matrix):
+def solve_tsp_ortools(distance_matrix):
     data = pack_data(distance_matrix)
     manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
                                            data['num_vehicles'], data['depot'])
@@ -133,20 +168,34 @@ def solve_tsp(distance_matrix):
         routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
     solution = routing.SolveWithParameters(search_parameters)
     if solution:
-        nodes, costs = get_tsp_solution(manager, routing, solution)
-        nodes, costs = improve_tour(nodes, costs)
-        return nodes, costs
-    return None, None
+        nodes,_ = get_tsp_solution(manager, routing, solution)
+        return nodes
+    return None
 
-def order_q_ortools(distance_matrix):
-    nodes, costs = solve_tsp(distance_matrix)
+######## END ORTOOLS #########
+
+def tsp_transition_costs(nodes, distance_matrix):
+    n = len(nodes)
+    costs = []
+    for i in range(n):
+        j = (i+1) % n
+        nodei = nodes[i]
+        nodej = nodes[j]
+        cost = distance_matrix[nodei][nodej]
+        costs.append(cost)
+    return costs
+
+def order_q_select_alg(papers,distance_matrix,gather_admin_start):
+    if use_ortools: # global set at top of file
+        print('solving tsp using ortools')
+        nodes = solve_tsp_ortools(distance_matrix)
+    else:
+        print('solving tsp using local search')
+        nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
     if not nodes:
         return None, 0
-    costs_minus_last = costs[:-1]
-    distance = sum(costs_minus_last)
+    nodes, distance = improve_tour(papers, distance_matrix, nodes, gather_admin_start)
     return nodes, distance
-
-######## END #########
 
 def order_q(papers, gather_admin_start, verbose=False):
     n = len(papers)
@@ -159,14 +208,8 @@ def order_q(papers, gather_admin_start, verbose=False):
         n = maxn
         remainder = papers[maxn:] # slice off the ones after max
         papers = papers[:maxn] # only optimize these first ones
-    print('get distance matrix for gather: ', gather_admin_start)
     distance_matrix = get_distance_matrix(papers)
-    if use_ortools:
-        print('solving tsp using ortools')
-        permutation, distance = order_q_ortools(distance_matrix)
-    else:
-        print('solving tsp using local search')
-        permutation, distance = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
+    permutation, distance = order_q_select_alg(papers,distance_matrix,gather_admin_start)
     if permutation:
         ordered_papers = permute_papers(papers, permutation)
     else:
