@@ -42,7 +42,8 @@ export default function QueueElement({paper, active}){
             {
                 !isPast &&
                 (<div ref={content} style={ // this next line was broken so AF comment it out:
-                    { maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
+                    { // maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
+                        maxHeight: `${(active === false || content === null) ? "0" : "100"}px`
                     }} className="queue-conflicts">
                     <div>
                         <PaperConflict conflicts={paper.conflicts} isCurrent={isCurrent} />

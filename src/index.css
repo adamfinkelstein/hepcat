@@ -163,12 +163,13 @@ a.nav-link {
 /* Style the accordion content panel. Note: hidden by default */
 
 .queue-paper-conf-list {
-  line-height: 100%;
+  line-height: 120%;
+  margin-top: 5px;
 }
 
 .queue-conflicts {
   overflow: hidden;
-  transition: max-height 0.6s ease;
+  transition: max-height 0.25s linear;
 }
 
 .queue-title{
