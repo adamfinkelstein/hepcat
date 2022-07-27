@@ -23,7 +23,7 @@ def get_react_env_vars():
             vars[item] = value
     return vars
 
-def get_user_or_force_disconnect():
+def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
     if allow_cors: # hack to allow React to run in a different port without a login
@@ -36,9 +36,14 @@ def get_user_or_force_disconnect():
         else:
             user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
         return user
-    print('user is not logged in: forcing disconnect here.')
-    disconnect()
+    print('user is not logged in: should force disconnect.')
     return None
+
+def current_user_is_admin():
+    user = get_current_user_or_none()
+    if user and user.is_admin:
+        return True
+    return False
 
 def get_grid_dump_above_bar(above):
     gq = GlobQueue.query.first()
@@ -362,14 +367,15 @@ def get_about_md():
 
 ###########
 ###########
-########### mostly decorator functions below here:
+########### Decorator (communication) functions mostly below here:
 ###########
 ###########
 
 @socketio.on('connect')
 def io_connect():
-    user = get_user_or_force_disconnect()
+    user = get_current_user_or_none()
     if not user:
+        disconnect()
         return
     print(f'{user.full_name} - client connected')
     user_dump = get_user_dump(user)
@@ -396,6 +402,9 @@ def io_disconnect():
 
 @socketio.on('admin_prev_paper')
 def admin_prev_paper():
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin request for prev paper')
     zero_or_inc_current_index(-1) # also "hides" current
     globs,current_paper = get_globs_dump_with_status()
@@ -404,6 +413,9 @@ def admin_prev_paper():
 
 @socketio.on('admin_next_paper')
 def admin_next_paper(status_update):
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin request for next paper with status:', status_update)
     before_index, paper = update_current_paper_status(status_update)
     zero_or_inc_current_index(+1) # also "hides" current
@@ -415,6 +427,9 @@ def admin_next_paper(status_update):
 
 @socketio.on('admin_show_current')
 def admin_show_current():
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin request for show paper')
     show_current_paper()
     globs,current_paper = get_globs_dump_with_status()
@@ -423,6 +438,9 @@ def admin_show_current():
 
 @socketio.on('admin_hide_queue')
 def admin_hide_queue(data):
+    if not current_user_is_admin():
+        disconnect()
+        return
     hide = data['hide']
     message = data['message']
     print(f'admin request for hide queue: {hide} {message}')
@@ -439,6 +457,9 @@ def admin_hide_queue(data):
 
 @socketio.on('admin_set_queue')
 def admin_set_queue(filters):
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin request for set queue:', filters)
     set_queue(filters)
     queue,current_paper = get_queue()
@@ -448,12 +469,18 @@ def admin_set_queue(filters):
 
 @socketio.on('admin_probe_queue')
 def admin_probe_queue(filters):
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin probe queue:', filters)
     count = get_filter_paper_count(filters)
     emit('server_probe_count', count)
 
 @socketio.on('admin_set_queue_explicit')
 def admin_set_queue_explicit(data):
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin request for set explicit queue:', data)
     set_queue_explicit(data)
     queue,current_paper = get_queue()
@@ -463,6 +490,9 @@ def admin_set_queue_explicit(data):
 
 @socketio.on('admin_set_bar')
 def admin_set_bar(bar):
+    if not current_user_is_admin():
+        disconnect()
+        return
     print(f'admin request set bar to {bar}')
     set_bar(bar)
     globs,_ = get_globs_dump_with_status()
@@ -478,6 +508,10 @@ def admin_set_bar(bar):
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
     print('user request for set stickie:', data)
     nid = data['nid']
     status = data['status']
@@ -498,9 +532,10 @@ def user_set_stickie(data):
 
 @socketio.on('user_change_password')
 def user_change_password(data):
-    print('pass:')
-    print(data)
-    user = get_user_or_force_disconnect()
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
     new_password = data['password']
     for_email = data['forEmail']
     if for_email:
@@ -528,6 +563,11 @@ def user_change_password(data):
     reply = { 'message': message, 'type': message_type, 'which': 'change_password'}
     emit('server_send_flasher', reply)
 
+#################################################
+#
+# Conflictbot below here:
+#
+#################################################
 
 class Conflictbot(Namespace):
     def on_connect(self):
