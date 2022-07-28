@@ -80,12 +80,14 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
+    login_token = db.Column(db.String(64), unique=True, index=True)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    last_seen = db.Column(db.DateTime)
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -240,7 +242,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name")
+        fields = ("email", "full_name", "role_name", "last_seen")
 
 class PaperSchema(ma.Schema):
     class Meta:

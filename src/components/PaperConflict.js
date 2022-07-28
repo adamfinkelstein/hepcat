@@ -24,7 +24,7 @@ export default function PaperConflict({conflicts,isCurrent}){
                 (<div>(no conflicts)</div>)
                 :
                 <div className="queue-paper-conf-list">
-                    <span className="queue-paper-conf-header">Conflicts: </span>
+                    <span className="queue-paper-conf-header font-size-4">Conflicts: </span>
                 {
                     conflicts.map((conflict, index) => {
                         return(
