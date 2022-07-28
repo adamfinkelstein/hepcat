@@ -41,13 +41,15 @@ def random_role():
         return 'Admin'
 
 # users: Email,First Name,Last Name,Role,Password
-def fake_person(role):
-    first = fake.first_name()
-    last = fake.last_name()
+def fake_person(role=None, first=None, last=None):
+    if not first:
+        first = fake.first_name()
+    if not last:
+        last = fake.last_name()
+    if not role:
+        role = '' # formerly: random_role()
     email = name_to_email(first,last)
     passwd = fake.password()
-    if not role:
-        role = random_role()
     result = f'{email},{first},{last},{role},{passwd}\n'
     return result,email
 
@@ -56,8 +58,10 @@ def fake_users(n, fname):
     people = 'Email,First Name,Last Name,Role,Password\n'
     person,email = fake_person('Admin')
     people += person
+    person,email = fake_person('Screen','Screen','User')
+    people += person
     emails.append(email)
-    for i in range(1,n):
+    for i in range(2,n):
         person,email = fake_person(None)
         people += person
         emails.append(email)

@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
-from . import db, ma, login_manager
+from . import db, ma, login_manager, allow_cors
 
 ######################
 # History Context / Status
@@ -305,9 +305,9 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
     if not (email and first_name and last_name and role_name and passwd):
         print('cannot add user with incomplete info: ', 
                 email, first_name, last_name, role_name, passwd)
-    role = get_or_insert_role(role_name)
     user = User.query.filter_by(email=email).first()
     if not user:
+        role = get_or_insert_role(role_name)
         user = User(email=email,
                         first_name=first_name,
                         last_name=last_name,
@@ -315,23 +315,25 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
                         password=passwd,
                         confirmed=True)
         db.session.add(user)
-    db.session.commit()
+        db.session.commit()
 
 def ensure_admin():
+    # Also init global queue variables, if needed
+    ensure_gq()
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
     ensure_user(email, 'Admin', 'User', 'Admin', passwd)
-    # Add Screen User
-    email = get_config_or_default('HEPCAT_SCREEN_LOGIN', 'screen@example.com')
-    passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'pass')
-    ensure_user(email, 'Screen', 'User', 'Screen', passwd)
-    # Add Test Users
-    email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
-    passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
-    ensure_user(email, 'Adam', 'Finkelstein', 'Admin', passwd)
-    email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
-    passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
-    ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
-    # Also init global queue variables, if needed
-    ensure_gq()
+    # When debugging on local machine, also add these test users:
+    # if allow_cors: 
+    #     # Add Screen User
+    #     email = get_config_or_default('HEPCAT_SCREEN_LOGIN', 'screen@example.com')
+    #     passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'pass')
+    #     ensure_user(email, 'Screen', 'User', 'Screen', passwd)
+    #     # Add Test Users
+    #     email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
+    #     passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
+    #     ensure_user(email, 'Adam', 'Finkelstein', 'Admin', passwd)
+    #     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
+    #     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
+    #     ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
