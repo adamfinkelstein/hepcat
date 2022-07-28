@@ -319,9 +319,13 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
 
 def ensure_admin():
     # Add Admin User
-    email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'hepcat.mail@gmail.com')
+    email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
     ensure_user(email, 'Admin', 'User', 'Admin', passwd)
+    # Add Screen User
+    email = get_config_or_default('HEPCAT_SCREEN_LOGIN', 'screen@example.com')
+    passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'pass')
+    ensure_user(email, 'Screen', 'User', 'Screen', passwd)
     # Add Test Users
     email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
     passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
@@ -329,8 +333,5 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
     ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
-    email = get_config_or_default('HEPCAT_SCREEN_LOGIN', 'screen@example.com')
-    passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'pass')
-    ensure_user(email, 'Screen', 'User', 'Screen', passwd)
     # Also init global queue variables, if needed
     ensure_gq()

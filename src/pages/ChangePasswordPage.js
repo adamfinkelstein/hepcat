@@ -32,10 +32,13 @@ export default function ChangePasswordPage(){
             flash("Passwords don't match.", "warning", "change_password")
             return;
         }
-        var regularExpression = new RegExp('^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$');
-        if (!regularExpression.test(password)) {
-            flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning", "change_password")
-            return;
+
+        if (!isForOther || !isAdmin) {
+            var regularExpression = new RegExp('^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$');
+            if (!regularExpression.test(password)) {
+                flash("Passwords needs to contain 6-16 valid characters, contain a number and a special character.", "warning", "change_password")
+                return;
+            }
         }
 
         if(isForOther && forEmail == ""){
@@ -83,7 +86,7 @@ export default function ChangePasswordPage(){
                             <DropdownButton title={forWho} type="button"
                                             variant="secondary" className='select-user-dropdown'>
                                 {
-                                    allUsers.map((user, index) => {
+                                    allUsers.filter(user => (user.role_name != 'Admin')).map((user, index) => {
                                         return(
                                             <Dropdown.Item key={index} as="button" onClick={
                                                 () => handleSetFor(user)}
@@ -97,7 +100,7 @@ export default function ChangePasswordPage(){
 
 
                     <div className="reset-password-row">
-                        <label>Password:</label>
+                        <label>Enter Password:</label>
                         <input
                             name="password"
                             value={password}
@@ -107,7 +110,7 @@ export default function ChangePasswordPage(){
                             />
                     </div>
                     <div className="reset-password-row"> 
-                        <label>Re-enter Password:</label>
+                        <label>Repeat Password:</label>
                         <input
                             name="passwordAgain"
                             value={passwordAgain}
