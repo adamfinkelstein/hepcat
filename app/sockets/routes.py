@@ -26,7 +26,7 @@ def get_react_env_vars():
 def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
-    if allow_cors: # hack to allow React to run in a different port without a login
+    if allow_cors: # hack to allow Rect debug on different port w/o login
         now = datetime.now()
         seconds_since_epoch = now.timestamp()
         ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
@@ -40,6 +40,8 @@ def get_current_user_or_none():
     return None
 
 def current_user_is_admin():
+    if allow_cors: # hack to allow Rect debug on different port w/o login
+        return True
     user = get_current_user_or_none()
     if user and user.is_admin:
         return True

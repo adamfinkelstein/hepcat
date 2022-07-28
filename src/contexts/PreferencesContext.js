@@ -150,7 +150,7 @@ export default function PreferencesContext({children}){
           fontSizeRuleMD = document.createTextNode(`.about-container h3{font-size:${fontPX}px}`)
           cssStyle.appendChild(fontSizeRuleMD)
           break;
-        case "font-size-4":
+        case "font-size-3":
           fontSizeRuleMD = document.createTextNode(`.about-container li, .about-container p{font-size:${fontPX}px}`)
           break;
       }
