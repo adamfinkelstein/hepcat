@@ -48,9 +48,13 @@ export default function Body(){
                             <Tabs defaultActiveKey="paper"
                                   id="paper-tabs"
                                   className="mb-3 font-size-3 tabs">
-                                <Tab eventKey="paper" title="Paper" className='tab'>
-                                    <Paper />
-                                </Tab>
+                                {
+                                    !hideQueue && (
+                                        <Tab eventKey="paper" title="Paper" className='tab'>
+                                            <Paper />
+                                        </Tab>
+                                    )
+                                }
                                 {
                                     !isScreen && (
                                         <Tab eventKey="grid" title="Grid" className='tab'>

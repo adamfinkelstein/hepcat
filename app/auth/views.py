@@ -35,9 +35,15 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user is not None and user.verify_password(form.password.data):
+            # possibly here set new token and last-login time for user, here.
+            # then use that token in user_loader (models.py).
             remember_me = True
             login_user(user, remember_me)
             next = request.args.get('next')
+            # according to this:
+            # https://flask-login.readthedocs.io/en/latest/#login-example
+            # we should validate next here. is this sufficient???
+            # perhaps always just send to '/' ???
             if next is None or not next.startswith('/'):
                 next = url_for(main_index)
             return redirect(next)

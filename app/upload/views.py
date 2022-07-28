@@ -605,7 +605,6 @@ def get_results_as_rows():
         rows.append(row)
     return rows
 
-
 @upload.route('/download_results_csv')
 def download_results_csv():
     app = current_app._get_current_object()
