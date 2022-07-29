@@ -8,9 +8,9 @@ from werkzeug.utils import secure_filename
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, \
+from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, reset_gq, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -150,6 +150,7 @@ def journal_only_from_conf(conf):
 # Submission ID,Thumbnail URL,Title,Area,Abstract
 def insert_paper_rows(rows):
     delete_all_papers()
+    reset_gq()
     count = 0
     for row in rows:
         if len(row) < 5:

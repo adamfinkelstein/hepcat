@@ -273,6 +273,14 @@ def ensure_gq():
     else:
         print(f'retrieved GC with id {gq.id}')
 
+def reset_gq():
+    ensure_gq()
+    gq = GlobQueue.query.first()
+    gq.current=-1
+    gq.current_show=False
+    db.session.add(gq)
+    db.session.commit()
+
 ######################
 # Helper functions
 ######################
