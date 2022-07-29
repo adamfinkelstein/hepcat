@@ -168,9 +168,11 @@ export default function AppContext({children}){
     };
 
     const receiveAlert = (data) => {
-      setModalTitle(data.title);
-      setModalBody(data.body);
-      setShowModal(true);
+      if (isAdmin || !data.admin_only) {
+        setModalTitle(data.title);
+        setModalBody(data.body);
+        setShowModal(true);
+      }
     }
 
     const receiveFlasher = (data) => {

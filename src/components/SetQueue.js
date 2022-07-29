@@ -139,6 +139,11 @@ export default function SetQueue(){
         // flash("Bar set to " + guiBarString + ".", "success", "change_bar")
     }
 
+    function handleBulkRejectButton(){
+        controlledLog('bulk reject button pressed')
+        socketEmit("admin_bulk_reject")
+    }
+
     return(
         <Container>
             <Flasher type="hide_queue"/>
@@ -310,6 +315,10 @@ export default function SetQueue(){
                         onChange={handleInputChange}
                     />
                 </Stack>
+                <hr className="horizontal-divider"/>
+                <Button variant="warning" onClick={handleBulkRejectButton} 
+                        className="bulk-reject-btn">Bulk Reject</Button>
+                &nbsp;&nbsp;(Mark status of all reject papers below bar as already discussed.)
             </div>
         </Container>
     )

@@ -163,6 +163,9 @@ class Paper(db.Model):
     history = db.relationship('History', backref='paper', lazy='dynamic', 
         order_by='History.when')
 
+    def __repr__(self):
+        return '<Paper %r>' % self.nid
+
 # Submission ID,Role,Rating,Consensus Recommendation
 class Review(db.Model):
     __tablename__ = 'reviews'
@@ -268,8 +271,12 @@ def ensure_gq():
     if not gq:
         gq = GlobQueue()
         db.session.add(gq)
-        db.session.commit()
-        print(f'created GC with id {gq.id}')
+        try:
+            db.session.commit()
+            print(f'created GC with id {gq.id}')
+        except:
+            db.session.rollback()
+            print(f'failed to create GC')
     else:
         print(f'retrieved GC with id {gq.id}')
 
@@ -279,7 +286,11 @@ def reset_gq():
     gq.current=-1
     gq.current_show=False
     db.session.add(gq)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(f'failed to reset GC')
 
 ######################
 # Helper functions
@@ -323,7 +334,11 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
                         password=passwd,
                         confirmed=True)
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print(f'failed to ensure user with email {email}')
 
 def ensure_admin():
     # Also init global queue variables, if needed

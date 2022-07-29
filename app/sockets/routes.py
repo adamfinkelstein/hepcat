@@ -188,12 +188,56 @@ def include_paper_in_queue(paper, filters):
         return False
     return True 
 
+def paper_is_unseen_reject_below_bar(paper):
+    gq = GlobQueue.query.first()
+    bar = gq.bar
+    sort_score = paper.sort_score
+    if sort_score >= bar:
+        return False
+    if not is_paper_unseen(paper):
+        return False
+    status = get_latest_history_status(paper)
+    if status != 'Reject':
+        return False
+    return True 
+
+def get_all_unseen_reject_below_bar_papers():
+    papers = Paper.query.all()
+    list_papers = list(papers)
+    filter_papers = [p for p in list_papers if paper_is_unseen_reject_below_bar(p)]
+    return filter_papers
+
+def bulk_reject_below_bar():
+    papers = get_all_unseen_reject_below_bar_papers()
+    context_plenary = int(HistoryContext.Plenary)
+    status_enum = status_str_to_enum('Reject')
+    for paper in papers:
+        history = History(paper=paper,
+                    context_enum=context_plenary,
+                    status_enum=status_enum)
+        db.session.add(history)
+    try:
+        db.session.commit()
+        return True
+    except:
+        db.session.rollback()
+        msg = 'failed to bulk_reject_below_bar'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
+        return False
+
 def clear_queue():
     papers = Paper.query.all()
     for paper in papers:
         paper.queue_order = 0
         db.session.add(paper)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to clear queue'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 def zero_or_inc_current_index(zero_or_inc):
     gq = GlobQueue.query.first()
@@ -209,14 +253,26 @@ def zero_or_inc_current_index(zero_or_inc):
         gq.current_show_enter = 0
     gq.current_show = False
     db.session.add(gq)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = f'failed to set queue index (inc {zero_or_inc})'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 def set_bar(bar):
     bar = float(bar)
     gq = GlobQueue.query.first()
     gq.bar = bar
     db.session.add(gq)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to set bar'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 def set_queue_to_paper_list(all_papers, paper_list, gather_admin, solve_tsp):
     if solve_tsp:
@@ -292,14 +348,26 @@ def show_current_paper():
     gq.current_show = True
     gq.current_start = func.now()
     db.session.add(gq)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to show current paper'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 def set_hide_queue(hide, message):
     gq = GlobQueue.query.first()
     gq.hide_queue = hide
     gq.message = message
     db.session.add(gq)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to hide queue'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 def update_current_paper_status(new_status):
     globs = get_globs_dump()
@@ -372,6 +440,10 @@ def get_about_md():
 ########### Decorator (communication) functions mostly below here:
 ###########
 ###########
+
+def broadcast_admin_alert(title, body):
+    data = {'title':title, 'body':body, 'admin_only': True}
+    emit('server_send_alert', data, broadcast=True)
 
 @socketio.on('connect')
 def io_connect():
@@ -504,9 +576,22 @@ def admin_set_bar(bar):
     message = f'Bar is now updated ({bar}).'
     data = { 'message': message, 'type': 'success', 'which': 'change_bar'}
     emit('server_send_flasher', data)
-    # old version used modal:
-    # data = {'title':'Bar Set', 'body':'You set the bar to '+bar}
-    # emit('server_send_alert',data)
+
+@socketio.on('admin_bulk_reject')
+def admin_bulk_reject():
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    msg = 'got request admin_bulk_reject'
+    print(msg)
+    success = bulk_reject_below_bar()
+    if success:
+        grid_dump = get_grid_dump()
+        emit('server_set_grid', grid_dump, broadcast=True)
+        msg = 'Mark unseen reject papers below bar as now seen.'
+        data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
+        emit('server_send_flasher', data)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
@@ -526,11 +611,17 @@ def user_set_stickie(data):
                     context_enum=context_stickie,
                     status_enum=status_enum)
     db.session.add(history)
-    db.session.commit()
-    emit('server_set_stickie', nid, broadcast=True)
-    message = f'Stickie filed for paper {nid} ({status}).'
-    data = { 'message': message, 'type': 'success', 'which': 'stickie'}
-    emit('server_send_flasher', data)
+    try:
+        db.session.commit()
+        emit('server_set_stickie', nid, broadcast=True)
+        message = f'Stickie filed for paper {nid} ({status}).'
+        data = { 'message': message, 'type': 'success', 'which': 'stickie'}
+        emit('server_send_flasher', data)
+    except:
+        db.session.rollback()
+        msg = f'Failed attempt to file stickie for paper {nid} ({status}).'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
 
 @socketio.on('user_change_password')
 def user_change_password(data):
@@ -553,13 +644,16 @@ def user_change_password(data):
         for_user = user # self
         message = "You have successfully changed your password."
     if success:
-        # security! later: disable printing pass:
-        print(f'user {for_user.full_name} changes password to {new_password}')
+        print(f'change password for {for_user.full_name}')
         for_user.password = new_password
         db.session.add(for_user)
-        db.session.commit()
-        message_type = 'success'
-    else:
+        try:
+            db.session.commit()
+            message_type = 'success'
+        except:
+            db.session.rollback()
+            success = False
+    if not success:
         message = "Error setting password."
         message_type = 'warning'
     reply = { 'message': message, 'type': message_type, 'which': 'change_password'}

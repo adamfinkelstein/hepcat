@@ -1,6 +1,6 @@
 import os
 import csv
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 from flask import render_template, flash, redirect, url_for, send_file, current_app
 # from flask_login import current_user
 from flask_login import login_required, logout_user, current_user
@@ -34,7 +34,13 @@ def delete_all_conflicts():
     for user in users:
         user.conf_papers = [] # empty list
         db.session.add(user)
-    db.session.commit()    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_conflicts'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After conflict deletion')
 
 def delete_all_clusters():
@@ -51,9 +57,14 @@ def delete_all_clusters():
     cluster_names = [label.name for label in list(cluster_labels)]
     for name in cluster_names:
         Label.query.filter_by(name=name).delete()
-    db.session.commit()    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_clusters'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After cluster deletion')
-    return
 
 def delete_all_labels():
     dump_users_papers_and_conflicts('Before label deletion')
@@ -61,10 +72,16 @@ def delete_all_labels():
     for label in labels:
         label.tag_papers = [] # empty list
         db.session.add(label)
-    db.session.commit()
-    num_deleted = Label.query.delete()
-    db.session.commit()
-    print(f'deleted {num_deleted} labels')
+    try:
+        db.session.commit()
+        num_deleted = Label.query.delete()
+        db.session.commit()
+        print(f'deleted {num_deleted} labels')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_labels'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After label deletion')
 
 def delete_all_users():
@@ -72,8 +89,14 @@ def delete_all_users():
     dump_users_papers_and_conflicts('Before user deletion')
     # see: https://stackoverflow.com/questions/3481976/ 
     num_deleted = User.query.delete() # delete(synchronize_session='fetch')
-    db.session.commit()
-    print(f'Deleted {num_deleted} users.')
+    try:
+        db.session.commit()
+        print(f'Deleted {num_deleted} users.')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_users'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After user deletion')
 
 def delete_all_papers():
@@ -83,23 +106,41 @@ def delete_all_papers():
     delete_all_labels() # need to delete labels before papers
     dump_users_papers_and_conflicts('Before paper deletion')
     num_deleted = Paper.query.delete()
-    db.session.commit()
-    print(f'Deleted {num_deleted} papers.')
+    try:
+        db.session.commit()
+        print(f'Deleted {num_deleted} papers.')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_papers'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After paper deletion')
 
 def delete_all_reviews():
     delete_all_history() # need to delete history before reviews
     dump_users_papers_and_conflicts('Before review deletion')
     num_deleted = Review.query.delete()
-    db.session.commit()
-    print(f'Deleted {num_deleted} reviews.')
+    try:
+        db.session.commit()
+        print(f'Deleted {num_deleted} reviews.')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_reviews'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After review deletion')
 
 def delete_all_history():
     dump_users_papers_and_conflicts('Before History deletion')
     num_deleted = History.query.delete()
-    db.session.commit()
-    print(f'Deleted {num_deleted} history entries.')
+    try:
+        db.session.commit()
+        print(f'Deleted {num_deleted} history entries.')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_history'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After History deletion')
 
 # this is before history upload, which is just for debugging
@@ -108,8 +149,14 @@ def delete_non_bbs_history():
     context_bbs = int(HistoryContext.BBS)
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
-    db.session.commit()
-    print(f'Deleted {num_deleted} history entries.')
+    try:
+        db.session.commit()
+        print(f'Deleted {num_deleted} history entries.')
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_non_bbs_history'
+        print(msg)
+        flash(msg)
     dump_users_papers_and_conflicts('After non-BBS History deletion')
 
 def delete_all_summaries():
@@ -118,12 +165,24 @@ def delete_all_summaries():
     for paper in papers:
         paper.summary = ''
         db.session.add(paper)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_summaries'
+        print(msg)
+        flash(msg)
     print(f'Deleted {count} summaries.')
 
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_uploads'
+        print(msg)
+        flash(msg)
     print(f'Deleted {num_deleted} file upload entries.')
 
 # Email,First Name,Last Name,Role,Password
@@ -146,7 +205,14 @@ def insert_user_rows(rows):
             user.role = roleObj
         db.session.add(user)
         count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert user rows (possible duplicate email?)'
+        print(msg)
+        flash(msg)
+        return 0
     dump_users_papers_and_conflicts('After insertion')
     return count
 
@@ -181,7 +247,14 @@ def insert_paper_rows(rows):
             if label and paper:
                 paper.tag_labels.append(label)
                 db.session.add(paper)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert paper rows (possible duplicate paper id?)'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 # Submission ID,Email
@@ -198,7 +271,14 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert conflict rows'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 # Submission ID,Summary
@@ -214,7 +294,14 @@ def insert_summary_rows(rows):
             paper.summary = summary
             db.session.add(paper)
             count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert summaries'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 # Submission ID,Cluster
@@ -235,7 +322,14 @@ def insert_cluster_rows(rows):
             paper.tag_labels.append(label)
             db.session.add(paper)
             count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert clusters'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 def areas_to_label_names(areas_string):
@@ -375,7 +469,13 @@ def papers_set_all_scores_and_status_from_reviews():
         db.session.add(history)
     print('papers missing reviews: ', missing_review_nids)
     print('weird conf scores: ', weird_conf_nids)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to set scores and status from reviews'
+        print(msg)
+        flash(msg)
 
 # old: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
@@ -401,8 +501,15 @@ def insert_review_rows(rows):
                             consensus=consensus_enum)
             db.session.add(review)
             count += 1
-    db.session.commit()
-    papers_set_all_scores_and_status_from_reviews()
+    try:
+        db.session.commit()
+        papers_set_all_scores_and_status_from_reviews()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert reviews'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 def status_letter_to_history(status_string):
@@ -415,7 +522,7 @@ def status_letter_to_history(status_string):
 # Submission ID,Seconds,Context,Status
 def insert_history_rows(rows):
     delete_non_bbs_history() # delete history since BBS
-    now = datetime.now()
+    # now = datetime.now()
     count = 0
     for row in rows:
         if len(row) < 4:
@@ -434,7 +541,14 @@ def insert_history_rows(rows):
                             status_enum=status_enum)
             db.session.add(history)
             count += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert history'
+        print(msg)
+        flash(msg)
+        return 0
     return count
 
 csvLinklings = {
@@ -535,7 +649,12 @@ def read_csv(filename):
         delete_prev_file_uploads(headerType)
         upload = FileUpload(file=headerType, count=count)
         db.session.add(upload)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+            msg = 'failed to add file upload record'
+            print(msg)
         msg = dump_users_papers_and_conflicts('After Upload')
         if headerType == 'users':
             msg += ' You have been logged out because users were updated.'
