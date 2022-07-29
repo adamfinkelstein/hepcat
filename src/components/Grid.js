@@ -14,7 +14,7 @@ export default function Grid({isAbove,gridDisplay}){
     const favorites = useFavorites()
     
     let queueCurrentID = 0 // none has 0 nid
-    if(queue.length && globals.queueCurrent < queue.length){
+    if(queue.length && globals.queueCurrent < queue.length && globals.queueCurrent >= 0){
         queueCurrentID = queue[globals.queueCurrent].nid
     }
 

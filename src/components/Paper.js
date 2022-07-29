@@ -35,7 +35,7 @@ export default function Paper(){
         {
             show: true,
             title: 'Conflicts:',
-            array: isPaper && cp.conflicts ? cp.conflicts : [],
+            array: isPaper && cp && cp.conflicts ? cp.conflicts : [],
             default: '(none)'
         },
         {
