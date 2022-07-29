@@ -3,6 +3,7 @@ import csv
 from datetime import datetime, timedelta
 from flask import render_template, flash, redirect, url_for, send_file, current_app
 # from flask_login import current_user
+from flask_login import login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 # from sqlalchemy import func
 from . import upload
@@ -10,7 +11,7 @@ from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, reset_gq, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -119,6 +120,11 @@ def delete_all_summaries():
         db.session.add(paper)
     db.session.commit()
     print(f'Deleted {count} summaries.')
+
+def delete_all_uploads():
+    num_deleted = FileUpload.query.delete()
+    db.session.commit()
+    print(f'Deleted {num_deleted} file upload entries.')
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
@@ -546,7 +552,10 @@ def pending_uploads(uploads):
 
 # following https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 @upload.route('/', methods=('GET', 'POST'))
+@login_required
 def upload_main():
+    if not current_user_is_admin():
+        return redirect(url_for('auth.login'))
     form = UploadForm()
     filename = None
     logout = False
@@ -570,6 +579,7 @@ def upload_main():
                 msg ='Unable to read csv file: ' + filename
             flash(msg)
     if logout:
+        logout_user()
         return redirect(url_for('auth.login'))
     uploads = FileUpload.query.all()
     pending = pending_uploads(uploads)
@@ -606,8 +616,17 @@ def get_results_as_rows():
         rows.append(row)
     return rows
 
+def current_user_is_admin():
+    user = current_user
+    if user and user.is_admin:
+        return True
+    return False
+
 @upload.route('/download_results_csv')
+@login_required
 def download_results_csv():
+    if not current_user_is_admin():
+        return redirect(url_for('auth.login'))
     app = current_app._get_current_object()
     folder = app.config['UPLOAD_FOLDER']
     make_path_if_needed(folder)
@@ -616,6 +635,23 @@ def download_results_csv():
     rows = get_results_as_rows()
     write_csv(rows, fullpath)
     return send_file(fullpath, as_attachment=True)
+
+@upload.route('/wipe_database')
+@login_required
+def wipe_database():
+    if not current_user_is_admin():
+        return redirect(url_for('auth.login'))
+    print('about to wipe database...')
+    reset_gq()
+    delete_all_uploads()
+    delete_all_papers()
+    delete_all_users()
+    print('... wipe database complete!')
+    ensure_admin()
+    msg ='The database was wiped clean. You should be logged out.'
+    flash(msg)
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 
 ''' Should follow redirect model, like this:

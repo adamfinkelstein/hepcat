@@ -40,8 +40,19 @@
 
 <div class="row">
 <h2>For end of meeting:</h2>
-<a class="btn btn-primary" href="{{url_for('upload.download_results_csv')}}">Download CSV</a>
+<a class="btn btn-warning" href="{{url_for('upload.download_results_csv')}}">Download CSV</a>
 </div>
+
+<hr/>
+<p>&nbsp</p>
+<hr/>
+
+<div class="row">
+<h2>Wipe out the database:</h2>
+<a class="btn btn-danger" href="{{url_for('upload.wipe_database')}}">Be CAREFUL!</a>
+</div>
+
+<p>&nbsp</p>
 
 </div>
 
