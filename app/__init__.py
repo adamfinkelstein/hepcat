@@ -1,4 +1,6 @@
 import os
+import sys
+import logging
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
@@ -38,6 +40,10 @@ def create_app(config_name, build_path):
         print('ALLOW_CORS - allowing cross origin requests on APP')
     app.config.from_object(config[config_name])
     # config[config_name].init_app(app) # AF not needed (just pass)
+
+    # to help with this
+    app.logger.addHandler(logging.StreamHandler(sys.stdout))
+    app.logger.setLevel(logging.ERROR)
 
     bootstrap.init_app(app)
     mail.init_app(app)
