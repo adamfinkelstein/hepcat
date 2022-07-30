@@ -67,6 +67,21 @@ tags = db.Table( 'tags',
     db.Column('label_id', db.Integer, db.ForeignKey('labels.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
 
+def drop_conflicts():
+    print('about to drop conflicts table...')
+    # drop works on sqlite but not on postgres:
+    # conflicts.drop(db.engine)
+    result = db.session.execute('DROP TABLE IF EXISTS conflicts CASCADE;')
+    print('result:')
+    print(result)
+    # alternatives like this:
+    # db.engine.execute(text("<sql here>")).execution_options(autocommit=True)) executes and commits it too. – 
+    # discussed here:
+    # https://stackoverflow.com/questions/17972020/
+    print('about to recreate all...')
+    db.create_all()
+    print('...done')
+
 ######################
 # Regular Tables/Classes
 ######################
@@ -365,9 +380,34 @@ def ensure_admin():
     #     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
     #     ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
 
+postgres_wipe_db_cmd = '''
+DROP TABLE IF EXISTS history CASCADE;
+DROP TABLE IF EXISTS conflicts CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS papers CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS file_upload CASCADE;
+DROP TABLE IF EXISTS glob_queue CASCADE;
+DROP TABLE IF EXISTS labels CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+'''
 
 def wipe_db_clean():
-    print('About to wipe clean...')
-    db.drop_all()
-    db.create_all()
-    ensure_admin()
+    db_uri = current_app.config['SQLALCHEMY_DATABASE_URI']
+    is_sqlite = db_uri.startswith('sqlite')
+    print(f'About to wipe db clean ({db_uri})...')
+    try:
+        print('about to drop all tables...')
+        if is_sqlite:
+            db.drop_all()
+        else: # postgres:
+            db.session.execute(postgres_wipe_db_cmd)
+        print('...about to recreate all tables...')
+        db.create_all()
+        print('...success clean slate!')
+        # wait for ensure_admin() on next reload
+        return True
+    except:
+        print('...failed to wipe clean!')
+        return False

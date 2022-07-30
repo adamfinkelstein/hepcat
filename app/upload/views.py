@@ -11,7 +11,7 @@ from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, drop_conflicts, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -30,17 +30,18 @@ def dump_users_papers_and_conflicts(title):
 
 def delete_all_conflicts():
     dump_users_papers_and_conflicts('Before conflict deletion')
-    users = User.query.all()
-    for user in users:
-        user.conf_papers = [] # empty list
-        db.session.add(user)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-        msg = 'failed in delete_all_conflicts'
-        print(msg)
-        flash(msg)
+    drop_conflicts()
+    # users = User.query.all()
+    # for user in users:
+    #     user.conf_papers = [] # empty list
+    #     db.session.add(user)
+    # try:
+    #     db.session.commit()
+    # except:
+    #     db.session.rollback()
+    #     msg = 'failed in delete_all_conflicts'
+    #     print(msg)
+    #     flash(msg)
     dump_users_papers_and_conflicts('After conflict deletion')
 
 def delete_all_clusters():
@@ -761,12 +762,15 @@ def wipe_database():
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
     print('about to wipe database...')
-    wipe_db_clean()
-    print('... wipe database complete!')
-    msg ='The database was wiped clean. You should be logged out.'
+    success = wipe_db_clean()
+    if success:
+        msg ='The database was wiped clean. You have been logged out.'
+        flash(msg)
+        logout_user()
+        return redirect(url_for('auth.login'))
+    msg ='The database wipe failed!'
     flash(msg)
-    logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('upload.upload_main'))
 
 
 ''' Should follow redirect model, like this:
