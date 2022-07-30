@@ -28,7 +28,7 @@ export default function SetQueue(){
     const socketEmit = globals.socketEmit
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    const filterList = ['Stickie Only','Unseen Only','No Clusters']
+    const filterList = ['Stickie Only','Unseen Only','No Clusters','No Chair Conf']
     const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
@@ -229,7 +229,6 @@ export default function SetQueue(){
                             )
                         })}
                         </div>
-                        <div>&nbsp;</div>
                     </div>
                     <div className="vr" />
                 <div>

@@ -164,7 +164,15 @@ def is_in_cluster(paper):
             return True
     return False
 
-# const filterList = ['Stickie Only','Untouched Only','No Clusters'];
+def has_chair_conflict(paper):
+    conf_users = paper.conf_users
+    for user in conf_users:
+        if user.is_admin:
+            return True
+    return False
+
+# const filterList = ['Stickie Only','Untouched Only',
+#     'No Clusters','No Chair Conf'];
 def include_paper_in_queue(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters['lowRange'])
@@ -185,6 +193,8 @@ def include_paper_in_queue(paper, filters):
     if 'Unseen Only' in filter_only and not is_paper_unseen(paper):
         return False
     if 'No Clusters' in filter_only and is_in_cluster(paper):
+        return False
+    if 'No Chair Conf' in filter_only and has_chair_conflict(paper):
         return False
     return True 
 

@@ -67,20 +67,20 @@ tags = db.Table( 'tags',
     db.Column('label_id', db.Integer, db.ForeignKey('labels.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
 
-def drop_conflicts():
-    print('about to drop conflicts table...')
-    # drop works on sqlite but not on postgres:
-    # conflicts.drop(db.engine)
-    result = db.session.execute('DROP TABLE IF EXISTS conflicts CASCADE;')
-    print('result:')
-    print(result)
-    # alternatives like this:
-    # db.engine.execute(text("<sql here>")).execution_options(autocommit=True)) executes and commits it too. – 
-    # discussed here:
-    # https://stackoverflow.com/questions/17972020/
-    print('about to recreate all...')
-    db.create_all()
-    print('...done')
+# def drop_conflicts():
+#     print('about to drop conflicts table...')
+#     # drop works on sqlite but not on postgres:
+#     # conflicts.drop(db.engine)
+#     result = db.session.execute('DROP TABLE IF EXISTS conflicts CASCADE;')
+#     print('result:')
+#     print(result)
+#     # alternatives like this:
+#     # db.engine.execute(text("<sql here>")).execution_options(autocommit=True)) executes and commits it too. – 
+#     # discussed here:
+#     # https://stackoverflow.com/questions/17972020/
+#     print('about to recreate all...')
+#     db.create_all()
+#     print('...done')
 
 ######################
 # Regular Tables/Classes

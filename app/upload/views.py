@@ -11,7 +11,7 @@ from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
     sid_to_num, get_or_insert_role, cluster_to_label_name, area_to_label_name, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, drop_conflicts, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -28,9 +28,9 @@ def dump_users_papers_and_conflicts(title):
     print(result)
     return result
 
-def delete_all_conflicts():
+def delete_all_conflicts(): ### ??? Never called!
     dump_users_papers_and_conflicts('Before conflict deletion')
-    drop_conflicts()
+    # this also doesn't work on all dbs: drop_conflicts()
     # users = User.query.all()
     # for user in users:
     #     user.conf_papers = [] # empty list
@@ -85,7 +85,7 @@ def delete_all_labels():
         flash(msg)
     dump_users_papers_and_conflicts('After label deletion')
 
-def delete_all_users():
+def delete_all_users(): ### ??? Never called!
     delete_all_conflicts() # need to delete conflicts before users
     dump_users_papers_and_conflicts('Before user deletion')
     # see: https://stackoverflow.com/questions/3481976/ 
@@ -100,7 +100,7 @@ def delete_all_users():
         flash(msg)
     dump_users_papers_and_conflicts('After user deletion')
 
-def delete_all_papers():
+def delete_all_papers(): ### ??? Never called!
     delete_all_reviews() # need to delete reviews before papers
     delete_all_history() # need to delete history before papers
     delete_all_conflicts() # need to delete conflicts before papers
@@ -274,7 +274,13 @@ def insert_paper_rows(rows):
 
 # Submission ID,Email
 def insert_conflict_rows(rows):
-    delete_all_conflicts()
+    # This fails on heroku:
+    # delete_all_conflicts()
+    count = db.session.query(conflicts).count()
+    if count:
+        msg = 'PLEASE WIPE DATABASE (below) before replacing conflicts!'
+        flash(msg,'error')
+        return -1
     count = 0
     for row in rows:
         if len(row) < 2:

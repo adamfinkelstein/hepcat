@@ -16,7 +16,7 @@ export default function Body(){
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 
-    const isPaper = queue && queue.length && globals.queueCurrent < queue.length
+    //const isPaper = queue && queue.length && globals.queueCurrent < queue.length
     const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
     const hideMessage = globals.serverGlobs && globals.serverGlobs.message ? globals.serverGlobs.message : "The queue is hidden."
     const message = hideQueue ? hideMessage : "No papers in queue."

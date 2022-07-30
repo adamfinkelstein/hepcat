@@ -41,7 +41,7 @@ export default function ChangePasswordPage(){
             }
         }
 
-        if(isForOther && forEmail == ""){
+        if(isForOther && forEmail === ""){
             flash("Please pick a user.", "warning", "change_password")
             return;
         }
@@ -86,7 +86,7 @@ export default function ChangePasswordPage(){
                             <DropdownButton title={forWho} type="button"
                                             variant="secondary" className='select-user-dropdown'>
                                 {
-                                    allUsers.filter(user => (user.role_name != 'Admin')).map((user, index) => {
+                                    allUsers.filter(user => (user.role_name !== 'Admin')).map((user, index) => {
                                         return(
                                             <Dropdown.Item key={index} as="button" onClick={
                                                 () => handleSetFor(user)}
