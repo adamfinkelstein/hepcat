@@ -8,6 +8,8 @@ export default function Paper(){
     const [currentTime, setCurrentTime] = useState(Date.now())
 
     const globals = useAppGlobals();
+    const user = globals.user
+    const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue;
     const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
     const queueCurrent = globals.queueCurrent;
@@ -137,7 +139,9 @@ export default function Paper(){
                 </div>
                 ) : (
                 <div>
-                    <div className="paper-timer font-size-3">{formatTime(currentTime)}</div>
+                    { !isScreen &&
+                        (<div className="paper-timer font-size-3">{formatTime(currentTime)}</div>)
+                    }
                     <p className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</p>
                     <p className='font-size-4'><span className="paper-par-header">Reviews: </span><span className='paper-reviews-text' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&
