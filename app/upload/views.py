@@ -188,9 +188,10 @@ def delete_all_uploads():
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
-    delete_all_users()
-    ensure_admin()
-    dump_users_papers_and_conflicts('After ensure')
+    # this fails on Heroku:
+    # delete_all_users()
+    # ensure_admin()
+    # dump_users_papers_and_conflicts('After ensure')
     count = 0
     for row in rows:
         if len(row) < 5:

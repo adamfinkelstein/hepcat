@@ -398,11 +398,13 @@ def wipe_db_clean():
     is_sqlite = db_uri.startswith('sqlite')
     print(f'About to wipe db clean ({db_uri})...')
     try:
-        print('about to drop all tables...')
         if is_sqlite:
+            print('about to drop all tables (sqlite)...')
             db.drop_all()
         else: # postgres:
+            print('about to drop all tables (postgres)...')
             db.session.execute(postgres_wipe_db_cmd)
+            db.session.commit()
         print('...about to recreate all tables...')
         db.create_all()
         print('...success clean slate!')
