@@ -11,7 +11,7 @@
 </div>
 
 <div class="row">
-    {{ wtf.quick_form(form) }}
+    {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
 </div>
 
 <div class="row">
@@ -48,7 +48,7 @@
 <hr/>
 
 <div class="row">
-<h2>Wipe out the database:</h2>
+<h2>Wipe the database clean, removing all data:</h2>
 <a class="btn btn-danger" href="{{url_for('upload.wipe_database')}}">Be CAREFUL!</a>
 </div>
 

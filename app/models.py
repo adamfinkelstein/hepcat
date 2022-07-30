@@ -6,7 +6,11 @@ from flask_login import UserMixin
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
+# from sqlalchemy import MetaData
+
 from . import db, ma, login_manager, allow_cors
+
+# metadata_obj = MetaData()
 
 ######################
 # History Context / Status
@@ -360,3 +364,10 @@ def ensure_admin():
     #     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
     #     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
     #     ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
+
+
+def wipe_db_clean():
+    print('About to wipe clean...')
+    db.drop_all()
+    db.create_all()
+    ensure_admin()

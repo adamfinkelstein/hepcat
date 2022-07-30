@@ -11,7 +11,7 @@ from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
     sid_to_num, get_or_insert_role, ensure_admin, cluster_to_label_name, area_to_label_name, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
@@ -761,12 +761,8 @@ def wipe_database():
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
     print('about to wipe database...')
-    reset_gq()
-    delete_all_uploads()
-    delete_all_papers()
-    delete_all_users()
+    wipe_db_clean()
     print('... wipe database complete!')
-    ensure_admin()
     msg ='The database was wiped clean. You should be logged out.'
     flash(msg)
     logout_user()
