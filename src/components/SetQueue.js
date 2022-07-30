@@ -28,12 +28,12 @@ export default function SetQueue(){
     const socketEmit = globals.socketEmit
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    const filterList = ['Stickie Only','Unseen Only','No Clusters','No Chair Conf']
+    const filterList = ['Stickie Only','Unseen Only','No Clusters','No Admin Conf','Only Admin Conf']
     const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
         hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
-        adminConflicts, setAdminConflicts, queueExplicitList, setQueueExplicitList} = useGUI()
+        queueExplicitList, setQueueExplicitList} = useGUI()
 
     let flasher = useFlasher()
     let flash = flasher["flash"]
@@ -75,7 +75,7 @@ export default function SetQueue(){
         const only = filterList.filter( (f,index) =>
             document.getElementById("only-checkbox-"+index).checked
         )
-        const data = { statuses, only, lowRange, highRange, adminConflicts }
+        const data = { statuses, only, lowRange, highRange }
         return data
     }
 
@@ -125,12 +125,6 @@ export default function SetQueue(){
         controlledLog('hide queue after click: '+newHideQ)
         const data = { hide:newHideQ, message:message }
         socketEmit("admin_hide_queue", data)
-    }
-
-    function handleGatherAdminConflicts(){
-        const newAdminConflicts = !adminConflicts
-        setAdminConflicts(newAdminConflicts)
-        controlledLog('admin conflicts after click: '+newAdminConflicts)
     }
 
     function handleSetBarButton(){
@@ -198,6 +192,7 @@ export default function SetQueue(){
                                 </div>
                             )
                         })}
+                        <div>&nbsp;</div>
                         </div>
                     </div>
                     <div className="vr" />
@@ -274,10 +269,6 @@ export default function SetQueue(){
                         <Button variant="primary" className="set-filtered-queue-button"
                             onClick={handleSetQueueButton}>Set Filtered Queue
                         </Button>
-                        <Form.Check type="checkbox" defaultChecked={adminConflicts}
-                            onChange={handleGatherAdminConflicts}
-                        />
-                        <span className="gather-admin-text font-size-3">&nbsp;Gather Admin conflicts at start.</span>
                     </Stack>
                 </div>
             </div>

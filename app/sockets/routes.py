@@ -172,7 +172,7 @@ def has_chair_conflict(paper):
     return False
 
 # const filterList = ['Stickie Only','Untouched Only',
-#     'No Clusters','No Chair Conf'];
+#     'No Clusters','No Admin Conf'];
 def include_paper_in_queue(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters['lowRange'])
@@ -194,7 +194,9 @@ def include_paper_in_queue(paper, filters):
         return False
     if 'No Clusters' in filter_only and is_in_cluster(paper):
         return False
-    if 'No Chair Conf' in filter_only and has_chair_conflict(paper):
+    if 'No Admin Conf' in filter_only and has_chair_conflict(paper):
+        return False
+    if 'Only Admin Conf' in filter_only and not has_chair_conflict(paper):
         return False
     return True 
 
@@ -284,9 +286,9 @@ def set_bar(bar):
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
-def set_queue_to_paper_list(all_papers, paper_list, gather_admin, solve_tsp):
+def set_queue_to_paper_list(all_papers, paper_list, solve_tsp):
     if solve_tsp:
-        order_papers = order_q(paper_list, gather_admin)
+        order_papers = order_q(paper_list)
     else:
         order_papers = paper_list
     for paper in all_papers:
@@ -308,9 +310,8 @@ def get_all_and_filter_papers(filters):
 
 def set_queue(filters):
     all_papers, filter_papers = get_all_and_filter_papers(filters)
-    gather_admin = filters['adminConflicts']
     solve_tsp = True
-    set_queue_to_paper_list(all_papers, filter_papers, gather_admin, solve_tsp)
+    set_queue_to_paper_list(all_papers, filter_papers, solve_tsp)
 
 def get_filter_paper_count(filters):
     _, filter_papers = get_all_and_filter_papers(filters)
