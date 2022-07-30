@@ -188,7 +188,13 @@ def delete_all_uploads():
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
-    # this fails on Heroku:
+    users = User.query.all()
+    count = len(users)
+    if count>1: # account for admin user. (maybe check uploads instead?)
+        msg = 'PLEASE WIPE DATABASE (below) before replacing users!'
+        flash(msg,'error')
+        return -1
+    # This fails on heroku:
     # delete_all_users()
     # ensure_admin()
     # dump_users_papers_and_conflicts('After ensure')
@@ -223,8 +229,15 @@ def journal_only_from_conf(conf):
 
 # Submission ID,Thumbnail URL,Title,Area,Abstract
 def insert_paper_rows(rows):
-    delete_all_papers()
-    reset_gq()
+    papers = Paper.query.all()
+    count = len(papers)
+    if count:
+        msg = 'PLEASE WIPE DATABASE (below) before replacing papers!'
+        flash(msg,'error')
+        return -1
+    # This fails on heroku:
+    # delete_all_papers()
+    # reset_gq()
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -648,6 +661,8 @@ def read_csv(filename):
         if not func:
             return False, False
         count = func(rows)
+        if count < 0:
+            return "already_sent", False
         delete_prev_file_uploads(headerType)
         upload = FileUpload(file=headerType, count=count)
         db.session.add(upload)
@@ -694,11 +709,12 @@ def upload_main():
             file.save(fullpath)
             # flash('saved csv file here: '+fullpath)
             msg, logout = read_csv(fullpath)
-            if msg:
-                msg = f'Uploaded file "{filename}". ' + msg
-            else:
-                msg ='Unable to read csv file: ' + filename
-            flash(msg)
+            if msg != "already_sent":
+                if msg:
+                    msg = f'Uploaded file "{filename}". ' + msg
+                else:
+                    msg ='Unable to read csv file: ' + filename
+                flash(msg)
     if logout:
         logout_user()
         return redirect(url_for('auth.login'))
