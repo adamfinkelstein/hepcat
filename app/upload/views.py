@@ -501,7 +501,14 @@ def papers_set_all_scores_and_status_from_reviews():
 # old: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 def insert_review_rows(rows):
-    delete_all_reviews()
+    reviews = Review.query.all()
+    count = len(reviews)
+    if count:
+        msg = 'PLEASE WIPE DATABASE (below) before replacing reviews!'
+        flash(msg,'error')
+        return -1
+    # This fails on heroku:
+    # delete_all_reviews()
     count = 0
     for row in rows:
         if len(row) < 4:
