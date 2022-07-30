@@ -355,9 +355,10 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
         db.session.add(user)
         try:
             db.session.commit()
+            print(f'created user with email {email}')
         except:
             db.session.rollback()
-            print(f'failed to ensure user with email {email}')
+            print(f'failed to create user with email {email}')
 
 def ensure_admin():
     # Also init global queue variables, if needed

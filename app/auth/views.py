@@ -3,34 +3,35 @@ from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
 from .. import db
-from ..models import User
+from ..models import User, ensure_admin
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm
 
 # AF changed this from main.index to app.index and now...
 main_index = 'main.send_static_index' 
 
-@auth.before_app_request
-def before_request():
-    if current_user.is_authenticated \
-            and not current_user.confirmed \
-            and request.endpoint \
-            and request.blueprint != 'auth' \
-            and request.endpoint != 'static':
-        print('redirect for auth unconfirmed')
-        return redirect(url_for('auth.unconfirmed'))
+# @auth.before_app_request
+# def before_request():
+#     if current_user.is_authenticated \
+#             and not current_user.confirmed \
+#             and request.endpoint \
+#             and request.blueprint != 'auth' \
+#             and request.endpoint != 'static':
+#         print('redirect for auth unconfirmed')
+#         return redirect(url_for('auth.unconfirmed'))
 
 
-@auth.route('/unconfirmed')
-def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for(main_index))
-    print('render auth unconfirmed')
-    return render_template('auth/unconfirmed.html')
+# @auth.route('/unconfirmed')
+# def unconfirmed():
+#     if current_user.is_anonymous or current_user.confirmed:
+#         return redirect(url_for(main_index))
+#     print('render auth unconfirmed')
+#     return render_template('auth/unconfirmed.html')
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    ensure_admin()
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower()).first()
