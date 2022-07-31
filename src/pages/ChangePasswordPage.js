@@ -85,8 +85,8 @@ export default function ChangePasswordPage(){
                             <><span>&nbsp;&mdash;&nbsp;</span>
                             <DropdownButton title={forWho} type="button"
                                             variant="secondary" className='select-user-dropdown'>
-                                {
-                                    allUsers.filter(user => (user.role_name !== 'Admin')).map((user, index) => {
+                                { // was: filter(user => (user.role_name !== 'Admin'))
+                                    allUsers.map((user, index) => {
                                         return(
                                             <Dropdown.Item key={index} as="button" onClick={
                                                 () => handleSetFor(user)}
