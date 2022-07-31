@@ -34,7 +34,8 @@ def login():
     ensure_admin()
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        email_lower = form.email.data.lower() # ensure lower case email
+        user = User.query.filter_by(email=email_lower).first()
         if user is not None and user.verify_password(form.password.data):
             # possibly here set new token and last-login time for user, here.
             # then use that token in user_loader (models.py).

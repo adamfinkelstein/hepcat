@@ -133,6 +133,9 @@ export default function AppContext({children}){
       setServerGlobs(data);
       const status = data.current_status;
       const update = data.update;
+      if ('showAppLogs' in data) { // could be true or false or not exist
+        setShowLogs(data.showAppLogs)
+      }
       if (status) {
         setNewStatus(status);
       }

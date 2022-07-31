@@ -203,7 +203,8 @@ def insert_user_rows(rows):
         if len(row) < 5:
             continue
         email,first_name,last_name,role,password = row
-        user = User(email=email,
+        lower_email = email.lower() # ensure emails are all lower case
+        user = User(email=lower_email,
                     first_name=first_name,
                     last_name=last_name,
                     password=password,
@@ -620,7 +621,11 @@ def make_path_if_needed(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def csv_row_total_content_len(row):
+def csv_row_strip_whitespace(row):
+    row = [item.strip() for item in row]
+    return row
+
+def csv_row_total_content_chars(row):
     lengths = [len(item) for item in row]
     total = sum(lengths)
     return total
@@ -630,7 +635,8 @@ def read_csv_rows(filename):
         csvReader = csv.reader(f)
         rows = []
         for row in csvReader:
-            if csv_row_total_content_len(row) > 3: # arb min
+            row = csv_row_strip_whitespace(row)
+            if csv_row_total_content_chars(row) > 3: # arb min 3 chars
                 rows.append(row)
     if len(rows) < 1:
         return None, None

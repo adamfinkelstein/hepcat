@@ -321,19 +321,28 @@ def parse_explicit_queue(exp):
     exp = exp.strip()
     if not exp or exp == '_CLEAR_':
         return None, []
-    nums = re.sub('[^0-9,]', "", exp)
-    alpha = re.sub('[0-9,]', "", exp)
-    if len(nums) < len(alpha):
+    remove_papers_spaces = exp
+    remove_strings = ['papers_','paper_',' ']
+    for str in remove_strings:
+        remove_papers_spaces = remove_papers_spaces.replace(str,'')
+    nums_only = re.sub('[^0-9]', "", remove_papers_spaces)
+    no_nums = re.sub('[0-9,]', "", remove_papers_spaces)
+    if len(nums_only) < len(no_nums):
+        # more alpha characters so assume cluster name etc...
+        print(f'set q alpha: {exp}')
         return exp, None
+    # more numeric so assume numeric
+    nums = re.sub('[^0-9]+', ",", exp) # replace all non-digits with comma
+    nums = re.sub(',+', ",", nums) # eliminate repeated commas
     nums = nums.split(',')
-    nums = [int(n) for n in nums]
+    nums = [int(n) for n in nums if n] # the if clause requires non empty str
     return None, nums
 
 def get_paper_from_list_by_nid(p_list, nid):
     filter_papers = [p for p in p_list if p.nid == nid]
     if len(filter_papers) == 1:
         return filter_papers[0]
-    print(f'weird error: more than one paper with id {nid}')
+    # possibly zero papers match (ok), but would be weird if more than 1
     return None
 
 def set_queue_explicit(exp):
@@ -344,15 +353,20 @@ def set_queue_explicit(exp):
     if label_name:
         label = Label.query.filter_by(name=label_name).first()
         if not label:
-            print('No matched label for explicit queue: ', label_name)
-            return # probably should flash something here ???
+            msg = f'No matched label for explicit queue: ({label_name})'
+            print(msg)
+            return msg
         filter_papers = list(label.tag_papers)
         solve_tsp = True
     else:
         select_papers = [p for p in p_list if p.nid in nid_list]
         filter_papers = [get_paper_from_list_by_nid(select_papers, nid) for nid in nid_list]
+        filter_papers = [p for p in filter_papers if p is not None]
         solve_tsp = False # do not reorder papers on explicit numeric list
-    set_queue_to_paper_list(p_list, filter_papers, None, solve_tsp)
+    set_queue_to_paper_list(p_list, filter_papers, solve_tsp)
+    count = len(filter_papers)
+    msg = f'Explicit queue set with {count} papers.'
+    return msg
 
 def show_current_paper():
     gq = GlobQueue.query.first()
@@ -406,6 +420,9 @@ def get_paper_at_queue_index(index):
 
 def get_globs_dump_with_status():
     globs = get_globs_dump()
+    show_logs = os.getenv('REACT_APP_SHOW_LOGS')
+    if (show_logs is not None):
+        globs['showAppLogs'] = show_logs
     current_index = globs['current']
     paper = get_paper_at_queue_index(current_index)
     if paper:
@@ -567,11 +584,13 @@ def admin_set_queue_explicit(data):
         disconnect()
         return
     print('admin request for set explicit queue:', data)
-    set_queue_explicit(data)
+    msg = set_queue_explicit(data)
     queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
+    data = { 'message': msg, 'type': 'success', 'which': 'set_explicit'}
+    emit('server_send_flasher', data)
 
 @socketio.on('admin_set_bar')
 def admin_set_bar(bar):
