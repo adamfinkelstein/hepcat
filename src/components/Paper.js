@@ -11,16 +11,19 @@ export default function Paper(){
     const user = globals.user
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue;
-    const isPaper = queue && queue.length && globals.queueCurrent < queue.length;
+    const isPaper = queue && queue.length && globals.queueCurrent < queue.length && globals.queueCurrent >= 0
     const queueCurrent = globals.queueCurrent;
     const currentShow = globals.serverGlobs.current_show;
     const currentShowEnter = globals.serverGlobs.current_show_enter;
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
+    const isConflict = cp ? user.conflict_papers.includes(cp.nid) : false
     const hist = globals.serverGlobs.current_history;
     const showHist = hist && hist.length > 0
     const safeScores = cp ? cp.all_scores : ''
     const scoresHTML = formatScoresInHTML(safeScores);
     const currentStart = isPaper && globals.serverGlobs.current_start
+    const hideThisPaper = !isPaper || isConflict
+    const hideMessage = isConflict ? "CONFLICTED!" : "No current paper."
 
     let current_enter = isPaper && currentShowEnter === 1 ? cp.enter : []
     let current_leave = isPaper && currentShowEnter === 1 ? cp.leave : []
@@ -120,8 +123,8 @@ export default function Paper(){
         <Container className="Paper">
 
             <div>
-            { !isPaper ? (
-                (<p>No current paper.</p>)
+            { hideThisPaper ? (
+                (<p>{hideMessage}</p>)
             ) : ( !currentShow ? (
                 <div>
                     { conflicts_arrays.map( (conf_arr,conf_ind) => {
