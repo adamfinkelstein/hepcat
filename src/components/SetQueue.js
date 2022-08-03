@@ -138,6 +138,11 @@ export default function SetQueue(){
         socketEmit("admin_bulk_reject")
     }
 
+    function handleClearStickiesButton(){
+        controlledLog('clear stickies button pressed')
+        socketEmit("admin_clear_stickies")
+    }
+
     return(
         <Container>
             <Flasher type="hide_queue"/>
@@ -305,6 +310,10 @@ export default function SetQueue(){
                         onChange={handleInputChange}
                     />
                 </Stack>
+                <hr className="horizontal-divider"/>
+                <Button variant="warning" onClick={handleClearStickiesButton} 
+                        className="bulk-reject-btn">Clear Stickies</Button>
+                &nbsp;&nbsp;(Clear all stickies.)
                 <hr className="horizontal-divider"/>
                 <Button variant="warning" onClick={handleBulkRejectButton} 
                         className="bulk-reject-btn">Bulk Reject</Button>

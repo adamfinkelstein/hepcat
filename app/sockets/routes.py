@@ -470,6 +470,17 @@ def get_about_md():
         md = file.read()
     return md
 
+def clear_all_stickies():
+    context_stickie = int(HistoryContext.Stickie)
+    count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
+    print(f'this should clear {count_deleted} stickies')
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        return 0
+    return count_deleted
+
 ###########
 ###########
 ########### Decorator (communication) functions mostly below here:
@@ -616,8 +627,7 @@ def admin_set_bar(bar):
 
 @socketio.on('admin_bulk_reject')
 def admin_bulk_reject():
-    user = get_current_user_or_none()
-    if not user:
+    if not current_user_is_admin():
         disconnect()
         return
     msg = 'got request admin_bulk_reject'
@@ -629,6 +639,27 @@ def admin_bulk_reject():
         msg = 'Mark unseen reject papers below bar as now seen.'
         data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
         emit('server_send_flasher', data)
+
+@socketio.on('admin_clear_stickies')
+def admin_clear_stickies():
+    if not current_user_is_admin():
+        disconnect()
+        return
+    msg = 'got request admin_clear_stickies'
+    print(msg)
+    count = clear_all_stickies()
+    if count:
+        grid_dump = get_grid_dump()
+        emit('server_set_grid', grid_dump, broadcast=True)
+        msg = f'All {count} stickies are now cleared.'
+        data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
+        emit('server_send_flasher', data)
+    else:
+        msg = f'No stickies were cleared.'
+        data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
+        emit('server_send_flasher', data)
+
+
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):

@@ -751,13 +751,14 @@ def write_csv(rows, filename):
 
 # this function and the next duplicate functions in sockets/routes.py
 # they should be refactored!
-def get_latest_history(paper):
+def get_latest_plenary_history(paper):
+    context_plenary = int(HistoryContext.Plenary)
     latest_history = History.query.filter_by(paper_id=paper.id) \
-        .order_by(History.when.desc()).first()
+        .filter_by(context_enum=context_plenary).order_by(History.when.desc()).first()
     return latest_history
 
-def get_latest_history_status(paper):
-    latest = get_latest_history(paper)
+def get_latest_plenary_history_status(paper):
+    latest = get_latest_plenary_history(paper)
     if latest:
         return latest.status
     return None
@@ -767,7 +768,7 @@ def get_results_as_rows():
     header = 'Submission ID,Status'
     rows = [ header ]
     for paper in papers:
-        status = get_latest_history_status(paper)
+        status = get_latest_plenary_history_status(paper)
         row = f'{paper.sid},{status}'
         rows.append(row)
     return rows
