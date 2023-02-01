@@ -4,6 +4,7 @@ from datetime import datetime
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
+from gitinfo import get_git_info
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
@@ -463,11 +464,23 @@ def get_queue():
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue,current_paper
 
-def get_about_md():
+def get_git_info_from_repo():
+    info = get_git_info()
+    if not info:
+        return '\n\n(no git info available)\n'
+    result = '\n\n### Git Version\n\n'
+    keys = 'commit,author,author_date,message'.split(',')
+    for key in keys:
+        result += f'* {key}: {info[key]}\n\n'
+    return result
+
+def get_about_md(append_git_info):
     basedir = os.path.abspath(os.path.dirname(__file__))
     about_file = os.path.join(basedir, '../../public/about/about.md')
     with open(about_file, "r") as file:
         md = file.read()
+    if append_git_info:
+        md += get_git_info_from_repo()
     return md
 
 def clear_all_stickies():
@@ -500,7 +513,7 @@ def io_connect():
     print(f'{user.full_name} - client connected')
     user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
-    about_md = get_about_md()
+    about_md = get_about_md(user.is_admin)
     # print(about_md)
     # config_vars = get_react_env_vars()
     # later: 'config': config_vars }
