@@ -4,7 +4,6 @@ from datetime import datetime
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
-from gitinfo import get_git_info
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
@@ -464,15 +463,14 @@ def get_queue():
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue,current_paper
 
-def get_git_info_from_repo():
-    info = get_git_info()
-    if not info:
-        return '\n\n(no git info available)\n'
-    result = '\n\n### Git Version\n\n'
-    keys = 'commit,author,author_date,message'.split(',')
-    for key in keys:
-        result += f'* {key}: {info[key]}\n\n'
-    return result
+def get_git_info_from_file():
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    md = '\n\n### (no git info available)\n'
+    info_file = os.path.join(basedir, '../../git-info.md')
+    if os.path.exists(info_file):
+        with open(info_file, "r") as file:
+            md = file.read()
+    return md
 
 def get_about_md(append_git_info):
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -480,7 +478,7 @@ def get_about_md(append_git_info):
     with open(about_file, "r") as file:
         md = file.read()
     if append_git_info:
-        md += get_git_info_from_repo()
+        md += get_git_info_from_file()
     return md
 
 def clear_all_stickies():
