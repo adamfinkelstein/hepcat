@@ -2,11 +2,11 @@
 
 ### Git Version
 
-* commit: f92500ea39d1e3b256371f78e7ec808a7555aeec
+* commit: c8dbfcbd4c5d79721a8e0980454dc418ad8d4369
 
 * author: Adam Finkelstein <af@princeton.edu>
 
-* author_date: 2023-01-31 20:38:01
+* author_date: 2023-02-01 21:01:47
 
-* message: added git info in about page
+* message: added room basics
 
