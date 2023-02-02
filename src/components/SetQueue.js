@@ -26,9 +26,11 @@ export default function SetQueue(){
     const guiBarString = globals.guiBar+''
     const setGuiBar = globals.setGuiBar
     const socketEmit = globals.socketEmit
+    const roomChoice = globals.roomChoice
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    const filterList = ['Stickie Only','Unseen Only','No Clusters','No Admin Conf','Only Admin Conf']
+    const filterListMain = ['Stickie Only','Unseen Only','No Clusters','No Admin Conf','Only Admin Conf']
+    const filterList = roomChoice == 'Plenary' ? filterListMain : [roomChoice, ...filterListMain]
     const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,

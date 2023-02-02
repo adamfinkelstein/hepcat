@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 # from sqlalchemy import MetaData
 
-from . import db, ma, login_manager, allow_cors
+from . import db, ma, login_manager #, allow_cors
 
 # metadata_obj = MetaData()
 
@@ -20,6 +20,10 @@ class HistoryContext(IntEnum):
     BBS = 0
     Stickie = 1
     Plenary = 2
+    Room_A = 3
+    Room_B = 4
+    Room_X = 5
+    Room_Y = 6
 
 class HistoryStatus(IntEnum):
     Tabled = 0
@@ -107,6 +111,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime)
+    rooms = db.Column(db.String(4))
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -212,14 +217,18 @@ class History(db.Model):
     def status(self):
         return HistoryStatus(self.status_enum).name
 
-prefix_cluster = 'Cluster-'
-prefix_area = 'Area-'
+prefix_cluster = 'Cluster_'
+prefix_area = 'Area_'
+prefix_room = 'Room_'
 
 def cluster_to_label_name(cluster):
     return f'{prefix_cluster}{cluster}'
 
 def area_to_label_name(area):
     return f'{prefix_area}{area}'
+
+def room_to_label_name(room):
+    return f'{prefix_room}{room}'
 
 # currently handles areas and clusters, but may add more types later
 class Label(db.Model):
@@ -236,6 +245,10 @@ class Label(db.Model):
     def is_area(self):
         return self.name.startswith(prefix_area)
 
+    @hybrid_property
+    def is_room(self):
+        return self.name.startswith(prefix_room)
+
     def __repr__(self):
         return '<Label %r>' % self.name
 
@@ -243,6 +256,7 @@ class Label(db.Model):
 class GlobQueue(db.Model):
     __tablename__ = 'glob_queue'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(8), unique=True)
     bar = db.Column(db.Float, default=0.0)
     hide_queue = db.Column(db.Boolean, default=False)
     message = db.Column(db.String(), default='')
@@ -264,7 +278,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name", "last_seen")
+        fields = ("email", "full_name", "role_name", "last_seen", "rooms")
 
 class PaperSchema(ma.Schema):
     class Meta:
@@ -278,7 +292,7 @@ class HistorySchema(ma.Schema):
 
 class GlobQueueSchema(ma.Schema):
     class Meta:
-        fields = ("bar", "hide_queue", "message", 
+        fields = ("name", "bar", "hide_queue", "message", 
             "current", "current_show", "current_start", "current_show_enter")
 
 ######################

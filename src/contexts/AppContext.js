@@ -14,6 +14,7 @@ export default function AppContext({children}){
     
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [roomChoice, setRoomChoice] = useState("Plenary");
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
   const [allUsers, setAllUsers] = useState([])
@@ -254,6 +255,8 @@ export default function AppContext({children}){
           "user": user,
           "isAdmin": isAdmin,
           "allUsers": allUsers,
+          "roomChoice": roomChoice,
+          "setRoomChoice": setRoomChoice,
           "queue": queue,
           "grid": grid,
           "aboutMD": aboutMD,

@@ -238,18 +238,19 @@ def bulk_reject_below_bar():
         broadcast_admin_alert('Server Error',msg)
         return False
 
-def clear_queue():
-    papers = Paper.query.all()
-    for paper in papers:
-        paper.queue_order = 0
-        db.session.add(paper)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-        msg = 'failed to clear queue'
-        print(msg)
-        broadcast_admin_alert('Server Error',msg)
+# Old code appears to never get called...
+# def clear_queue():
+#     papers = Paper.query.all()
+#     for paper in papers:
+#         paper.queue_order = 0
+#         db.session.add(paper)
+#     try:
+#         db.session.commit()
+#     except:
+#         db.session.rollback()
+#         msg = 'failed to clear queue'
+#         print(msg)
+#         broadcast_admin_alert('Server Error',msg)
 
 def zero_or_inc_current_index(zero_or_inc):
     gq = GlobQueue.query.first()

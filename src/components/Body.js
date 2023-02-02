@@ -7,12 +7,16 @@ import GridSection from './GridSection'
 import SetQueue from './SetQueue'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
+import Dropdown from 'react-bootstrap/Dropdown'
+import DropdownButton from 'react-bootstrap/DropdownButton'
 import { useSplitWidth, useChangeSplitWidth } from '../contexts/PreferencesContext'
 
 export default function Body(){
     const globals = useAppGlobals()
     const user = globals.user
     const isAdmin = globals.isAdmin
+    const roomChoice = globals.roomChoice;
+    const setRoomChoice = globals.setRoomChoice;
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 
@@ -38,6 +42,16 @@ export default function Body(){
                     onDragEnd={(sizes) => changeSplitWidth(sizes)}
                     >
                         <Container className='left-panel'>
+                            <DropdownButton title={roomChoice}
+                                variant="secondary" className='a_grid-display-dropdown'>
+                                {
+                                    ["Plenary", "Room_A", "Room_B", "Room_X", "Room_Y"].map((roomChoice, index) => {
+                                        return(
+                                            <Dropdown.Item key={index} as="button" onClick={() => setRoomChoice(roomChoice)}>{roomChoice}</Dropdown.Item>
+                                        )
+                                    })
+                                }
+                            </DropdownButton>
                             { queue.length && !hideQueue ? 
                                 <Queue/> 
                                 : 
