@@ -22,7 +22,7 @@ export default function SetQueue(){
     const globals = useAppGlobals()
     const probeCount = globals.probeCount
     const probeWhen = globals.probeWhen
-    const probeMessage = probeWhen ? probeCount + " (" + probeWhen + ")" : "(not set)"
+    const probeMessage = (probeWhen ? probeCount + " (" + probeWhen + ")" : "(not set)")
     const guiBarString = globals.guiBar+''
     const setGuiBar = globals.setGuiBar
     const socketEmit = globals.socketEmit
@@ -30,7 +30,7 @@ export default function SetQueue(){
     let controlledLog = useAppGlobals()["controlledLog"]
 
     const filterListMain = ['Stickie Only','Unseen Only','No Clusters','No Admin Conf','Only Admin Conf']
-    const filterList = roomChoice == 'Plenary' ? filterListMain : [roomChoice, ...filterListMain]
+    const filterList = (roomChoice === 'Plenary' ? filterListMain : [roomChoice, ...filterListMain])
     const statusList = globals["statusList"]
 
     const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
@@ -77,7 +77,7 @@ export default function SetQueue(){
         const only = filterList.filter( (f,index) =>
             document.getElementById("only-checkbox-"+index).checked
         )
-        const data = { statuses, only, lowRange, highRange }
+        const data = { roomChoice, statuses, only, lowRange, highRange }
         return data
     }
 
@@ -106,7 +106,8 @@ export default function SetQueue(){
         // save using: setQueueExplicitList(field)
         controlledLog('sending explicit queue request: '+queueExplicitList);
         const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_'
-        socketEmit("admin_set_queue_explicit", explicit)
+        const data = { roomChoice, explicit }
+        socketEmit("admin_set_queue_explicit", data)
         flash("Sent explicit queue request.", "success", "set_explicit");
     }
 
@@ -122,10 +123,10 @@ export default function SetQueue(){
     }
 
     function handleHideQueueCheckbox(){
-        const newHideQ = !hideQ
-        setHideQ(newHideQ)
-        controlledLog('hide queue after click: '+newHideQ)
-        const data = { hide:newHideQ, message:message }
+        const hide = !hideQ
+        setHideQ(hide)
+        controlledLog('hide queue after click: '+hide)
+        const data = { roomChoice, hide, message }
         socketEmit("admin_hide_queue", data)
     }
 

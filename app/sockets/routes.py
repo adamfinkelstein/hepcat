@@ -533,22 +533,24 @@ def io_disconnect():
     print(f'{user_name} - client disconnected')
 
 @socketio.on('admin_prev_paper')
-def admin_prev_paper():
+def admin_prev_paper(room_choice):
     if not current_user_is_admin():
         disconnect()
         return
-    print('admin request for prev paper')
+    print(f'admin request for prev paper in {room_choice}')
     zero_or_inc_current_index(-1) # also "hides" current
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_next_paper')
-def admin_next_paper(status_update):
+def admin_next_paper(data):
     if not current_user_is_admin():
         disconnect()
         return
-    print('admin request for next paper with status:', status_update)
+    room_choice = data['roomChoice']
+    status_update = data['newStatus']
+    print(f'admin request for next paper in {room_choice} with status {status_update}')
     before_index, paper = update_current_paper_status(status_update)
     zero_or_inc_current_index(+1) # also "hides" current
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
@@ -558,11 +560,11 @@ def admin_next_paper(status_update):
     conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_show_current')
-def admin_show_current():
+def admin_show_current(room_choice):
     if not current_user_is_admin():
         disconnect()
         return
-    print('admin request for show paper')
+    print(f'admin request for show paper in {room_choice}')
     show_current_paper()
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
@@ -573,9 +575,10 @@ def admin_hide_queue(data):
     if not current_user_is_admin():
         disconnect()
         return
+    room_choice = data['roomChoice']
     hide = data['hide']
     message = data['message']
-    print(f'admin request for hide queue: {hide} {message}')
+    print(f'admin request for hide queue {room_choice}: {hide} {message}')
     set_hide_queue(hide, message)
     globs,current_paper = get_globs_dump_with_status()
     emit('server_set_globs', globs, broadcast=True)
@@ -613,8 +616,10 @@ def admin_set_queue_explicit(data):
     if not current_user_is_admin():
         disconnect()
         return
-    print('admin request for set explicit queue:', data)
-    msg = set_queue_explicit(data)
+    room_choice = data['roomChoice']
+    explicit = data['explicit']
+    print(f'admin request for set explicit queue {room_choice}: {explicit}')
+    msg = set_queue_explicit(explicit)
     queue,current_paper = get_queue()
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']

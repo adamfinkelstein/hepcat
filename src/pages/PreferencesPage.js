@@ -2,7 +2,7 @@ import TextPreferences from '../components/TextPreferences'
 import ColorPreferences from '../components/ColorPreferences'
 import FavoritePreferences from '../components/FavoritePreferences'
 import Container from 'react-bootstrap/Container'
-import {useFlasher} from '../contexts/FlasherContext'
+//import {useFlasher} from '../contexts/FlasherContext'
 import Flasher from '../components/Flasher'
 
 export default function PreferencesPage() {

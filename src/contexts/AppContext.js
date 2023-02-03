@@ -209,7 +209,7 @@ export default function AppContext({children}){
         socket.off('server_probe_count', receiveProbe);
       }
     };
-  }, [queue, grid, socket]);
+  }, [queue, grid, socket, flash, isAdmin]);
 
 
   function locateGridEntry(grid_index, grid_list, nid) {

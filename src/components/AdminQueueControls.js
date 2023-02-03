@@ -8,8 +8,9 @@ export default function AdminQueueControls() {
     const newStatus = globals.newStatus;
     const setNewStatus = globals.setNewStatus;
     const socketEmit = globals.socketEmit;
+    const roomChoice = globals.roomChoice;
     const completed = globals.queueCurrent >= globals.queue.length;
-    const disablePrev = globals.queueCurrent === 0 ? "disabled" : "";
+    const disablePrev = (globals.queueCurrent === 0 ? "disabled" : "");
     const disableShow = completed || globals.serverGlobs.current_show ? "disabled" : "";
     const disableNext = completed ? "disabled" : "";
 
@@ -17,20 +18,21 @@ export default function AdminQueueControls() {
         <Stack direction="horizontal" className="AdminQueueControls">
             <button disabled={disablePrev}
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
-                        socketEmit("admin_prev_paper")
+                        socketEmit("admin_prev_paper", roomChoice)
                     }}
             >
             Prev
             </button>
             <button disabled={disableShow}
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
-                        socketEmit("admin_show_current")
+                        socketEmit("admin_show_current", roomChoice)
                     }}>
             Show
             </button>
             <button disabled={disableNext}
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
-                        socketEmit("admin_next_paper", newStatus)
+                        const data = {roomChoice, newStatus};
+                        socketEmit("admin_next_paper", data)
                     }}>
             Next
             </button>

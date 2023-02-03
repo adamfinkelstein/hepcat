@@ -13,9 +13,9 @@ export default function Queue(){
     const isAdmin = globals.isAdmin
     const current = globals.queueCurrent;
     const counter = current + 1;
-    const currentCount = counter > queue.length ? "completed" : counter + " of";
+    const currentCount = (counter > queue.length ? "completed" : counter + " of");
     const isScreen = user && user.role_name === "Screen"
-    const past_max = isScreen ? 0 : 3;
+    const past_max = (isScreen ? 0 : 3);
     const future_max = 12;
     const start_index = Math.max(0, current - past_max);
     const end_index = Math.min(counter + future_max, queue.length);
@@ -23,7 +23,7 @@ export default function Queue(){
     const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
     
     const [queueExpanded, setQueueExpanded] = useState(false);
-    const expandButtonLabel = queueExpanded ? "Hide Conflicts" : "Show Conflicts"
+    const expandButtonLabel = (queueExpanded ? "Hide Conflicts" : "Show Conflicts")
 
     function currentClass(index, paper, nid){
         const isConflict = user.conflict_papers.includes(paper.nid)
