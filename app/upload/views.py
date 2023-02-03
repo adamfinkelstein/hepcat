@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, reset_gq, \
+from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, cluster_to_label_name, area_to_label_name, \
     context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
 

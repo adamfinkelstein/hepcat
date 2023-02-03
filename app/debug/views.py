@@ -2,8 +2,8 @@ import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
-from .. import socketio
-from ..models import Role, User, Paper, PaperSchema, GlobQueue, num_to_sid
+# from .. import socketio
+from ..models import Role, User, Paper, PaperSchema, GlobQueue, ensure_gq, num_to_sid
 
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
@@ -181,7 +181,7 @@ def whoami():
 @login_required
 def debugGQ():
     debug_title = 'Global Queue Vars'
-    gq = GlobQueue.query.first()
+    gq = ensure_gq('Plenary')
     if gq:
         debug_output = debug_orm_to_string(gq)
     else:

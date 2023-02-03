@@ -169,6 +169,7 @@ class Paper(db.Model):
     nid = db.Column(db.Integer, unique=True, index=True)
     sid = db.Column(db.String(64), unique=True, index=True)
     sort_score = db.Column(db.Float, default=0.0)
+    queue_id = db.Column(db.Integer, db.ForeignKey('glob_queue.id'))
     queue_order = db.Column(db.Integer, default=0)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
@@ -299,31 +300,34 @@ class GlobQueueSchema(ma.Schema):
 # Global queue vars
 ######################
 
-def ensure_gq():
-    gq = GlobQueue.query.first()
-    if not gq:
-        gq = GlobQueue()
-        db.session.add(gq)
-        try:
-            db.session.commit()
-            print(f'created GC with id {gq.id}')
-        except:
-            db.session.rollback()
-            print(f'failed to create GC')
-    else:
-        print(f'retrieved GC with id {gq.id}')
 
-def reset_gq():
-    ensure_gq()
-    gq = GlobQueue.query.first()
-    gq.current=-1
-    gq.current_show=False
+def ensure_gq(name):
+    gq = GlobQueue.query.filter_by(name=name).first()
+    if gq:
+        print(f'retrieved GC with name {name}')
+        return gq
+    gq = GlobQueue(name=name)
     db.session.add(gq)
     try:
         db.session.commit()
+        print(f'created GC with name {name}')
     except:
         db.session.rollback()
-        print(f'failed to reset GC')
+        print(f'failed to create GC')
+        gq = None
+    return gq
+
+# def reset_gq():
+#     ensure_gq()
+#     gq = GlobQueue.query.first()
+#     gq.current=-1
+#     gq.current_show=False
+#     db.session.add(gq)
+#     try:
+#         db.session.commit()
+#     except:
+#         db.session.rollback()
+#         print(f'failed to reset GC')
 
 ######################
 # Helper functions
@@ -376,7 +380,9 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
 
 def ensure_admin():
     # Also init global queue variables, if needed
-    ensure_gq()
+    queue_names = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
+    for name in queue_names:
+        ensure_gq(name)
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')

@@ -6,7 +6,7 @@ from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, GlobQueue, GlobQueueSchema, status_str_to_enum
+    HistorySchema, GlobQueueSchema, ensure_gq, status_str_to_enum, context_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -48,8 +48,7 @@ def current_user_is_admin():
     return False
 
 def get_grid_dump_above_bar(above):
-    gq = GlobQueue.query.first()
-    bar = gq.bar
+    bar = get_bar()
     if above:
         papers = Paper.query.filter(Paper.sort_score >= bar).order_by(Paper.sort_score.desc()).all()
     else:
@@ -65,7 +64,7 @@ def get_grid_dump_above_bar(above):
         for h in history:
             if h.context_enum == context_stickie:
                 stickie = True
-            elif h.context_enum == context_plenary:
+            elif h.context_enum >= context_plenary: # allow any room
                 stickie = False
                 status = h.status
         paper_dump = { 'nid': paper.nid, \
@@ -201,8 +200,7 @@ def include_paper_in_queue(paper, filters):
     return True 
 
 def paper_is_unseen_reject_below_bar(paper):
-    gq = GlobQueue.query.first()
-    bar = gq.bar
+    bar = get_bar()
     sort_score = paper.sort_score
     if sort_score >= bar:
         return False
@@ -252,8 +250,8 @@ def bulk_reject_below_bar():
 #         print(msg)
 #         broadcast_admin_alert('Server Error',msg)
 
-def zero_or_inc_current_index(zero_or_inc):
-    gq = GlobQueue.query.first()
+def zero_or_inc_current_index(room, zero_or_inc):
+    gq = ensure_gq(room)
     gq.current_show_enter = zero_or_inc
     if zero_or_inc == 0:
         gq.current = 0
@@ -270,13 +268,18 @@ def zero_or_inc_current_index(zero_or_inc):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = f'failed to set queue index (inc {zero_or_inc})'
+        msg = f'failed to set queue index in room {room} (inc {zero_or_inc})'
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
+def get_bar():
+    gq = ensure_gq('Plenary') # global->Plenary
+    bar = gq.bar
+    return bar
+
 def set_bar(bar):
     bar = float(bar)
-    gq = GlobQueue.query.first()
+    gq = ensure_gq('Plenary') # global->Plenary
     gq.bar = bar
     db.session.add(gq)
     try:
@@ -287,21 +290,33 @@ def set_bar(bar):
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
-def set_queue_to_paper_list(all_papers, paper_list, solve_tsp):
+def clear_queue(room):
+    gq = ensure_gq(room)
+    papers = Paper.query.filter_by(queue_id=gq.id).all()
+    papers = list(papers)
+    n = len(papers)
+    print(f'clearing queue for {room} -- {n} papers')
+    for paper in papers:
+        paper.queue_id = None
+        paper.queue_order = 0
+        db.session.add(paper)
+    return gq
+
+### XXX all_papers no longer needed here:
+def set_queue_to_paper_list(room, all_papers, paper_list, solve_tsp):
     if solve_tsp:
         order_papers = order_q(paper_list)
     else:
         order_papers = paper_list
-    for paper in all_papers:
-        paper.queue_order = 0
+    gq = clear_queue(room)
     for index,paper in enumerate(order_papers):
+        paper.queue_id = gq.id
         paper.queue_order = (index+1)
-    for paper in all_papers:
         db.session.add(paper)
     if len(paper_list):
-        zero_or_inc_current_index(0) # does commit!
+        zero_or_inc_current_index(room, 0) # does commit!
     else:
-        zero_or_inc_current_index(-100) # empty queue = no current 
+        zero_or_inc_current_index(room, -100) # empty queue = no current 
 
 def get_all_and_filter_papers(filters):
     papers = Paper.query.all()
@@ -309,10 +324,10 @@ def get_all_and_filter_papers(filters):
     filter_papers = [p for p in list_papers if include_paper_in_queue(p,filters)]
     return list_papers, filter_papers
 
-def set_queue(filters):
+def set_queue(room, filters):
     all_papers, filter_papers = get_all_and_filter_papers(filters)
     solve_tsp = True
-    set_queue_to_paper_list(all_papers, filter_papers, solve_tsp)
+    set_queue_to_paper_list(room, all_papers, filter_papers, solve_tsp)
 
 def get_filter_paper_count(filters):
     _, filter_papers = get_all_and_filter_papers(filters)
@@ -355,7 +370,7 @@ def clean_filter_list(p_list, nid_list):
             clean_list.append(p)
     return clean_list
 
-def set_queue_explicit(exp):
+def set_queue_explicit(room, exp):
     label_name, nid_list = parse_explicit_queue(exp)
     print('explicit queue:', label_name, nid_list)
     papers = Paper.query.all()
@@ -371,13 +386,13 @@ def set_queue_explicit(exp):
     else:
         filter_papers = clean_filter_list(p_list, nid_list)
         solve_tsp = False # do not reorder papers on explicit numeric list
-    set_queue_to_paper_list(p_list, filter_papers, solve_tsp)
+    set_queue_to_paper_list(room, p_list, filter_papers, solve_tsp)
     count = len(filter_papers)
     msg = f'Explicit queue set with {count} papers.'
     return msg
 
-def show_current_paper():
-    gq = GlobQueue.query.first()
+def show_current_paper(room):
+    gq = ensure_gq(room)
     gq.current_show = True
     gq.current_start = func.now()
     db.session.add(gq)
@@ -389,8 +404,8 @@ def show_current_paper():
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
-def set_hide_queue(hide, message):
-    gq = GlobQueue.query.first()
+def set_hide_queue(room, hide, message):
+    gq = ensure_gq(room)
     gq.hide_queue = hide
     gq.message = message
     db.session.add(gq)
@@ -402,37 +417,42 @@ def set_hide_queue(hide, message):
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
-def update_current_paper_status(new_status):
-    globs = get_globs_dump()
+def get_globs_dump(room):
+    gq = ensure_gq(room)
+    globs = global_schema.dump(gq)
+    return globs
+
+def update_current_paper_status(room, new_status):
+    globs = get_globs_dump(room)
     current_index = globs['current']
-    paper = get_paper_at_queue_index(current_index)
+    paper = get_paper_at_queue_index(room, current_index)
     context_plenary = int(HistoryContext.Plenary)
+    room_context = context_str_to_enum(room)
+    if not room_context: # just for safety default to plenary
+        room_context = context_plenary
     status_enum = status_str_to_enum(new_status)
     history = History(paper=paper,
-                    context_enum=context_plenary,
+                    context_enum=room_context,
                     status_enum=status_enum)
     db.session.add(history) # commit will follow on setting current index
     return current_index, paper
 
-def get_globs_dump():
-    gq = GlobQueue.query.first()
-    globs = global_schema.dump(gq)
-    return globs
-
-def get_paper_at_queue_index(index):
-    if index < 0:
+def get_paper_at_queue_index(room, index):
+    if not room or index < 0:
         return None
+    gq = ensure_gq(room)
     add_one = index + 1
-    paper = Paper.query.filter_by(queue_order=add_one).first()
+    paper = Paper.query.filter_by(queue_order=add_one).filter_by(queue_id=gq.id).first()
     return paper
 
-def get_globs_dump_with_status():
-    globs = get_globs_dump()
+# def shows status and history for current paper when revealed
+def get_globs_dump_with_status(room):
+    globs = get_globs_dump(room)
     show_logs = os.getenv('REACT_APP_SHOW_LOGS')
     if (show_logs is not None):
         globs['showAppLogs'] = show_logs
     current_index = globs['current']
-    paper = get_paper_at_queue_index(current_index)
+    paper = get_paper_at_queue_index(room, current_index)
     if paper:
         status = get_latest_history_status(paper)
         globs['current_status'] = status
@@ -441,10 +461,11 @@ def get_globs_dump_with_status():
             globs['current_history'] = history
     return globs, paper
 
-def get_queue():
-    globs = get_globs_dump()
+def get_queue(room):
+    globs = get_globs_dump(room)
     current_index = globs['current']
-    papers = Paper.query.filter(Paper.queue_order > 0) \
+    gq = ensure_gq(room)
+    papers = Paper.query.filter_by(queue_id=gq.id) \
                     .order_by(Paper.queue_order).all()
     paper_list = []
     paper_prev = None
@@ -460,7 +481,7 @@ def get_queue():
         paper_dump['leave'] = get_user_list_dump(leave)
         paper_list.append(paper_dump)
         paper_prev = paper
-    globs,current_paper = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status(room)
     queue = { 'paper_list': paper_list, 'globs': globs }
     return queue,current_paper
 
@@ -521,8 +542,8 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
-    data,_ = get_queue()
-    emit('server_set_queue', data)
+    data,_ = get_queue('Plenary') ### YYY
+    emit('server_set_queue', data) ### YYY room problem. maybe send request after welcome.
     # no need to send to conflictbot here
 
 @socketio.on('disconnect')
@@ -533,13 +554,13 @@ def io_disconnect():
     print(f'{user_name} - client disconnected')
 
 @socketio.on('admin_prev_paper')
-def admin_prev_paper(room_choice):
+def admin_prev_paper(room):
     if not current_user_is_admin():
         disconnect()
         return
     print(f'admin request for prev paper in {room_choice}')
-    zero_or_inc_current_index(-1) # also "hides" current
-    globs,current_paper = get_globs_dump_with_status()
+    zero_or_inc_current_index(room, -1) # also "hides" current
+    globs,current_paper = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
 
@@ -548,25 +569,25 @@ def admin_next_paper(data):
     if not current_user_is_admin():
         disconnect()
         return
-    room_choice = data['roomChoice']
+    room = data['roomChoice']
     status_update = data['newStatus']
-    print(f'admin request for next paper in {room_choice} with status {status_update}')
-    before_index, paper = update_current_paper_status(status_update)
-    zero_or_inc_current_index(+1) # also "hides" current
+    print(f'admin request for next paper in {room} with status {status_update}')
+    before_index, paper = update_current_paper_status(room, status_update)
+    zero_or_inc_current_index(room, +1) # also "hides" current
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
-    globs,current_paper = get_globs_dump_with_status()
+    globs,current_paper = get_globs_dump_with_status(room)
     globs['update'] = update
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_show_current')
-def admin_show_current(room_choice):
+def admin_show_current(room):
     if not current_user_is_admin():
         disconnect()
         return
-    print(f'admin request for show paper in {room_choice}')
-    show_current_paper()
-    globs,current_paper = get_globs_dump_with_status()
+    print(f'admin request for show paper in {room}')
+    show_current_paper(room)
+    globs,current_paper = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
 
@@ -575,12 +596,12 @@ def admin_hide_queue(data):
     if not current_user_is_admin():
         disconnect()
         return
-    room_choice = data['roomChoice']
+    room = data['roomChoice']
     hide = data['hide']
     message = data['message']
-    print(f'admin request for hide queue {room_choice}: {hide} {message}')
-    set_hide_queue(hide, message)
-    globs,current_paper = get_globs_dump_with_status()
+    print(f'admin request for hide queue {room}: {hide} {message}')
+    set_hide_queue(room, hide, message)
+    globs,current_paper = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
     if hide:
@@ -595,9 +616,10 @@ def admin_set_queue(filters):
     if not current_user_is_admin():
         disconnect()
         return
-    print('admin request for set queue:', filters)
-    set_queue(filters)
-    queue,current_paper = get_queue()
+    room = filters['roomChoice']
+    print(f'admin request for set queue in {room}:', filters)
+    set_queue(room, filters)
+    queue,current_paper = get_queue(room)
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
@@ -616,11 +638,11 @@ def admin_set_queue_explicit(data):
     if not current_user_is_admin():
         disconnect()
         return
-    room_choice = data['roomChoice']
+    room = data['roomChoice']
     explicit = data['explicit']
-    print(f'admin request for set explicit queue {room_choice}: {explicit}')
+    print(f'admin request for set explicit queue {room}: {explicit}')
     msg = set_queue_explicit(explicit)
-    queue,current_paper = get_queue()
+    queue,current_paper = get_queue(room)
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
@@ -634,7 +656,7 @@ def admin_set_bar(bar):
         return
     print(f'admin request set bar to {bar}')
     set_bar(bar)
-    globs,_ = get_globs_dump_with_status()
+    globs,_ = get_globs_dump_with_status('Plenary') # YYY ???
     emit('server_set_globs', globs, broadcast=True)
     grid_dump = get_grid_dump()
     emit('server_set_grid', grid_dump, broadcast=True)
@@ -757,7 +779,8 @@ class Conflictbot(Namespace):
         users_dump = get_all_user_list_dump()
         emit('user-list', users_dump)
         # next we can broadcast status to all conflictbots, including this
-        globs,current_paper = get_globs_dump_with_status()
+        # need to send all rooms. what does conflictbot care about?
+        globs,current_paper = get_globs_dump_with_status('Plenary') # YYY wrong!
         conflictbots_broadcast_conflicts(globs,current_paper)
 
     def on_disconnect(self):
