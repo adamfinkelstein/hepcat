@@ -302,21 +302,28 @@ def clear_queue(room):
         db.session.add(paper)
     return gq
 
-### XXX all_papers no longer needed here:
-def set_queue_to_paper_list(room, all_papers, paper_list, solve_tsp):
+def set_queue_to_paper_list(room, paper_list, solve_tsp):
     if solve_tsp:
         order_papers = order_q(paper_list)
     else:
         order_papers = paper_list
     gq = clear_queue(room)
-    for index,paper in enumerate(order_papers):
+    count = 0
+    skipped = 0
+    for paper in order_papers:
+        if paper.queue_id:
+            skipped += 1
+            print(f'cannot add paper {paper.nid} to q {gq.id} because it is already in a different q {paper.queue_id}')
+            continue
         paper.queue_id = gq.id
-        paper.queue_order = (index+1)
+        paper.queue_order = (count+1) # queue order starts at 1
         db.session.add(paper)
-    if len(paper_list):
+        count += 1
+    if count:
         zero_or_inc_current_index(room, 0) # does commit!
     else:
         zero_or_inc_current_index(room, -100) # empty queue = no current 
+    return count, skipped
 
 def get_all_and_filter_papers(filters):
     papers = Paper.query.all()
@@ -325,9 +332,9 @@ def get_all_and_filter_papers(filters):
     return list_papers, filter_papers
 
 def set_queue(room, filters):
-    all_papers, filter_papers = get_all_and_filter_papers(filters)
+    _, filter_papers = get_all_and_filter_papers(filters)
     solve_tsp = True
-    set_queue_to_paper_list(room, all_papers, filter_papers, solve_tsp)
+    return set_queue_to_paper_list(room, filter_papers, solve_tsp)
 
 def get_filter_paper_count(filters):
     _, filter_papers = get_all_and_filter_papers(filters)
@@ -373,8 +380,6 @@ def clean_filter_list(p_list, nid_list):
 def set_queue_explicit(room, exp):
     label_name, nid_list = parse_explicit_queue(exp)
     print('explicit queue:', label_name, nid_list)
-    papers = Paper.query.all()
-    p_list = list(papers)
     if label_name:
         label = Label.query.filter_by(name=label_name).first()
         if not label:
@@ -384,11 +389,14 @@ def set_queue_explicit(room, exp):
         filter_papers = list(label.tag_papers)
         solve_tsp = True
     else:
+        papers = Paper.query.all()
+        p_list = list(papers)
         filter_papers = clean_filter_list(p_list, nid_list)
         solve_tsp = False # do not reorder papers on explicit numeric list
-    set_queue_to_paper_list(room, p_list, filter_papers, solve_tsp)
-    count = len(filter_papers)
+    count, skipped = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     msg = f'Explicit queue set with {count} papers.'
+    if skipped:
+        msg += ' (Skipped {skipped} because in other queues already.)'
     return msg
 
 def show_current_paper(room):
@@ -618,7 +626,8 @@ def admin_set_queue(filters):
         return
     room = filters['roomChoice']
     print(f'admin request for set queue in {room}:', filters)
-    set_queue(room, filters)
+    count, skipped = set_queue(room, filters)
+    # XXX flash on skipped>0 ??? see other example
     queue,current_paper = get_queue(room)
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
@@ -641,7 +650,7 @@ def admin_set_queue_explicit(data):
     room = data['roomChoice']
     explicit = data['explicit']
     print(f'admin request for set explicit queue {room}: {explicit}')
-    msg = set_queue_explicit(explicit)
+    msg = set_queue_explicit(room,explicit)
     queue,current_paper = get_queue(room)
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
