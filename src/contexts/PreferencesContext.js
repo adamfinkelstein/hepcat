@@ -164,6 +164,8 @@ export default function PreferencesContext({children}){
     document.getElementsByTagName("head")[0].appendChild(cssStyle);
   }, [fontSize])
 
+  // XXX ??? This effect fires on every render!
+  // Too often?
   useEffect(() => {
       if(prefUpdated){
           localStorage.setItem("colors", JSON.stringify(colors));
@@ -180,7 +182,7 @@ export default function PreferencesContext({children}){
           cssStyle.appendChild(prefRule);
       })
 
-      controlledLog(cssStyle)
+      // controlledLog(cssStyle)
       document.getElementsByTagName("head")[0].appendChild(cssStyle);
   });
 

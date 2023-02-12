@@ -300,8 +300,9 @@ class GlobQueueSchema(ma.Schema):
 # Global queue vars
 ######################
 
+all_queue_names = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
 
-def ensure_gq(name):
+def get_or_create_gq(name):
     gq = GlobQueue.query.filter_by(name=name).first()
     if gq:
         print(f'retrieved GC with name {name}')
@@ -318,7 +319,7 @@ def ensure_gq(name):
     return gq
 
 # def reset_gq():
-#     ensure_gq()
+#     get_or_create_gq()
 #     gq = GlobQueue.query.first()
 #     gq.current=-1
 #     gq.current_show=False
@@ -380,9 +381,8 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
 
 def ensure_admin():
     # Also init global queue variables, if needed
-    queue_names = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
-    for name in queue_names:
-        ensure_gq(name)
+    for name in all_queue_names:
+        get_or_create_gq(name)
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')

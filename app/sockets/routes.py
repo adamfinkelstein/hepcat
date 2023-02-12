@@ -6,7 +6,7 @@ from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, GlobQueueSchema, ensure_gq, status_str_to_enum, context_str_to_enum
+    HistorySchema, GlobQueue, GlobQueueSchema, all_queue_names, get_or_create_gq, status_str_to_enum, context_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -251,7 +251,7 @@ def bulk_reject_below_bar():
 #         broadcast_admin_alert('Server Error',msg)
 
 def zero_or_inc_current_index(room, zero_or_inc):
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     gq.current_show_enter = zero_or_inc
     if zero_or_inc == 0:
         gq.current = 0
@@ -273,15 +273,16 @@ def zero_or_inc_current_index(room, zero_or_inc):
         broadcast_admin_alert('Server Error',msg)
 
 def get_bar():
-    gq = ensure_gq('Plenary') # global->Plenary
+    gq = get_or_create_gq('Plenary') # global->Plenary
     bar = gq.bar
     return bar
 
 def set_bar(bar):
     bar = float(bar)
-    gq = ensure_gq('Plenary') # global->Plenary
-    gq.bar = bar
-    db.session.add(gq)
+    queues = GlobQueue.query.all()
+    for gq in queues:
+        gq.bar = bar
+        db.session.add(gq)
     try:
         db.session.commit()
     except:
@@ -291,7 +292,7 @@ def set_bar(bar):
         broadcast_admin_alert('Server Error',msg)
 
 def clear_queue(room):
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     papers = Paper.query.filter_by(queue_id=gq.id).all()
     papers = list(papers)
     n = len(papers)
@@ -400,7 +401,7 @@ def set_queue_explicit(room, exp):
     return msg
 
 def show_current_paper(room):
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     gq.current_show = True
     gq.current_start = func.now()
     db.session.add(gq)
@@ -413,7 +414,7 @@ def show_current_paper(room):
         broadcast_admin_alert('Server Error',msg)
 
 def set_hide_queue(room, hide, message):
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     gq.hide_queue = hide
     gq.message = message
     db.session.add(gq)
@@ -426,7 +427,7 @@ def set_hide_queue(room, hide, message):
         broadcast_admin_alert('Server Error',msg)
 
 def get_globs_dump(room):
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     globs = global_schema.dump(gq)
     return globs
 
@@ -448,7 +449,7 @@ def update_current_paper_status(room, new_status):
 def get_paper_at_queue_index(room, index):
     if not room or index < 0:
         return None
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     add_one = index + 1
     paper = Paper.query.filter_by(queue_order=add_one).filter_by(queue_id=gq.id).first()
     return paper
@@ -472,7 +473,7 @@ def get_globs_dump_with_status(room):
 def get_queue(room):
     globs = get_globs_dump(room)
     current_index = globs['current']
-    gq = ensure_gq(room)
+    gq = get_or_create_gq(room)
     papers = Paper.query.filter_by(queue_id=gq.id) \
                     .order_by(Paper.queue_order).all()
     paper_list = []
@@ -491,7 +492,7 @@ def get_queue(room):
         paper_prev = paper
     globs,current_paper = get_globs_dump_with_status(room)
     queue = { 'paper_list': paper_list, 'globs': globs }
-    return queue,current_paper
+    return queue,current_paper # cur paper needed by conflictbot
 
 def get_git_info_from_file():
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -550,9 +551,20 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
-    data,_ = get_queue('Plenary') ### YYY
-    emit('server_set_queue', data) ### YYY room problem. maybe send request after welcome.
-    # no need to send to conflictbot here
+    # for room in all_queue_names:
+    #     data,_ = get_queue(room)
+    #     emit('server_set_queue', data)
+    #     # no need to send to conflictbot here (user login)
+
+@socketio.on('user_request_queue')
+def user_request_queue(room):
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    print(f'{user.full_name} requested queue for {room}')
+    data,_ = get_queue(room)
+    emit('server_set_queue', data)
 
 @socketio.on('disconnect')
 def io_disconnect():
@@ -566,7 +578,7 @@ def admin_prev_paper(room):
     if not current_user_is_admin():
         disconnect()
         return
-    print(f'admin request for prev paper in {room_choice}')
+    print(f'admin request for prev paper in {room}')
     zero_or_inc_current_index(room, -1) # also "hides" current
     globs,current_paper = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
@@ -706,8 +718,6 @@ def admin_clear_stickies():
         msg = f'No stickies were cleared.'
         data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
         emit('server_send_flasher', data)
-
-
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):

@@ -55,7 +55,7 @@ This works in python version 3.9.13 (generally 3.9.x):
 
 ## To run locally:
 
-* `python hepcat.py` - This lauches the Flask server. Then navigate browser to `http://127.0.0.1:5000`. Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`). When you visit the React app in that page (after login) you are getting the version complied by `npm run build` above. 
+* `python hepcat.py` - This lauches the Flask server. Then navigate browser to `http://127.0.0.1:5000`. Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`). When you visit the React app in that page (after login) you are getting the version compiled by `npm run build` above. 
 
 * In addition, you can get a live React server running too, as follows.
 

@@ -170,7 +170,7 @@ export default function SetQueue(){
             <hr className="horizontal-divider"/>
             <Flasher type="set_queue"/>
             <div>
-                <Stack direction="horizontal" gap={4}>
+                <Stack direction="horizontal" gap={4} className="admin-filters">
                     <div>&nbsp;</div>
                     <div>
                         <span className="font-size-3"><u>Include All</u>:</span>
@@ -236,6 +236,7 @@ export default function SetQueue(){
                     <div className="vr" />
                 <div>
                     <Stack direction="vertical" gap={4}>
+                        <div><span className="font-size-3"><u>Include Scores</u>:</span></div>
                         <DropdownButton id="dropdown-item-button" 
                             title={scoreSelection} className="new-status-dropdown"
                             variant="secondary" type="button">

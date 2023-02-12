@@ -555,3 +555,7 @@ a.nav-link {
   font-style: italic;
   color: #888;
 }
+
+.admin-filters {
+  align-items: start;
+}

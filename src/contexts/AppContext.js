@@ -36,6 +36,12 @@ export default function AppContext({children}){
 
   const [showLogs, setShowLogs] = useState(false)
 
+  function controlledLog(...output){
+    if(1 || showLogs){
+      console.log(...output)
+    }
+  }
+    
   /* 
     serverGlobs Fields:
       bar: Float
@@ -51,6 +57,31 @@ export default function AppContext({children}){
       queueCurrentID (numerical id to access grid)
   */
 
+  const recordGlobs = (data) => {
+    controlledLog('record globs:');
+    controlledLog(data);
+    if ('showAppLogs' in data) { // could be true or false or not exist
+      setShowLogs(data.showAppLogs)
+      // maybe this is why controlledLog cannot be dependency????
+    }
+    setServerGlobs(data);
+    const curr = data ? data.current : 0;
+    const status = data ? data.current_status : null;
+    const update = data ? data.update : null;
+    const barString = data ? data.bar + '' : ''
+    setQueueCurrent(curr);
+    if (status) {
+      setNewStatus(status);
+    }
+    if (update) {
+      // set status of previous paper in grid and queue
+      // XXX had to comment this out:
+      // receiveUpdate(update);
+    }
+    setGuiBar(barString)
+    controlledLog('got globs and set bar to:', barString);
+  }
+
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
     const newSocket = endpt ? socketIOClient(endpt) : socketIOClient();
@@ -59,28 +90,37 @@ export default function AppContext({children}){
   }, [setSocket]);
 
   useEffect(() => {
-    const showLogsEnv = process.env.REACT_APP_SHOW_LOGS
-    console.log(showLogsEnv)
+    const showLogsEnv = Boolean(process.env.REACT_APP_SHOW_LOGS)
+    console.log('showLogsEnv: ' + showLogsEnv)
     setShowLogs(showLogsEnv)
-  }, [])
+  }, [setShowLogs])
+
+  useEffect(() => {
+    controlledLog('roomChoice is now '+roomChoice);
+    setProbeWhen(roomChoice) // XXX temp
+    // should instead send request for new queue
+    socketEmit('user_request_queue', roomChoice)
+  }, [roomChoice]);
 
   useEffect(() => {
 
-    controlledLog(socket);
+    //controlledLog(socket);
+
+    // QUESTION??? XXX
+    // Could all these functions be declared above this useEffect?
 
     const receiveWelcome = (data) => {
       controlledLog('received welcome:')
       controlledLog(data)
       setUser(data.user)
       const isAdmin = data.user.role_name && data.user.role_name === "Admin"
-      if (isAdmin) {
-        setIsAdmin(true);
-        if (data.all_users && data.all_users.length) {
-          setAllUsers(data.all_users);
-        }
+      setIsAdmin(isAdmin);
+      if (isAdmin && data.all_users && data.all_users.length) {
+        setAllUsers(data.all_users);
       }
       setGrid(data.grid)
       setAboutMD(smartquotes(data.about))
+      socketEmit('user_request_queue', roomChoice)
     };
 
     function updateGridEntry(nid, status) {
@@ -115,6 +155,7 @@ export default function AppContext({children}){
       setQueue(newQueue);
     }
 
+    // XXX currently not called but need to fix that
     const receiveUpdate = (data) => {
       controlledLog('received update:');
       controlledLog(data); // queue_index, grid_nid, status
@@ -129,32 +170,23 @@ export default function AppContext({children}){
 
     const receiveGlobs = (data) => {
       controlledLog('received globs:');
-      controlledLog(data);
-      setQueueCurrent(data.current);
-      setServerGlobs(data);
-      const status = data.current_status;
-      const update = data.update;
-      if ('showAppLogs' in data) { // could be true or false or not exist
-        setShowLogs(data.showAppLogs)
-      }
-      if (status) {
-        setNewStatus(status);
-      }
-      if (update) {
-        // set status of previous paper in grid and queue
-        receiveUpdate(update);
-      }
-      const barString = data.bar + ''
-      setGuiBar(barString)
-      controlledLog('got globs and set bar to:', barString);
+      recordGlobs(data);
     }
 
     const receiveQueue = (data) => {
       controlledLog('received queue:')
       controlledLog(data)
-      setQueue(data.paper_list)
-      receiveGlobs(data.globs)
-      setProbeWhen('') // when queue arrives, invalidate probe
+      const room = data.globs.name;
+      const isTheRoom = (room === roomChoice);
+      controlledLog('receiveQueue compare rooms: '+room+' '+roomChoice+' '+isTheRoom)
+      if (isTheRoom) {
+        setQueue(data.paper_list) 
+        receiveGlobs(data.globs)
+        setProbeWhen('') // when queue arrives, invalidate probe
+      }
+      else {
+        // maybe need to check for other updates?
+      }
     };
 
     const receiveProbe = (count) => {
@@ -184,7 +216,7 @@ export default function AppContext({children}){
       controlledLog(data)
       flash(data.message, data.type, data.which)
     }
-
+  
     if (socket && 'on' in socket) {
       // controlledLog('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
@@ -197,6 +229,7 @@ export default function AppContext({children}){
       socket.on('server_probe_count', receiveProbe);
     }
 
+    // return from useEffect is function that does cleanup
     return () => {
       if (socket && 'off' in socket) {
         socket.off('server_welcome', receiveWelcome);
@@ -209,7 +242,7 @@ export default function AppContext({children}){
         socket.off('server_probe_count', receiveProbe);
       }
     };
-  }, [queue, grid, socket, flash, isAdmin]);
+  }, [queue, grid, socket, flash, isAdmin, roomChoice]);
 
 
   function locateGridEntry(grid_index, grid_list, nid) {
@@ -233,20 +266,15 @@ export default function AppContext({children}){
 
   function socketEmit(message, data) {
     if (!socket || !socket.emit) {
-      controlledLog("socket does not eaxist, message not sent.");
+      controlledLog("socket does not exist, message not sent.");
       return;
     }
+    controlledLog("socketEmit: " + message);
     if (data) {
       socket.emit(message, data);
       return;
     }
     socket.emit(message);
-  }
-
-  function controlledLog(...output){
-    if(showLogs){
-      console.log(...output)
-    }
   }
 
   return (
