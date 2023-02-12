@@ -6,7 +6,7 @@ from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, GlobQueue, GlobQueueSchema, all_queue_names, get_or_create_gq, status_str_to_enum, context_str_to_enum
+    HistorySchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -551,7 +551,7 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
-    # for room in all_queue_names:
+    # for room in all_queue_rooms:
     #     data,_ = get_queue(room)
     #     emit('server_set_queue', data)
     #     # no need to send to conflictbot here (user login)

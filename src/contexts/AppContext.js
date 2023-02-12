@@ -176,7 +176,7 @@ export default function AppContext({children}){
     const receiveQueue = (data) => {
       controlledLog('received queue:')
       controlledLog(data)
-      const room = data.globs.name;
+      const room = data.globs.room;
       const isTheRoom = (room === roomChoice);
       controlledLog('receiveQueue compare rooms: '+room+' '+roomChoice+' '+isTheRoom)
       if (isTheRoom) {

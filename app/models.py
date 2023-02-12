@@ -257,7 +257,7 @@ class Label(db.Model):
 class GlobQueue(db.Model):
     __tablename__ = 'glob_queue'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(8), unique=True)
+    room = db.Column(db.String(8), unique=True)
     bar = db.Column(db.Float, default=0.0)
     hide_queue = db.Column(db.Boolean, default=False)
     message = db.Column(db.String(), default='')
@@ -293,25 +293,25 @@ class HistorySchema(ma.Schema):
 
 class GlobQueueSchema(ma.Schema):
     class Meta:
-        fields = ("name", "bar", "hide_queue", "message", 
+        fields = ("room", "bar", "hide_queue", "message", 
             "current", "current_show", "current_start", "current_show_enter")
 
 ######################
 # Global queue vars
 ######################
 
-all_queue_names = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
+all_queue_rooms = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
 
-def get_or_create_gq(name):
-    gq = GlobQueue.query.filter_by(name=name).first()
+def get_or_create_gq(room):
+    gq = GlobQueue.query.filter_by(room=room).first()
     if gq:
-        print(f'retrieved GC with name {name}')
+        print(f'retrieved GC with room {room}')
         return gq
-    gq = GlobQueue(name=name)
+    gq = GlobQueue(room=room)
     db.session.add(gq)
     try:
         db.session.commit()
-        print(f'created GC with name {name}')
+        print(f'created GC with room {room}')
     except:
         db.session.rollback()
         print(f'failed to create GC')
@@ -381,8 +381,8 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
 
 def ensure_admin():
     # Also init global queue variables, if needed
-    for name in all_queue_names:
-        get_or_create_gq(name)
+    for room in all_queue_rooms:
+        get_or_create_gq(room)
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
