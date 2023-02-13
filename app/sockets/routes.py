@@ -573,6 +573,14 @@ def io_disconnect():
         user_name = current_user.full_name
     print(f'{user_name} - client disconnected')
 
+@socketio.on('admin_bring_to_room')
+def admin_bring_to_room(room):
+    if not current_user_is_admin():
+        disconnect()
+        return
+    print(f'admin request to bring to room {room}')
+    emit('server_call_to_room', room, broadcast=True)
+
 @socketio.on('admin_prev_paper')
 def admin_prev_paper(room):
     if not current_user_is_admin():

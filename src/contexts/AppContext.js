@@ -197,6 +197,12 @@ export default function AppContext({children}){
       setProbeWhen(fmt)
     };
 
+    const receiveCallToRoom = (room) => {
+      controlledLog('received call to room: '+room)
+      // go if Plenary, but otherwise check if I belong...
+      setRoomChoice(room)
+    };
+
     const receiveGrid = (data) => {
       controlledLog('received grid:');
       controlledLog(data);
@@ -226,7 +232,8 @@ export default function AppContext({children}){
       socket.on('server_set_stickie', receiveStickie);
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_send_flasher', receiveFlasher);
-      socket.on('server_probe_count', receiveProbe);
+      socket.on('server_probe_count', receiveProbe); 
+      socket.on('server_call_to_room', receiveCallToRoom); 
     }
 
     // return from useEffect is function that does cleanup
@@ -240,6 +247,7 @@ export default function AppContext({children}){
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_send_flasher', receiveFlasher);
         socket.off('server_probe_count', receiveProbe);
+        socket.off('server_call_to_room', receiveCallToRoom);
       }
     };
   }, [queue, grid, socket, flash, isAdmin, roomChoice]);

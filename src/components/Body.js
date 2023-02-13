@@ -5,8 +5,10 @@ import Queue from './Queue'
 import Paper from './Paper'
 import GridSection from './GridSection'
 import SetQueue from './SetQueue'
+import Stack from 'react-bootstrap/Stack'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
+import Button from 'react-bootstrap/Button'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import { useSplitWidth, useChangeSplitWidth } from '../contexts/PreferencesContext'
@@ -15,10 +17,12 @@ export default function Body(){
     const globals = useAppGlobals()
     const user = globals.user
     const isAdmin = globals.isAdmin
+    const socketEmit = globals.socketEmit;
     const roomChoice = globals.roomChoice;
     const setRoomChoice = globals.setRoomChoice;
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
+    const bringButtonLabel = (roomChoice === 'Plenary') ? 'Bring Everyone to Plenary' : 'Bring '+roomChoice+' Reviers'
 
     //const isPaper = queue && queue.length && globals.queueCurrent < queue.length
     const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
@@ -42,16 +46,26 @@ export default function Body(){
                     onDragEnd={(sizes) => changeSplitWidth(sizes)}
                     >
                         <Container className='left-panel'>
-                            <DropdownButton title={roomChoice}
-                                variant="secondary" className='a_grid-display-dropdown'>
+                            <Stack direction="horizontal" gap={4} className="RoomButtonStack">
+                                <DropdownButton title={roomChoice}
+                                    variant="secondary" className='a_grid-display-dropdown'>
+                                    {
+                                        ["Plenary", "Room_A", "Room_B", "Room_X", "Room_Y"].map((room, index) => {
+                                            return(
+                                                <Dropdown.Item key={index} as="button" onClick={() => setRoomChoice(room)}>{room}</Dropdown.Item>
+                                            )
+                                        })
+                                    }
+                                </DropdownButton>
                                 {
-                                    ["Plenary", "Room_A", "Room_B", "Room_X", "Room_Y"].map((roomChoice, index) => {
-                                        return(
-                                            <Dropdown.Item key={index} as="button" onClick={() => setRoomChoice(roomChoice)}>{roomChoice}</Dropdown.Item>
-                                        )
-                                    })
+                                    isAdmin && (
+                                    <Button variant="primary" onClick={()=>{
+                                        socketEmit("admin_bring_to_room", roomChoice)
+                                        }}>{bringButtonLabel}
+                                    </Button>
+                                    )
                                 }
-                            </DropdownButton>
+                            </Stack>
                             { queue.length && !hideQueue ? 
                                 <Queue/> 
                                 : 
