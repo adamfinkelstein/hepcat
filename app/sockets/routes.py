@@ -5,7 +5,7 @@ from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, Label, UserSchema, PaperSchema, History, HistoryContext, \
+from ..models import User, Paper, Label, LabelType, UserSchema, PaperSchema, History, HistoryContext, \
     HistorySchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum
 from ..orderq import order_q, get_enter_leave_conf_sets
 
@@ -170,6 +170,20 @@ def has_chair_conflict(paper):
             return True
     return False
 
+def filter_only_contains_room(filter_only):
+    for filt in filter_only:
+        if filt == 'Plenary':
+            return 'P'
+        if filt.startswith('Room_'):
+            return filt[-1] # just the last letter
+    return None
+
+def paper_in_room(paper, room):
+    for label in paper.tag_labels:
+        if label.is_room and label.name == room:
+            return True
+    return False
+
 # const filterList = ['Stickie Only','Untouched Only',
 #     'No Clusters','No Admin Conf'];
 def include_paper_in_queue(paper, filters):
@@ -196,6 +210,9 @@ def include_paper_in_queue(paper, filters):
     if 'No Admin Conf' in filter_only and has_chair_conflict(paper):
         return False
     if 'Only Admin Conf' in filter_only and not has_chair_conflict(paper):
+        return False
+    room_filter = filter_only_contains_room(filter_only)
+    if room_filter and not paper_in_room(paper, room_filter):
         return False
     return True 
 
@@ -341,26 +358,27 @@ def get_filter_paper_count(filters):
     _, filter_papers = get_all_and_filter_papers(filters)
     return len(filter_papers)
 
+area_prefix = 'Area-'
+cluster_prefix = 'Cluster-'
+
 def parse_explicit_queue(exp):
     exp = exp.strip()
     if not exp or exp == '_CLEAR_':
-        return None, []
-    remove_papers_spaces = exp
-    remove_strings = ['papers_','paper_',' ']
-    for str in remove_strings:
-        remove_papers_spaces = remove_papers_spaces.replace(str,'')
-    nums_only = re.sub('[^0-9]', "", remove_papers_spaces)
-    no_nums = re.sub('[0-9,]', "", remove_papers_spaces)
-    if len(nums_only) < len(no_nums):
-        # more alpha characters so assume cluster name etc...
-        print(f'set q alpha: {exp}')
-        return exp, None
-    # more numeric so assume numeric
+        return None, None, []
+    if exp.startswith(area_prefix):
+        label_type = int(LabelType.Area)
+        label_name = exp.replace(area_prefix, '')
+        return label_type, label_name, None
+    if exp.startswith(cluster_prefix):
+        label_type = int(LabelType.Cluster)
+        label_name = exp.replace(cluster_prefix, '')
+        return label_type, label_name, None
+    # now assume numeric csv
     nums = re.sub('[^0-9]+', ",", exp) # replace all non-digits with comma
     nums = re.sub(',+', ",", nums) # eliminate repeated commas
     nums = nums.split(',')
     nums = [int(n) for n in nums if n] # the if clause requires non empty str
-    return None, nums
+    return None, None, nums
 
 def get_paper_from_list_by_nid(p_list, nid):
     filter_papers = [p for p in p_list if p.nid == nid]
@@ -377,12 +395,12 @@ def clean_filter_list(p_list, nid_list):
         if p is not None and p not in clean_list:
             clean_list.append(p)
     return clean_list
-
+    
 def set_queue_explicit(room, exp):
-    label_name, nid_list = parse_explicit_queue(exp)
-    print('explicit queue:', label_name, nid_list)
-    if label_name:
-        label = Label.query.filter_by(name=label_name).first()
+    label_type, label_name, nid_list = parse_explicit_queue(exp)
+    print('explicit queue:', label_type, label_name, nid_list)
+    if label_type is not None:
+        label = Label.query.filter_by(type_enum=label_type).filter_by(name=label_name).first()
         if not label:
             msg = f'No matched label for explicit queue: ({label_name})'
             print(msg)
@@ -397,7 +415,7 @@ def set_queue_explicit(room, exp):
     count, skipped = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     msg = f'Explicit queue set with {count} papers.'
     if skipped:
-        msg += ' (Skipped {skipped} because in other queues already.)'
+        msg += f' (Skipped {skipped} because in other queues already.)'
     return msg
 
 def show_current_paper(room):

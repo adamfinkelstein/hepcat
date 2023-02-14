@@ -218,37 +218,47 @@ class History(db.Model):
     def status(self):
         return HistoryStatus(self.status_enum).name
 
-prefix_cluster = 'Cluster_'
-prefix_area = 'Area_'
-prefix_room = 'Room_'
+class LabelType(IntEnum):
+    Area = 0
+    Cluster = 1
+    Room = 2
+    Tag = 3
 
-def cluster_to_label_name(cluster):
-    return f'{prefix_cluster}{cluster}'
+def label_str_to_enum(str):
+    if hasattr(LabelType, str):
+        return int(LabelType[str])
+    return 0 # default is Area
 
-def area_to_label_name(area):
-    return f'{prefix_area}{area}'
-
-def room_to_label_name(room):
-    return f'{prefix_room}{room}'
+def label_enum_to_str(n):
+    for entry in LabelType:
+        # print(entry.name, entry.value)
+        if entry.value == n:
+            return entry.name
+    return 'Area' # default
 
 # currently handles areas and clusters, but may add more types later
 class Label(db.Model):
     __tablename__ = 'labels'
     id = db.Column(db.Integer, primary_key=True)
+    type_enum = db.Column(db.Integer)
     name = db.Column(db.String(64), unique=True)
     # tag_papers set by backref from papers
 
     @hybrid_property
+    def label_type(self):
+        return LabelType(self.type_enum).name
+
+    @hybrid_property
     def is_cluster(self):
-        return self.name.startswith(prefix_cluster)
+        return self.type_enum == int(LabelType.Cluster)
 
     @hybrid_property
     def is_area(self):
-        return self.name.startswith(prefix_area)
+        return self.type_enum == int(LabelType.Area)
 
     @hybrid_property
     def is_room(self):
-        return self.name.startswith(prefix_room)
+        return self.type_enum == int(LabelType.Room)
 
     def __repr__(self):
         return '<Label %r>' % self.name

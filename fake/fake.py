@@ -40,6 +40,15 @@ def random_role():
     else:
         return 'Admin'
 
+paper_room_options = [*'ABXYP']
+people_room_options = 'AX,BY,BX,BY'.split(',')
+
+def random_paper_room():
+    return random.choice(paper_room_options)
+
+def random_people_rooms():
+    return random.choice(people_room_options)
+
 # users: Email,First Name,Last Name,Role,Password
 def fake_person(role=None, first=None, last=None):
     if not first:
@@ -56,17 +65,24 @@ def fake_person(role=None, first=None, last=None):
 def fake_users(n, fname):
     emails = []
     people = 'Email,First Name,Last Name,Role,Password\n'
-    person,email = fake_person('Admin')
+    person,_ = fake_person('Admin')
     people += person
     person,email = fake_person('Screen','Screen','User')
     people += person
     emails.append(email)
-    for i in range(2,n):
+    for _ in range(2,n):
         person,email = fake_person(None)
         people += person
         emails.append(email)
     write_file(fname,people)
     return emails
+
+def write_people_rooms(emails,fname):
+    lines = 'Email,Rooms\n'
+    for e in emails:
+        rooms = random_people_rooms()
+        lines += f'{e},{rooms}\n'
+    write_file(fname,lines)
 
 def rand_color():
     color = "%03x" % random.randint(0, 0xFFF)
@@ -111,6 +127,13 @@ def fake_papers(n, fname):
             conf_pids.append(pid)
     write_file(fname,papers)
     return pids,conf_pids
+
+def write_paper_rooms(pids,fname):
+    lines = 'Submission ID,Room\n'
+    for p in pids:
+        room = random_paper_room()
+        lines += f'{p},{room}\n'
+    write_file(fname,lines)
 
 def rand_num_conflicts():
     n = math.floor( np.random.poisson(3) )
@@ -222,9 +245,9 @@ def fake_summaries(papers, fname):
         output += line
     write_file(fname, output)
 
-cluster_options=['A','B','C','D','E']
+cluster_options=[*'abcde']
 
-# clusters: Submission ID,Cluster
+# clusters: Submission ID,Type,Label
 def fake_clusters(papers, fname):
     output = 'Submission ID,Cluster\n'
     dups = papers[:] # shallow copy
@@ -265,7 +288,9 @@ def fake_history(recs, fname):
 
 def main():
     emails = fake_users(50, 'users.csv')
+    write_people_rooms(emails, 'people_rooms.csv')
     papers,conf_papers = fake_papers(500, 'papers.csv')
+    write_paper_rooms(papers,'paper_rooms.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
     recs = fake_reviews(papers, conf_papers, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')

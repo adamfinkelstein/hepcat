@@ -9,8 +9,8 @@ from werkzeug.utils import secure_filename
 from . import upload
 from .forms import UploadForm
 from .. import db
-from ..models import User, Paper, Review, History, HistoryContext, HistoryStatus, Label, FileUpload, \
-    sid_to_num, get_or_insert_role, cluster_to_label_name, area_to_label_name, \
+from ..models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
+    sid_to_num, get_or_insert_role, \
     context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
 
 def dump_users_papers_and_conflicts(title):
@@ -239,6 +239,7 @@ def insert_paper_rows(rows):
     # This fails on heroku:
     # delete_all_papers()
     # reset_gq()
+    area_type = int(LabelType.Area)
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -256,9 +257,9 @@ def insert_paper_rows(rows):
         count += 1
         label_names = areas_to_label_names(areas)
         for label_name in label_names:
-            label = Label.query.filter_by(name=label_name).first()
+            label = Label.query.filter(Label.is_area).filter_by(name=label_name).first()
             if not label:
-                label = Label(name=label_name)
+                label = Label(type_enum=area_type,name=label_name)
                 db.session.add(label)
             if label and paper:
                 paper.tag_labels.append(label)
@@ -326,19 +327,17 @@ def insert_summary_rows(rows):
         return 0
     return count
 
-# Submission ID,Cluster
-def insert_cluster_rows(rows):
-    delete_all_clusters()
+# Used for both Clusters and Rooms
+def insert_label_rows(rows, label_type):
     count = 0
     for row in rows:
         if len(row) < 2:
             continue
-        sid,cluster = row
-        label_name = cluster_to_label_name(cluster)
+        sid,label_name = row
         paper = Paper.query.filter_by(sid=sid).first()
-        label = Label.query.filter_by(name=label_name).first()
+        label = Label.query.filter_by(type_enum=label_type).filter_by(name=label_name).first()
         if not label:
-            label = Label(name=label_name)
+            label = Label(type_enum=label_type,name=label_name)
             db.session.add(label)
         if label and paper:
             paper.tag_labels.append(label)
@@ -348,7 +347,45 @@ def insert_cluster_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert clusters'
+        msg = f'failed to insert labels of type {label_type}'
+        print(msg)
+        flash(msg)
+        return 0
+    return count
+
+# Submission ID,Cluster
+def insert_cluster_rows(rows):
+    delete_all_clusters()
+    cluster_type = int(LabelType.Cluster)
+    count = insert_label_rows(rows, cluster_type)
+    return count
+
+# Submission ID,Room
+def insert_paper_room_rows(rows):
+    # delete_all_rooms() XXXX ????
+    room_type = int(LabelType.Room)
+    count = insert_label_rows(rows, room_type)
+    return count
+
+# Email,Rooms
+def insert_people_room_rows(rows):
+    # delete_all_rooms() XXXX ????
+    count = 0
+    for row in rows:
+        if len(row) < 2:
+            continue
+        email,rooms = row
+        email = email.lower() # ensure emails are all lower case
+        person = User.query.filter_by(email=email).first()
+        if person and rooms:
+            person.rooms = rooms
+            db.session.add(person)
+            count += 1
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = f'failed to insert people rooms'
         print(msg)
         flash(msg)
         return 0
@@ -356,7 +393,7 @@ def insert_cluster_rows(rows):
 
 def areas_to_label_names(areas_string):
     areas = areas_string.split('/')
-    labels = [area_to_label_name(area) for area in areas]
+    labels = [area.strip() for area in areas]
     return labels
 
 def review_role_to_num(role):
@@ -585,6 +622,8 @@ csvLinklings = {
     'papers' : 'abstracts.csv',
     'conflicts' : 'conflicts.csv',
     'clusters' : 'clusters.csv',
+    'paper_rooms' : 'paper_rooms.csv',
+    'people_rooms' : 'people_rooms.csv',
     'reviews' : 'status.csv',
     'summaries' : 'commitee_notes.csv' }
 
@@ -593,6 +632,8 @@ csvTypes = {
     'papers' : 'Submission ID,Thumbnail URL,Title,Area,Conference,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
+    'paper_rooms' : 'Submission ID,Room',
+    'people_rooms' : 'Email,Rooms',
     'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation',
     'summaries' : 'Submission ID,Committee Notes',
     'history' : 'Submission ID,Seconds,Context,Status' }
@@ -602,6 +643,8 @@ csvFunctions = {
     'papers' : insert_paper_rows,
     'conflicts' : insert_conflict_rows,
     'clusters' : insert_cluster_rows,
+    'paper_rooms' : insert_paper_room_rows,
+    'people_rooms' : insert_people_room_rows,
     'reviews' : insert_review_rows,
     'summaries' : insert_summary_rows,
     'history' : insert_history_rows }
@@ -609,7 +652,7 @@ csvFunctions = {
 csvDependence = {
     'users' : ['conflicts'],
     'reviews' : ['history'],
-    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'summaries'] }
+    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'paper_rooms', 'summaries'] }
 
 def is_csv(filename):
     if '.' not in filename:
