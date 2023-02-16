@@ -74,16 +74,10 @@ export default function AppContext({children}){
     setServerGlobs(data);
     const curr = data ? data.current : 0;
     const status = data ? data.current_status : null;
-    const update = data ? data.update : null;
     const barString = data ? data.bar + '' : ''
     setQueueCurrent(curr);
     if (status) {
       setNewStatus(status);
-    }
-    if (update) {
-      // set status of previous paper in grid and queue
-      // XXX had to comment this out:
-      // receiveUpdate(update);
     }
     setGuiBar(barString)
     controlledLog('got globs and set bar to:', barString);
@@ -180,8 +174,13 @@ export default function AppContext({children}){
     }
 
     const receiveGlobs = (data) => {
+      const update = data ? data.update : null;
       controlledLog('received globs:');
       recordGlobs(data);
+      if (update) {
+        // set status of previous paper in grid and queue
+        receiveUpdate(update);
+      }  
     }
 
     const receiveQueue = (data) => {
