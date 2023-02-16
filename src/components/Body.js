@@ -22,7 +22,6 @@ export default function Body(){
     const setRoomChoice = globals.setRoomChoice;
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
-    const bringButtonLabel = (roomChoice === 'Plenary') ? 'Bring Everyone to Plenary' : 'Bring '+roomChoice+' Reviers'
 
     //const isPaper = queue && queue.length && globals.queueCurrent < queue.length
     const hideQueue = !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue
@@ -31,6 +30,10 @@ export default function Body(){
 
     const splitWidth = useSplitWidth()
     const changeSplitWidth = useChangeSplitWidth()
+
+    const enableBringButton = isAdmin && globals.serverGlobs && !globals.serverGlobs.called_users
+    const bringVerb = enableBringButton ? 'Bring ' : 'Brought '
+    const bringButtonLabel = bringVerb + ((roomChoice === 'Plenary') ? 'Everyone to Plenary' : roomChoice+' Reviers')
 
     return(
         <Container fluid className='Body'>
@@ -58,12 +61,15 @@ export default function Body(){
                                     }
                                 </DropdownButton>
                                 {
-                                    isAdmin && (
-                                    <Button variant="primary" onClick={()=>{
-                                        socketEmit("admin_bring_to_room", roomChoice)
-                                        }}>{bringButtonLabel}
-                                    </Button>
-                                    )
+                                    isAdmin && (enableBringButton ? (
+                                        <Button variant="primary" onClick={()=>{
+                                            socketEmit("admin_bring_to_room", roomChoice)
+                                            }}>{bringButtonLabel}
+                                        </Button>
+                                    ) : (
+                                        <Button variant="secondary" disabled>{bringButtonLabel}
+                                        </Button>
+                                    ))
                                 }
                             </Stack>
                             { queue.length && !hideQueue ? 

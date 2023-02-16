@@ -41,7 +41,14 @@ export default function AppContext({children}){
       console.log(...output)
     }
   }
-    
+  
+  function roomCodeToRoom(code) {
+    if (code == 'A') return 'Room_A'
+    if (code == 'B') return 'Room_B'
+    if (code == 'X') return 'Room_X'
+    if (code == 'Y') return 'Room_Y'
+    return 'Plenary'
+  }
   /* 
     serverGlobs Fields:
       bar: Float
@@ -120,6 +127,10 @@ export default function AppContext({children}){
       }
       setGrid(data.grid)
       setAboutMD(smartquotes(data.about))
+      if (data.user.in_room) {
+        const room = roomCodeToRoom(data.user.in_room)
+        setRoomChoice(room)
+      }
       socketEmit('user_request_queue', roomChoice)
     };
 
@@ -197,10 +208,19 @@ export default function AppContext({children}){
       setProbeWhen(fmt)
     };
 
+    const belongInRoom = (room) => {
+      if (room === 'Plenary') {
+        return true;
+      }
+      // check to see if user.rooms contains this letter code ??? XXX
+      return false;
+    }
+
     const receiveCallToRoom = (room) => {
       controlledLog('received call to room: '+room)
-      // go if Plenary, but otherwise check if I belong...
-      setRoomChoice(room)
+      if (belongInRoom(room)) {
+        setRoomChoice(room)
+      }
     };
 
     const receiveGrid = (data) => {

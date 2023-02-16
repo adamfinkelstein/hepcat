@@ -112,6 +112,7 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime)
     rooms = db.Column(db.String(4))
+    in_room = db.Column(db.String(4))
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -275,6 +276,7 @@ class GlobQueue(db.Model):
     current_show = db.Column(db.Boolean, default=False)
     current_start = db.Column(db.DateTime, server_default=func.now())
     current_show_enter = db.Column(db.Integer, default=0)
+    called_users = db.Column(db.Boolean, default=False)
 
 class FileUpload(db.Model):
     __tablename__ = 'file_upload'
@@ -289,7 +291,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name", "last_seen", "rooms")
+        fields = ("email", "full_name", "role_name", "last_seen", "rooms", "in_room")
 
 class PaperSchema(ma.Schema):
     class Meta:
@@ -304,7 +306,7 @@ class HistorySchema(ma.Schema):
 class GlobQueueSchema(ma.Schema):
     class Meta:
         fields = ("room", "bar", "hide_queue", "message", 
-            "current", "current_show", "current_start", "current_show_enter")
+            "current", "current_show", "current_start", "current_show_enter", "called_users")
 
 ######################
 # Global queue vars
@@ -317,7 +319,8 @@ def get_or_create_gq(room):
     if gq:
         print(f'retrieved GC with room {room}')
         return gq
-    gq = GlobQueue(room=room)
+    called_users = (room == 'Plenary')
+    gq = GlobQueue(room=room, called_users=called_users)
     db.session.add(gq)
     try:
         db.session.commit()

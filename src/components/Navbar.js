@@ -14,6 +14,14 @@ export default function Header() {
   const globals = useAppGlobals();
   const user = globals.user;
   const isAdmin = globals.isAdmin;
+  let userNamePlus = user && user.full_name ? user.full_name : 'User';
+  if (isAdmin) {
+    userNamePlus += ' (Admin)';
+  }
+  if (user && user.rooms) {
+    userNamePlus += ' [' + user.rooms + ']';
+  }
+
   return (
     <Navbar bg="dark" variant="dark" fixed="top">
       <Container>
@@ -27,7 +35,7 @@ export default function Header() {
           >
             {
               user && 
-              <NavDropdown title={user.full_name} id="navbarScrollingDropdown">
+              <NavDropdown title={userNamePlus} id="navbarScrollingDropdown">
                 <NavDropdown.Item as={NavLink} to="about">About</NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {

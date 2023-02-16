@@ -170,12 +170,18 @@ def has_chair_conflict(paper):
             return True
     return False
 
+def room_to_letter_code(room):
+    if room == 'Plenary':
+        return 'P'
+    if room.startswith('Room_'):
+        return room[-1] # just the last letter
+    return None
+
 def filter_only_contains_room(filter_only):
     for filt in filter_only:
-        if filt == 'Plenary':
-            return 'P'
-        if filt.startswith('Room_'):
-            return filt[-1] # just the last letter
+        letter = room_to_letter_code(filt)
+        if letter:
+            return letter
     return None
 
 def paper_in_room(paper, room):
@@ -541,6 +547,40 @@ def clear_all_stickies():
         return 0
     return count_deleted
 
+def call_users_to_room(room):
+    users = User.query.all()
+    if room == 'Plenary':
+        for user in users:
+            if user.in_room:
+                user.in_room = None
+                db.session.add(user)
+        gqs = GlobQueue.query.all()
+        for gq in gqs:
+            is_plenary = (gq.room == room)
+            gq.called_users = is_plenary
+            db.session.add(gq)
+    else: # not Plenary
+        letter = room_to_letter_code(room)
+        for user in users:
+            if user.rooms and letter in user.rooms:
+                user.in_room = letter
+                db.session.add(user)
+        gq = GlobQueue.query.filter_by(room=room).first()
+        if gq:
+            gq.called_users = True
+            db.session.add(gq)
+        gq = GlobQueue.query.filter_by(room='Plenary').first()
+        if gq:
+            gq.called_users = False
+            db.session.add(gq)
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = f'error in call users to room {room}'
+        print(msg)
+        broadcast_admin_alert('Server Error',msg)
+
 ###########
 ###########
 ########### Decorator (communication) functions mostly below here:
@@ -597,7 +637,11 @@ def admin_bring_to_room(room):
         disconnect()
         return
     print(f'admin request to bring to room {room}')
+    call_users_to_room(room)
     emit('server_call_to_room', room, broadcast=True)
+    globs,_ = get_globs_dump_with_status(room)
+    emit('server_set_globs', globs, broadcast=True)
+    # conflictbot...?
 
 @socketio.on('admin_prev_paper')
 def admin_prev_paper(room):
