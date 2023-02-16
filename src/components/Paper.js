@@ -16,6 +16,7 @@ export default function Paper(){
     const currentShow = isPaper && globals.serverGlobs.current_show;
     const currentShowEnter = (isPaper ? globals.serverGlobs.current_show_enter : 0);
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
+    const showTags = isPaper && globals.serverGlobs.current_tags
     const isConflict = cp ? user.conflict_papers.includes(cp.nid) : false
     const hist = (isPaper ? globals.serverGlobs.current_history : []);
     const showHist = hist && hist.length > 0
@@ -78,7 +79,7 @@ export default function Paper(){
     }
 
     function formatHistoryElement(h) {
-        return h.status + " (" + moment.utc(h.when).local().format('ddd LT') + ")"
+        return h.status + " (" + h.context + ' ' + moment.utc(h.when).local().format('ddd LT') + ")"
     }
 
     function formatHistoryList(histList) {
@@ -146,6 +147,9 @@ export default function Paper(){
                         (<div className="paper-timer font-size-3">{formatTime(currentTime)}</div>)
                     }
                     <p className='paper-title font-size-2'>Q{cp.queue_order} ({cp.nid}): {cp.title}</p>
+                    { showTags &&
+                        (<p className='font-size-4'><span className="paper-par-header">Tags:</span> <span className='paper-history-text'>{globals.serverGlobs.current_tags}</span></p>)
+                    }
                     <p className='font-size-4'><span className="paper-par-header">Reviews: </span><span className='paper-reviews-text' dangerouslySetInnerHTML={scoresHTML}/></p>
                     { showHist &&
                         (<p className='font-size-4'><span className="paper-par-header">History:</span> <span className='paper-history-text'>{formatHistoryList(hist)}</span></p>)

@@ -128,9 +128,18 @@ def get_paper_conflicts_dump(paper):
 def get_paper_history_dump(paper):
     context_plenary = int(HistoryContext.Plenary)
     plenary_history = History.query.filter_by(paper_id=paper.id) \
-        .filter_by(context_enum=context_plenary).all()
+        .filter(History.context_enum >= context_plenary).all()
     history_dump = history_schema.dump(plenary_history)
     return history_dump
+
+def get_paper_tag_labels(paper):
+    results = []
+    labels = paper.tag_labels
+    for label in labels:
+        s = f'{label.label_type}_{label.name}'
+        results.append(s)
+    result = (', ').join(results)
+    return result
 
 def get_latest_history(paper):
     latest_history = History.query.filter_by(paper_id=paper.id) \
@@ -459,11 +468,10 @@ def update_current_paper_status(room, new_status):
     globs = get_globs_dump(room)
     current_index = globs['current']
     paper = get_paper_at_queue_index(room, current_index)
-    context_plenary = int(HistoryContext.Plenary)
+    status_enum = status_str_to_enum(new_status)
     room_context = context_str_to_enum(room)
     if not room_context: # just for safety default to plenary
-        room_context = context_plenary
-    status_enum = status_str_to_enum(new_status)
+        room_context = int(HistoryContext.Plenary)
     history = History(paper=paper,
                     context_enum=room_context,
                     status_enum=status_enum)
@@ -492,6 +500,8 @@ def get_globs_dump_with_status(room):
         if globs['current_show']:
             history = get_paper_history_dump(paper)
             globs['current_history'] = history
+            labels = get_paper_tag_labels(paper)
+            globs['current_tags'] = labels
     return globs, paper
 
 def get_queue(room):

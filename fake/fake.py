@@ -1,4 +1,5 @@
 import os
+import sys
 import math
 import random
 import numpy as np
@@ -13,7 +14,9 @@ if not os.path.exists(dataDir):
     os.makedirs(dataDir)
 
 # users: Email,First Name,Last Name,Role,Password
+# people_rooms: Email,Rooms
 # papers: Submission ID,Thumbnail URL,Title,Abstract
+# paper_rooms: Submission ID,Room
 # conflicts: Submission ID,Email
 # clusters: Submission ID,Cluster
 # reviews: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
@@ -50,7 +53,7 @@ def random_people_rooms():
     return random.choice(people_room_options)
 
 # users: Email,First Name,Last Name,Role,Password
-def fake_person(role=None, first=None, last=None):
+def fake_person(default_password, role=None, first=None, last=None):
     if not first:
         first = fake.first_name()
     if not last:
@@ -58,20 +61,23 @@ def fake_person(role=None, first=None, last=None):
     if not role:
         role = '' # formerly: random_role()
     email = name_to_email(first,last)
-    passwd = fake.password()
+    if default_password:
+        passwd = default_password
+    else:
+        passwd = fake.password()
     result = f'{email},{first},{last},{role},{passwd}\n'
     return result,email
 
-def fake_users(n, fname):
+def fake_users(n, default_password, fname):
     emails = []
     people = 'Email,First Name,Last Name,Role,Password\n'
-    person,_ = fake_person('Admin')
+    person,_ = fake_person(default_password,'Admin')
     people += person
-    person,email = fake_person('Screen','Screen','User')
+    person,email = fake_person(default_password,'Screen','Screen','User')
     people += person
     emails.append(email)
     for _ in range(2,n):
-        person,email = fake_person(None)
+        person,email = fake_person(default_password,None)
         people += person
         emails.append(email)
     write_file(fname,people)
@@ -129,11 +135,14 @@ def fake_papers(n, fname):
     return pids,conf_pids
 
 def write_paper_rooms(pids,fname):
+    paper_rooms = {}
     lines = 'Submission ID,Room\n'
     for p in pids:
         room = random_paper_room()
+        paper_rooms[p] = room
         lines += f'{p},{room}\n'
     write_file(fname,lines)
+    return paper_rooms
 
 def rand_num_conflicts():
     n = math.floor( np.random.poisson(3) )
@@ -261,13 +270,12 @@ def fake_clusters(papers, fname):
     write_file(fname, output)
 
 # history: Submission ID,Seconds,Context,Status
-def fake_history(recs, fname):
+def fake_history(paper_rooms, recs, fname):
     papers = recs.keys()
     papers = list(papers)
     random.shuffle(papers)
     keep = int(len(papers) * 0.7) # keep 70%
     papers = papers[:keep]
-
     dups = papers[:] # shallow copy
     random.shuffle(dups)
     keep = int(len(papers) * 0.4) # keep 40%
@@ -276,9 +284,14 @@ def fake_history(recs, fname):
     seconds = 100
     lines = []
     for pid in papers:
+        context_options = ['Stickie','Plenary']
+        room = paper_rooms[pid]
+        if room != 'P':
+            room = f'Room_{room}'
+            context_options.append(room)
         seconds += random.randrange(100,200)
         status = recs[pid]
-        context = random.choice(['Stickie','Plenary'])
+        context = random.choice(context_options)
         line = f'{pid},-{seconds},{context},{status}\n'
         lines.append(line)
     lines.reverse() # this puts them in time order
@@ -287,15 +300,26 @@ def fake_history(recs, fname):
     write_file(fname, output)
 
 def main():
-    emails = fake_users(50, 'users.csv')
+    default_password = None
+    n_users = 50
+    if len(sys.argv) > 1:
+        n_users = int(sys.argv[1])
+    if len(sys.argv) > 2:
+        n_papers = int(sys.argv[2])
+    else:
+        n_papers = n_users * 10
+    if len(sys.argv) > 3:
+        default_password = sys.argv[3]
+    print(f'writing fake data for {n_users} users and {n_papers} papers...')
+    emails = fake_users(n_users, default_password, 'users.csv')
     write_people_rooms(emails, 'people_rooms.csv')
-    papers,conf_papers = fake_papers(500, 'papers.csv')
-    write_paper_rooms(papers,'paper_rooms.csv')
+    papers,conf_papers = fake_papers(n_papers, 'papers.csv')
+    paper_rooms = write_paper_rooms(papers,'paper_rooms.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
     recs = fake_reviews(papers, conf_papers, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')
     fake_clusters(papers, 'clusters.csv')
-    fake_history(recs, 'history.csv')
+    fake_history(paper_rooms, recs, 'history.csv')
 
 if __name__ == "__main__":
     main()
