@@ -217,8 +217,12 @@ export default function AppContext({children}){
     }
 
     const receiveCallToRoom = (room) => {
-      controlledLog('received call to room: '+room)
+      if (room === roomChoice) { // already there
+        controlledLog('received call and already in room: '+room)
+        return; 
+      }
       if (belongInRoom(room)) {
+        controlledLog('called to room: '+room)
         setRoomChoice(room)
         flash("Admin brought you to "+room, "success", "room_change")
       }
