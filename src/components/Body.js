@@ -5,6 +5,7 @@ import Queue from './Queue'
 import Paper from './Paper'
 import GridSection from './GridSection'
 import SetQueue from './SetQueue'
+import Flasher from './Flasher'
 import Stack from 'react-bootstrap/Stack'
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
@@ -49,6 +50,7 @@ export default function Body(){
                     onDragEnd={(sizes) => changeSplitWidth(sizes)}
                     >
                         <Container className='left-panel'>
+                            <Flasher type="room_change"/>
                             <Stack direction="horizontal" gap={4} className="RoomButtonStack">
                                 <DropdownButton title={roomChoice}
                                     variant="secondary" className='a_grid-display-dropdown'>

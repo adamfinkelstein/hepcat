@@ -133,12 +133,13 @@ def get_paper_history_dump(paper):
     return history_dump
 
 def get_paper_tag_labels(paper):
-    results = []
+    result = []
     labels = paper.tag_labels
     for label in labels:
         s = f'{label.label_type}_{label.name}'
-        results.append(s)
-    result = (', ').join(results)
+        result.append(s)
+    result.sort()
+    result = (', ').join(result)
     return result
 
 def get_latest_history(paper):

@@ -98,8 +98,6 @@ export default function AppContext({children}){
 
   useEffect(() => {
     controlledLog('roomChoice is now '+roomChoice);
-    setProbeWhen(roomChoice) // XXX temp
-    // should instead send request for new queue
     socketEmit('user_request_queue', roomChoice)
   }, [roomChoice]);
 
@@ -195,7 +193,7 @@ export default function AppContext({children}){
         setProbeWhen('') // when queue arrives, invalidate probe
       }
       else {
-        // maybe need to check for other updates?
+        // maybe need to check for other updates????XXX
       }
     };
 
@@ -211,7 +209,10 @@ export default function AppContext({children}){
       if (room === 'Plenary') {
         return true;
       }
-      // check to see if user.rooms contains this letter code ??? XXX
+      const roomLetter = room.slice(-1); // last letter of room string
+      if (user && user.rooms && user.rooms.includes(roomLetter)) {
+        return true;
+      }
       return false;
     }
 
@@ -219,6 +220,7 @@ export default function AppContext({children}){
       controlledLog('received call to room: '+room)
       if (belongInRoom(room)) {
         setRoomChoice(room)
+        flash("Admin brought you to "+room, "success", "room_change")
       }
     };
 
