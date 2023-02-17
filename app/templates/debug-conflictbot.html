@@ -8,53 +8,57 @@
     
     <h1>Hepcat Conflictbut Debugger</h1>
     
-    Current Paper Info:
-    <ul>
-        <li>Paper: <span id="paper-elem"></span></li>
-        <li>Show: <span id="show-elem"></span></li>
-    </ul>
-
-    Current Conflicts:
-    <ul id="conflict-list-elem">
-    </ul>
+    Current Rooms:
+    <ul id="room-list"></ul>
     
     All Users:
-    <ul id="user-list-elem">
+    <ul id="all-user-list">
     </ul>
         
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js" crossorigin="anonymous"></script>
 
     <script>
-        
+
     function setUsers(users) {
-        const ul = document.getElementById('user-list-elem');
+        const ul = document.getElementById('all-user-list');
         ul.innerHTML = ''; // clear old list
         for (let i = 0; i < users.length; i++) {
             const user = users[i];
             console.log(user);
             const li = document.createElement('li');
-            li.innerHTML = user.full_name + " (" + user.email + ")";
+            let html = user.full_name + " (" + user.email + ")";
+            if (user.in_room) {
+                html += ' [Room ' + user.in_room + ']';
+            }
+            li.innerHTML = html;
             ul.appendChild(li);
         }
     }
 
-    function setConflicts(conflicts) {
-        const ul = document.getElementById('conflict-list-elem');
-        ul.innerHTML = ''; // clear old list
+    function getRoomItem(room) {
+        let roomLI = document.getElementById(room);
+        if (!roomLI) {
+            const parent = document.getElementById('room-list');
+            roomLI = document.createElement('li');
+            roomLI.setAttribute('id', room);
+            parent.appendChild(roomLI);
+        }
+        return roomLI;
+    }
+
+    function updateRoomInfo(data) {
+        const item = getRoomItem(data.room);
+        item.innerHTML = data.room + ': Paper ' + data.paper + ' (show ' + data.show + ')';
+        const conflicts = data.emails;
+        if (!conflicts || !conflicts.length) return;
+        const ul = document.createElement('ul');
+        item.appendChild(ul);
         for (let i = 0; i < conflicts.length; i++) {
             const email = conflicts[i];
             const li = document.createElement('li');
             li.innerHTML = email;
             ul.appendChild(li);
         }
-    }
-
-    function setPaper(paper, show) {
-        console.log('Show paper: ' + paper + " = " + show);
-        const liPaper = document.getElementById('paper-elem');
-        const liShow = document.getElementById('show-elem');
-        liPaper.innerHTML = paper;
-        liShow.innerHTML = show;
     }
 
     const socket = io("/lurk_NxtCmHS8aDj6");
@@ -77,8 +81,7 @@
     socket.on('conflicts', function(data) {
         console.log('Got conflicts:');
         console.log(data);
-        setConflicts(data.emails);
-        setPaper(data.paper, data.show);
+        updateRoomInfo(data)
     });
     
     </script>

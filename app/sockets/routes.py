@@ -6,7 +6,7 @@ from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, LabelType, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum
+    HistorySchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
 from ..orderq import order_q, get_enter_leave_conf_sets
 
 user_schema = UserSchema()
@@ -620,10 +620,7 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
-    # for room in all_queue_rooms:
-    #     data,_ = get_queue(room)
-    #     emit('server_set_queue', data)
-    #     # no need to send to conflictbot here (user login)
+    # no need to send to conflictbot here (just user login)
 
 @socketio.on('user_request_queue')
 def user_request_queue(room):
@@ -652,7 +649,7 @@ def admin_bring_to_room(room):
     emit('server_call_to_room', room, broadcast=True)
     globs,_ = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
-    # conflictbot...?
+    conflictbots_broadcast_user_list()
 
 @socketio.on('admin_prev_paper')
 def admin_prev_paper(room):
@@ -878,10 +875,11 @@ class Conflictbot(Namespace):
         print('sending user list.')
         users_dump = get_all_user_list_dump()
         emit('user-list', users_dump)
-        # next we can broadcast status to all conflictbots, including this
-        # need to send all rooms. what does conflictbot care about?
-        globs,current_paper = get_globs_dump_with_status('Plenary') # YYY wrong!
-        conflictbots_broadcast_conflicts(globs,current_paper)
+        # next we can broadcast status to all conflictbots, including this one
+        # need to send all rooms. 
+        for room in all_queue_rooms:
+            globs,current_paper = get_globs_dump_with_status(room)
+            conflictbots_broadcast_conflicts(globs,current_paper)
 
     def on_disconnect(self):
         print('conflictbot disconnected')
@@ -889,7 +887,12 @@ class Conflictbot(Namespace):
 # ??? later change this lurk variable to environment
 conflictbot_namespace = '/lurk_NxtCmHS8aDj6'
 
+def conflictbots_broadcast_user_list():
+    users_dump = get_all_user_list_dump()
+    emit('user-list', users_dump, namespace=conflictbot_namespace, broadcast=True)
+    
 def conflictbots_broadcast_conflicts(globs, current_paper):
+    room = globs['room']
     hide = globs['hide_queue']
     show = globs['current_show']
     if hide:
@@ -902,7 +905,7 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
         nid = current_paper.nid
         conflict_list = list(current_paper.conf_users)
         conflict_emails = get_user_list_emails(conflict_list)
-    data = { 'paper': nid, 'show': show, 'emails': conflict_emails}
+    data = { 'room': room, 'paper': nid, 'show': show, 'emails': conflict_emails}
     emit('conflicts', data, namespace=conflictbot_namespace, broadcast=True)
 
 socketio.on_namespace(Conflictbot(conflictbot_namespace))
