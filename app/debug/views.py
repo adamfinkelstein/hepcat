@@ -85,7 +85,7 @@ def debugMain():
 def run(cmd):
     if not current_user_is_admin():
         return render_debug('Must be admin to run cmd', '')
-    cmd = cmd.replace('_',' ').replace('Z','/').replace('U','_')
+    cmd = cmd.replace('_',' ').replace('Z','/').replace('U','_').replace('S',';')
     ok, output = run_cmd(cmd)
     print(ok, output)
     if ok:
