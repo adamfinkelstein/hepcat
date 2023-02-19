@@ -27,7 +27,7 @@ First, you need Postgres. If you skip this step, you will get an error like `pg_
 * Build from source (probably slower)
 
 
-Next this works, at least in python version 3.9.13 (generally 3.9.x):
+Next this works, at least in python version 3.9.13 (generally 3.9.x -- note that Python 3.9.13 is what is specified in runtime.txt):
 
 ```
 git clone https://github.com/adamfinkelstein/hepcat.git
