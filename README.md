@@ -35,7 +35,7 @@ cd hepcat
 python3 -m venv venv
 source venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements.txt (or on m1, use -m1 version)
 
 npm install (one time, to set up build directory etc)
 npm run build
@@ -52,6 +52,22 @@ This works in python version 3.9.13 (generally 3.9.x):
 * Used /usr/local/bin/python3.9 -m venv venv to build environment
 
 * We also had to brew install postgresql to install one of the packages.
+
+## More notes on installation (problems Adam encountered)
+
+There was a problem with socketio using python 3.10.?
+
+* Installed python 3.9.13 (same version as Baris) using:
+
+* brew install pyenv
+
+* pyenv install 3.9.13
+
+* pyenv local 3.9.13
+
+* pyenv exec python -m venv venv
+
+* source venv/bin/activate
 
 ## To run locally:
 

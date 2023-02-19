@@ -1,3 +1,4 @@
+from subprocess import check_output, CalledProcessError, STDOUT
 import textwrap
 from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
@@ -7,6 +8,15 @@ from ..models import Role, User, Paper, PaperSchema, GlobQueue, get_or_create_gq
 
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
+
+def run_cmd(cmd):
+    try:
+        result = check_output(cmd, stderr=STDOUT, shell=True)
+        return True, result.decode("utf-8")
+    except CalledProcessError as e:
+        return False, e.output.decode("utf-8")
+    except:
+        return False, None
 
 def re_wrap_text_output(output):
     result = ''
@@ -46,6 +56,17 @@ def debug_config_to_string(config):
             output += f'{key} : {val}\n'
     return output
 
+def get_current_user_or_none():
+    if current_user and not current_user.is_anonymous:
+        return current_user
+    return None
+
+def current_user_is_admin():
+    user = get_current_user_or_none()
+    if user and user.is_admin:
+        return True
+    return False
+
 @debug.route('/')
 @login_required
 def debugMain():
@@ -55,6 +76,24 @@ def debugMain():
     if app and app.config:
         debug_title = 'app.config'
         debug_output = debug_config_to_string(app.config)
+    return render_debug(debug_title, debug_output)
+
+@debug.route('/run/<cmd>')
+@login_required
+def run(cmd):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to run cmd', '')
+    ok, output = run_cmd(cmd)
+    print(ok, output)
+    if ok:
+        debug_title = f'Successful command: {cmd}'
+        debug_output = output
+    else:
+        debug_title = f'Failed command: {cmd}'
+        if output:
+            debug_output = output 
+        else:
+            debug_output = '(no error given)'
     return render_debug(debug_title, debug_output)
 
 @debug.route('/users/')
