@@ -16,7 +16,8 @@ def run_cmd(cmd):
     except CalledProcessError as e:
         return False, e.output.decode("utf-8")
     except Exception as err:
-        msg = f'Unexpected {err=}, {type(err)=}'
+        out = err.output
+        msg = f'Unexpected {err=}, {type(err)=}, {out}'
         return False, msg
 
 def re_wrap_text_output(output):
