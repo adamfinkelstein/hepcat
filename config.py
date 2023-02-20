@@ -15,6 +15,7 @@ class Config:
     HEPCAT_ADMIN_PASSWD = os.environ.get('HEPCAT_ADMIN_PASSWD')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
+    BIN_FOLDER = os.path.join(basedir, 'custom_bin')
 
     # AF: not needed
     # @staticmethod

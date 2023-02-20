@@ -660,6 +660,7 @@ def is_csv(filename):
     ext = filename.rsplit('.', 1)[1].lower()
     return ext == 'csv'
 
+# same func appears in orderq.py (should consolidate somehow)
 def make_path_if_needed(path):
     if not os.path.exists(path):
         os.makedirs(path)

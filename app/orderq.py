@@ -1,12 +1,31 @@
 import os
+from subprocess import check_output, CalledProcessError, STDOUT
 import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
+from flask import current_app
 
 use_ortools=os.environ.get('HEPCAT_USE_ORTOOLS')
 
 if use_ortools:
     from ortools.constraint_solver import routing_enums_pb2
     from ortools.constraint_solver import pywrapcp
+
+# duplicates a function in upload/views.py
+def make_path_if_needed(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+# duplicates a function in debug/views.py
+def run_cmd(cmd):
+    try:
+        result = check_output(cmd, stderr=STDOUT, shell=True)
+        return True, result.decode("utf-8")
+    except CalledProcessError as e:
+        return False, e.output.decode("utf-8")
+    except Exception as err:
+        out = err.output
+        msg = f'Unexpected {err=}, {type(err)=}, {out}'
+        return False, msg
 
 def get_paper_conficts_set(p):
     if not p or not p.conf_users:
@@ -75,6 +94,64 @@ def debug_order(distance_matrix, permutation, distance, ordered_papers):
         pi = ordered_papers[i]
         pj = ordered_papers[i+1]
         get_paper_distance(pi,pj,True)
+
+########### CONCORDE ############
+
+def write_concorde_input(matrix, fname):
+    dim = str(len(matrix))
+    f = open(fname, "w")
+    f.write("""
+NAME: papers
+TYPE: TSP
+COMMENT: PC Meeting Conflicts
+DIMENSION: """ + dim + """
+EDGE_WEIGHT_TYPE: EXPLICIT
+EDGE_WEIGHT_FORMAT: FULL_MATRIX
+EDGE_WEIGHT_SECTION
+""")
+    for row in matrix:
+        strings = [str(d) for d in row]
+        line = " ".join(strings) + "\n"
+        f.write(line)
+    f.write("EOF")
+    f.close()
+
+def call_concorde(concorde_path, concorde_input, concorde_output):
+    # flags passed to concorde:
+    # -s 0 : seed random number generator to 0 so answer is deterministic
+    # -x   : delete files on completion (sav pul mas)
+    # -V   : just run fast cuts
+    # -o f : output solution to file f
+    cmd = f'{concorde_path} -s 0 -x -V -o {concorde_output} {concorde_input}'
+    print(cmd)
+    run_cmd(cmd)
+    
+def read_solution(solution_file):
+    f = open(solution_file, "r")
+    lines = f.readlines()
+    f.close()
+    del lines[0] # first row just contains number of nodes
+    order = []
+    for line in lines:
+        parts = line.split()
+        indices = [int(i) for i in parts]
+        order.extend(indices)
+    return order
+
+def setup_and_run_concorde(distance_matrix):
+    app = current_app._get_current_object()
+    working_folder = app.config['UPLOAD_FOLDER']
+    bin_folder = app.config['BIN_FOLDER']
+    make_path_if_needed(working_folder)
+    concorde_input = 'concorde_input.txt'
+    concorde_output = 'concorde_output.txt'
+    concorde_input_path = os.path.join(working_folder, concorde_input)
+    concorde_output_path = os.path.join(working_folder, concorde_output)
+    concorde_path = os.path.join(bin_folder, 'concorde')
+    write_concorde_input(distance_matrix, concorde_input_path)
+    call_concorde(concorde_path, concorde_input_path, concorde_output_path)
+    node_order = read_solution(concorde_output_path)
+    return node_order
 
 ########### ORTOOLS ############
 
@@ -198,15 +275,16 @@ def tsp_transition_costs(nodes, distance_matrix):
         costs.append(cost)
     return costs
 
-def order_q_select_alg(papers,distance_matrix):
-    if use_ortools: # global set at top of file
-        print('solving tsp using ortools')
-        nodes = solve_tsp_ortools(distance_matrix)
-    else:
-        print('solving tsp using local search')
-        nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
-    if not nodes:
-        return None, 0
+def order_q_select_alg(papers, distance_matrix):
+    nodes = setup_and_run_concorde(distance_matrix)
+    # if use_ortools: # global set at top of file
+    #     print('solving tsp using ortools')
+    #     nodes = solve_tsp_ortools(distance_matrix)
+    # else:
+    #     print('solving tsp using local search')
+    #     nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
+    # if not nodes:
+    #     return None, 0
     nodes, distance = improve_tour(papers, distance_matrix, nodes)
     return nodes, distance
 
