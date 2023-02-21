@@ -33,7 +33,7 @@ venv*
 .env
 .flaskenv
 tmp
-data
+fake/data*
 .DS_Store
 node_modules
 af-notes

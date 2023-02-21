@@ -11,8 +11,8 @@ export default function GUIContext({children}){
   const [message, setMessage] = useState("");
   const [hideQ, setHideQ] = useState(false);
   const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
-  const [lowRange, setLowRange] = useState(0);
-  const [highRange, setHighRange] = useState(5.1);
+  const [lowRange, setLowRange] = useState(-9.0);
+  const [highRange, setHighRange] = useState(9.0);
   const [queueExplicitList, setQueueExplicitList] = useState("");
 
   return(

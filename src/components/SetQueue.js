@@ -171,7 +171,6 @@ export default function SetQueue(){
             <Flasher type="set_queue"/>
             <div>
                 <Stack direction="horizontal" gap={4} className="admin-filters">
-                    <div>&nbsp;</div>
                     <div>
                         <span className="font-size-3"><u>Include All</u>:</span>
                         <br />
@@ -200,14 +199,13 @@ export default function SetQueue(){
                                 </div>
                             )
                         })}
-                        <div>&nbsp;</div>
                         </div>
                     </div>
                     <div className="vr" />
                     <div>
                         <span className="font-size-3"><u>Include Only</u>:</span>
                         <br />
-                        <div key={`only-checkbox`} className="mb-4">
+                        <div key={`only-checkbox`} className="mb-0">
                         { filterList.map((label, index) => {
                             return(
                                 <div key={`only-checkbox-div-`+index}>

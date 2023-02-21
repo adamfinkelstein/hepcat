@@ -503,6 +503,10 @@ a.nav-link {
   margin-top: 10px;
 }
 
+.get-filtered-count {
+  margin-top: 24px;
+}
+
 .get-filtered-count-text {
   margin-left: 15px;
   margin-right: 10px;
@@ -558,4 +562,5 @@ a.nav-link {
 
 .admin-filters {
   align-items: start;
+  margin-left: 20px;
 }
