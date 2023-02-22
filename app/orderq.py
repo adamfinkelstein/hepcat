@@ -307,22 +307,16 @@ def elapsed_time():
     diff = round(diff, 3)
     return diff
 
-def order_q_select_alg(papers, distance_matrix):
-    nodes = list(range(len(papers)))
+def order_q_select_alg(distance_matrix):
+    nodes = list(range(len(distance_matrix[0])))
     cost = tour_cost(distance_matrix, nodes)
     print(f'cost of linear path: {cost}')
 
-    start_timer()
-    nodes = setup_and_run_concorde(distance_matrix)
-    diff = elapsed_time()
-    cost = tour_cost(distance_matrix, nodes)
-    print(f'cost of concorde path: {cost} (time {diff})')
-
-    start_timer()
-    nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
-    diff = elapsed_time()
-    cost = tour_cost(distance_matrix, nodes)
-    print(f'cost of local path: {cost} (time {diff})')
+    # start_timer()
+    # nodes = setup_and_run_concorde(distance_matrix)
+    # diff = elapsed_time()
+    # cost = tour_cost(distance_matrix, nodes)
+    # print(f'cost of concorde path: {cost} (time {diff})')
 
     if use_ortools: # global set at top of file
         start_timer()
@@ -330,14 +324,20 @@ def order_q_select_alg(papers, distance_matrix):
         diff = elapsed_time()
         cost = tour_cost(distance_matrix, nodes)
         print(f'cost of ortools path: {cost} (time {diff})')
-    # if not nodes:
-    #     return None, 0
+    else:
+        start_timer()
+        nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=8.0)
+        diff = elapsed_time()
+        cost = tour_cost(distance_matrix, nodes)
+        print(f'cost of local path: {cost} (time {diff})')
+    if not nodes:
+        return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
     return nodes
 
 def order_q(papers, verbose=False):
     n = len(papers)
-    maxn = 1000
+    maxn = 200
     remainder = None
     if n < 3:
         print(f'skip ordering {n} papers because it is too few.')
@@ -347,7 +347,7 @@ def order_q(papers, verbose=False):
         remainder = papers[maxn:] # slice off the ones after max
         papers = papers[:maxn] # only optimize these first ones
     distance_matrix = get_distance_matrix(papers)
-    permutation = order_q_select_alg(papers,distance_matrix)
+    permutation = order_q_select_alg(distance_matrix)
     if permutation:
         ordered_papers = permute_papers(papers, permutation)
     else:
