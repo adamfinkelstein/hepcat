@@ -1,4 +1,5 @@
 import os
+import time
 from subprocess import check_output, CalledProcessError, STDOUT
 import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
@@ -93,18 +94,31 @@ def debug_order(distance_matrix, permutation, distance, ordered_papers):
     for i in range(hops):
         pi = ordered_papers[i]
         pj = ordered_papers[i+1]
-        get_paper_distance(pi,pj,True)
+        get_paper_distance(pi,pj,True) # why not use distance_matrix???
+
+def tour_cost(distance_matrix, permutation):
+    if not permutation:
+        return 0
+    n = len(permutation)
+    cost = 0
+    for i in range(n):
+        j = (i+1) % n
+        nodei = permutation[i]
+        nodej = permutation[j]
+        d = distance_matrix[nodei][nodej]
+        cost += d
+        # print(f'cost from {nodei} to {nodej} is {d} (total {cost})')
+    return cost
 
 ########### CONCORDE ############
 
 def write_concorde_input(matrix, fname):
     dim = str(len(matrix))
     f = open(fname, "w")
-    f.write("""
-NAME: papers
+    f.write(f"""NAME: papers
 TYPE: TSP
 COMMENT: PC Meeting Conflicts
-DIMENSION: """ + dim + """
+DIMENSION: {dim}
 EDGE_WEIGHT_TYPE: EXPLICIT
 EDGE_WEIGHT_FORMAT: FULL_MATRIX
 EDGE_WEIGHT_SECTION
@@ -116,15 +130,15 @@ EDGE_WEIGHT_SECTION
     f.write("EOF")
     f.close()
 
-def call_concorde(concorde_path, concorde_input, concorde_output):
+def call_concorde(concorde_path, concorde_input):
     # flags passed to concorde:
     # -s 0 : seed random number generator to 0 so answer is deterministic
     # -x   : delete files on completion (sav pul mas)
     # -V   : just run fast cuts
     # -o f : output solution to file f
-    cmd = f'{concorde_path} -s 0 -x -V -o {concorde_output} {concorde_input}'
-    print(cmd)
-    run_cmd(cmd)
+    cmd = f'{concorde_path} -s 0 -x -V {concorde_input}'
+    # print(cmd) 
+    return run_cmd(cmd)
     
 def read_solution(solution_file):
     f = open(solution_file, "r")
@@ -143,14 +157,19 @@ def setup_and_run_concorde(distance_matrix):
     working_folder = app.config['UPLOAD_FOLDER']
     bin_folder = app.config['BIN_FOLDER']
     make_path_if_needed(working_folder)
-    concorde_input = 'concorde_input.txt'
-    concorde_output = 'concorde_output.txt'
-    concorde_input_path = os.path.join(working_folder, concorde_input)
-    concorde_output_path = os.path.join(working_folder, concorde_output)
+    concorde_input = 'concorde_data.txt'
+    concorde_output = 'concorde_data.sol'
     concorde_path = os.path.join(bin_folder, 'concorde')
-    write_concorde_input(distance_matrix, concorde_input_path)
-    call_concorde(concorde_path, concorde_input_path, concorde_output_path)
-    node_order = read_solution(concorde_output_path)
+    current_directory = os.getcwd() # remember where we were
+    os.chdir(working_folder)
+    write_concorde_input(distance_matrix, concorde_input)
+    ok, output = call_concorde(concorde_path, concorde_input)
+    if ok:
+        print(f'concorde claimed ok -- output:\n{output}')
+    else:
+        print(f'concorde claimed error -- output:\n{output}')
+    node_order = read_solution(concorde_output)
+    os.chdir(current_directory) # return to where we were
     return node_order
 
 ########### ORTOOLS ############
@@ -275,22 +294,50 @@ def tsp_transition_costs(nodes, distance_matrix):
         costs.append(cost)
     return costs
 
+START_TIME = None
+
+def start_timer():
+    global START_TIME
+    START_TIME = time.time()
+
+def elapsed_time():
+    global START_TIME
+    end = time.time()
+    diff = (end - START_TIME)
+    diff = round(diff, 3)
+    return diff
+
 def order_q_select_alg(papers, distance_matrix):
+    nodes = list(range(len(papers)))
+    cost = tour_cost(distance_matrix, nodes)
+    print(f'cost of linear path: {cost}')
+
+    start_timer()
     nodes = setup_and_run_concorde(distance_matrix)
-    # if use_ortools: # global set at top of file
-    #     print('solving tsp using ortools')
-    #     nodes = solve_tsp_ortools(distance_matrix)
-    # else:
-    #     print('solving tsp using local search')
-    #     nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
+    diff = elapsed_time()
+    cost = tour_cost(distance_matrix, nodes)
+    print(f'cost of concorde path: {cost} (time {diff})')
+
+    start_timer()
+    nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=2.0)
+    diff = elapsed_time()
+    cost = tour_cost(distance_matrix, nodes)
+    print(f'cost of local path: {cost} (time {diff})')
+
+    if use_ortools: # global set at top of file
+        start_timer()
+        nodes = solve_tsp_ortools(distance_matrix)
+        diff = elapsed_time()
+        cost = tour_cost(distance_matrix, nodes)
+        print(f'cost of ortools path: {cost} (time {diff})')
     # if not nodes:
     #     return None, 0
-    nodes, distance = improve_tour(papers, distance_matrix, nodes)
-    return nodes, distance
+    # nodes, distance = improve_tour(papers, distance_matrix, nodes)
+    return nodes
 
 def order_q(papers, verbose=False):
     n = len(papers)
-    maxn = 100
+    maxn = 1000
     remainder = None
     if n < 3:
         print(f'skip ordering {n} papers because it is too few.')
@@ -300,14 +347,14 @@ def order_q(papers, verbose=False):
         remainder = papers[maxn:] # slice off the ones after max
         papers = papers[:maxn] # only optimize these first ones
     distance_matrix = get_distance_matrix(papers)
-    permutation, distance = order_q_select_alg(papers,distance_matrix)
+    permutation = order_q_select_alg(papers,distance_matrix)
     if permutation:
         ordered_papers = permute_papers(papers, permutation)
     else:
         ordered_papers = papers
     if verbose:
-        debug_order(distance_matrix, permutation, distance, ordered_papers)
-    print(f'ordered {n} papers with total cost {distance}')
+        debug_order(distance_matrix, permutation, 0, ordered_papers)
+    print(f'ordered {n} papers') # with total cost {distance}')
     if remainder:
         print('(The other papers were not ordered and just appended.)')
         ordered_papers += remainder
