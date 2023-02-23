@@ -25,14 +25,8 @@
             const user = users[i];
             console.log(user);
             const li = document.createElement('li');
-            let html = '';
-            if (user.in_room) {
-                html += ' [Room_' + user.in_room + '] ';
-            }
-            else {
-                html += ' [Plenary] ';
-            }
-            html += user.full_name + " (" + user.email + ")";
+            let html = ' [' + user.room_name + '] '
+                     + user.full_name + " (" + user.email + ")";
             li.innerHTML = html;
             ul.appendChild(li);
         }

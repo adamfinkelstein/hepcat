@@ -42,6 +42,7 @@ export default function AppContext({children}){
     }
   }
   
+  /* 
   function roomCodeToRoom(code) {
     if (code == 'A') return 'Room_A'
     if (code == 'B') return 'Room_B'
@@ -49,6 +50,7 @@ export default function AppContext({children}){
     if (code == 'Y') return 'Room_Y'
     return 'Plenary'
   }
+  */
   /* 
     serverGlobs Fields:
       bar: Float
@@ -119,9 +121,9 @@ export default function AppContext({children}){
       }
       setGrid(data.grid)
       setAboutMD(smartquotes(data.about))
-      if (data.user.in_room) {
-        const room = roomCodeToRoom(data.user.in_room)
-        setRoomChoice(room)
+      if (data.user.room_name) {
+        //const room = roomCodeToRoom(data.user.in_room)
+        setRoomChoice(data.user.room_name)
       }
       socketEmit('user_request_queue', roomChoice)
     };

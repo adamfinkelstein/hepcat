@@ -124,6 +124,13 @@ class User(UserMixin, db.Model):
             return ""
 
     @hybrid_property
+    def room_name(self):
+        if not self.in_room or self.in_room == 'P':
+            return 'Plenary'
+        else:
+            return 'Room_' + self.in_room
+
+    @hybrid_property
     def is_admin(self):
         return (self.role_name == 'Admin')
 
@@ -291,7 +298,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name", "last_seen", "rooms", "in_room")
+        fields = ("email", "full_name", "role_name", "rooms", "room_name")
 
 class PaperSchema(ma.Schema):
     class Meta:
