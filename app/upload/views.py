@@ -225,10 +225,11 @@ def insert_user_rows(rows):
     dump_users_papers_and_conflicts('After insertion')
     return count
 
-def journal_only_from_conf(conf):
-    return conf != "yes"
+def journal_only_from_dual(dual):
+    return (dual != "yes")
 
-# Submission ID,Thumbnail URL,Title,Area,Abstract
+# 2022: Submission ID,Thumbnail URL,Title,Area,Abstract
+# 2023: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 def insert_paper_rows(rows):
     papers = Paper.query.all()
     count = len(papers)
@@ -244,8 +245,8 @@ def insert_paper_rows(rows):
     for row in rows:
         if len(row) < 5:
             continue
-        sid,thumbnail,title,areas,conf,abstract = row
-        journal_only = journal_only_from_conf(conf)
+        sid,thumbnail,title,areas,dual,abstract = row
+        journal_only = journal_only_from_dual(dual)
         nid = sid_to_num(sid)
         paper = Paper(nid=nid, 
                     sid=sid,
@@ -413,11 +414,24 @@ def review_str_to_num(s):
     return 0
 
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'?', 1:'a', 3:'A', 5:'_A_'}
+# [-3 -2 -1 1 2] -> [N C c j J]
+rec_codes_dict = {-3:'N', -2:'C', -1:'c', 0:'?', 1:'j', 2:'J'}
 
-def get_rating_code(rating):
-    if rating in rating_codes_dict:
-        return rating_codes_dict[rating]
+def get_code_from_dict(rating, d):
+    if rating in d:
+        return d[rating]
     return '?'
+
+def ratings_to_string(scores, d):
+    codes = [ get_code_from_dict(score, d) for score in scores ]
+    brackets = '[ ' + ' '.join(codes) + ' ]'
+    return brackets
+
+def scores_to_string(scores):
+    return ratings_to_string(scores, rating_codes_dict)
+
+def recs_to_string(recs):
+    return ratings_to_string(recs, rec_codes_dict)
 
 def get_consensus_info(consensus_recs):
     # later: need to check for Conference / Journal?
@@ -427,11 +441,6 @@ def get_consensus_info(consensus_recs):
         enum = 0 # default is Tabled
     name = status_enum_to_str(enum)
     return enum, name
-
-def scores_to_string(scores):
-    codes = [ get_rating_code(score) for score in scores ]
-    brackets = '[ ' + ' '.join(codes) + ' ]'
-    return brackets
 
 def average_scores(scores):
     n = len(scores)
@@ -444,44 +453,25 @@ def non_zero_scores(scores):
     scores = [ score for score in scores if score != 0 ]
     return scores
 
-# before it was in papers.csv, we computed this from conf scores:
-# def journal_only(conference_scores):
-#     nz = non_zero_scores(conference_scores)
-#     return len(nz) > 0
-
-def weird_conf_scores(conference_scores):
-    nz = len(non_zero_scores(conference_scores))
-    total = len(conference_scores)
-    if (nz > 0) and (total-nz) > 1:
-        return True
-    return False
-
-def all_scores_to_sort_score(conference_scores,journal_scores,journal_only):
-    journal_ave = average_scores(journal_scores)
-    conference_ave = average_scores(conference_scores)
+def all_scores_to_string(scores,recs,consensus_code,journal_only):
+    score_string = scores_to_string(scores) + ' '
     if journal_only:
-        return journal_ave
-    return max(conference_ave, journal_ave)
-
-def all_scores_to_string(conference_scores,journal_scores,consensus_code,journal_only):
-    if journal_only:
-        score_string = 'c[x]'
+        score_string += '[journal only]'
     else:
-        score_string =  'c' + scores_to_string(conference_scores)
-    score_string += ' j' + scores_to_string(journal_scores) + \
-                    ' bbs: ' + consensus_code
+        score_string +=  recs_to_string(recs)
+    score_string += ' bbs: ' + consensus_code
     return score_string
 
 def reviews_to_score_lists(reviews):
-    conference_scores = []
-    journal_scores = []
+    scores = []
+    recs = []
     consensus_recs = []
     for review in reviews:
-        conference_scores.append( review.conference )
-        journal_scores.append( review.journal )
+        scores.append( review.score )
+        recs.append( review.recommendation )
         if review.role >= 1 and review.role <= 2: # primary or secondary
             consensus_recs.append(review.consensus)
-    return conference_scores,journal_scores,consensus_recs
+    return scores,recs,consensus_recs
 
 def consensus_num_code_to_enum(str):
     if not len(str):
@@ -498,25 +488,17 @@ def consensus_num_code_to_enum(str):
 def papers_set_all_scores_and_status_from_reviews():
     # now = datetime.now()
     papers = Paper.query.all()
-    missing_review_nids = []
-    weird_conf_nids = []
     for paper in papers:
         # add score summaries to paper
         reviews = paper.reviews.order_by(Review.role)
         if len(list(reviews)):
-            conference_scores,journal_scores,consensus_recs = \
-                reviews_to_score_lists(reviews)
+            scores,recs,consensus_recs = reviews_to_score_lists(reviews)
             consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-            paper.sort_score = all_scores_to_sort_score(conference_scores,journal_scores,paper.journal_only)
-            paper.all_scores = all_scores_to_string(conference_scores,journal_scores,consensus_str,paper.journal_only)
-            paper.missing_reviews = False
-            if weird_conf_scores(conference_scores):
-                weird_conf_nids.append(paper.nid)
+            paper.sort_score = average_scores(scores)
+            paper.all_scores = all_scores_to_string(scores,recs,consensus_str,paper.journal_only)
         else:
             paper.sort_score = 0
             paper.all_scores = 'This paper has no reviews.'
-            paper.missing_reviews = True
-            missing_review_nids.append(paper.nid)
         db.session.add(paper)
 
         # add BBS history ### ??? later: fix time below...
@@ -526,8 +508,6 @@ def papers_set_all_scores_and_status_from_reviews():
                         context_enum=context_enum,
                         status_enum=consensus_enum)
         db.session.add(history)
-    print('papers missing reviews: ', missing_review_nids)
-    print('weird conf scores: ', weird_conf_nids)
     try:
         db.session.commit()
     except:
@@ -536,8 +516,9 @@ def papers_set_all_scores_and_status_from_reviews():
         print(msg)
         flash(msg)
 
-# old: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
-# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+# orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+# 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
 def insert_review_rows(rows):
     reviews = Review.query.all()
     count = len(reviews)
@@ -549,21 +530,23 @@ def insert_review_rows(rows):
     # delete_all_reviews()
     count = 0
     for row in rows:
-        if len(row) < 4:
+        if len(row) < 5:
             continue
-        # expertise ignored for now (col bet journal and consensus):
-        sid,role,conference,journal,_,consensus = row
+        sid,role,score,recommendation,expertise = row[:5]
+        consensus = row[5] if len(row) > 5 else '0' # default is tabled
         paper = Paper.query.filter_by(sid=sid).first()
         if paper:
             # add review
             role_num = review_role_to_num(role)
-            conference = review_str_to_num(conference)
-            journal = review_str_to_num(journal)
+            score = review_str_to_num(score)
+            recommendation = review_str_to_num(recommendation)
+            expertise = review_str_to_num(expertise)
             consensus_enum = consensus_num_code_to_enum(consensus)
             review = Review(paper=paper,
                             role=role_num,
-                            conference=conference,
-                            journal=journal,
+                            score=score,
+                            recommendation=recommendation,
+                            expertise=expertise,
                             consensus=consensus_enum)
             db.session.add(review)
             count += 1
@@ -629,12 +612,12 @@ csvLinklings = {
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
-    'papers' : 'Submission ID,Thumbnail URL,Title,Area,Conference,Abstract',
+    'papers' : 'Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract',
     'conflicts' : 'Submission ID,Email',
     'clusters' : 'Submission ID,Cluster',
     'paper_rooms' : 'Submission ID,Room',
     'people_rooms' : 'Email,Rooms',
-    'reviews' : 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation',
+    'reviews' : 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation',
     'summaries' : 'Submission ID,Committee Notes',
     'history' : 'Submission ID,Seconds,Context,Status' }
 

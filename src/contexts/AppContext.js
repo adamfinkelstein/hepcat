@@ -76,13 +76,10 @@ export default function AppContext({children}){
     setServerGlobs(data);
     const curr = data ? data.current : 0;
     const status = data ? data.current_status : null;
-    const barString = data ? data.bar + '' : ''
     setQueueCurrent(curr);
     if (status) {
       setNewStatus(status);
     }
-    setGuiBar(barString)
-    controlledLog('got globs and set bar to:', barString);
   }
 
   useEffect(() => {
@@ -160,12 +157,14 @@ export default function AppContext({children}){
       setQueue(newQueue);
     }
 
-    // XXX currently not called but need to fix that
-    const receiveUpdate = (data) => {
+    const receiveUpdateOLDXXX = (room, update) => {
       controlledLog('received update:');
-      controlledLog(data); // queue_index, grid_nid, status
-      updateGridEntry(data.grid_nid, data.status);
-      updateQueueEntry(data.queue_index, data.status)
+      controlledLog(update); // queue_index, grid_nid, status
+      updateGridEntry(update.grid_nid, update.status);
+      const isTheRoom = (room === roomChoice);
+      if (isTheRoom) {
+        updateQueueEntry(update.queue_index, update.status)
+      }
     };
 
     const receiveStickie = (grid_nid) => {
@@ -174,13 +173,25 @@ export default function AppContext({children}){
     }
 
     const receiveGlobs = (data) => {
-      const update = data ? data.update : null;
+      if (!data) {
+        controlledLog('WARNING! received globs with empty data');
+        return;
+      }
       controlledLog('received globs:');
-      recordGlobs(data);
-      if (update) {
-        // set status of previous paper in grid and queue
-        receiveUpdate(update);
-      }  
+      controlledLog(data);
+      const isTheRoom = (data.room === roomChoice);
+      if (isTheRoom) {
+        recordGlobs(data);
+        if (data.update) {
+            updateQueueEntry(data.update.queue_index, data.update.status)
+        }
+      }
+      if (data.update) {
+        updateGridEntry(data.update.grid_nid, data.update.status);
+      }
+      const barString = data.bar + '';
+      setGuiBar(barString)
+      controlledLog('set bar to:', barString);  
     }
 
     const receiveQueue = (data) => {

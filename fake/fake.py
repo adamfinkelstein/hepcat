@@ -6,12 +6,14 @@ import numpy as np
 from faker import Faker
 
 # globals
-fake = Faker()
-dataDir = 'data'
+FAKER = Faker()
+DATA_DIR = 'data' # global, may be changed by command line option
 
-# make data directory if needed
-if not os.path.exists(dataDir):
-    os.makedirs(dataDir)
+def setup_data_dir(dir):
+    DATA_DIR = dir
+    # make data directory if needed
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
 # users: Email,First Name,Last Name,Role,Password
 # people_rooms: Email,Rooms
@@ -24,9 +26,23 @@ if not os.path.exists(dataDir):
 # history: Submission ID,Seconds,Status
 
 def write_file(fname, contents):
-    path = f'{dataDir}/{fname}'
+    path = f'{DATA_DIR}/{fname}'
     with open(path, 'w') as f:
         f.write(contents)
+
+def line_to_email(line):
+    parts = line.split(',')
+    return parts[0]
+
+def read_and_copy_users_file(path, fname):
+    with open(path, 'r') as f:
+        contents = f.read()
+        f.seek(0) # rewind
+        lines = f.readlines()
+    write_file(fname, contents)
+    lines = lines[1:] # skip the header
+    emails = [line_to_email(line) for line in lines if ',' in line]
+    return emails
 
 def name_to_email(first, last):
     first = first.lower()
@@ -55,16 +71,16 @@ def random_people_rooms():
 # users: Email,First Name,Last Name,Role,Password
 def fake_person(default_password, role=None, first=None, last=None):
     if not first:
-        first = fake.first_name()
+        first = FAKER.first_name()
     if not last:
-        last = fake.last_name()
+        last = FAKER.last_name()
     if not role:
         role = '' # formerly: random_role()
     email = name_to_email(first,last)
     if default_password:
         passwd = default_password
     else:
-        passwd = fake.password()
+        passwd = FAKER.password()
     result = f'{email},{first},{last},{role},{passwd}\n'
     return result,email
 
@@ -110,29 +126,29 @@ def fake_paper(pid):
     n = pid.replace('papers_','')
     # like this: https://fakeimg.pl/600x450/a42/fa8/?text=255&font_size=240&font=bebas
     url = f'https://fakeimg.pl/600x450/{c1}/{c2}/?text={n}&font_size=240&font=bebas'
-    title    = csv_safe_string( fake.sentence(nb_words=7) )
-    abstract = csv_safe_string( fake.paragraph(nb_sentences=12) )
+    title    = csv_safe_string( FAKER.sentence(nb_words=7) )
+    abstract = csv_safe_string( FAKER.paragraph(nb_sentences=12) )
     title = title[:-1] # remove trailing period
     title = title.title() # each word caps
     area = fake_area()
-    conf = random.choice(['yes','no'])
-    result = f'{pid},{url},{title},{area},{conf},{abstract}\n'
-    return result,conf
+    dual = random.choice(['yes','no'])
+    result = f'{pid},{url},{title},{area},{dual},{abstract}\n'
+    return result,dual
 
 def fake_papers(n, fname):
-    conf_pids = []
+    dual_pids = []
     pids = []
-    papers = 'Submission ID,Thumbnail URL,Title,Area,Conference,Abstract\n'
+    papers = 'Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract\n'
     start = 101
     for i in range(start, start+n):
         pid = f'papers_{i}'
-        paper_line,conf = fake_paper(pid)
+        paper_line,dual = fake_paper(pid)
         papers += paper_line
         pids.append(pid)
-        if conf == 'yes':
-            conf_pids.append(pid)
+        if dual == 'yes':
+            dual_pids.append(pid)
     write_file(fname,papers)
-    return pids,conf_pids
+    return pids,dual_pids
 
 def write_paper_rooms(pids,fname):
     paper_rooms = {}
@@ -191,9 +207,24 @@ def rand_reviews(n):
     #         revs[i] = 0
     return revs
 
+'''
+mapping score->conf/jour
+5: 2
+3: 1 or -1
+1: -2
+otherwise: -3
+'''
+def review_to_conf_jour(score):
+    if score == 5:
+        return 2
+    elif score == 3:
+        return random.choice([1,-1])
+    elif score == 1:
+        return -2
+    return -3
+    
 def revs_to_rec(revs):
-    journal_revs = revs[5:]
-    tot = 1.0 * sum(journal_revs) / len(journal_revs)
+    tot = 1.0 * sum(revs) / len(revs)
     if tot > 1.6:
         return 1
     elif tot < -1:
@@ -208,38 +239,40 @@ def gen_status(rec):
         return random.choice(['1','2']) # Conf or Jour
     return '-1' # Reject
 
-# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-def fmt_review(pid, rev, conf_score, jour_score, rec):
-    line = f'{pid},{rev},{conf_score},{jour_score},0,{rec}\n' # expertise ignored for now
+# 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+# 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
+# Expertise and Top 10 ignored for now in Hepcat
+def fmt_review(pid, role, rev, dual_rev, rec):
+    line = f'{pid},{role},{rev},{dual_rev},99,{rec},\n'
     return line
 
-def fake_paper_reviews(pid,conf):
+def fake_paper_reviews(pid,is_dual):
     pri = 'Technical Papers Committee Member (lead)'
     sec = 'Technical Papers Committee Member'
     ter = 'Technical Papers Tertiary Reviewer'
-    if conf:
-        revs = rand_reviews(10)
-    else:
-        revs = [0, 0, 0, 0, 0] + rand_reviews(5)
-    # print(conf, revs)
+    roles = [pri, sec, ter, ter, ter]
+    revs = rand_reviews(5)
     rec = gen_status(revs_to_rec(revs))
-    result  = fmt_review(pid, pri, revs[0], revs[5], rec)
-    result += fmt_review(pid, sec, revs[1], revs[6], rec)
-    result += fmt_review(pid, ter, revs[2], revs[7], '')
-    result += fmt_review(pid, ter, revs[3], revs[8], '')
-    result += fmt_review(pid, ter, revs[4], revs[9], '')
+    if is_dual:
+        dual_revs = [review_to_conf_jour(r) for r in revs]
+    else:
+        dual_revs = ['' for _ in revs]
+    # print(conf, revs)
+    result = ''
+    for i in range(5):
+        reci = rec if i < 2 else ''
+        result += fmt_review(pid, roles[i], revs[i], dual_revs[i], reci)
     return result, rec
 
-# reviews: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
-# new: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-def fake_reviews(papers, conf_papers, fname):
-    output = 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation\n'
+# orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+# 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+# 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
+def fake_reviews(papers, dual_pids, fname):
+    output = 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%\n'
     recs = {}
     for pid in papers:
-        conf = False
-        if pid in conf_papers:
-            conf = True
-        line,rec = fake_paper_reviews(pid,conf)
+        is_dual = (pid in dual_pids)
+        line,rec = fake_paper_reviews(pid,is_dual)
         output += line
         recs[pid] = rec
     write_file(fname, output)
@@ -249,7 +282,7 @@ def fake_reviews(papers, conf_papers, fname):
 def fake_summaries(papers, fname):
     output = 'Submission ID,Committee Notes\n'
     for pid in papers:
-        summary = csv_safe_string( fake.sentence(nb_words=12) )
+        summary = csv_safe_string( FAKER.sentence(nb_words=12) )
         line = f'{pid},{summary}\n'
         output += line
     write_file(fname, output)
@@ -299,24 +332,50 @@ def fake_history(paper_rooms, recs, fname):
     output += ''.join(lines)
     write_file(fname, output)
 
-def main():
+USE = 'python3 fake.py [data_dir] [n_users|existing_users.csv] [n_papers] [default_passwd]'
+
+def parse_args():
+    global DATA_DIR
+    ok = True
     default_password = None
     n_users = 50
+    users_file = None
     if len(sys.argv) > 1:
-        n_users = int(sys.argv[1])
+        if sys.argv[1] == '--help':
+            print(USE)
+            ok = False
+        else:
+            DATA_DIR = sys.argv[1] # global
     if len(sys.argv) > 2:
-        n_papers = int(sys.argv[2])
+        if sys.argv[2].isnumeric():
+            n_users = int(sys.argv[2])
+        else:
+            n_users = 0
+            users_file = sys.argv[2]
+    if len(sys.argv) > 3:
+        n_papers = int(sys.argv[3])
     else:
         n_papers = n_users * 10
-    if len(sys.argv) > 3:
-        default_password = sys.argv[3]
-    print(f'writing fake data for {n_users} users and {n_papers} papers...')
-    emails = fake_users(n_users, default_password, 'users.csv')
+    if len(sys.argv) > 4:
+        default_password = sys.argv[4]
+    return ok, users_file, n_users, n_papers, default_password
+
+def main():
+    ok, users_file, n_users, n_papers, default_password = parse_args()
+    if not ok:
+        return
+    setup_data_dir(DATA_DIR)
+    if users_file:
+        emails = read_and_copy_users_file(users_file, 'users.csv')
+        n_users = len(emails)
+    else:
+        emails = fake_users(n_users, default_password, 'users.csv')
+    print(f'writing fake data for {n_users} users and {n_papers} papers in {DATA_DIR}...')
     write_people_rooms(emails, 'people_rooms.csv')
-    papers,conf_papers = fake_papers(n_papers, 'papers.csv')
+    papers,dual_pids = fake_papers(n_papers, 'papers.csv')
     paper_rooms = write_paper_rooms(papers,'paper_rooms.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
-    recs = fake_reviews(papers, conf_papers, 'reviews.csv')
+    recs = fake_reviews(papers, dual_pids, 'reviews.csv')
     fake_summaries(papers, 'summaries.csv')
     fake_clusters(papers, 'clusters.csv')
     fake_history(paper_rooms, recs, 'history.csv')
