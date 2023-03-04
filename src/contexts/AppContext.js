@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react'
+import React, {useState, useContext, useEffect, useCallback} from 'react'
 import socketIOClient from "socket.io-client";
 import {useFlasher} from './FlasherContext'
 import smartquotes from 'smartquotes';
@@ -14,6 +14,7 @@ export default function AppContext({children}){
     
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [roomCalledTo, setRoomCalledTo] = useState("Plenary");
   const [roomChoice, setRoomChoice] = useState("Plenary");
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
@@ -36,37 +37,32 @@ export default function AppContext({children}){
 
   const [showLogs, setShowLogs] = useState(false)
 
-  function controlledLog(...output){
-    if(1 || showLogs){
-      console.log(...output)
+  // function controlledLog(...output){
+  //   if(1 || showLogs){
+  //     console.log(...output)
+  //   }
+  // }
+
+  const controlledLog = useCallback( (...output) => {
+    if (1 || showLogs) {
+      console.log(...output);
     }
-  }
-  
-  /* 
-  function roomCodeToRoom(code) {
-    if (code == 'A') return 'Room_A'
-    if (code == 'B') return 'Room_B'
-    if (code == 'X') return 'Room_X'
-    if (code == 'Y') return 'Room_Y'
-    return 'Plenary'
-  }
-  */
-  /* 
-    serverGlobs Fields:
-      bar: Float
-      current: Int
-      current_history: Array[History obj]
-      current_show: Boolean
-      current_start: DateTime
-      current_status: String (Conference, Journal, Reject, Tabled) - maybe not needed???
-      hide_queue: Boolean
-      message: String
+  }, [showLogs] );
 
-    Set in react to include the following:
-      queueCurrentID (numerical id to access grid)
-  */
+  const socketEmit = useCallback( (message, data) => {
+    if (!socket || !socket.emit) {
+      controlledLog("socket does not exist, message not sent.");
+      return;
+    }
+    controlledLog("socketEmit: " + message);
+    if (data) {
+      socket.emit(message, data);
+      return;
+    }
+    socket.emit(message);
+  }, [socket, controlledLog] );
 
-  const recordGlobs = (data) => {
+  const recordGlobs = useCallback( (data) => {
     controlledLog('record globs:');
     controlledLog(data);
     if ('showAppLogs' in data) { // could be true or false or not exist
@@ -80,7 +76,7 @@ export default function AppContext({children}){
     if (status) {
       setNewStatus(status);
     }
-  }
+  }, [controlledLog, setShowLogs, setServerGlobs, setQueueCurrent, setNewStatus] );
 
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -98,7 +94,7 @@ export default function AppContext({children}){
   useEffect(() => {
     controlledLog('roomChoice is now '+roomChoice);
     socketEmit('user_request_queue', roomChoice)
-  }, [roomChoice]);
+  }, [roomChoice, controlledLog, socketEmit]);
 
   useEffect(() => {
 
@@ -121,6 +117,7 @@ export default function AppContext({children}){
       if (data.user.room_name) {
         //const room = roomCodeToRoom(data.user.in_room)
         setRoomChoice(data.user.room_name)
+        setRoomCalledTo(data.user.room_name)
       }
       socketEmit('user_request_queue', roomChoice)
     };
@@ -156,16 +153,6 @@ export default function AppContext({children}){
       const newQueue = [...queue];
       setQueue(newQueue);
     }
-
-    const receiveUpdateOLDXXX = (room, update) => {
-      controlledLog('received update:');
-      controlledLog(update); // queue_index, grid_nid, status
-      updateGridEntry(update.grid_nid, update.status);
-      const isTheRoom = (room === roomChoice);
-      if (isTheRoom) {
-        updateQueueEntry(update.queue_index, update.status)
-      }
-    };
 
     const receiveStickie = (grid_nid) => {
       controlledLog('received stickie: '+grid_nid);
@@ -237,6 +224,7 @@ export default function AppContext({children}){
       if (belongInRoom(room)) {
         controlledLog('called to room: '+room)
         setRoomChoice(room)
+        setRoomCalledTo(room)
         flash("Admin brought you to "+room, "success", "room_change")
       }
     };
@@ -288,7 +276,8 @@ export default function AppContext({children}){
         socket.off('server_call_to_room', receiveCallToRoom);
       }
     };
-  }, [queue, grid, socket, flash, isAdmin, roomChoice]);
+  }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
+      controlledLog, socketEmit, recordGlobs]);
 
 
   function locateGridEntry(grid_index, grid_list, nid) {
@@ -310,25 +299,13 @@ export default function AppContext({children}){
     return true
   }
 
-  function socketEmit(message, data) {
-    if (!socket || !socket.emit) {
-      controlledLog("socket does not exist, message not sent.");
-      return;
-    }
-    controlledLog("socketEmit: " + message);
-    if (data) {
-      socket.emit(message, data);
-      return;
-    }
-    socket.emit(message);
-  }
-
   return (
       <AppGlobalsContext.Provider 
         value={{
           "user": user,
           "isAdmin": isAdmin,
           "allUsers": allUsers,
+          "roomCalledTo": roomCalledTo,
           "roomChoice": roomChoice,
           "setRoomChoice": setRoomChoice,
           "queue": queue,

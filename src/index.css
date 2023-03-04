@@ -564,3 +564,10 @@ a.nav-link {
   align-items: start;
   margin-left: 20px;
 }
+
+#room-warning {
+  margin-left: 10px;
+  font-size: 20px;
+  font-style: italic;
+  color: #f66;
+}

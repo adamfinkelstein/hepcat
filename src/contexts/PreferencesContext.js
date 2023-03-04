@@ -1,6 +1,6 @@
 //import { text } from '@fortawesome/fontawesome-svg-core'
 import React, {useState, useContext, useEffect} from 'react'
-import { useAppGlobals } from '../contexts/AppContext';
+// import { useAppGlobals } from '../contexts/AppContext';
 
 const defaultColors = {
   "Unseen": "#F4F4F4", 
@@ -102,8 +102,7 @@ export default function PreferencesContext({children}){
   const [favorites, setFavorites] = useState([])
   const [splitWidth, setSplitWidth] = useState([40, 60])
 
-  let controlledLog = useAppGlobals()["controlledLog"]
-
+//  let controlledLog = useAppGlobals()["controlledLog"]
 
   useEffect(() => {
     const colorData = localStorage.getItem("colors")

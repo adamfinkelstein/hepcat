@@ -19,8 +19,10 @@ export default function Body(){
     const user = globals.user
     const isAdmin = globals.isAdmin
     const socketEmit = globals.socketEmit;
+    const roomCalledTo = globals.roomCalledTo;
     const roomChoice = globals.roomChoice;
     const setRoomChoice = globals.setRoomChoice;
+    const showRoomWarning = !isAdmin && roomCalledTo !== roomChoice;
     const isScreen = user && user.role_name === "Screen"
     const queue = globals.queue
 
@@ -72,6 +74,11 @@ export default function Body(){
                                         <Button variant="secondary" disabled>{bringButtonLabel}
                                         </Button>
                                     ))
+                                }
+                                {
+                                    showRoomWarning && (
+                                        <span id='room-warning'>You were last called to {roomCalledTo}.</span>
+                                    )
                                 }
                             </Stack>
                             { queue.length && !hideQueue ? 
