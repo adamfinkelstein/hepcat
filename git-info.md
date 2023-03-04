@@ -2,11 +2,11 @@
 
 ### Git Version
 
-* commit: c8dbfcbd4c5d79721a8e0980454dc418ad8d4369
+* commit: dac86192b5550f924cb5b99f1bd3ca211c488f4d
 
 * author: Adam Finkelstein <af@princeton.edu>
 
-* author_date: 2023-02-01 21:01:47
+* author_date: 2023-03-04 17:47:28
 
-* message: added room basics
+* message: added room warning and fixed many react dependency problems
 
