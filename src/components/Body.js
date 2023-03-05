@@ -36,7 +36,7 @@ export default function Body(){
 
     const enableBringButton = isAdmin && globals.serverGlobs && !globals.serverGlobs.called_users
     const bringVerb = enableBringButton ? 'Bring ' : 'Brought '
-    const bringButtonLabel = bringVerb + ((roomChoice === 'Plenary') ? 'Everyone to Plenary' : roomChoice+' Reviers')
+    const bringButtonLabel = bringVerb + ((roomChoice === 'Plenary') ? 'Everyone to Plenary' : roomChoice+' Reviewers')
 
     return(
         <Container fluid className='Body'>
