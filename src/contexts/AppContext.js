@@ -37,14 +37,8 @@ export default function AppContext({children}){
 
   const [showLogs, setShowLogs] = useState(false)
 
-  // function controlledLog(...output){
-  //   if(1 || showLogs){
-  //     console.log(...output)
-  //   }
-  // }
-
   const controlledLog = useCallback( (...output) => {
-    if (1 || showLogs) {
+    if (showLogs) {
       console.log(...output);
     }
   }, [showLogs] );
@@ -67,7 +61,6 @@ export default function AppContext({children}){
     controlledLog(data);
     if ('showAppLogs' in data) { // could be true or false or not exist
       setShowLogs(data.showAppLogs)
-      // maybe this is why controlledLog cannot be dependency????
     }
     setServerGlobs(data);
     const curr = data ? data.current : 0;
@@ -87,8 +80,10 @@ export default function AppContext({children}){
 
   useEffect(() => {
     const showLogsEnv = Boolean(process.env.REACT_APP_SHOW_LOGS)
-    console.log('showLogsEnv: ' + showLogsEnv)
-    setShowLogs(showLogsEnv)
+    if (showLogsEnv) {
+      console.log('showLogsEnv: ' + showLogsEnv)
+      setShowLogs(showLogsEnv)  
+    }
   }, [setShowLogs])
 
   useEffect(() => {

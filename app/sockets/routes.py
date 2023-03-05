@@ -336,19 +336,32 @@ def clear_queue(room):
         db.session.add(paper)
     return gq
 
+def message_from_set_queue(count, skipped, over_max):
+    msg = f'Set queue with {count} papers.'
+    if skipped:
+        msg += f' Skipped {skipped} because already in other queues.'
+    if over_max:
+        msg += f' Selected random subset of {over_max} to stay under time budget.'
+    return msg
+
 def set_queue_to_paper_list(room, paper_list, solve_tsp):
-    if solve_tsp:
-        order_papers = order_q(paper_list)
-    else:
-        order_papers = paper_list
     gq = clear_queue(room)
-    count = 0
+    ### remove any papers already in other queues...
+    keepers = []
     skipped = 0
-    for paper in order_papers:
+    for paper in paper_list:
         if paper.queue_id:
             skipped += 1
-            print(f'cannot add paper {paper.nid} to q {gq.id} because it is already in a different q {paper.queue_id}')
-            continue
+            # print(f'cannot add paper {paper.nid} to q {gq.id} because it is already in a different q {paper.queue_id}')
+        else:
+            keepers.append(paper)
+    over_max = False
+    if solve_tsp:
+        order_papers, over_max = order_q(keepers)
+    else:
+        order_papers = keepers
+    count = 0
+    for paper in order_papers:
         paper.queue_id = gq.id
         paper.queue_order = (count+1) # queue order starts at 1
         db.session.add(paper)
@@ -357,7 +370,8 @@ def set_queue_to_paper_list(room, paper_list, solve_tsp):
         zero_or_inc_current_index(room, 0) # does commit!
     else:
         zero_or_inc_current_index(room, -100) # empty queue = no current 
-    return count, skipped
+    msg = message_from_set_queue(count, skipped, over_max)
+    return msg
 
 def get_all_and_filter_papers(filters):
     papers = Paper.query.all()
@@ -428,10 +442,7 @@ def set_queue_explicit(room, exp):
         p_list = list(papers)
         filter_papers = clean_filter_list(p_list, nid_list)
         solve_tsp = False # do not reorder papers on explicit numeric list
-    count, skipped = set_queue_to_paper_list(room, filter_papers, solve_tsp)
-    msg = f'Explicit queue set with {count} papers.'
-    if skipped:
-        msg += f' (Skipped {skipped} because in other queues already.)'
+    msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     return msg
 
 def show_current_paper(room):
@@ -492,7 +503,7 @@ def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
     show_logs = os.getenv('REACT_APP_SHOW_LOGS')
     if (show_logs is not None):
-        globs['showAppLogs'] = show_logs
+        globs['showAppLogs'] = (show_logs == 'True')
     current_index = globs['current']
     paper = get_paper_at_queue_index(room, current_index)
     if paper:
@@ -716,12 +727,13 @@ def admin_set_queue(filters):
         return
     room = filters['roomChoice']
     print(f'admin request for set queue in {room}:', filters)
-    count, skipped = set_queue(room, filters)
-    # XXX flash on skipped>0 ??? see other example
+    msg = set_queue(room, filters)
     queue,current_paper = get_queue(room)
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs,current_paper)
+    data = { 'message': msg, 'type': 'success', 'which': 'set_queue'}
+    emit('server_send_flasher', data)
 
 @socketio.on('admin_probe_queue')
 def admin_probe_queue(filters):

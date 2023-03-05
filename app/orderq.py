@@ -1,5 +1,6 @@
 import os
 import time
+import random
 from subprocess import check_output, CalledProcessError, STDOUT
 import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
@@ -337,15 +338,18 @@ def order_q_select_alg(distance_matrix):
 
 def order_q(papers, verbose=False):
     n = len(papers)
-    maxn = 200
-    remainder = None
+    maxn = 60
+    over_max = False
+    # remainder = None
     if n < 3:
         print(f'skip ordering {n} papers because it is too few.')
-        return papers
+        return papers, over_max
     if n > maxn:
         n = maxn
-        remainder = papers[maxn:] # slice off the ones after max
+        # remainder = papers[maxn:] # slice off the ones after max
+        random.shuffle(papers) # choose random subset
         papers = papers[:maxn] # only optimize these first ones
+        over_max = maxn
     distance_matrix = get_distance_matrix(papers)
     permutation = order_q_select_alg(distance_matrix)
     if permutation:
@@ -355,7 +359,7 @@ def order_q(papers, verbose=False):
     if verbose:
         debug_order(distance_matrix, permutation, 0, ordered_papers)
     print(f'ordered {n} papers') # with total cost {distance}')
-    if remainder:
-        print('(The other papers were not ordered and just appended.)')
-        ordered_papers += remainder
-    return ordered_papers
+    # if remainder:
+    #     print('(The other papers were not ordered and just appended.)')
+    #     ordered_papers += remainder
+    return ordered_papers, over_max
