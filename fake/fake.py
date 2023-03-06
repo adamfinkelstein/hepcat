@@ -1,6 +1,7 @@
 import os
 import sys
 import math
+import statistics
 import random
 import numpy as np
 from faker import Faker
@@ -207,14 +208,7 @@ def rand_reviews(n):
     #         revs[i] = 0
     return revs
 
-'''
-mapping score->conf/jour
-5: 2
-3: 1 or -1
-1: -2
-otherwise: -3
-'''
-def review_to_conf_jour(score):
+def review_score_to_dual_rec(score):
     if score == 5:
         return 2
     elif score == 3:
@@ -254,7 +248,7 @@ def fake_paper_reviews(pid,is_dual):
     revs = rand_reviews(5)
     rec = gen_status(revs_to_rec(revs))
     if is_dual:
-        dual_revs = [review_to_conf_jour(r) for r in revs]
+        dual_revs = [review_score_to_dual_rec(r) for r in revs]
     else:
         dual_revs = ['' for _ in revs]
     # print(conf, revs)
@@ -262,7 +256,7 @@ def fake_paper_reviews(pid,is_dual):
     for i in range(5):
         reci = rec if i < 2 else ''
         result += fmt_review(pid, roles[i], revs[i], dual_revs[i], reci)
-    return result, rec
+    return result, rec, revs
 
 # orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
@@ -270,13 +264,42 @@ def fake_paper_reviews(pid,is_dual):
 def fake_reviews(papers, dual_pids, fname):
     output = 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%\n'
     recs = {}
+    all_revs = {}
     for pid in papers:
         is_dual = (pid in dual_pids)
-        line,rec = fake_paper_reviews(pid,is_dual)
-        output += line
+        lines,rec,revs = fake_paper_reviews(pid,is_dual)
+        output += lines
         recs[pid] = rec
+        all_revs[pid] = revs
     write_file(fname, output)
-    return recs
+    return recs, all_revs
+
+def mean_and_std(scores):
+    n = len(scores)
+    if not n:
+        return 0, 1
+    mean = statistics.mean(scores)
+    std = statistics.stdev(scores)
+    return mean, std
+
+def all_revs_to_list(all_revs):
+    arr = []
+    for pid in all_revs:
+        arr += all_revs[pid]
+    return arr
+
+# chair_scores: Submission ID,Chair Score
+def fake_chair_scores(all_revs, fname):
+    revs = all_revs_to_list(all_revs)
+    mu, sigma = mean_and_std(revs)
+    output = 'Submission ID,Chair Score\n'
+    for pid in all_revs:
+        revs = all_revs[pid]
+        mean,_ = mean_and_std(revs)
+        score = (mean-mu) / sigma
+        line = f'{pid},{score}\n'
+        output += line
+    write_file(fname, output)
 
 # summary: Submission ID,Committee Notes
 def fake_summaries(papers, fname):
@@ -375,7 +398,8 @@ def main():
     papers,dual_pids = fake_papers(n_papers, 'papers.csv')
     paper_rooms = write_paper_rooms(papers,'paper_rooms.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
-    recs = fake_reviews(papers, dual_pids, 'reviews.csv')
+    recs, all_revs = fake_reviews(papers, dual_pids, 'reviews.csv')
+    fake_chair_scores(all_revs, 'chair_scores.csv')
     fake_summaries(papers, 'summaries.csv')
     fake_clusters(papers, 'clusters.csv')
     fake_history(paper_rooms, recs, 'history.csv')

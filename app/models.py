@@ -204,7 +204,7 @@ class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
     role = db.Column(db.Integer)
-    score = db.Column(db.Integer)
+    score = db.Column(db.Float)
     recommendation = db.Column(db.Integer) # conference or journal
     expertise = db.Column(db.Integer)
     consensus = db.Column(db.Integer) # later will be a status code????

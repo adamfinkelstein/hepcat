@@ -398,7 +398,9 @@ def areas_to_label_names(areas_string):
     return labels
 
 def review_role_to_num(role):
-    if 'lead' in role:
+    if 'CHAIR' in role:
+        return 0
+    elif 'lead' in role:
         return 1
     elif 'Committee' in role:
         return 2
@@ -407,31 +409,37 @@ def review_role_to_num(role):
 def float_str_to_int(s):
     return int(round(float(s)))
 
-def review_str_to_num(s):
+def review_str_to_float(s):
     s = s.strip()
     if len(s):
-        return float_str_to_int(s)
+        return float(s)
     return 0
+
+def review_str_to_int(s):
+    f = review_str_to_float(s)
+    i = int(round(f))
+    return i
 
 rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'?', 1:'a', 3:'A', 5:'_A_'}
 # [-3 -2 -1 1 2] -> [N C c j J]
 rec_codes_dict = {-3:'N', -2:'C', -1:'c', 0:'?', 1:'j', 2:'J'}
 
 def get_code_from_dict(rating, d):
+    rating = int(rating)
     if rating in d:
         return d[rating]
     return '?'
 
-def ratings_to_string(scores, d):
+def ratings_to_string(scores, d, brackets):
     codes = [ get_code_from_dict(score, d) for score in scores ]
-    brackets = '[ ' + ' '.join(codes) + ' ]'
-    return brackets
+    line = brackets[0] + ' ' + ' '.join(codes) + ' ' + brackets[1]
+    return line
 
 def scores_to_string(scores):
-    return ratings_to_string(scores, rating_codes_dict)
+    return ratings_to_string(scores, rating_codes_dict, '[]')
 
 def recs_to_string(recs):
-    return ratings_to_string(recs, rec_codes_dict)
+    return ratings_to_string(recs, rec_codes_dict, '()')
 
 def get_consensus_info(consensus_recs):
     # later: need to check for Conference / Journal?
@@ -442,7 +450,9 @@ def get_consensus_info(consensus_recs):
     name = status_enum_to_str(enum)
     return enum, name
 
-def average_scores(scores):
+def average_scores(chair_score, scores):
+    if chair_score != None:
+        return chair_score
     n = len(scores)
     if n:
         ave = 1.0 * sum(scores) / n
@@ -456,7 +466,7 @@ def non_zero_scores(scores):
 def all_scores_to_string(scores,recs,consensus_code,journal_only):
     score_string = scores_to_string(scores) + ' '
     if journal_only:
-        score_string += '[journal only]'
+        score_string += '(journal only)'
     else:
         score_string +=  recs_to_string(recs)
     score_string += ' bbs: ' + consensus_code
@@ -466,12 +476,16 @@ def reviews_to_score_lists(reviews):
     scores = []
     recs = []
     consensus_recs = []
+    chair_score = None
     for review in reviews:
-        scores.append( review.score )
-        recs.append( review.recommendation )
-        if review.role >= 1 and review.role <= 2: # primary or secondary
-            consensus_recs.append(review.consensus)
-    return scores,recs,consensus_recs
+        if review.role == 0: # CHAIR
+            chair_score = review.score
+        else:
+            scores.append( review.score )
+            recs.append( review.recommendation )
+            if review.role >= 1 and review.role <= 2: # primary or secondary
+                consensus_recs.append(review.consensus)
+    return scores,recs,consensus_recs,chair_score
 
 def consensus_num_code_to_enum(str):
     if not len(str):
@@ -492,9 +506,9 @@ def papers_set_all_scores_and_status_from_reviews():
         # add score summaries to paper
         reviews = paper.reviews.order_by(Review.role)
         if len(list(reviews)):
-            scores,recs,consensus_recs = reviews_to_score_lists(reviews)
+            scores,recs,consensus_recs,chair_score = reviews_to_score_lists(reviews)
             consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-            paper.sort_score = average_scores(scores)
+            paper.sort_score = average_scores(chair_score,scores)
             paper.all_scores = all_scores_to_string(scores,recs,consensus_str,paper.journal_only)
         else:
             paper.sort_score = 0
@@ -538,9 +552,9 @@ def insert_review_rows(rows):
         if paper:
             # add review
             role_num = review_role_to_num(role)
-            score = review_str_to_num(score)
-            recommendation = review_str_to_num(recommendation)
-            expertise = review_str_to_num(expertise)
+            score = review_str_to_float(score)
+            recommendation = review_str_to_int(recommendation)
+            expertise = review_str_to_int(expertise)
             consensus_enum = consensus_num_code_to_enum(consensus)
             review = Review(paper=paper,
                             role=role_num,
@@ -556,6 +570,28 @@ def insert_review_rows(rows):
     except:
         db.session.rollback()
         msg = 'failed to insert reviews'
+        print(msg)
+        flash(msg)
+        return 0
+    return count
+
+def insert_chair_score_rows(rows):
+    count = 0
+    for row in rows:
+        if len(row) < 2:
+            continue
+        sid,chair_score = row[:2]
+        paper = Paper.query.filter_by(sid=sid).first()
+        if paper:
+            chair_score = review_str_to_float(chair_score)
+            paper.sort_score = chair_score
+            db.session.add(paper)
+            count += 1
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert chair scores'
         print(msg)
         flash(msg)
         return 0
@@ -608,6 +644,7 @@ csvLinklings = {
     'paper_rooms' : 'paper_rooms.csv',
     'people_rooms' : 'people_rooms.csv',
     'reviews' : 'status.csv',
+    'chair_scores' : 'chair_scores.csv',
     'summaries' : 'commitee_notes.csv' }
 
 csvTypes = {
@@ -618,6 +655,7 @@ csvTypes = {
     'paper_rooms' : 'Submission ID,Room',
     'people_rooms' : 'Email,Rooms',
     'reviews' : 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation',
+    'chair_scores': 'Submission ID,Chair Score',
     'summaries' : 'Submission ID,Committee Notes',
     'history' : 'Submission ID,Seconds,Context,Status' }
 
@@ -629,6 +667,7 @@ csvFunctions = {
     'paper_rooms' : insert_paper_room_rows,
     'people_rooms' : insert_people_room_rows,
     'reviews' : insert_review_rows,
+    'chair_scores' : insert_chair_score_rows,
     'summaries' : insert_summary_rows,
     'history' : insert_history_rows }
 
