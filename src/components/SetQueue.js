@@ -29,7 +29,7 @@ export default function SetQueue(){
     const roomChoice = globals.roomChoice
     let controlledLog = useAppGlobals()["controlledLog"]
 
-    const filterListMain = ['Stickie Only','Unseen Only','No Clusters','No Admin Conf','Only Admin Conf']
+    const filterListMain = ['Stickie Only','Unseen Only','Dual Only','Journal Only','No Clusters','No Admin Conf','Only Admin Conf']
     const filterList = (roomChoice === 'Plenary' ? filterListMain : [roomChoice, ...filterListMain])
     const statusList = globals["statusList"]
 

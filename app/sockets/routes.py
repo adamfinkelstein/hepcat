@@ -200,8 +200,7 @@ def paper_in_room(paper, room):
             return True
     return False
 
-# const filterList = ['Stickie Only','Untouched Only',
-#     'No Clusters','No Admin Conf'];
+# const filterListMain = ['Stickie Only','Unseen Only','Dual Only','Journal Only','No Clusters','No Admin Conf','Only Admin Conf']
 def include_paper_in_queue(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters['lowRange'])
@@ -220,6 +219,10 @@ def include_paper_in_queue(paper, filters):
     if 'Stickie Only' in filter_only and not is_paper_stickie(paper):
         return False
     if 'Unseen Only' in filter_only and not is_paper_unseen(paper):
+        return False
+    if 'Dual Only' in filter_only and paper.journal_only:
+        return False
+    if 'Journal Only' in filter_only and not paper.journal_only:
         return False
     if 'No Clusters' in filter_only and is_in_cluster(paper):
         return False
