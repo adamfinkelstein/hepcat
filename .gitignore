@@ -34,7 +34,7 @@ venv*
 .flaskenv
 tmp
 fake/data*
-fake-*csv
+fake/fake-*
 .DS_Store
 node_modules
 af-notes

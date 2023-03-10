@@ -453,3 +453,39 @@ def wipe_db_clean():
     except:
         print('...failed to wipe clean!')
         return False
+    
+def dump_users_papers_and_conflicts(title):
+    ### ??? Later: return here, if not in special mode for debugging uploads
+    num_users = User.query.count()
+    num_papers = Paper.query.count()
+    num_reviews = Review.query.count()
+    num_history = History.query.count()
+    num_labels = Label.query.count()
+    num_conf = db.session.query(conflicts).count()
+    num_tags = db.session.query(tags).count()
+    result  = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}.'
+    result += f' Reviews={num_reviews}. History={num_history}. Labels={num_labels}.'
+    result += f' Tags={num_tags}. '
+    print(result)
+    return result
+
+ps_tables = 'history,conflicts,reviews,papers,users,roles,file_upload,glob_queue,labels,tags'.split(',')
+
+def drop_and_rebuild_tables(table_list=None):
+    output = ''
+    if table_list:
+        table_list = table_list.split(',')
+    ps_cmd = ''
+    for table in ps_tables:
+        if not table_list or table in table_list:
+            ps_cmd += f'DROP TABLE IF EXISTS {table} CASCADE;\n'
+    if ps_cmd:
+        title = f'\nBefore dropping tables {table_list}'
+        output += dump_users_papers_and_conflicts(title)
+        db.session.execute(ps_cmd)
+        db.session.commit()
+        db.create_all()
+        title = f'\nAfter dropping tables {table_list}'
+        output += dump_users_papers_and_conflicts(title)
+    return output
+

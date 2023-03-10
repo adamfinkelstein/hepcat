@@ -10,23 +10,8 @@ from . import upload
 from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
-    sid_to_num, get_or_insert_role, \
+    sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
     context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
-
-def dump_users_papers_and_conflicts(title):
-    ### ??? Later: return here, if not in special mode for debugging uploads
-    num_users = User.query.count()
-    num_papers = Paper.query.count()
-    num_reviews = Review.query.count()
-    num_history = History.query.count()
-    num_labels = Label.query.count()
-    num_conf = db.session.query(conflicts).count()
-    num_tags = db.session.query(tags).count()
-    result  = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}.'
-    result += f' Reviews={num_reviews}. History={num_history}. Labels={num_labels}.'
-    result += f' Tags={num_tags}.'
-    print(result)
-    return result
 
 def delete_all_conflicts(): ### ??? Never called!
     dump_users_papers_and_conflicts('Before conflict deletion')
@@ -672,9 +657,9 @@ csvFunctions = {
     'history' : insert_history_rows }
 
 csvDependence = {
-    'users' : ['conflicts'],
-    'reviews' : ['history'],
-    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'paper_rooms', 'summaries'] }
+    'users' : ['conflicts', 'people_rooms'],
+    'reviews' : ['history', 'chair_scores'],
+    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'paper_rooms', 'summaries', 'chair_scores'] }
 
 def is_csv(filename):
     if '.' not in filename:

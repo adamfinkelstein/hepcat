@@ -4,7 +4,7 @@ from flask import render_template, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
 # from .. import socketio
-from ..models import Role, User, Paper, PaperSchema, GlobQueue, get_or_create_gq, num_to_sid
+from ..models import Role, User, Paper, PaperSchema, GlobQueue, get_or_create_gq, num_to_sid, drop_and_rebuild_tables
 
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
@@ -208,7 +208,14 @@ def user_conflicts(email):
         for paper in user.conf_papers:
             debug_output += '* ' + paper.sid + '\n'
     return render_debug(debug_title, debug_output)
- 
+
+@debug.route('/drop_tables/<tables>')
+@login_required
+def drop_tables(tables):
+    debug_title = 'Drop tables: ' + tables
+    debug_output = drop_and_rebuild_tables(tables)
+    return render_debug(debug_title, debug_output)
+
 @debug.route('/me/')
 @login_required
 def whoami():
