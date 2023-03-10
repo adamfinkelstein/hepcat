@@ -84,7 +84,7 @@ def debugMain():
 @login_required
 def run(cmd):
     if not current_user_is_admin():
-        return render_debug('Must be admin to run cmd', '')
+        return render_debug('Must be admin to visit this URL', '')
     cmd = cmd.replace('_',' ').replace('Z','/').replace('U','_').replace('S',';')
     ok, output = run_cmd(cmd)
     print(ok, output)
@@ -102,6 +102,8 @@ def run(cmd):
 @debug.route('/users/')
 @login_required
 def users():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     users = User.query.all()
     debug_title = 'Users'
     debug_output = '\n'
@@ -112,6 +114,8 @@ def users():
 @debug.route('/user/<email>')
 @login_required
 def user(email):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     user = User.query.filter_by(email=email).first()
     debug_title = email
     debug_output = 'No matching user found.'
@@ -122,6 +126,8 @@ def user(email):
 @debug.route('/roles/')
 @login_required
 def roles():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     roles = Role.query.all()
     debug_title = 'Roles'
     debug_output = '\n'
@@ -135,6 +141,8 @@ def roles():
 @debug.route('/papers/')
 @login_required
 def papers():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     papers = Paper.query.all()
     debug_title = 'Papers'
     debug_output = '\n'
@@ -145,6 +153,8 @@ def papers():
 @debug.route('/papers_json/')
 @login_required
 def papers_json():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     all_papers = Paper.query.limit(5).all()
     dump_papers = papers_schema.dump(all_papers)
     debug_title = 'Papers Json'
@@ -157,6 +167,8 @@ def papers_json():
 @debug.route('/paper/<sidnum>')
 @login_required
 def paper(sidnum):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
     debug_title = sid
@@ -172,6 +184,8 @@ def paper(sidnum):
 @debug.route('/paper_conflicts/<sidnum>')
 @login_required
 def paper_conflicts(sidnum):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
     debug_title = 'Conflicts for ' + sid
@@ -185,6 +199,8 @@ def paper_conflicts(sidnum):
 @debug.route('/paper_reviews/<sidnum>')
 @login_required
 def paper_reviews(sidnum):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     sid = num_to_sid(int(sidnum))
     paper = Paper.query.filter_by(sid=sid).first()
     debug_title = 'Conflicts for ' + sid
@@ -198,6 +214,8 @@ def paper_reviews(sidnum):
 @debug.route('/user_conflicts/<email>')
 @login_required
 def user_conflicts(email):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     user = User.query.filter_by(email=email).first()
     if not user:
         debug_title = 'Conflicts for ' + email
@@ -212,6 +230,8 @@ def user_conflicts(email):
 @debug.route('/drop_tables/<tables>')
 @login_required
 def drop_tables(tables):
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     debug_title = 'Drop tables: ' + tables
     debug_output = drop_and_rebuild_tables(tables)
     return render_debug(debug_title, debug_output)
@@ -229,6 +249,8 @@ def whoami():
 @debug.route('/gq/')
 @login_required
 def debugGQ():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     debug_title = 'Global Queue Vars'
     gq = get_or_create_gq('Plenary')
     if gq:
@@ -239,4 +261,6 @@ def debugGQ():
 
 @debug.route('/conflictbot/')
 def debug_conflictbot():
+    if not current_user_is_admin():
+        return render_debug('Must be admin to visit this URL', '')
     return render_template('debug-conflictbot.html')
