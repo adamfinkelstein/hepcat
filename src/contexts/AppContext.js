@@ -93,16 +93,11 @@ export default function AppContext({children}){
 
   useEffect(() => {
 
-    //controlledLog(socket);
-
-    // QUESTION??? XXX
-    // Could all these functions be declared above this useEffect?
-
     const receiveWelcome = (data) => {
       controlledLog('received welcome:')
       controlledLog(data)
       setUser(data.user)
-      const isAdmin = data.user.role_name && data.user.role_name === "Admin"
+      const isAdmin = data.user && data.user.role_is_admin;
       setIsAdmin(isAdmin);
       if (isAdmin && data.all_users && data.all_users.length) {
         setAllUsers(data.all_users);

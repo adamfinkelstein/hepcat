@@ -43,7 +43,7 @@ def get_enter_leave_conf_sets(paper_prev,paper_curr):
     return conf_prev,conf_curr,enter,leave
 
 def get_user_cost(user):
-    if user.is_admin:
+    if user.role_is_admin:
         # print('big cost for admin user with name ', user.full_name)
         return 100
     return 1

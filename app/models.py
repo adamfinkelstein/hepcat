@@ -96,6 +96,20 @@ class Role(db.Model):
     name = db.Column(db.String(64), unique=True)
     users = db.relationship('User', backref='role', lazy='dynamic')
 
+    @hybrid_property
+    def is_super(self):
+        if self.name == 'Super':
+            return True
+        return False
+
+    @hybrid_property
+    def is_admin(self):
+        if self.name == 'Super':
+            return True
+        if self.name == 'Admin':
+            return True
+        return False
+
     def __repr__(self):
         return '<Role %r>' % self.name
 
@@ -131,8 +145,16 @@ class User(UserMixin, db.Model):
             return 'Room_' + self.in_room
 
     @hybrid_property
-    def is_admin(self):
-        return (self.role_name == 'Admin')
+    def role_is_super(self):
+        if not self.role:
+            return False
+        return self.role.is_super
+
+    @hybrid_property
+    def role_is_admin(self):
+        if not self.role:
+            return False
+        return self.role.is_admin
 
     @property
     def password(self):
@@ -298,7 +320,7 @@ class FileUpload(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name", "rooms", "room_name")
+        fields = ("email", "full_name", "role_name", "role_is_admin", "rooms", "room_name")
 
 class PaperSchema(ma.Schema):
     class Meta:
@@ -381,6 +403,7 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
     if not (email and first_name and last_name and role_name and passwd):
         print('cannot add user with incomplete info: ', 
                 email, first_name, last_name, role_name, passwd)
+        return
     user = User.query.filter_by(email=email).first()
     if not user:
         role = get_or_insert_role(role_name)
@@ -405,7 +428,10 @@ def ensure_admin():
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')
-    ensure_user(email, 'Admin', 'User', 'Admin', passwd)
+    ensure_user(email, 'Admin', 'User', 'Super', passwd)
+    email = get_config_or_default('HEPCAT_CHAIR_LOGIN', 'chair@example.com')
+    passwd = get_config_or_default('HEPCAT_CHAIR_PASSWD', 'chair')
+    ensure_user(email, 'Chair', 'User', 'Super', passwd)
     # When debugging on local machine, also add these test users:
     # if allow_cors: 
     #     # Add Screen User

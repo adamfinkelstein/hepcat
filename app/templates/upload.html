@@ -44,6 +44,8 @@
 &nbsp;This downloads a CSV file containing the status of all papers.
 </div>
 
+{% if super %}
+
 <hr/>
 <p>&nbsp</p>
 <hr/>
@@ -53,8 +55,9 @@
 <a class="btn btn-danger" href="{{url_for('upload.wipe_database')}}">Be CAREFUL!</a>
 &nbsp;This removes all data from the database!
 </div>
-
 <p>&nbsp</p>
+
+{% endif %}
 
 </div>
 

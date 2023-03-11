@@ -4,7 +4,7 @@ export default function PaperConflict({conflicts,isCurrent}){
 
     function userToClass(user) {
         let className = 'font-size-4'
-        if (user.role_name === 'Admin') {
+        if (user.role_is_admin) {
             className += isCurrent ? ' current-admin-user' : ' admin-user'
         }
         return className

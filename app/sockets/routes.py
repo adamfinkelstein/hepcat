@@ -1,5 +1,6 @@
 import os
 import re
+import random
 from datetime import datetime
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
@@ -23,6 +24,12 @@ def get_react_env_vars():
             vars[item] = value
     return vars
 
+def get_random_admin():
+    users = User.query.all()
+    users = list(users)
+    users = [user for user in users if user.role_is_admin]
+    return random.choice(users)
+
 def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
@@ -30,9 +37,8 @@ def get_current_user_or_none():
         now = datetime.now()
         seconds_since_epoch = now.timestamp()
         ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
-        # formerly: if random.choice([False,True]):
         if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
-            user = User.query.first() # guaranteed Admin
+            user = get_random_admin()
         else:
             user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
         return user
@@ -43,7 +49,7 @@ def current_user_is_admin():
     if allow_cors: # hack to allow Rect debug on different port w/o login
         return True
     user = get_current_user_or_none()
-    if user and user.is_admin:
+    if user and user.role_is_admin:
         return True
     return False
 
@@ -176,7 +182,7 @@ def is_in_cluster(paper):
 def has_chair_conflict(paper):
     conf_users = paper.conf_users
     for user in conf_users:
-        if user.is_admin:
+        if user.role_is_admin:
             return True
     return False
 
@@ -625,12 +631,12 @@ def io_connect():
     print(f'{user.full_name} - client connected')
     user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
-    about_md = get_about_md(user.is_admin)
+    about_md = get_about_md(user.role_is_admin)
     # print(about_md)
     # config_vars = get_react_env_vars()
     # later: 'config': config_vars }
     data = {'user': user_dump, 'grid': grid_dump, 'about':about_md } 
-    if user.is_admin:
+    if user.role_is_admin:
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
@@ -852,7 +858,7 @@ def user_change_password(data):
     for_email = data['forEmail']
     if for_email:
         for_user = User.query.filter_by(email=for_email).first()
-        if not user.is_admin or not for_user:
+        if not user.role_is_admin or not for_user:
             success = False
         else:
             success = True

@@ -11,7 +11,8 @@ from .forms import UploadForm
 from .. import db
 from ..models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, \
+    drop_and_rebuild_tables, conflicts, tags
 
 def delete_all_conflicts(): ### ??? Never called!
     dump_users_papers_and_conflicts('Before conflict deletion')
@@ -790,7 +791,8 @@ def upload_main():
         return redirect(url_for('auth.login'))
     uploads = FileUpload.query.all()
     pending = pending_uploads(uploads)
-    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings)
+    super = current_user_is_super()
+    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings, super=super)
 
 def write_text_to_file(text, filename):
     with open(filename, 'w') as f:
@@ -826,7 +828,13 @@ def get_results_as_rows():
 
 def current_user_is_admin():
     user = current_user
-    if user and user.is_admin:
+    if user and user.role_is_admin:
+        return True
+    return False
+
+def current_user_is_super():
+    user = current_user
+    if user and user.role_is_super:
         return True
     return False
 
@@ -849,6 +857,7 @@ def download_results_csv():
 def wipe_database():
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
+    # possibly replace with: drop_and_rebuild_tables()
     print('about to wipe database...')
     success = wipe_db_clean()
     if success:

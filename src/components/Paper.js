@@ -114,7 +114,7 @@ export default function Paper(){
 
     function userToClass(user) {
         let className = 'font-size-3'
-        if (user.role_name === 'Admin') {
+        if (user.role_is_admin) {
             className += ' admin-user'
         }
         return className

@@ -65,7 +65,7 @@ def get_current_user_or_none():
 
 def current_user_is_admin():
     user = get_current_user_or_none()
-    if user and user.is_admin:
+    if user and user.role_is_admin:
         return True
     return False
 
