@@ -421,10 +421,12 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
             db.session.rollback()
             print(f'failed to create user with email {email}')
 
-def ensure_admin():
-    # Also init global queue variables, if needed
+def ensure_all_gqs():
     for room in all_queue_rooms:
         get_or_create_gq(room)
+
+def ensure_admin():
+    ensure_all_gqs() # Also init global queue variables, if needed
     # Add Admin User
     email = get_config_or_default('HEPCAT_ADMIN_LOGIN', 'admin@example.com')
     passwd = get_config_or_default('HEPCAT_ADMIN_PASSWD', 'pass')

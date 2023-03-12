@@ -12,26 +12,32 @@ from .. import db
 from ..models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
     context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, \
-    drop_and_rebuild_tables, conflicts, tags
+    ensure_admin, ensure_all_gqs, drop_and_rebuild_tables, get_config_or_default, conflicts, tags
 
-def delete_all_conflicts(): ### ??? Never called!
-    dump_users_papers_and_conflicts('Before conflict deletion')
-    # this also doesn't work on all dbs: drop_conflicts()
-    # users = User.query.all()
-    # for user in users:
-    #     user.conf_papers = [] # empty list
-    #     db.session.add(user)
-    # try:
-    #     db.session.commit()
-    # except:
-    #     db.session.rollback()
-    #     msg = 'failed in delete_all_conflicts'
-    #     print(msg)
-    #     flash(msg)
-    dump_users_papers_and_conflicts('After conflict deletion')
+def delete_all_users():
+    dump_users_papers_and_conflicts('Before deleting users')
+    users = User.query.all()
+    count = len(users)
+    # slightly lame optimization: prevents need to logout
+    if count < 3: # account for admin and chair
+        return
+    drop_and_rebuild_tables('conflicts,users,roles')
+    ensure_admin()
+    dump_users_papers_and_conflicts('After deleting users')
+
+def delete_all_papers():
+    dump_users_papers_and_conflicts('Before deleting papers')
+    drop_and_rebuild_tables('history,conflicts,tags,labels,reviews,papers,glob_queue')
+    ensure_all_gqs()
+    dump_users_papers_and_conflicts('After deleting papers')
+
+def delete_all_conflicts():
+    dump_users_papers_and_conflicts('Before deleting conflicts')
+    drop_and_rebuild_tables('conflicts')
+    dump_users_papers_and_conflicts('After deleting conflicts')
 
 def delete_all_clusters():
-    dump_users_papers_and_conflicts('Before cluster deletion')
+    dump_users_papers_and_conflicts('Before deleting clusters')
     papers = Paper.query.all()
     for paper in papers:
         # first remove all cluster labels from paper
@@ -48,11 +54,36 @@ def delete_all_clusters():
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_clusters'
+        msg = 'failed in deleting clusters'
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After cluster deletion')
+    dump_users_papers_and_conflicts('After deleting clusters')
 
+# this function mimics delete_all_clusters above
+def delete_all_paper_rooms():
+    dump_users_papers_and_conflicts('Before deleting paper rooms')
+    papers = Paper.query.all()
+    for paper in papers:
+        # first remove all room labels from paper
+        labels = list(paper.tag_labels)
+        new_labels = [label for label in labels if not label.is_room]
+        if len(new_labels) < len(labels):
+            paper.tag_labels = new_labels
+            db.session.add(paper)
+    room_labels = Label.query.filter(Label.is_room).all()
+    room_names = [label.name for label in list(room_labels)]
+    for name in room_names:
+        Label.query.filter_by(name=name).delete()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in deleting paper rooms'
+        print(msg)
+        flash(msg)
+    dump_users_papers_and_conflicts('After deleting paper rooms')
+
+# 2023?
 def delete_all_labels():
     dump_users_papers_and_conflicts('Before label deletion')
     labels = Label.query.all()
@@ -71,40 +102,9 @@ def delete_all_labels():
         flash(msg)
     dump_users_papers_and_conflicts('After label deletion')
 
-def delete_all_users(): ### ??? Never called!
-    delete_all_conflicts() # need to delete conflicts before users
-    dump_users_papers_and_conflicts('Before user deletion')
-    # see: https://stackoverflow.com/questions/3481976/ 
-    num_deleted = User.query.delete() # delete(synchronize_session='fetch')
-    try:
-        db.session.commit()
-        print(f'Deleted {num_deleted} users.')
-    except:
-        db.session.rollback()
-        msg = 'failed in delete_all_users'
-        print(msg)
-        flash(msg)
-    dump_users_papers_and_conflicts('After user deletion')
-
-def delete_all_papers(): ### ??? Never called!
-    delete_all_reviews() # need to delete reviews before papers
-    delete_all_history() # need to delete history before papers
-    delete_all_conflicts() # need to delete conflicts before papers
-    delete_all_labels() # need to delete labels before papers
-    dump_users_papers_and_conflicts('Before paper deletion')
-    num_deleted = Paper.query.delete()
-    try:
-        db.session.commit()
-        print(f'Deleted {num_deleted} papers.')
-    except:
-        db.session.rollback()
-        msg = 'failed in delete_all_papers'
-        print(msg)
-        flash(msg)
-    dump_users_papers_and_conflicts('After paper deletion')
-
+# needed before uploading reviews
 def delete_all_reviews():
-    delete_all_history() # need to delete history before reviews
+    delete_all_history() # need to delete history (below)
     dump_users_papers_and_conflicts('Before review deletion')
     num_deleted = Review.query.delete()
     try:
@@ -117,6 +117,7 @@ def delete_all_reviews():
         flash(msg)
     dump_users_papers_and_conflicts('After review deletion')
 
+# needed when deleting reviews (above)
 def delete_all_history():
     dump_users_papers_and_conflicts('Before History deletion')
     num_deleted = History.query.delete()
@@ -130,6 +131,7 @@ def delete_all_history():
         flash(msg)
     dump_users_papers_and_conflicts('After History deletion')
 
+# 2023?
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
     dump_users_papers_and_conflicts('Before non-BBS History deletion')
@@ -161,6 +163,7 @@ def delete_all_summaries():
         flash(msg)
     print(f'Deleted {count} summaries.')
 
+# 2023?
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
     try:
@@ -174,16 +177,7 @@ def delete_all_uploads():
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
-    users = User.query.all()
-    count = len(users)
-    if count>1: # account for admin user. (maybe check uploads instead?)
-        msg = 'PLEASE WIPE DATABASE (below) before replacing users!'
-        flash(msg,'error')
-        return -1
-    # This fails on heroku:
-    # delete_all_users()
-    # ensure_admin()
-    # dump_users_papers_and_conflicts('After ensure')
+    delete_all_users()
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -217,15 +211,7 @@ def journal_only_from_dual(dual):
 # 2022: Submission ID,Thumbnail URL,Title,Area,Abstract
 # 2023: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 def insert_paper_rows(rows):
-    papers = Paper.query.all()
-    count = len(papers)
-    if count:
-        msg = 'PLEASE WIPE DATABASE (below) before replacing papers!'
-        flash(msg,'error')
-        return -1
-    # This fails on heroku:
-    # delete_all_papers()
-    # reset_gq()
+    delete_all_papers()
     area_type = int(LabelType.Area)
     count = 0
     for row in rows:
@@ -263,13 +249,7 @@ def insert_paper_rows(rows):
 
 # Submission ID,Email
 def insert_conflict_rows(rows):
-    # This fails on heroku:
-    # delete_all_conflicts()
-    count = db.session.query(conflicts).count()
-    if count:
-        msg = 'PLEASE WIPE DATABASE (below) before replacing conflicts!'
-        flash(msg,'error')
-        return -1
+    delete_all_conflicts()
     count = 0
     for row in rows:
         if len(row) < 2:
@@ -349,14 +329,19 @@ def insert_cluster_rows(rows):
 
 # Submission ID,Room
 def insert_paper_room_rows(rows):
-    # delete_all_rooms() XXXX ????
+    delete_all_paper_rooms()
     room_type = int(LabelType.Room)
     count = insert_label_rows(rows, room_type)
     return count
 
 # Email,Rooms
 def insert_people_room_rows(rows):
-    # delete_all_rooms() XXXX ????
+    # first delete any existing room assignments...
+    users = User.query.all()
+    for person in users:
+        person.rooms = None
+        person.in_room = None
+        db.session.add(person)
     count = 0
     for row in rows:
         if len(row) < 2:
@@ -436,14 +421,14 @@ def get_consensus_info(consensus_recs):
     name = status_enum_to_str(enum)
     return enum, name
 
-def average_scores(chair_score, scores):
+def average_scores(chair_score, scores, boost):
     if chair_score != None:
         return chair_score
     n = len(scores)
+    ave = 0.0
     if n:
         ave = 1.0 * sum(scores) / n
-        return ave
-    return 0.0
+    return ave + boost
 
 def non_zero_scores(scores):
     scores = [ score for score in scores if score != 0 ]
@@ -485,16 +470,25 @@ def consensus_num_code_to_enum(str):
         return status_str_to_enum('Journal')
     return status_str_to_enum('Tabled') # default
 
+def get_boost_dual_submission_score_for_alla_sheffer():
+    boost = get_config_or_default('DUAL_BOOST_FOR_ALLA','0.0')
+    boost = float(boost)
+    return boost
+
 def papers_set_all_scores_and_status_from_reviews():
     # now = datetime.now()
     papers = Paper.query.all()
+    dual_boost = get_boost_dual_submission_score_for_alla_sheffer()
     for paper in papers:
         # add score summaries to paper
         reviews = paper.reviews.order_by(Review.role)
         if len(list(reviews)):
             scores,recs,consensus_recs,chair_score = reviews_to_score_lists(reviews)
             consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-            paper.sort_score = average_scores(chair_score,scores)
+            boost = 0.0
+            if not paper.journal_only: # dual submission gets boost for Alla
+                boost = dual_boost
+            paper.sort_score = average_scores(chair_score,scores,boost)
             paper.all_scores = all_scores_to_string(scores,recs,consensus_str,paper.journal_only)
         else:
             paper.sort_score = 0
@@ -520,14 +514,7 @@ def papers_set_all_scores_and_status_from_reviews():
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
 def insert_review_rows(rows):
-    reviews = Review.query.all()
-    count = len(reviews)
-    if count:
-        msg = 'PLEASE WIPE DATABASE (below) before replacing reviews!'
-        flash(msg,'error')
-        return -1
-    # This fails on heroku:
-    # delete_all_reviews()
+    delete_all_reviews()
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -792,7 +779,7 @@ def upload_main():
     uploads = FileUpload.query.all()
     pending = pending_uploads(uploads)
     super = current_user_is_super()
-    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings, super=super)
+    return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings, superuser=super)
 
 def write_text_to_file(text, filename):
     with open(filename, 'w') as f:
