@@ -16,6 +16,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
     BIN_FOLDER = os.path.join(basedir, 'custom_bin')
+    DUAL_BOOST_FOR_ALLA = os.environ.get('DUAL_BOOST_FOR_ALLA')
 
     # AF: not needed
     # @staticmethod
