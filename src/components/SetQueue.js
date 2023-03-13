@@ -137,13 +137,25 @@ export default function SetQueue(){
     }
 
     function handleBulkRejectButton(){
-        controlledLog('bulk reject button pressed')
-        socketEmit("admin_bulk_reject")
+        controlledLog('Bulk reject button pressed.');
+        let text = "Are you sure you want to bulk reject below bar?";
+        if (window.confirm(text) === true) {
+            controlledLog('Bulk reject button confirmed.');
+            socketEmit("admin_bulk_reject");
+        } else {
+            controlledLog('Bulk reject button canceled.');
+        }
     }
 
     function handleClearStickiesButton(){
-        controlledLog('clear stickies button pressed')
-        socketEmit("admin_clear_stickies")
+        controlledLog('Clear stickies button pressed.');
+        let text = "Are you sure you want to clear all stickies?";
+        if (window.confirm(text) === true) {
+            controlledLog('Clear stickies button confirmed.');
+            socketEmit("admin_clear_stickies");
+        } else {
+            controlledLog('Clear stickies button canceled.');
+        }
     }
 
     return(
