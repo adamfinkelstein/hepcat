@@ -2,11 +2,11 @@
 
 ### Git Version
 
-* commit: 5cf9409ad84db616b47ff399e289bde354551eec
+* commit: 2dd79f2102cf03065b4d16061871f1314bb00822
 
 * author: Adam Finkelstein <af@princeton.edu>
 
-* author_date: 2023-03-06 12:27:01
+* author_date: 2023-03-13 08:14:43
 
-* message: added chair scores
+* message: set allas boost score in config
 
