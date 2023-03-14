@@ -13,6 +13,8 @@ class Config:
     HEPCAT_MAIL_SENDER = 'Hepcat Admin <hepcat.mail@gmail.com>'
     HEPCAT_ADMIN_LOGIN = os.environ.get('HEPCAT_ADMIN_LOGIN')
     HEPCAT_ADMIN_PASSWD = os.environ.get('HEPCAT_ADMIN_PASSWD')
+    HEPCAT_CHAIR_LOGIN = os.environ.get('HEPCAT_CHAIR_LOGIN')
+    HEPCAT_CHAIR_PASSWD = os.environ.get('HEPCAT_CHAIR_PASSWD')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
     BIN_FOLDER = os.path.join(basedir, 'custom_bin')
