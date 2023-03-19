@@ -69,6 +69,7 @@ export default function AppContext({children}){
     if (status) {
       setNewStatus(status);
     }
+    // AF: XXX??? Maybe here is where to sync hideQ and message for Michi
   }, [controlledLog, setShowLogs, setServerGlobs, setQueueCurrent, setNewStatus] );
 
   useEffect(() => {

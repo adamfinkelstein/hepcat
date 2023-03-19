@@ -141,10 +141,18 @@ def get_paper_history_dump(paper):
 def get_paper_tag_labels(paper):
     result = []
     labels = paper.tag_labels
+    paper_room = None
     for label in labels:
+        if label.is_cluster: # do not show clusters
+            continue 
         s = f'{label.label_type}_{label.name}'
-        result.append(s)
+        if label.is_room:
+            paper_room = s
+        else:
+            result.append(s)
     result.sort()
+    if paper_room: # put room at beginning of list
+        result = [paper_room] + result
     result = (', ').join(result)
     return result
 
@@ -434,7 +442,7 @@ def clean_filter_list(p_list, nid_list):
         if p is not None and p not in clean_list:
             clean_list.append(p)
     return clean_list
-    
+
 def set_queue_explicit(room, exp):
     label_type, label_name, nid_list = parse_explicit_queue(exp)
     print('explicit queue:', label_type, label_name, nid_list)
@@ -471,6 +479,9 @@ def set_hide_queue(room, hide, message):
     gq = get_or_create_gq(room)
     gq.hide_queue = hide
     gq.message = message
+    if not hide: # if transition from hide to show queue...
+        gq.current_show = False   # then hide the current paper.
+        gq.current_show_enter = 0 # and do not show enter/leave.
     db.session.add(gq)
     try:
         db.session.commit()
