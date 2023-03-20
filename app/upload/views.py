@@ -691,6 +691,8 @@ def read_csv_rows(filename):
     return header, rows
 
 def get_csv_type(header):
+    if not header:
+        return None, 0
     header = header.lower() # only check lower case
     for typ in csvTypes:
         knownHeader = csvTypes[typ].lower() # lower case
@@ -704,44 +706,44 @@ def omit_extra_cols(rows, ncols):
     rows = [ cols[:ncols] for cols in rows ]
     return rows
 
-def delete_prev_file_uploads(headerType):
-    if headerType not in csvDependence:
-        print('about to delete headerType: ', headerType)
-        FileUpload.query.filter_by(file=headerType).delete()
+def delete_prev_file_uploads(header_type):
+    if header_type not in csvDependence:
+        print('about to delete header_type: ', header_type)
+        FileUpload.query.filter_by(file=header_type).delete()
         return
-    del_list = csvDependence[headerType]
+    del_list = csvDependence[header_type]
     del_list = list(del_list)
-    del_list.append(headerType)
+    del_list.append(header_type)
     for name in del_list:
         num_deleted = FileUpload.query.filter_by(file=name).delete()
         print(f'delete {num_deleted} file of types {name}')
 
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
-    headerType, ncols = get_csv_type(header)
+    header_type, ncols = get_csv_type(header)
+    if not header_type or header_type not in csvFunctions:
+        return False, False
     rows = omit_extra_cols(rows, ncols)
-    if headerType in csvFunctions:
-        func = csvFunctions[headerType]
-        if not func:
-            return False, False
-        count = func(rows)
-        if count < 0:
-            return "already_sent", False
-        delete_prev_file_uploads(headerType)
-        upload = FileUpload(file=headerType, count=count)
-        db.session.add(upload)
-        try:
-            db.session.commit()
-        except:
-            db.session.rollback()
-            msg = 'failed to add file upload record'
-            print(msg)
-        msg = dump_users_papers_and_conflicts('After Upload')
-        if headerType == 'users':
-            msg += ' You have been logged out because users were updated.'
-            return msg, True
-        return msg, False
-    return False, False
+    func = csvFunctions[header_type]
+    if not func:
+        return False, False # this should never happen because of test above
+    count = func(rows)
+    if count < 0:
+        return "already_sent_flash_msg", False
+    delete_prev_file_uploads(header_type)
+    upload = FileUpload(file=header_type, count=count)
+    db.session.add(upload)
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to add file upload record'
+        print(msg)
+    msg = dump_users_papers_and_conflicts('After Upload')
+    if header_type == 'users':
+        msg += ' You have been logged out because users were updated.'
+        return msg, True
+    return msg, False
 
 def pending_uploads(uploads):
     already = [upload.file for upload in uploads]
@@ -773,11 +775,11 @@ def upload_main():
             file.save(fullpath)
             # flash('saved csv file here: '+fullpath)
             msg, logout = read_csv(fullpath)
-            if msg != "already_sent":
+            if msg != "already_sent_flash_msg":
                 if msg:
                     msg = f'Uploaded file "{filename}". ' + msg
                 else:
-                    msg ='Unable to read csv file: ' + filename
+                    msg = f'Unable to read csv file "{filename}". Perhaps the header is wrong?'
                 flash(msg)
     if logout:
         logout_user()
