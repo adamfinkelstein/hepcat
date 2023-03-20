@@ -46,10 +46,13 @@ def delete_all_clusters():
         if len(new_labels) < len(labels):
             paper.tag_labels = new_labels
             db.session.add(paper)
-    cluster_labels = Label.query.filter(Label.is_cluster).all()
-    cluster_names = [label.name for label in list(cluster_labels)]
-    for name in cluster_names:
-        Label.query.filter_by(name=name).delete()
+    # Why did I have this lame, broken method?
+    # cluster_labels = Label.query.filter(Label.is_cluster).all()
+    # cluster_names = [label.name for label in list(cluster_labels)]
+    # for name in cluster_names:
+    #     Label.query.filter_by(name=name).delete()
+    num_deleted = Label.query.filter(Label.is_cluster).delete()
+    print(f'delete {num_deleted} cluster labels.')
     try:
         db.session.commit()
     except:
@@ -70,10 +73,13 @@ def delete_all_paper_rooms():
         if len(new_labels) < len(labels):
             paper.tag_labels = new_labels
             db.session.add(paper)
-    room_labels = Label.query.filter(Label.is_room).all()
-    room_names = [label.name for label in list(room_labels)]
-    for name in room_names:
-        Label.query.filter_by(name=name).delete()
+    # Why did I have this lame, broken method?
+    # room_labels = Label.query.filter(Label.is_room).all()
+    # room_names = [label.name for label in list(room_labels)]
+    # for name in room_names:
+    #     Label.query.filter_by(name=name).delete()
+    num_deleted = Label.query.filter(Label.is_room).delete()
+    print(f'delete {num_deleted} cluster labels.')
     try:
         db.session.commit()
     except:
