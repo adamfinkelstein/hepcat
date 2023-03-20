@@ -271,7 +271,7 @@ class Label(db.Model):
     __tablename__ = 'labels'
     id = db.Column(db.Integer, primary_key=True)
     type_enum = db.Column(db.Integer)
-    name = db.Column(db.String(64), unique=True)
+    name = db.Column(db.String(64))
     # tag_papers set by backref from papers
 
     @hybrid_property
