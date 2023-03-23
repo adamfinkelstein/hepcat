@@ -802,7 +802,8 @@ def write_csv(rows, filename):
 def get_latest_plenary_history(paper):
     context_plenary = int(HistoryContext.Plenary)
     latest_history = History.query.filter_by(paper_id=paper.id) \
-        .filter_by(context_enum=context_plenary).order_by(History.when.desc()).first()
+        .filter(History.context_enum >= context_plenary) \
+        .order_by(History.when.desc()).first()
     return latest_history
 
 def get_latest_plenary_history_status(paper):
