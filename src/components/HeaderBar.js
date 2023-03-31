@@ -9,9 +9,11 @@ import {useAppGlobals} from '../contexts/AppContext'
 // import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 
-export default function Header() {
+export default function HeaderBar() {
 
   const globals = useAppGlobals();
+  const controlledLog = globals.controlledLog;
+  const logoutUser = globals.logoutUser;
   const user = globals.user;
   const isAdmin = globals.isAdmin;
   let userNamePlus = user && user.full_name ? user.full_name : 'User';
@@ -30,7 +32,7 @@ export default function Header() {
         <Navbar.Collapse id="navbarScroll">
           <Nav
             className="me-auto my-2 my-lg-0"
-            style={{ maxHeight: '100px' }}
+            style={{ maxHeight: '200px' }}
             navbarScroll
           >
             {
@@ -40,14 +42,15 @@ export default function Header() {
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {
                   isAdmin &&
-                  <NavDropdown.Item onClick={() => {window.location.href = '/upload'}}>Upload Files</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="uploads">Upload Files</NavDropdown.Item>
                 }
                 <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={() => {
-                  window.location.href = '/auth/logout'
+                <NavDropdown.Item as={NavLink} to="auth_login" onClick={() => {
+                  controlledLog('clicked logout')
+                  logoutUser()
                 }}>Log Out</NavDropdown.Item>
-            </NavDropdown>
+              </NavDropdown>
             }
 
           </Nav>

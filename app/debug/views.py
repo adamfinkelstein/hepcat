@@ -63,6 +63,7 @@ def get_current_user_or_none():
         return current_user
     return None
 
+# instead should factor this to uploads or util
 def current_user_is_admin():
     user = get_current_user_or_none()
     if user and user.role_is_admin:

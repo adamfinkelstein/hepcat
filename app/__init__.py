@@ -18,9 +18,16 @@ moment = Moment()
 db = SQLAlchemy()
 ma = Marshmallow()
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
+login_manager.login_view = 'main.send_static_index' 
+# Was this:
+# login_manager.login_view = 'auth.login' 
+# AF: CHANGE THIS^^^ to React version? If not set, sends 404.
+# What about 'main.send_static_index'?
 static_folder = '' # this global is set in create_app below
 
+# Set this in SocketIO(): max_http_buffer_size
+# See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
+# Default is 1^6 for 1MB. Probably want larger for file uploads.
 allow_cors = os.getenv('ALLOW_CORS')
 allow_cors_socket = os.getenv('ALLOW_CORS_SOCKET')
 if allow_cors or allow_cors_socket:

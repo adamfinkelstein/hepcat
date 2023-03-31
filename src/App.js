@@ -1,14 +1,17 @@
 import Container from "react-bootstrap/Container"
-import Navbar from './components/Navbar.js'
+import HeaderBar from './components/HeaderBar.js'
+import AppRoutes from './components/AppRoutes.js'
 import ModalDialog from './components/ModalDialog.js'
 // import Body from './components/Body.js'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import MainPage from './pages/MainPage.js'
+import { BrowserRouter } from 'react-router-dom';
+// import MainPage from './pages/MainPage.js'
 import AppContext from './contexts/AppContext.js'
 import PreferencesContext from './contexts/PreferencesContext'
-import PreferencesPage from "./pages/PreferencesPage.js";
-import AboutPage from "./pages/AboutPage.js";
-import ChangePasswordPage from "./pages/ChangePasswordPage.js";
+// import PreferencesPage from "./pages/PreferencesPage.js";
+// import AboutPage from "./pages/AboutPage.js";
+// import LoginPage from "./pages/LoginPage.js";
+// import ChangePasswordPage from "./pages/ChangePasswordPage.js";
+// import {useAppGlobals} from './contexts/AppContext.js'
 import FlasherContext from './contexts/FlasherContext.js';
 import GUIContext from "./contexts/GUIContext.js";
 
@@ -22,14 +25,8 @@ export default function App() {
             <PreferencesContext>
                 <GUIContext>
                   <ModalDialog/>
-                  <Navbar/>
-                  <Routes>
-                      <Route path="/" element={<MainPage/>}/>
-                      <Route path="/about" element={<AboutPage/>}/>
-                      <Route path="/preferences" element={<PreferencesPage/>}/>
-                      <Route path="/change_password" element={<ChangePasswordPage/>}/>
-                      <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
+                  <HeaderBar/>
+                  <AppRoutes/>
                 </GUIContext>
               </PreferencesContext>
             </AppContext>

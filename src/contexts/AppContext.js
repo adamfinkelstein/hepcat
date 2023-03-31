@@ -56,6 +56,12 @@ export default function AppContext({children}){
     socket.emit(message);
   }, [socket, controlledLog] );
 
+  const logoutUser = useCallback( () => {
+    controlledLog('now logging out user...') 
+    setUser(null)
+    socketEmit('user_auth_logout')
+  }, [socketEmit, setUser, controlledLog] );
+
   const recordGlobs = useCallback( (data) => {
     controlledLog('record globs:');
     controlledLog(data);
@@ -111,6 +117,11 @@ export default function AppContext({children}){
         setRoomCalledTo(data.user.room_name)
       }
       socketEmit('user_request_queue', roomChoice)
+    };
+
+    const receiveLogout = () => {
+      controlledLog('got logout from server')
+      setUser(null);
     };
 
     function updateGridEntry(nid, status) {
@@ -239,10 +250,11 @@ export default function AppContext({children}){
       controlledLog(data)
       flash(data.message, data.type, data.which)
     }
-  
+
     if (socket && 'on' in socket) {
-      // controlledLog('register welcome etc');
+      controlledLog('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
+      socket.on('server_logout_user', receiveLogout);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
@@ -256,7 +268,9 @@ export default function AppContext({children}){
     // return from useEffect is function that does cleanup
     return () => {
       if (socket && 'off' in socket) {
+        controlledLog('socket cleanup');
         socket.off('server_welcome', receiveWelcome);
+        socket.off('server_logout_user', receiveLogout);
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
@@ -318,6 +332,7 @@ export default function AppContext({children}){
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
           "controlledLog": controlledLog,
+          "logoutUser": logoutUser,
           "statusList": ['Tabled','Reject','Conference','Journal'],
           "checkValidNID": checkValidNID
         }}>

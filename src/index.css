@@ -524,6 +524,11 @@ a.nav-link {
   width: 50px;
 }
 
+/* Change Password Page Styling */
+.LoginPage{
+  margin-top: 30px;
+}
+
 /* About Page */
 .about-container {
   margin-top: 20px;

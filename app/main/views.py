@@ -17,12 +17,15 @@ def before_main_request():
             and request.blueprint != 'auth' \
             and request.endpoint != 'static':
         print('user not authenticated ... send to login')
-        return redirect(url_for('auth.login'))
+        main_index = 'main.send_static_index' 
+        return redirect(url_for(main_index))
+        # old version: return redirect(url_for('auth.login'))
 
 @main.route("/about/")
+@main.route("/auth_login/")
 @main.route("/preferences/")
 @main.route("/")
-@login_required
+# @login_required - no longer needed! AF XXX!!!
 def send_static_index():
     print('send index from static folder: ' + static_folder)
     return send_from_directory(static_folder, 'index.html')
