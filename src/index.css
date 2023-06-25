@@ -302,7 +302,7 @@ a.nav-link {
 }
 
 .dropdown-menu {
-  max-height: 200px;
+  max-height: 600px;
   overflow: scroll;
 }
 
@@ -371,7 +371,7 @@ a.nav-link {
   padding: 20px 5px;
 }
 
-.preferences-page{
+.titled-page{
   margin-top: 35px;
 }
 

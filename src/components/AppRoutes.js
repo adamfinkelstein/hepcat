@@ -25,7 +25,7 @@ export default function AppRoutes() {
   const controlledLog = globals.controlledLog
   const loggedIn = Boolean(globals.user);
   const isAdmin = globals.isAdmin
-  controlledLog("user:")
+  controlledLog("app route user logged in: " + loggedIn)
   controlledLog(globals.user)
 
   return (

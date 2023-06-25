@@ -717,14 +717,14 @@ def read_csv(filename):
     header, rows = read_csv_rows(filename)
     header_type, ncols = get_csv_type(header)
     if not header_type or header_type not in csvFunctions:
-        return False, False
+        return False, False, ''
     rows = omit_extra_cols(rows, ncols)
     func = csvFunctions[header_type]
     if not func:
-        return False, False # this should never happen because of test above
+        return False, False, '' # this should never happen because of test above
     count = func(rows)
     if count < 0:
-        return "already_sent_flash_msg", False
+        return "already_sent_flash_msg", False, ''
     delete_prev_file_uploads(header_type)
     upload = FileUpload(file=header_type, count=count)
     db.session.add(upload)
@@ -737,8 +737,8 @@ def read_csv(filename):
     msg = dump_users_papers_and_conflicts('After Upload')
     if header_type == 'users':
         msg += ' You have been logged out because users were updated.'
-        return msg, True
-    return msg, False
+        return msg, True, header_type
+    return msg, False, header_type
 
 def pending_uploads(uploads):
     already = [upload.file for upload in uploads]
@@ -756,8 +756,8 @@ def save_and_read_csv(data, filename):
     with open(fullpath, "wb") as f:
         f.write(data)
     # flash('saved csv file here: '+fullpath)
-    msg, logout = read_csv(fullpath)
-    return msg, logout
+    msg, logout, header_type = read_csv(fullpath)
+    return msg, logout, header_type
 
 def write_text_to_file(text, filename):
     with open(filename, 'w') as f:
@@ -793,14 +793,15 @@ def get_results_as_rows():
     return rows
 
 def current_user_is_admin():
+    # check current_user.is_authenticated
     user = current_user
-    if user and user.role_is_admin:
+    if user and user.is_authenticated and user.role_is_admin:
         return True
     return False
 
 def current_user_is_super():
     user = current_user
-    if user and user.role_is_super:
+    if user and user.is_authenticated and user.role_is_super:
         return True
     return False
 

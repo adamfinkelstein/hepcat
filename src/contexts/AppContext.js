@@ -94,6 +94,7 @@ export default function AppContext({children}){
   }, [setShowLogs])
 
   useEffect(() => {
+    console.log('got to this userEffect.') // called 3 times!! ???
     controlledLog('roomChoice is now '+roomChoice);
     socketEmit('user_request_queue', roomChoice)
   }, [roomChoice, controlledLog, socketEmit]);

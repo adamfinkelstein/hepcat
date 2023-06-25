@@ -18,7 +18,8 @@ export default function UploadsPage() {
     // <Form.File.Label>Upload CSV Files</Form.File.Label>
 
 
-    function handleSubmit(){
+    function handleSubmit(event){
+        event.preventDefault()
         const fileUp = document.getElementById('form-file-upload');
         if (!fileUp.value) return;
         const file = fileUp.files[0]
@@ -37,8 +38,8 @@ export default function UploadsPage() {
     }
 
     return(
-        <Container className="UploadsPage">
-            <span className='font-size-1'>Hepcat Uploads</span>
+        <Container className="titled-page">
+            <span className='font-size-1'>Upload CSV Files Here</span>
             <Flasher type="uploads"/>
             <Container className="change-password-main-container">
 
@@ -51,7 +52,7 @@ export default function UploadsPage() {
 
                 <Stack direction="horizontal">
                         <div>
-                            <button type="submit" className="btn btn-primary reset-password-button" onClick={() => handleSubmit()}>Send</button>
+                            <button type="submit" className="btn btn-primary reset-password-button" onClick={(e) => handleSubmit(e)}>Send</button>
                         </div>
                 </Stack>
             </Container>

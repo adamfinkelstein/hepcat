@@ -12,7 +12,9 @@ def before_app_first_request():
 
 @main.before_app_request
 def before_main_request():
-    if not (current_user and current_user.is_authenticated) \
+    print('before main request:', request)
+    print('endpoint:', request.endpoint)
+    if False and not (current_user and current_user.is_authenticated) \
             and request.endpoint \
             and request.blueprint != 'auth' \
             and request.endpoint != 'static':
@@ -24,6 +26,7 @@ def before_main_request():
 @main.route("/about/")
 @main.route("/auth_login/")
 @main.route("/preferences/")
+@main.route("/uploads/")
 @main.route("/")
 # @login_required - no longer needed! AF XXX!!!
 def send_static_index():

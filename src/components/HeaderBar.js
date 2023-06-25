@@ -38,6 +38,7 @@ export default function HeaderBar() {
             {
               user && 
               <NavDropdown title={userNamePlus} id="navbarScrollingDropdown">
+                <NavDropdown.Item as={NavLink} to="/">PC Meeting</NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="about">About</NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {

@@ -7,7 +7,7 @@ import Flasher from '../components/Flasher'
 
 export default function PreferencesPage() {
     return (
-        <Container className='preferences-page'>
+        <Container className='titled-page'>
             <span className='font-size-1'>Preferences</span>
             <Container className='preferences-container'>
                 <TextPreferences/>

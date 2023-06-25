@@ -71,7 +71,7 @@ def current_user_is_admin():
     return False
 
 @debug.route('/')
-@login_required
+# @login_required
 def debugMain():
     debug_title = False
     debug_output = 'Nothing to see here.'
@@ -82,7 +82,7 @@ def debugMain():
     return render_debug(debug_title, debug_output)
 
 @debug.route('/run/<cmd>')
-@login_required
+# @login_required
 def run(cmd):
     if not current_user_is_admin():
         return render_debug('Must be admin to visit this URL', '')

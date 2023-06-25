@@ -983,10 +983,10 @@ def admin_upload_file(file):
     #     return
     print('admin_file_upload')
     filename = 'upload.csv'
-    msg, logout = save_and_read_csv(file, filename)
+    msg, logout, header_type = save_and_read_csv(file, filename)
     if msg != "already_sent_flash_msg":
         if msg:
-            msg = f'File upload successful. {msg}'
+            msg = f'File upload ({header_type}) successful. {msg}'
         else:
             msg = f'Unable to read the uploaded CSV. Perhaps the header is wrong?'
         which = 'uploads'

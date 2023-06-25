@@ -42,11 +42,19 @@ export default function LoginPage() {
         else if(name === "password") setPassword(trim);
     }
 
+    function handleKeyDown(event){
+        if (event.key === 'Enter') {
+            handleSubmit();
+        }
+    }
+
     return(
         <Container className="LoginPage">
             <Flasher type="login"/>
             <Container className="change-password-main-container">
+
                 <span className='font-size-1'>Hepcat Login</span>
+
                 <div className="password-fields">
 
                      <div className="reset-password-row">
@@ -66,6 +74,7 @@ export default function LoginPage() {
                             value={password}
                             type="password"
                             onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
                             style={{marginLeft: "15px"}}
                             />
                     </div>
@@ -76,6 +85,7 @@ export default function LoginPage() {
                         </div>
                     </Stack>
                 </div>
+
             </Container>
         </Container>
     )

@@ -22,10 +22,10 @@ def upload_main():
             filename = None
             flash('Uploaded file is not CSV, ignored.')
         else:
-            msg, logout = save_and_read_csv(file, filename)
+            msg, logout, header_type = save_and_read_csv(file, filename)
             if msg != "already_sent_flash_msg":
                 if msg:
-                    msg = f'Uploaded file "{filename}". ' + msg
+                    msg = f'Uploaded file "{filename}" (type {header_type}). ' + msg
                 else:
                     msg = f'Unable to read csv file "{filename}". Perhaps the header is wrong?'
                 flash(msg)
