@@ -22,6 +22,7 @@ export default function AppContext({children}){
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [probeCount, setProbeCount] = useState(0)
   const [probeWhen, setProbeWhen] = useState('')
+  const [fileUploads, setFileUploads] = useState(null);
   const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null)
   const [newStatus, setNewStatus] = useState("Tabled")
@@ -200,6 +201,12 @@ export default function AppContext({children}){
       }
     };
 
+    const receiveFileUploads = (file_uploads) => {
+      controlledLog('received file upload status:')
+      controlledLog(file_uploads)
+      setFileUploads(file_uploads)
+    };
+
     const receiveProbe = (count) => {
       const now = Date.now()
       const fmt = moment.utc(now).local().format('ddd h:mm:ss')
@@ -263,6 +270,7 @@ export default function AppContext({children}){
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_send_flasher', receiveFlasher);
       socket.on('server_probe_count', receiveProbe); 
+      socket.on('server_file_uploads', receiveFileUploads); 
       socket.on('server_call_to_room', receiveCallToRoom); 
     }
 
@@ -279,6 +287,7 @@ export default function AppContext({children}){
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_send_flasher', receiveFlasher);
         socket.off('server_probe_count', receiveProbe);
+        socket.off('server_file_uploads', receiveFileUploads); 
         socket.off('server_call_to_room', receiveCallToRoom);
       }
     };
@@ -330,6 +339,7 @@ export default function AppContext({children}){
           "modalBody": modalBody,
           "probeCount": probeCount,
           "probeWhen": probeWhen,
+          "fileUploads": fileUploads,
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
           "controlledLog": controlledLog,

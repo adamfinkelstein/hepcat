@@ -331,6 +331,10 @@ class HistorySchema(ma.Schema):
     class Meta:
         fields = ("when", "context", "status")
 
+class FileUploadSchema(ma.Schema):
+    class Meta:
+        fields = ("file", "count", "when")
+
 class GlobQueueSchema(ma.Schema):
     class Meta:
         fields = ("room", "bar", "hide_queue", "message", 
@@ -476,7 +480,8 @@ def wipe_db_clean():
         print('...about to recreate all tables...')
         db.create_all()
         print('...success clean slate!')
-        # wait for ensure_admin() on next reload
+        # should ensure_admin() instead wait for next reload?
+        ensure_admin()
         return True
     except:
         print('...failed to wipe clean!')

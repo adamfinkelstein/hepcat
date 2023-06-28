@@ -7,8 +7,8 @@ from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, Label, LabelType, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
+from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, \
+    HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, wipe_db_clean, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import current_user_is_admin, current_user_is_super, is_csv, save_and_read_csv, pending_uploads, write_results_csv
 
@@ -18,6 +18,7 @@ paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
 global_schema = GlobQueueSchema()
 history_schema = HistorySchema(many=True)
+uploads_schema = FileUploadSchema(many=True)
 
 def get_react_env_vars():
     vars = {}
@@ -997,9 +998,26 @@ def admin_upload_file(file):
     if logout:
         logout_user()
         emit('server_logout_user')
-    #     return redirect(url_for('auth.login'))
-    # uploads = FileUpload.query.all()
-    # pending = pending_uploads(uploads)
-    # super = current_user_is_super()
-    # return render_template('upload.html', form=form, filename=filename, uploads=uploads, pending=pending, linklings=csvLinklings, superuser=super)
+    else:
+        uploads = FileUpload.query.all()
+        uploads_dump = uploads_schema.dump(uploads)
+        pending = pending_uploads(uploads)
+        data = { 'uploads': uploads_dump, 'pending': pending }
+        emit('server_file_uploads', data)
 
+@socketio.on('admin_wipe_database')
+def admin_wipe_database():
+    # should test for admin role here, or probably super
+    # if not current_user_is_admin():
+    #     return redirect(url_for('auth.login'))
+    # possibly replace with: drop_and_rebuild_tables()
+    print('admin_wipe_database...')
+    success = wipe_db_clean()
+    if success:
+        msg ='The database was wiped clean. You have been logged out.'
+        flash(msg)
+        logout_user()
+        emit('server_logout_user')
+    else:
+        msg ='The database wipe failed!'
+        flash(msg)
