@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MainPage from '../pages/MainPage.js'
 import PreferencesPage from "../pages/PreferencesPage.js";
 import AboutPage from "../pages/AboutPage.js";
-import LoginPage from "../pages/LoginPage.js";
 import UploadsPage from "../pages/UploadsPage.js";
 import ChangePasswordPage from "../pages/ChangePasswordPage.js";
 
@@ -23,14 +22,11 @@ export default function AppRoutes() {
 
   const globals = useAppGlobals();
   const controlledLog = globals.controlledLog
-  const loggedIn = Boolean(globals.user);
   const isAdmin = globals.isAdmin
-  controlledLog("app route user logged in: " + loggedIn)
   controlledLog(globals.user)
 
   return (
-    loggedIn ?
-      (<Routes>
+      <Routes>
           <Route path="/" element={<MainPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/preferences" element={<PreferencesPage/>}/>
@@ -39,11 +35,6 @@ export default function AppRoutes() {
           }
           <Route path="/change_password" element={<ChangePasswordPage/>}/>
           <Route path="*" element={<Navigate to="/" />} />
-      </Routes>)
-      :
-      (<Routes>
-        <Route path="/auth_login" element={<LoginPage/>}/>
-        <Route path="*" element={<Navigate to="/auth_login" />} />
-      </Routes>)
+      </Routes>
   );
 }

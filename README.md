@@ -106,6 +106,7 @@ DROP TABLE IF EXISTS tags CASCADE;
 
 ## To run locally with static build:
 
+* If you plan to use Postgres, start that server and set environment variable (see above).
 * If you made changes to the React app, first run `npm run build`.
 * Run `python hepcat.py` - This lauches the Flask server. 
 * Navigate browser to `http://127.0.0.1:5000` (not localhost, which gives a 503 error for some reason?!?) The Flask server serves the files compiled by `npm` into the build folder.

@@ -36,18 +36,25 @@ def get_random_admin():
 def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
+    if allow_cors: # hack to allow Rect debug on different port w/o login
+        now = datetime.now()
+        seconds_since_epoch = now.timestamp()
+        ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
+        if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
+            user = get_random_admin()
+        else:
+            user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
+        return user
+    print('user is not logged in: should force disconnect.')
     return None
-    # if allow_cors: # hack to allow Rect debug on different port w/o login
-    #     now = datetime.now()
-    #     seconds_since_epoch = now.timestamp()
-    #     ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
-    #     if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
-    #         user = get_random_admin()
-    #     else:
-    #         user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
-    #     return user
-    # print('user is not logged in: should force disconnect.')
-    # return None
+
+def current_user_is_admin():
+    if allow_cors: # hack to allow Rect debug on different port w/o login
+        return True
+    user = get_current_user_or_none()
+    if user and user.role_is_admin:
+        return True
+    return False
 
 def get_grid_dump_above_bar(above):
     bar = get_bar()
@@ -629,8 +636,13 @@ def broadcast_admin_alert(title, body):
     data = {'title':title, 'body':body, 'admin_only': True}
     emit('server_send_alert', data, broadcast=True)
 
-def send_server_welcome(user):
-    print(f'{user.full_name} - send welcome')
+@socketio.on('connect')
+def io_connect():
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    print(f'{user.full_name} - client connected')
     user_dump = get_user_dump(user)
     grid_dump = get_grid_dump()
     about_md = get_about_md(user.role_is_admin)
@@ -644,18 +656,15 @@ def send_server_welcome(user):
     emit('server_welcome', data)
     # no need to send to conflictbot here (just user login)
 
-def user_fail_validation(user):
-    if user:
-        return False
-    # disconnect() ????
-    return True
-
-@socketio.on('connect')
-def io_connect():
+@socketio.on('user_request_queue')
+def user_request_queue(room):
     user = get_current_user_or_none()
-    if user:
-        print(f'{user.full_name} - client connected')
-        send_server_welcome(user) # will this emit to the right socket?
+    if not user:
+        disconnect()
+        return
+    print(f'{user.full_name} requested queue for {room}')
+    data,_ = get_queue(room)
+    emit('server_set_queue', data)
 
 @socketio.on('disconnect')
 def io_disconnect():
@@ -663,41 +672,6 @@ def io_disconnect():
     if current_user and not current_user.is_anonymous:
         user_name = current_user.full_name
     print(f'{user_name} - client disconnected')
-
-@socketio.on('user_auth_login')
-def user_auth_login(data):
-    email = data['email']
-    password = data['password']
-    print(f'login email {email} with password {password}')
-    email_lower = email.lower() # ensure lower case email
-    user = User.query.filter_by(email=email_lower).first()
-    if not user or not user.verify_password(password):
-        msg = 'Unsuccessful login -- either email or password was incorrect.'
-        data = { 'message': msg, 'type': 'warning', 'which': 'login'}
-        emit('server_send_flasher', data)
-        return
-    # possibly here set new token and last-login time for user, here.
-    # then use that token in user_loader (models.py).
-    remember_me = True
-    login_user(user, remember_me)
-    send_server_welcome(user) # will this emit to the right socket?
-
-@socketio.on('user_auth_logout')
-def user_auth_logout():
-    # if current_user and not current_user.is_anonymous:
-    logout_user()
-    msg = 'You are now logged out.'
-    data = { 'message': msg, 'type': 'success', 'which': 'login'}
-    emit('server_send_flasher', data)
-
-@socketio.on('user_request_queue')
-def user_request_queue(room):
-    user = get_current_user_or_none()
-    if user_fail_validation(user):
-        return
-    print(f'{user.full_name} requested queue for {room}')
-    data,_ = get_queue(room)
-    emit('server_set_queue', data)
 
 @socketio.on('admin_bring_to_room')
 def admin_bring_to_room(room):
@@ -861,7 +835,8 @@ def admin_clear_stickies():
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):
     user = get_current_user_or_none()
-    if user_fail_validation(user):
+    if not user:
+        disconnect()
         return
     print('user request for set stickie:', data)
     nid = data['nid']
@@ -890,7 +865,8 @@ def user_set_stickie(data):
 @socketio.on('user_change_password')
 def user_change_password(data):
     user = get_current_user_or_none()
-    if user_fail_validation(user):
+    if not user:
+        disconnect()
         return
     new_password = data['password']
     for_email = data['forEmail']

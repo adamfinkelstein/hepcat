@@ -47,9 +47,9 @@ export default function HeaderBar() {
                 }
                 <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={NavLink} to="auth_login" onClick={() => {
+                <NavDropdown.Item onClick={() => {
                   controlledLog('clicked logout')
-                  logoutUser()
+                  window.location.href = '/auth/logout'
                 }}>Log Out</NavDropdown.Item>
               </NavDropdown>
             }

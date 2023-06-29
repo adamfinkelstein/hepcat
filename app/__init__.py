@@ -18,11 +18,7 @@ moment = Moment()
 db = SQLAlchemy()
 ma = Marshmallow()
 login_manager = LoginManager()
-login_manager.login_view = 'main.send_static_index' 
-# Was this:
-# login_manager.login_view = 'auth.login' 
-# AF: CHANGE THIS^^^ to React version? If not set, sends 404.
-# What about 'main.send_static_index'?
+login_manager.login_view = 'auth.login'
 static_folder = '' # this global is set in create_app below
 
 # Set this in SocketIO(): max_http_buffer_size
