@@ -54,8 +54,8 @@ export default function UploadsPage() {
         controlledLog('Wipe DB button pressed.');
         let text = "Are you really, Really, REALLY sure you want to wipe out the database?";
         if (window.confirm(text) === true) {
-            controlledLog('Wipe DB button confirmed.');
-            socketEmit("admin_wipe_database");
+            controlledLog('Wipe DB button confirmed. Redirect.');
+            window.location.href = '/admin/wipe_database'
         } else {
             controlledLog('Wipe DB button canceled.');
         }

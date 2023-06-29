@@ -2,15 +2,15 @@ import os
 import re
 import random
 from datetime import datetime
-from flask import flash
+# from flask import flash
 from flask_socketio import Namespace, emit, disconnect
-from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user, logout_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, wipe_db_clean, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
+    HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
 from ..orderq import order_q, get_enter_leave_conf_sets
-from ..uploads import current_user_is_admin, current_user_is_super, is_csv, save_and_read_csv, pending_uploads, write_results_csv
+from ..uploads import current_user_is_admin, save_and_read_csv, pending_uploads
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -981,19 +981,3 @@ def admin_upload_file(file):
         data = { 'uploads': uploads_dump, 'pending': pending }
         emit('server_file_uploads', data)
 
-@socketio.on('admin_wipe_database')
-def admin_wipe_database():
-    # should test for admin role here, or probably super
-    # if not current_user_is_admin():
-    #     return redirect(url_for('auth.login'))
-    # possibly replace with: drop_and_rebuild_tables()
-    print('admin_wipe_database...')
-    success = wipe_db_clean()
-    if success:
-        msg ='The database was wiped clean. You have been logged out.'
-        flash(msg)
-        logout_user()
-        emit('server_logout_user')
-    else:
-        msg ='The database wipe failed!'
-        flash(msg)
