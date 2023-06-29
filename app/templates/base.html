@@ -16,27 +16,6 @@
             <a class="navbar-brand" href="{{ url_for('main.send_static_index') }}">Hepcat: SIGGRAPH PC Meeting
             </a>
         </div>
-
-        {% if current_user.is_authenticated %}
-
-        <div class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{current_user.full_name}}<span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="/about">About</a></li>
-                <li><a href="/preferences">Preferences</a></li>
-                <li><a href="/upload">Upload Files</a></li>
-                <li><a href="/change_password">Change Password</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-
-        {% endif %}
-
     </div>
 </div>
 
