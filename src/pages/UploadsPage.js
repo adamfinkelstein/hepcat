@@ -112,7 +112,7 @@ export default function UploadsPage() {
                     <p>&nbsp;</p>
 
                     <Stack direction="horizontal">
-                    <a className="btn btn-warning" href="/debug/" target="_blank">Download Results</a>
+                    <a className="btn btn-warning" href="/admin/download_results_csv" target="_blank">Download Results</a>
                         &nbsp;&nbsp;Download a CSV with the final status of all papers.
                     </Stack>
                     </div>
