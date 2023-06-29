@@ -654,6 +654,8 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
     emit('server_welcome', data)
+    if user.role_is_admin:
+        emit_admin_uploads(False)
     # no need to send to conflictbot here (just user login)
 
 @socketio.on('user_request_queue')
@@ -952,6 +954,13 @@ socketio.on_namespace(Conflictbot(conflictbot_namespace))
 #
 ####################################
 
+def emit_admin_uploads(broadcast):
+    uploads = FileUpload.query.all()
+    uploads_dump = uploads_schema.dump(uploads)
+    pending = pending_uploads(uploads)
+    data = { 'uploads': uploads_dump, 'pending': pending }
+    emit('server_file_uploads', data, broadcast=broadcast)
+
 @socketio.on('admin_file_upload')
 def admin_upload_file(file):
     ### TEMP FOR TESTING XXX AF ???
@@ -974,10 +983,4 @@ def admin_upload_file(file):
     if logout:
         logout_user()
         emit('server_logout_user')
-    else:
-        uploads = FileUpload.query.all()
-        uploads_dump = uploads_schema.dump(uploads)
-        pending = pending_uploads(uploads)
-        data = { 'uploads': uploads_dump, 'pending': pending }
-        emit('server_file_uploads', data)
-
+    emit_admin_uploads(True)
