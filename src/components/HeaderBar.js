@@ -13,7 +13,6 @@ export default function HeaderBar() {
 
   const globals = useAppGlobals();
   const controlledLog = globals.controlledLog;
-  const logoutUser = globals.logoutUser;
   const user = globals.user;
   const isAdmin = globals.isAdmin;
   let userNamePlus = user && user.full_name ? user.full_name : 'User';

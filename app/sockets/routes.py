@@ -963,10 +963,9 @@ def emit_admin_uploads(broadcast):
 
 @socketio.on('admin_file_upload')
 def admin_upload_file(file):
-    ### TEMP FOR TESTING XXX AF ???
-    # if not current_user_is_admin():
-    #     disconnect()
-    #     return
+    if not current_user_is_admin():
+        disconnect()
+        return
     print('admin_file_upload')
     filename = 'upload.csv'
     msg, logout, header_type = save_and_read_csv(file, filename)

@@ -246,7 +246,13 @@ export default function AppContext({children}){
       controlledLog(data)
       flash(data.message, data.type, data.which)
     }
-  
+
+    const receiveLogout = () => {
+      controlledLog('got logout')
+      window.location.href = '/auth/logout'
+      // maybe: flash(data.message, data.type, data.which)
+    }
+
     if (socket && 'on' in socket) {
       controlledLog('register welcome etc');
       socket.on('server_welcome', receiveWelcome);
@@ -259,6 +265,7 @@ export default function AppContext({children}){
       socket.on('server_probe_count', receiveProbe); 
       socket.on('server_file_uploads', receiveFileUploads); 
       socket.on('server_call_to_room', receiveCallToRoom); 
+      socket.on('server_logout_user', receiveLogout); 
     }
 
     // return from useEffect is function that does cleanup
@@ -275,6 +282,7 @@ export default function AppContext({children}){
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_file_uploads', receiveFileUploads); 
         socket.off('server_call_to_room', receiveCallToRoom);
+        socket.off('server_logout_user', receiveLogout); 
       }
     };
   }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
