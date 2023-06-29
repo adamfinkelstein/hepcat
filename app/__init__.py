@@ -65,8 +65,8 @@ def create_app(config_name, build_path):
     from .debug import debug as debug_blueprint
     app.register_blueprint(debug_blueprint, url_prefix='/debug')
 
-    from .upload import upload as upload_blueprint
-    app.register_blueprint(upload_blueprint, url_prefix='/upload')
+    from .admin import admin as admin_blueprint
+    app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
     from .sockets import sockets as sockets_blueprint
     app.register_blueprint(sockets_blueprint)
