@@ -2,7 +2,6 @@ import {useAppGlobals} from '../contexts/AppContext'
 import {useRef} from 'react'
 import Container from 'react-bootstrap/Container'
 import Stack from 'react-bootstrap/Stack'
-//import Chevron from './Chevron.js'
 import PaperConflict from './PaperConflict'
 import { useFavorites } from '../contexts/PreferencesContext'
 
