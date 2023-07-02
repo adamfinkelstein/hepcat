@@ -136,7 +136,26 @@ npm start
 
 ## To set up Heroku:
 
-Set up Heroku app and add it to git remotes. 
+Set up Heroku app and add it to git remotes:
+
+```
+(venv) hepcat> heroku git:remote -a hepcat
+set git remote heroku to https://git.heroku.com/hepcat.git
+(venv) hepcat> git remote -v
+heroku  https://git.heroku.com/hepcat.git (fetch)
+heroku  https://git.heroku.com/hepcat.git (push)
+origin  https://github.com/adamfinkelstein/hepcat.git (fetch)
+origin  https://github.com/adamfinkelstein/hepcat.git (push)
+```
+
+One time you need to set up buildpacks for the project at Heroku, like this:
+
+```
+heroku buildpacks:set heroku/nodejs
+heroku buildpacks:add heroku/python
+heroku buildpacks
+```
+
 Also set environment variables at Heroku, at least:
 
 * `SECRET_KEY`
@@ -148,11 +167,8 @@ Also set environment variables at Heroku, at least:
 * `HEPCAT_ADMIN_PASSWD`
 * `HEPCAT_USE_ORTOOLS=True`
 
-Then:
+Finally, after sending local changes, deploy at Heroku like this:
 
 ```
-heroku buildpacks:set heroku/nodejs
-heroku buildpacks:add heroku/python
-heroku buildpacks
 git push heroku
 ```

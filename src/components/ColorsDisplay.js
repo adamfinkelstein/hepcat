@@ -17,6 +17,7 @@ export default function ColorsDisplay({clickable, pickingFor, setPickingFor}){
 
     return(
         <div className="grid_legend">
+            <div className="legend-title font-size-3">Plenary Status</div>
             <ul>
             {        
                 Object.keys(colors).map(key => {

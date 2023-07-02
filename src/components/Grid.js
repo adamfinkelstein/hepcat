@@ -36,12 +36,18 @@ export default function Grid({isAbove,gridDisplay}){
             else{
                 className += " non-stickie"
             }
+            if(gridElem.stickie){
+                className += " has-stickie"
+            }
         }
         else{
             if(gridElem.nid === queueCurrentID){
                 className += " Current"
             } else{
                 className += " " + paperStatus
+            }
+            if(gridElem.stickie){
+                className += " has-stickie"
             }
         }
         return className;

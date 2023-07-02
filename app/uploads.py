@@ -511,9 +511,10 @@ def papers_set_all_scores_and_status_from_reviews():
         print(msg)
         flash(msg)
 
-# orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
-# 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-# 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
+#   orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
+#   2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+# S 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
+# SA2023: Submission ID,Role,Conference Score,Journal Score,Expertise,<i>Weighted max of the other scores.</i>
 def insert_review_rows(rows):
     delete_all_reviews()
     count = 0
