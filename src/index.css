@@ -265,6 +265,11 @@ a.nav-link {
   font-weight: bold;
 }
 
+.collapsible-par-header {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 /* Split Screen CSS */
 
 .split{

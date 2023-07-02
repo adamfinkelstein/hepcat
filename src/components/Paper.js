@@ -1,9 +1,13 @@
 import moment from 'moment'
+import { Collapse } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import {useAppGlobals} from '../contexts/AppContext'
 import {useState, useEffect} from 'react'
+import CollapsibleParagraph from './CollapsibleParagraph.js'
 
 export default function Paper(){
+
+    const [open, setOpen] = useState(false);
 
     const [currentTime, setCurrentTime] = useState(Date.now())
 
@@ -154,8 +158,10 @@ export default function Paper(){
                     { showHist &&
                         (<p className='font-size-4'><span className="paper-par-header">History:</span> <span className='paper-history-text'>{formatHistoryList(hist)}</span></p>)
                     }
-                    <p className='font-size-4'><span className="paper-par-header">Summary: </span><span className='paper-summary-text'>{cp.summary}</span></p>
-                    <p className='font-size-4'><span className="paper-par-header">Abstract: </span><span className='paper-abstract-text'>{cp.abstract}</span></p>
+                    
+                    <CollapsibleParagraph title="Summary"  text={cp.summary} />
+                    <CollapsibleParagraph title="Abstract" text={cp.abstract} />
+
                     <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
                 </div>
             ))}
