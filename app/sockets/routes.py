@@ -2,7 +2,7 @@ import os
 import re
 import random
 from datetime import datetime
-# from flask import flash
+from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user, logout_user
 from sqlalchemy.sql.expression import func
@@ -653,6 +653,7 @@ def io_connect():
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
+        data['admin_key'] = current_app.config['INSTANCE']
     emit('server_welcome', data)
     if user.role_is_admin:
         emit_admin_uploads(False)

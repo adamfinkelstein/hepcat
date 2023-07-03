@@ -1,13 +1,12 @@
 import os
 import csv
-from flask import render_template, flash, redirect, url_for, send_file, current_app
-from flask_login import login_required, logout_user, current_user
-from werkzeug.utils import secure_filename
+from flask import flash, current_app
+from flask_login import current_user
 from . import db
 from .models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, wipe_db_clean, \
-    ensure_admin, ensure_all_gqs, drop_and_rebuild_tables, get_config_or_default, conflicts, tags
+    context_str_to_enum, status_str_to_enum, status_enum_to_str, \
+    ensure_admin, ensure_all_gqs, drop_and_rebuild_tables, get_config_or_default
 
 def delete_all_users():
     dump_users_papers_and_conflicts('Before deleting users')

@@ -14,11 +14,12 @@ export default function AppContext({children}){
     
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [adminKey, setAdminKey] = useState("");
+  const [allUsers, setAllUsers] = useState([])
   const [roomCalledTo, setRoomCalledTo] = useState("Plenary");
   const [roomChoice, setRoomChoice] = useState("Plenary");
   const [queue, setQueue] = useState([])
   const [grid, setGrid] = useState([])
-  const [allUsers, setAllUsers] = useState([])
   const [queueCurrent, setQueueCurrent] = useState(0)
   const [probeCount, setProbeCount] = useState(0)
   const [probeWhen, setProbeWhen] = useState('')
@@ -103,6 +104,9 @@ export default function AppContext({children}){
       setIsAdmin(isAdmin);
       if (isAdmin && data.all_users && data.all_users.length) {
         setAllUsers(data.all_users);
+      }
+      if (isAdmin && data.admin_key && data.admin_key.length) {
+        setAdminKey(data.admin_key);
       }
       setGrid(data.grid)
       setAboutMD(smartquotes(data.about))
@@ -313,6 +317,7 @@ export default function AppContext({children}){
         value={{
           "user": user,
           "isAdmin": isAdmin,
+          "adminKey": adminKey,
           "allUsers": allUsers,
           "roomCalledTo": roomCalledTo,
           "roomChoice": roomChoice,

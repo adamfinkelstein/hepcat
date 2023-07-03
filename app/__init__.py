@@ -1,5 +1,6 @@
 import os
 import sys
+import uuid
 import logging
 from flask import Flask
 from flask_bootstrap import Bootstrap
@@ -43,6 +44,9 @@ def create_app(config_name, build_path):
         print('ALLOW_CORS - allowing cross origin requests on APP')
     app.config.from_object(config[config_name])
     # config[config_name].init_app(app) # AF not needed (just pass)
+
+    # a random string associated with this instance
+    app.config['INSTANCE'] = uuid.uuid4().hex
 
     # to help with this
     app.logger.addHandler(logging.StreamHandler(sys.stdout))

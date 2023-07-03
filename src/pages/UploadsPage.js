@@ -16,6 +16,7 @@ export default function UploadsPage() {
     const globals = useAppGlobals();
     const user = globals.user
     const isAdmin = globals.isAdmin
+    const adminKey = globals.adminKey
     const isSuper = user && user.role_name === "Super"
     const socketEmit = globals.socketEmit;
     const controlledLog = globals.controlledLog
@@ -55,7 +56,7 @@ export default function UploadsPage() {
         let text = "Are you really, Really, REALLY sure you want to wipe out the database?";
         if (window.confirm(text) === true) {
             controlledLog('Wipe DB button confirmed. Redirect.');
-            window.location.href = '/admin/wipe_database'
+            window.location.href = '/admin/wipe_database/' + adminKey
         } else {
             controlledLog('Wipe DB button canceled.');
         }
@@ -112,7 +113,7 @@ export default function UploadsPage() {
                     <p>&nbsp;</p>
 
                     <Stack direction="horizontal">
-                    <a className="btn btn-warning" href="/admin/download_results_csv" target="_blank">Download Results</a>
+                    <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank">Download Results</a>
                         &nbsp;&nbsp;Download a CSV with the final status of all papers.
                     </Stack>
                     </div>
