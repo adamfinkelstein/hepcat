@@ -1,4 +1,4 @@
-from flask import flash, abort, redirect, url_for, send_file, current_app
+from flask import flash, render_template, redirect, url_for, send_file, current_app
 from flask_login import login_required, logout_user
 from . import admin
 from ..uploads import current_user_is_admin, write_results_csv
@@ -39,3 +39,14 @@ def wipe_database(key):
     flash(msg)
     return redirect(url_for('upload.upload_main'))
 
+@admin.route('/zoom_conflictbot/<key>')
+@login_required
+def zoom_conflictbot(key):
+    if not current_user_is_admin():
+        return redirect(url_for('auth.login'))
+    inst = current_app.config['INSTANCE']
+    if key != inst:
+        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+        flash(msg)
+        return redirect(url_for('auth.login'))
+    return render_template('zoom-conflictbot.html')

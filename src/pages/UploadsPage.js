@@ -77,7 +77,7 @@ export default function UploadsPage() {
 
                 <Stack direction="horizontal">
                         <div>
-                            <button type="submit" className="btn btn-primary reset-password-button" onClick={(e) => handleSubmit(e)}>Send</button>
+                            <button type="submit" className="btn btn-primary reset-password-button" onClick={(e) => handleSubmit(e)}>Send File</button>
                         </div>
                 </Stack>
                 <p>&nbsp;</p>
@@ -104,8 +104,7 @@ export default function UploadsPage() {
                 }
                 </ul>
 
-                { isAdmin && (
-                    <div>
+                <div>
                     <p>&nbsp;</p>
                     <hr/>
                     <p>&nbsp;</p>
@@ -113,19 +112,28 @@ export default function UploadsPage() {
                     <p>&nbsp;</p>
 
                     <Stack direction="horizontal">
+                    <a className="btn btn-primary" href={"/admin/zoom_conflictbot/"+adminKey} target="_blank">Zoom Conflictbot</a>
+                        &nbsp;&nbsp;Open Zoom Conflictbot in new tab.
+                    </Stack>
+                </div>
+
+                <div>
+                    <p>&nbsp;</p>
+                    <Stack direction="horizontal">
                     <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank">Download Results</a>
                         &nbsp;&nbsp;Download a CSV with the final status of all papers.
                     </Stack>
-                    </div>
-                )}
+                </div>
 
-                <p>&nbsp;</p>
                 { isSuper && (
-                    <Stack direction="horizontal">
+                    <div>
+                    <p>&nbsp;</p>
+                <Stack direction="horizontal">
                     <Button variant="danger" onClick={handleWipeDBButton} 
                         className="bulk-reject-btn">Wipe Database Clean</Button>
                         &nbsp;&nbsp;This removes ALL data from the database!
                     </Stack>
+                    </div>
                 )}
 
             </Container>
