@@ -49,4 +49,7 @@ def zoom_conflictbot(key):
         msg ='Sorry -- the admin key is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
-    return render_template('zoom-conflictbot.html')
+    url = f'/admin/zoom_conflictbot/{inst}'
+    client_id = current_app.config['ZOOM_CONFLICTBOT_CLIENT_ID']
+    client_secret = current_app.config['ZOOM_CONFLICTBOT_CLIENT_SECRET']
+    return render_template('zoom-conflictbot.html', url=url, client_id=client_id, client_secret=client_secret)

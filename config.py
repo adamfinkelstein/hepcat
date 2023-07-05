@@ -7,8 +7,8 @@ class Config:
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
         ['true', 'on', '1']
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ZOOM_CONFLICTBOT_CLIENT_ID = os.environ.get('ZOOM_CONFLICTBOT_CLIENT_ID')
+    ZOOM_CONFLICTBOT_CLIENT_SECRET = os.environ.get('ZOOM_CONFLICTBOT_CLIENT_SECRET')
     HEPCAT_MAIL_SUBJECT_PREFIX = '[Hepcat]'
     HEPCAT_MAIL_SENDER = 'Hepcat Admin <hepcat.mail@gmail.com>'
     HEPCAT_ADMIN_LOGIN = os.environ.get('HEPCAT_ADMIN_LOGIN')
@@ -18,7 +18,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
     BIN_FOLDER = os.path.join(basedir, 'custom_bin')
-    DUAL_BOOST_FOR_ALLA = os.environ.get('DUAL_BOOST_FOR_ALLA')
 
     # AF: not needed
     # @staticmethod

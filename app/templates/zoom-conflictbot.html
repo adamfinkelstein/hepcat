@@ -1,12 +1,69 @@
 <html>
-    <head>
-        <title>Hepcat Conflictbut Debugger</title>
-        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-        <meta content="utf-8" http-equiv="encoding">
-    </head>
-    <body>
-    
+<head>
+    <title>Hepcat Zoom Conflictbut</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/2.12.2/css/bootstrap.css" />
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/2.12.2/css/react-select.css" />
+
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="origin-trial" content="">
+
+    <style>
+    #nav-tool1 {
+        margin-bottom: 0px;
+        background-color: #174460;
+    }
+    #form-control {
+        width: 300px;
+    }
+    .navbar-brand {
+        color: white;
+    }
+    </style>
+</head>
+<body>
+    <nav id="nav-tool1" class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Hepcat Zoom Conflictbut</a>
+            </div>
+            <div id="navbar" class="websdktest">
+                <form class="navbar-form navbar-right" id="meeting_form">
+                    <div class="form-group">
+                        <input type="text" name="meeting_number" id="meeting_number" value="" maxLength="200"
+                            placeholder="Meeting Number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="meeting_passwd" id="meeting_passwd" value="" maxLength="32" 
+                            placeholder="Meeting Password" class="form-control">
+                    </div>
+
+                    <button type="button" class="btn btn-primary" id="join_meeting">Join</button>
+                    <button type="button" class="btn btn-primary" id="hold_others">Hold</button>
+                    <button type="button" class="btn btn-primary" id="return_others">Return</button>
+
+                </form>
+            </div>
+            <!--/.navbar-collapse -->
+        </div>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.slim.min.js" integrity="sha512-5NqgLBAYtvRsyAzAvEBWhaW+NoB+vARl6QiA02AFMhCWvPpi7RWResDcTGYvQtzsHVCfiUhwvsijP+3ixUk1xw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js" crossorigin="anonymous"></script>
+
+    <script src="https://source.zoom.us/2.12.2/lib/vendor/react.min.js"></script>
+    <script src="https://source.zoom.us/2.12.2/lib/vendor/react-dom.min.js"></script>
+    <script src="https://source.zoom.us/2.12.2/lib/vendor/redux.min.js"></script>
+    <script src="https://source.zoom.us/2.12.2/lib/vendor/redux-thunk.min.js"></script>
+    <script src="https://source.zoom.us/2.12.2/lib/vendor/lodash.min.js"></script>
+    <script src="https://source.zoom.us/zoom-meeting-2.12.2.min.js"></script>
+
     <h1>Hepcat Conflictbut Debugger</h1>
+    <h2>{{ globZoomClientID }} - {{ globZoomClientSecret }}</h2>
 
     All Users (showing current rooms):
     <ul id="all-user-list"></ul>
@@ -14,8 +71,6 @@
     Current Rooms (with conflicts):
     <ul id="room-list"></ul>
             
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js" crossorigin="anonymous"></script>
-
     <script>
 
     function setUsers(users) {
@@ -26,7 +81,7 @@
             console.log(user);
             const li = document.createElement('li');
             let html = ' [' + user.room_name + '] '
-                     + user.full_name + " (" + user.email + ")";
+                        + user.full_name + " (" + user.email + ")";
             li.innerHTML = html;
             ul.appendChild(li);
         }
@@ -59,31 +114,249 @@
     }
 
     const socket = io("/lurk_NxtCmHS8aDj6");
-    console.log('opened LURKER socket namespace in this socket:');
-    console.log(socket);
-    
-    // This is not necessary - just here to check for connection
-    socket.on('connect', function() {
-        console.log('Socket connected on id: ' + socket.id);
-    });
-    
+    console.log('opened socket');
+
+    let hepcat_conflicts = {};
+    let hepcat_users = null;
+
     // Receive list of users
     socket.on('user-list', function(users) {
         console.log('Got users:');
         console.log(users);
         setUsers(users);
+        hepcat_users = users;
     });
 
     // Receive list of conflicts and paper metadata
     socket.on('conflicts', function(data) {
         console.log('Got conflicts:');
         console.log(data);
-        updateRoomInfo(data)
+        updateRoomInfo(data);
+        hepcat_conflicts[data.room] = data;
     });
+
+    const globURL = "{{ url }}";
+    const globZoomClientID = "{{ client_id }}";
+    const globZoomClientSecret = "{{ client_secret }}";
+    let globJoinedMeeting = false;
+    let globMeetingNumber = ''; // stored as string
+    let globMeetingPasswd = '';
+    let globSignature = null;
+    let globMyZoomID = null;
+
+    // This function is run when the page is first loaded.
+    $(document).ready(function() {
+        console.log('document ready');
+        copyMeetingInfoFromCookiesToGlobs();
+        copyMeetingInfoFromGlobsToGUI();
+
+        generateZoomSignature();
+        ZoomMtg.preLoadWasm(); // AF thinks maybe not needed based on SMR
+        ZoomMtg.prepareWebSDK();
+
+        registerHandlers();
+        console.log('completed doc ready');
+    });
+
+    function copyMeetingInfoFromGlobsToGUI() {
+        $('#meeting_number').val(globMeetingNumber);
+        $('#meeting_passwd').val(globMeetingPasswd);
+    }
     
-    </script>
-    
-    </body>
-    </html>
+    function copyMeetingInfoFromGUItoGlobs() {
+        globMeetingNumber = $('#meeting_number').val();
+        globMeetingPasswd = $('#meeting_passwd').val();
+    }
+
+    function copyMeetingInfoFromGlobsToCookies() {
+        const expires_in_days = 7;
+        $.cookie("meeting_number", globMeetingNumber, { expires: expires_in_days } );
+        $.cookie("meeting_passwd", globMeetingPasswd, { expires: expires_in_days } );
+        console.log('set cookies: ', globMeetingNumber, globMeetingPasswd);
+    }
+
+    function copyMeetingInfoFromCookiesToGlobs() {
+        globMeetingNumber = $.cookie("meeting_number");
+        globMeetingPasswd = $.cookie("meeting_passwd");
+        if (!!globMeetingNumber) {
+            globMeetingNumber = '';
+        }
+        if (!!globMeetingPasswd) {
+            globMeetingPasswd = '';
+        }
+        console.log('got cookies: ', globMeetingNumber, globMeetingPasswd);
+    }
+
+    function generateZoomSignature() {
+        ZoomMtg.generateSDKSignature({
+            meetingNumber: globMeetingNumber,
+            sdkKey: globZoomClientID,
+            sdkSecret: globZoomClientSecret,
+            role: 0,
+            success: function (res) {
+                globSignature = res.result;
+                console.log('got signature: ' + globSignature);
+            },
+            error: function (res) {
+                console.log('generateSDKSignature error:');
+                console.log(res);
+            },
+        });
+    }
+
+    function setButtonStates() {
+        if (globJoinedMeeting) {
+            $("#join_meeting").addClass('disabled');
+            $("#hold_others").removeClass('disabled');
+            $("#return_others").removeClass('disabled');
+        }
+        else {
+            $("#join_meeting").removeClass('disabled');
+            $("#hold_others").addClass('disabled');
+            $("#return_others").addClass('disabled');
+        }
+    }
+
+    function registerHandlers() {
+        $("#join_meeting").click( zoomInitAndJoin );
+        $("#hold_others").click( handleHoldButton );
+        $("#return_others").click( handleReturnButton );
+        setButtonStates();
+    }
+
+    function handleHoldButton() {
+        muteOthers(true);
+        putOthersOnHold(true);
+    }
+
+    function handleReturnButton() {
+        muteOthers(true);
+        putOthersOnHold(true);
+    }
+
+    function zoomInitAndJoin() {
+        ZoomMtg.init({
+            leaveUrl: globURL, // "/logout", // ????
+            isSupportAV: false,
+            disableCallOut: true,
+            disableInvite: true,
+            disableJoinAudio: true,
+            audioPanelAlwaysOpen: false,
+            disablePreview: true,
+            disableVoIP: true,
+            success: function (res) {
+                console.log("ZoomMtg initialized. Now can join...");
+                joinAfterInit();
+            },
+            error: function (res) {
+                console.log('zoom init error: ', res);
+            }
+        });
+    }
+
+    function joinAfterInit() {
+        console.log('joinAfterInit');
+        copyMeetingInfoFromGUItoGlobs();
+        copyMeetingInfoFromGlobsToCookies();
+        ZoomMtg.join({
+            meetingNumber: globMeetingNumber,
+            passWord: globMeetingPasswd,
+            userName: "=== Hepcat Zoom Conflictbot ===",
+            userEmail: "af.princeton@gmail.com",
+            // either apiKey or sdkKey is required:
+            sdkKey: globZoomClientID,
+            signature: globSignature, // set in function above
+            success: function (res) {
+                console.log("join meeting success. hide zmmtg-root");
+                $("#zmmtg-root").hide(); // hide zoom display etc
+                globJoinedMeeting = true;
+                getMyZoomID();
+                setButtonStates();
+            },
+            error: function (res) {
+                console.log('meeting join error:');
+                console.log(res);
+            },
+        });
+    }
+
+    function getMyZoomID() {
+        console.log("getMyZoomID");
+        ZoomMtg.getCurrentUser({
+            success: function (res) {
+                const cu = res.result.currentUser;
+                globMyZoomID = cu.userId;
+                console.log("success getCurrentUser with ID", cu, globMyZoomID);
+            },
+            error: function (res) {
+                console.log('getMyZoomID error:');
+                console.log(res);
+            },
+        });
+    }
+
+    function processAllAttendees(processUser) {
+        ZoomMtg.getAttendeeslist({
+            success: function (res) {
+                const attendees = res.result.attendeesList;
+                console.log("loop over attendees:", attendees);
+                attendees.map( user => processUser(user) );
+            },
+            error: function (res) {
+                console.log('getAttendeeslist error: ', res);
+            },
+        });
+    }
+
+    function setUserOnHold(user, hold) {
+        const name = user.userName;
+        const id = user.userId;
+        if (id === globMyZoomID) {
+            return;
+        }
+        ZoomMtg.putOnHold({
+            userId: id,
+            hold: hold,
+            success: function (res) {
+                console.log('putOnHold success for user: ', name);
+            },
+            error: function (res) {
+                console.log('putOnHold name, error: ', name, res);
+            },
+        });
+    }
+
+    function setUserMute(user, mute) {
+        var name = user.userName;
+        var id = user.userId;
+        if (id === globMyZoomID) {
+            return;
+        }
+        ZoomMtg.mute({
+            userId: id,
+            mute: mute,
+            success: function (res) {
+                console.log('setUserMute success for user: ', name);
+            },
+            error: function (res) {
+                console.log('setUserMute name, error: ', name, res);
+            },
+        });
+    }
+
+    function putOthersOnHold(holdOnOff) {
+        console.log("hold others:", holdOnOff);
+        processAllAttendees( user => setUserOnHold(user, holdOnOff) );
+    }
+
+    function muteOthers(muteOnOff) {
+        console.log("mute others:", muteOnOff);
+        processAllAttendees( user => setUserMute(user, muteOnOff) );
+    }
+
+</script>
+
+</body>
+</html>
 
 
