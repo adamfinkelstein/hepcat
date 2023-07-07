@@ -52,4 +52,8 @@ def zoom_conflictbot(key):
     url = f'/admin/zoom_conflictbot/{inst}'
     client_id = current_app.config['ZOOM_CONFLICTBOT_CLIENT_ID']
     client_secret = current_app.config['ZOOM_CONFLICTBOT_CLIENT_SECRET']
-    return render_template('zoom-conflictbot.html', url=url, client_id=client_id, client_secret=client_secret)
+    conflictbot_socket = current_app.config['HEPCAT_CONFLICTBOT_SOCKET']
+    return render_template('zoom-conflictbot.html', 
+                           conflictbot_socket=conflictbot_socket, 
+                           url=url, client_id=client_id, 
+                           client_secret=client_secret)

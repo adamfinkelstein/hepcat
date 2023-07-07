@@ -1,10 +1,10 @@
 from subprocess import check_output, CalledProcessError, STDOUT
 import textwrap
-from flask import render_template, flash, jsonify, current_app
+from flask import render_template, jsonify, current_app
 from flask_login import login_required, current_user
 from . import debug
 # from .. import socketio
-from ..models import Role, User, Paper, PaperSchema, GlobQueue, get_or_create_gq, num_to_sid, drop_and_rebuild_tables
+from ..models import Role, User, Paper, PaperSchema, get_or_create_gq, num_to_sid, drop_and_rebuild_tables
 
 paper_schema = PaperSchema()
 papers_schema = PaperSchema(many=True)
@@ -264,4 +264,6 @@ def debugGQ():
 def debug_conflictbot():
     if not current_user_is_admin():
         return render_debug('Must be admin to visit this URL', '')
-    return render_template('debug-conflictbot.html')
+    conflictbot_socket = current_app.config['HEPCAT_CONFLICTBOT_SOCKET']
+    return render_template('debug-conflictbot.html', 
+                           conflictbot_socket=conflictbot_socket)

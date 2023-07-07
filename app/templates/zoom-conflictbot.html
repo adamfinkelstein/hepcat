@@ -33,6 +33,7 @@
                 <a class="navbar-brand" href="#">Hepcat Zoom Conflictbut</a>
             </div>
             <div id="navbar" class="websdktest">
+
                 <form class="navbar-form navbar-right" id="meeting_form">
                     <div class="form-group">
                         <input type="text" name="meeting_number" id="meeting_number" value="" maxLength="200"
@@ -42,11 +43,14 @@
                         <input type="text" name="meeting_passwd" id="meeting_passwd" value="" maxLength="32" 
                             placeholder="Meeting Password" class="form-control">
                     </div>
+                    <div class="form-group">
+                        <input type="text" name="meeting_room" id="meeting_room" value="Plenary" maxLength="10" 
+                            placeholder="Meeting Room" class="form-control">
+                    </div>
 
                     <button type="button" class="btn btn-primary" id="join_meeting">Join</button>
                     <button type="button" class="btn btn-primary" id="hold_others">Hold</button>
                     <button type="button" class="btn btn-primary" id="return_others">Return</button>
-
                 </form>
             </div>
             <!--/.navbar-collapse -->
@@ -76,7 +80,28 @@
             
     <script>
 
-    function setUsers(users) {
+    // globals associated with hepcat
+    let globHepcatUsers = null;
+    let globUniqueNames = null;
+    let globHepcatPlenaryConflicts = null;
+    const globHepcatConflicts = {};
+    const globHepcatSocket = io("/" + "{{ conflictbot_socket }}");
+    console.log('opened socket to hepcat');
+
+    // globals passed from web server
+    const globURL = "{{ url }}";
+    const globZoomClientID = "{{ client_id }}";
+    const globZoomClientSecret = "{{ client_secret }}";
+
+    // globals set by GUI operations
+    let globJoinedMeeting = false;
+    let globMeetingNumber = ''; // stored as string
+    let globMeetingPasswd = '';
+    let globMeetingRoom = '';
+    let globSignature = null;
+    let globMyZoomUser = null;
+
+    function receiveHepcatUsers(users) {
         const ul = document.getElementById('all-user-list');
         ul.innerHTML = ''; // clear old list
         for (let i = 0; i < users.length; i++) {
@@ -115,40 +140,65 @@
             ul.appendChild(li);
         }
     }
-
-    const socket = io("/lurk_NxtCmHS8aDj6");
-    console.log('opened socket');
-
-    let hepcat_conflicts = {};
-    let hepcat_users = null;
-
+    
     // Receive list of users
-    socket.on('user-list', function(users) {
+    globHepcatSocket.on('user-list', function(users) {
         console.log('Got users:');
         console.log(users);
-        setUsers(users);
-        hepcat_users = users;
+        receiveHepcatUsers(users);
+        globHepcatUsers = users;
+        recordUniqueUserNames();
     });
 
     // Receive list of conflicts and paper metadata
-    socket.on('conflicts', function(data) {
+    globHepcatSocket.on('conflicts', function(data) {
         console.log('Got conflicts:');
         console.log(data);
         updateRoomInfo(data);
-        hepcat_conflicts[data.room] = data;
+        globHepcatConflicts[data.room] = data;
+        if (data.room === 'Plenary') {
+            globHepcatPlenaryConflicts = data;
+        }
+        checkZoomConflicts();
     });
 
-    // globals passed from web server
-    const globURL = "{{ url }}";
-    const globZoomClientID = "{{ client_id }}";
-    const globZoomClientSecret = "{{ client_secret }}";
+    function uniqueInArr(arr) {
+        const lower = arr.map(str => str.toLowerCase());
+        const uniq = lower.filter(value => lower.indexOf(value) === lower.lastIndexOf(value));
+        return uniq;
+    }
 
-    // globals set by GUI operations
-    let globJoinedMeeting = false;
-    let globMeetingNumber = ''; // stored as string
-    let globMeetingPasswd = '';
-    let globSignature = null;
-    let globMyZoomID = null;
+    function recordUniqueUserNames() {
+        if (!globHepcatUsers) {
+            console.log('cannot record unique names in empty list');
+            return;
+        }
+        let allNames = [];
+        // fill globUniqueNames
+        globHepcatUsers.forEach( user => {
+            parts = user.full_name.split(' ');
+            allNames = allNames.concat(parts);
+        });
+        const uniqNames = uniqueInArr(allNames);
+        globUniqueNames = {};
+        globHepcatUsers.forEach( user => {
+            email = user.email.toLowerCase();
+            globUniqueNames[email] = user;
+            parts = user.full_name.split(' ');
+            let userHasUniqName = false;
+            parts.forEach( name => {
+                lower = name.toLowerCase();
+                if (uniqNames.includes(lower)) {
+                    globUniqueNames[lower] = user;
+                    userHasUniqName = true;
+                }
+            });
+            if (!userHasUniqName) {
+                console.log('Warning! Hepcat user does not have unique name: ', user);
+            }
+        });
+        // console.log('unique names and dict', uniqNames, globUniqueNames);
+    }
 
     // Run when page is first loaded
     $(document).ready(function() {
@@ -166,18 +216,21 @@
     function copyMeetingInfoFromGlobsToGUI() {
         $('#meeting_number').val(globMeetingNumber);
         $('#meeting_passwd').val(globMeetingPasswd);
+        $('#meeting_room').val(globMeetingRoom);
     }
     
     function copyMeetingInfoFromGUItoGlobs() {
         globMeetingNumber = $('#meeting_number').val();
         globMeetingPasswd = $('#meeting_passwd').val();
+        globMeetingRoom = $('#meeting_room').val();
     }
 
     function copyMeetingInfoFromGlobsToCookies() {
         const expires_in_days = 7;
         $.cookie("meeting_number", globMeetingNumber, { expires: expires_in_days } );
         $.cookie("meeting_passwd", globMeetingPasswd, { expires: expires_in_days } );
-        console.log('set cookies: ', globMeetingNumber, globMeetingPasswd);
+        $.cookie("meeting_room", globMeetingRoom, { expires: expires_in_days } );
+        console.log('set cookies: ', globMeetingNumber, globMeetingPasswd, globMeetingRoom);
     }
 
     function copyMeetingInfoFromCookiesToGlobs() {
@@ -192,7 +245,7 @@
         console.log('got cookies: ', globMeetingNumber, globMeetingPasswd);
     }
 
-    function generateZoomSignatureEtc() {
+    function generateZoomSignatureAndJoin() {
         ZoomMtg.generateSDKSignature({
             meetingNumber: globMeetingNumber,
             sdkKey: globZoomClientID,
@@ -212,12 +265,12 @@
 
     function setButtonStates() {
         if (globJoinedMeeting) {
-            $("#join_meeting").addClass('disabled');
+            $("#join_meeting").html('Leave');
             $("#hold_others").removeClass('disabled');
             $("#return_others").removeClass('disabled');
         }
         else {
-            $("#join_meeting").removeClass('disabled');
+            $("#join_meeting").html('Join');
             $("#hold_others").addClass('disabled');
             $("#return_others").addClass('disabled');
         }
@@ -231,19 +284,32 @@
     }
 
     function handleJoinButton() {
-        copyMeetingInfoFromGUItoGlobs();
-        copyMeetingInfoFromGlobsToCookies();
-        generateZoomSignatureEtc();
+        if (globJoinedMeeting) {
+            leaveMeeting();
+        }
+        else {
+            copyMeetingInfoFromGUItoGlobs();
+            copyMeetingInfoFromGlobsToCookies();
+            generateZoomSignatureAndJoin();
+        }
     }
 
-    function handleHoldButton() {
+    function adminPutOthersOnHold() {
         muteOthers(true);
         putOthersOnHold(true);
     }
 
-    function handleReturnButton() {
+    function adminReturnOthers() {
         muteOthers(true);
         putOthersOnHold(false);
+    }
+
+    function handleHoldButton() {
+        checkIfHostThenRunFunction(adminPutOthersOnHold);
+    }
+
+    function handleReturnButton() {
+        checkIfHostThenRunFunction(adminReturnOthers);
     }
 
     function zoomInitEtc() {
@@ -280,8 +346,8 @@
                 console.log("join meeting success. hide zmmtg-root");
                 $("#zmmtg-root").hide(); // hide zoom display etc
                 globJoinedMeeting = true;
-                getMyZoomID();
                 setButtonStates();
+                getMyZoomID();
             },
             error: function (res) {
                 console.log('meeting join error:');
@@ -294,9 +360,38 @@
         console.log("getMyZoomID");
         ZoomMtg.getCurrentUser({
             success: function (res) {
-                const cu = res.result.currentUser;
-                globMyZoomID = cu.userId;
-                console.log("success getCurrentUser, ID", cu, globMyZoomID);
+                globMyZoomUser = res.result.currentUser;
+                console.log("success getCurrentUser", globMyZoomUser);
+            },
+            error: function (res) {
+                console.log('getMyZoomID error:');
+                console.log(res);
+            },
+        });
+    }
+
+    function myZoomUserIsHost() {
+        if (!globMyZoomUser) return False;
+        return (globMyZoomUser.isHost || globMyZoomUser.isCoHost);
+    }
+
+    function myZoomUserIsThisUser(user) {
+        if (!globMyZoomUser || !user) return False;
+        return (globMyZoomUser.userId === user.userId);
+    }
+
+    function checkIfHostThenRunFunction(fn) {
+        console.log("checkIfHostThenRunFunction");
+        ZoomMtg.getCurrentUser({
+            success: function (res) {
+                globMyZoomUser = res.result.currentUser;
+                console.log("success getCurrentUser", globMyZoomUser);
+                if (myZoomUserIsHost()) {
+                    fn();
+                }
+                else {
+                    alert('Sorry you need to promote conflictbot to meeting (co-)host before this operation can be performed!');
+                }
             },
             error: function (res) {
                 console.log('getMyZoomID error:');
@@ -321,7 +416,7 @@
     function setUserOnHold(user, hold) {
         const name = user.userName;
         const id = user.userId;
-        if (id === globMyZoomID) {
+        if (myZoomUserIsThisUser(user)) {
             return;
         }
         console.log('putOnHold user: ', name, hold);
@@ -338,9 +433,9 @@
     }
 
     function setUserMute(user, mute) {
-        var name = user.userName;
-        var id = user.userId;
-        if (id === globMyZoomID) {
+        const name = user.userName;
+        const id = user.userId;
+        if (myZoomUserIsThisUser(user)) {
             return;
         }
         console.log('setUserMute user: ', name, mute);
@@ -364,6 +459,41 @@
     function muteOthers(muteOnOff) {
         console.log("mute others:", muteOnOff);
         processAllAttendees( user => setUserMute(user, muteOnOff) );
+    }
+
+    function leaveMeeting() {
+        ZoomMtg.leaveMeeting({});
+        globJoinedMeeting = false;
+        setButtonStates();
+    }
+
+    function matchZoomUserToHepcat(zoomUser) {
+        name = zoomUser.userName.toLowerCase();
+        parts = name.split(' ');
+        found = null;
+        while (!found && parts.length) {
+            first = parts.shift();
+            if (first in globUniqueNames) {
+                found = globUniqueNames[first];
+            }
+        }
+        return found;
+    }
+
+    function checkZoomConflicts() {
+        if (!globJoinedMeeting) return;
+        const confEmails = globHepcatPlenaryConflicts.emails;
+        processAllAttendees( zoomUser => {
+            hepcatUser = matchZoomUserToHepcat(zoomUser);
+            if (hepcatUser) {
+                holdOnOff = (hepcatUser.email in confEmails);
+                //setUserOnHold(zoomUser, holdOnOff)
+                setUserMute(zoomUser, holdOnOff)
+            }
+            else {
+                console.log('Zoom user not known to Hepcat: ', zoomUser.userName);
+            }
+        });
     }
 
 </script>

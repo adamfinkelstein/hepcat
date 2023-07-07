@@ -58,8 +58,8 @@
         }
     }
 
-    const socket = io("/lurk_NxtCmHS8aDj6");
-    console.log('opened LURKER socket namespace in this socket:');
+    const socket = io("/" + "{{ conflictbot_socket }}");
+    console.log('opened socket namespace in this socket:');
     console.log(socket);
     
     // This is not necessary - just here to check for connection
