@@ -15,9 +15,6 @@
         margin-bottom: 0px;
         background-color: #174460;
     }
-    #form-control {
-        width: 300px;
-    }
     .navbar-brand {
         color: white;
     }
@@ -481,7 +478,8 @@
     function setZoomUserOnOrOffHold(zoomUser, holdOnOff) {
         const name = zoomUser.userName;
         const id = zoomUser.userId;
-        if (myZoomUserIsThisUser(zoomUser)) return
+        if (zoomUser.isHold === holdOnOff) return; // ignore if already correct setting
+        if (myZoomUserIsThisUser(zoomUser)) return; // ignore for this user
         console.log('putOnHold user: ', name, holdOnOff);
         ZoomMtg.putOnHold({
             userId: id,
@@ -498,7 +496,7 @@
     function setZoomUserMuteOrUnmute(zoomUser, muteOnOff) {
         const name = zoomUser.userName;
         const id = zoomUser.userId;
-        if (myZoomUserIsThisUser(zoomUser)) return;
+        if (zoomUser.muted === muteOnOff) return; // ignore if already correct setting
         console.log('setZoomUserMuteOrUnmute user: ', name, muteOnOff);
         ZoomMtg.mute({
             userId: id,
@@ -512,15 +510,11 @@
         });
     }
 
-    function setZoomUserMuteOn(zoomUser) {
-        setZoomUserMuteOrUnmute(zoomUser, true);
-    }
-
     function muteZoomUsersExceptHosts() {
         console.log("muteZoomUsersExceptHosts");
         processAllZoomAttendees( zoomUser => {
-            if (!zoomUserIsHost(zoomUser) && !zoomUser.muted) {
-                setZoomUserMuteOn(zoomUser);
+            if (!zoomUserIsHost(zoomUser)) {
+                setZoomUserMuteOrUnmute(zoomUser, true);
             }
         });
     }
@@ -572,7 +566,7 @@
             }
             // mute all zoom users who are neither zoom host nor hepcat admin
             if (!hepcatAdmin && !zoomHost) {
-                setZoomUserMuteOn(zoomUser);
+                setZoomUserMuteOrUnmute(zoomUser, true);
             }
         });
     }
