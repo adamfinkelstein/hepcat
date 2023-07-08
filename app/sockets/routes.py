@@ -925,12 +925,13 @@ class Conflictbot(Namespace):
 # change this variable to pull from environment
 # conflictbot_namespace = '/lurk_NxtCmHS8aDj6'
 # unfortunately this is not set yet: current_app.config['HEPCAT_CONFLICTBOT_SOCKET']
-conflictbot_namespace = '/' + os.environ.get('HEPCAT_CONFLICTBOT_SOCKET')
-if len(conflictbot_namespace) < 3:
+conflictbot_namespace = os.environ.get('HEPCAT_CONFLICTBOT_SOCKET')
+if conflictbot_namespace:
+    conflictbot_namespace = '/' + conflictbot_namespace
+    print('conflictbot_namespace: ', conflictbot_namespace)
+else:
     conflictbot_namespace = '/lurk_NxtCmHS8aDj6' # in case not set in environ
     print('set conflictbot_namespace to default')
-else:
-    print('conflictbot_namespace: ', conflictbot_namespace)
 
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
