@@ -39,18 +39,22 @@
                         <input type="text" name="meeting_number" id="meeting_number" value="" maxLength="200"
                             placeholder="Meeting Number" class="form-control" required>
                     </div>
+
                     <div class="form-group">
                         <input type="text" name="meeting_passwd" id="meeting_passwd" value="" maxLength="32" 
                             placeholder="Meeting Password" class="form-control">
                     </div>
+
+                    <button type="button" class="btn btn-primary" id="join_button">Join</button>
+
                     <div class="form-group">
-                        <input type="text" name="meeting_room" id="meeting_room" value="Plenary" maxLength="10" 
+                        <input type="text" name="meeting_room" id="meeting_room" value="" maxLength="10" 
                             placeholder="Meeting Room" class="form-control">
                     </div>
 
-                    <button type="button" class="btn btn-primary" id="join_meeting">Join</button>
-                    <button type="button" class="btn btn-primary" id="hold_others">Hold</button>
-                    <button type="button" class="btn btn-primary" id="return_others">Return</button>
+                    <button type="button" class="btn btn-primary" id="start_button">Start</button>
+                    <button type="button" class="btn btn-primary" id="mute_button">Mute</button>
+                    <button type="button" class="btn btn-primary" id="bring_button">Bring</button>
                 </form>
             </div>
             <!--/.navbar-collapse -->
@@ -81,11 +85,9 @@
     <script>
 
     // globals associated with hepcat
-    let globHepcatUsers = null;
     let globUniqueNames = null;
-    let globHepcatPlenaryConflicts = null;
-    const globHepcatConflicts = {};
     const globHepcatSocket = io("/" + "{{ conflictbot_socket }}");
+    const globConflictsByRoom = {};
     console.log('opened socket to hepcat');
 
     // globals passed from web server
@@ -94,7 +96,9 @@
     const globZoomClientSecret = "{{ client_secret }}";
 
     // globals set by GUI operations
+    const globUserWarningsShown = [];
     let globJoinedMeeting = false;
+    let globStartedQueue = false;
     let globMeetingNumber = ''; // stored as string
     let globMeetingPasswd = '';
     let globMeetingRoom = '';
@@ -146,8 +150,7 @@
         console.log('Got users:');
         console.log(users);
         receiveHepcatUsers(users);
-        globHepcatUsers = users;
-        recordUniqueUserNames();
+        recordUniqueUserNames(users);
     });
 
     // Receive list of conflicts and paper metadata
@@ -155,11 +158,12 @@
         console.log('Got conflicts:');
         console.log(data);
         updateRoomInfo(data);
-        globHepcatConflicts[data.room] = data;
-        if (data.room === 'Plenary') {
-            globHepcatPlenaryConflicts = data;
+        const room = data.room;
+        globConflictsByRoom[room] = data;
+        // only when advancing to paper (not when showing it), and only for this room:
+        if (!data.show && data.room === globMeetingRoom) {
+            checkZoomConflictsIfStarted();
         }
-        checkZoomConflicts();
     });
 
     function uniqueInArr(arr) {
@@ -168,20 +172,16 @@
         return uniq;
     }
 
-    function recordUniqueUserNames() {
-        if (!globHepcatUsers) {
-            console.log('cannot record unique names in empty list');
-            return;
-        }
+    function recordUniqueUserNames(hepcatUsers) {
         let allNames = [];
         // fill globUniqueNames
-        globHepcatUsers.forEach( user => {
+        hepcatUsers.forEach( user => {
             parts = user.full_name.split(' ');
             allNames = allNames.concat(parts);
         });
         const uniqNames = uniqueInArr(allNames);
         globUniqueNames = {};
-        globHepcatUsers.forEach( user => {
+        hepcatUsers.forEach( user => {
             email = user.email.toLowerCase();
             globUniqueNames[email] = user;
             parts = user.full_name.split(' ');
@@ -194,7 +194,14 @@
                 }
             });
             if (!userHasUniqName) {
-                console.log('Warning! Hepcat user does not have unique name: ', user);
+                const msg = 'Warning! Hepcat user "' + user.full_name +
+                    '" has no unique parts in their name. Include email in zoom name: ' + email;
+                console.log(msg);
+                const warnedAlready = globUserWarningsShown.includes(email);
+                if (!warnedAlready) {
+                    globUserWarningsShown.push(email);
+                    alert(msg);
+                }
             }
         });
         // console.log('unique names and dict', uniqNames, globUniqueNames);
@@ -265,56 +272,102 @@
 
     function setButtonStates() {
         if (globJoinedMeeting) {
-            $("#join_meeting").html('Leave');
-            $("#hold_others").removeClass('disabled');
-            $("#return_others").removeClass('disabled');
+            $("#join_button").html('Leave');
+            $("#start_button").removeClass('disabled');
+            $("#mute_button").removeClass('disabled');
+            $("#bring_button").removeClass('disabled');
         }
         else {
-            $("#join_meeting").html('Join');
-            $("#hold_others").addClass('disabled');
-            $("#return_others").addClass('disabled');
+            $("#join_button").html('Join');
+            $("#start_button").addClass('disabled');
+            $("#mute_button").addClass('disabled');
+            $("#bring_button").addClass('disabled');
         }
     }
 
     function registerHandlers() {
-        $("#join_meeting").click( handleJoinButton );
-        $("#hold_others").click( handleHoldButton );
-        $("#return_others").click( handleReturnButton );
+        $('#meeting_room').on('change', handleMeetingRoomChange );
+        $("#join_button").click( handleJoinButton );
+        $("#start_button").click( handleStartButton );
+        $("#mute_button").click( handleMuteButton );
+        $("#bring_button").click( handleBringButton );
         setButtonStates();
     }
 
-    function handleJoinButton() {
-        if (globJoinedMeeting) {
-            leaveMeeting();
+    const roomMap = {
+        'p' : 'Plenary',
+        'a' : 'Room_A',
+        'b' : 'Room_B',
+        'x' : 'Room_X',
+        'y' : 'Room_Y',
+        'plenary' : 'Plenary',
+        'room_a' : 'Room_A',
+        'room_b' : 'Room_B',
+        'room_x' : 'Room_X',
+        'room_y' : 'Room_Y'
+    };
+
+    function checkZoomConflictsIfStarted() {
+        // see if we need to change zoom situation
+        if (globJoinedMeeting && globStartedQueue && globMeetingRoom in globConflictsByRoom) {
+            const data = globConflictsByRoom[globMeetingRoom];
+            putConflictsOnHoldInZoom(data.emails);
         }
-        else {
+    }
+
+    function handleMeetingRoomChange() {
+        const room = $('#meeting_room').val();
+        const lower = room.toLowerCase();
+        const update = (lower in roomMap) ? roomMap[lower] : 'Plenary';
+        $('#meeting_room').val(update);
+        globMeetingRoom = update;
+        console.log('update room as: ', room, update);
+        checkZoomConflictsIfStarted();
+    }
+
+    function handleJoinButton() {
+        if (globJoinedMeeting) { // already joined, so leave
+            leaveZoomMeeting();
+        }
+        else { // join now
+            handleMeetingRoomChange(); // meeting room will default to Plenary if not set already
             copyMeetingInfoFromGUItoGlobs();
             copyMeetingInfoFromGlobsToCookies();
             generateZoomSignatureAndJoin();
         }
     }
 
-    function adminPutOthersOnHold() {
-        muteOthers(true);
-        putOthersOnHold(true);
+    function handleStartButton() {
+        if (globStartedQueue) { // was already started
+            globStartedQueue = false;
+            $("#start_button").html('Start');
+        }
+        else {
+            console.log('about to verify host and if so start queue...');
+            verifyHostThenRunFunction(()=>{
+                globStartedQueue = true;
+                $("#start_button").html('Stop');
+                console.log('start queue then checkZoomConflictsIfStarted');
+                checkZoomConflictsIfStarted();
+            });
+        }
     }
 
-    function adminReturnOthers() {
-        muteOthers(true);
-        putOthersOnHold(false);
+    function handleMuteButton() {
+        verifyHostThenRunFunction(()=>{
+            muteZoomUsersExceptHosts();
+        });
     }
 
-    function handleHoldButton() {
-        checkIfHostThenRunFunction(adminPutOthersOnHold);
-    }
-
-    function handleReturnButton() {
-        checkIfHostThenRunFunction(adminReturnOthers);
+    function handleBringButton() {
+        verifyHostThenRunFunction(()=>{
+            bringZoomUsersFromHold();
+        });
     }
 
     function zoomInitEtc() {
         ZoomMtg.init({
-            leaveUrl: globURL, // "/logout", // ????
+            leaveUrl: globURL, 
             isSupportAV: false,
             disableCallOut: true,
             disableInvite: true,
@@ -324,7 +377,7 @@
             disableVoIP: true,
             success: function (res) {
                 console.log("ZoomMtg initialized. Now can join...");
-                joinAfterInit();
+                joinZoomAfterInit();
             },
             error: function (res) {
                 console.log('zoom init error: ', res);
@@ -332,8 +385,8 @@
         });
     }
 
-    function joinAfterInit() {
-        console.log('joinAfterInit');
+    function joinZoomAfterInit() {
+        console.log('joinZoomAfterInit');
         ZoomMtg.join({
             meetingNumber: globMeetingNumber,
             passWord: globMeetingPasswd,
@@ -370,9 +423,13 @@
         });
     }
 
+    function zoomUserIsHost(zoomUser) {
+        return (zoomUser.isHost || zoomUser.isCoHost);
+    }
+
     function myZoomUserIsHost() {
         if (!globMyZoomUser) return False;
-        return (globMyZoomUser.isHost || globMyZoomUser.isCoHost);
+        return zoomUserIsHost(globMyZoomUser);
     }
 
     function myZoomUserIsThisUser(user) {
@@ -380,17 +437,17 @@
         return (globMyZoomUser.userId === user.userId);
     }
 
-    function checkIfHostThenRunFunction(fn) {
-        console.log("checkIfHostThenRunFunction");
+    function checkIfZoomHostThenRunFunction(fnIfIsHost, fnIfNotHost) {
+        console.log("checkIfZoomHostThenRunFunction");
         ZoomMtg.getCurrentUser({
             success: function (res) {
                 globMyZoomUser = res.result.currentUser;
                 console.log("success getCurrentUser", globMyZoomUser);
                 if (myZoomUserIsHost()) {
-                    fn();
+                    fnIfIsHost();
                 }
                 else {
-                    alert('Sorry you need to promote conflictbot to meeting (co-)host before this operation can be performed!');
+                    fnIfNotHost();
                 }
             },
             error: function (res) {
@@ -400,12 +457,20 @@
         });
     }
 
-    function processAllAttendees(processUser) {
+    function verifyHostThenRunFunction(fnIfIsHost) {
+        checkIfZoomHostThenRunFunction(fnIfIsHost, alertNotHost);
+    }
+
+    function alertNotHost() {
+        alert('Sorry you need to promote conflictbot to meeting (co-)host before this operation can be performed!');
+    }
+
+    function processAllZoomAttendees(processZoomUser) {
         ZoomMtg.getAttendeeslist({
             success: function (res) {
                 const attendees = res.result.attendeesList;
                 console.log("loop over attendees:", attendees);
-                attendees.map( user => processUser(user) );
+                attendees.map( zoomUser => processZoomUser(zoomUser) );
             },
             error: function (res) {
                 console.log('getAttendeeslist error: ', res);
@@ -413,16 +478,14 @@
         });
     }
 
-    function setUserOnHold(user, hold) {
-        const name = user.userName;
-        const id = user.userId;
-        if (myZoomUserIsThisUser(user)) {
-            return;
-        }
-        console.log('putOnHold user: ', name, hold);
+    function setZoomUserOnOrOffHold(zoomUser, holdOnOff) {
+        const name = zoomUser.userName;
+        const id = zoomUser.userId;
+        if (myZoomUserIsThisUser(zoomUser)) return
+        console.log('putOnHold user: ', name, holdOnOff);
         ZoomMtg.putOnHold({
             userId: id,
-            hold: hold,
+            hold: holdOnOff,
             success: function (res) {
                 console.log('putOnHold success for user: ', name);
             },
@@ -432,36 +495,46 @@
         });
     }
 
-    function setUserMute(user, mute) {
-        const name = user.userName;
-        const id = user.userId;
-        if (myZoomUserIsThisUser(user)) {
-            return;
-        }
-        console.log('setUserMute user: ', name, mute);
+    function setZoomUserMuteOrUnmute(zoomUser, muteOnOff) {
+        const name = zoomUser.userName;
+        const id = zoomUser.userId;
+        if (myZoomUserIsThisUser(zoomUser)) return;
+        console.log('setZoomUserMuteOrUnmute user: ', name, muteOnOff);
         ZoomMtg.mute({
             userId: id,
-            mute: mute,
+            mute: muteOnOff,
             success: function (res) {
-                console.log('setUserMute success for user: ', name);
+                console.log('setZoomUserMuteOrUnmute success for user: ', name);
             },
             error: function (res) {
-                console.log('setUserMute name, error: ', name, res);
+                console.log('setZoomUserMuteOrUnmute name, error: ', name, res);
             },
         });
     }
 
-    function putOthersOnHold(holdOnOff) {
-        console.log("hold others:", holdOnOff);
-        processAllAttendees( user => setUserOnHold(user, holdOnOff) );
+    function setZoomUserMuteOn(zoomUser) {
+        setZoomUserMuteOrUnmute(zoomUser, true);
     }
 
-    function muteOthers(muteOnOff) {
-        console.log("mute others:", muteOnOff);
-        processAllAttendees( user => setUserMute(user, muteOnOff) );
+    function muteZoomUsersExceptHosts() {
+        console.log("muteZoomUsersExceptHosts");
+        processAllZoomAttendees( zoomUser => {
+            if (!zoomUserIsHost(zoomUser) && !zoomUser.muted) {
+                setZoomUserMuteOn(zoomUser);
+            }
+        });
     }
 
-    function leaveMeeting() {
+    function bringZoomUsersFromHold() {
+        console.log("bringZoomUsersFromHold");
+        processAllZoomAttendees( zoomUser => {
+            if (zoomUser.isHold) {
+                setZoomUserOnOrOffHold(zoomUser, false);
+            }
+        });
+    }
+
+    function leaveZoomMeeting() {
         ZoomMtg.leaveMeeting({});
         globJoinedMeeting = false;
         setButtonStates();
@@ -475,23 +548,31 @@
             first = parts.shift();
             if (first in globUniqueNames) {
                 found = globUniqueNames[first];
+                console.log('Matched name, for zoom, hepcat users',first,zoomUser,found);
             }
         }
         return found;
     }
 
-    function checkZoomConflicts() {
-        if (!globJoinedMeeting) return;
-        const confEmails = globHepcatPlenaryConflicts.emails;
-        processAllAttendees( zoomUser => {
-            hepcatUser = matchZoomUserToHepcat(zoomUser);
+    function putConflictsOnHoldInZoom(confEmails) {
+        console.log('putConflictsOnHoldInZoom ',confEmails);
+        processAllZoomAttendees( zoomUser => {
+            if (myZoomUserIsThisUser(zoomUser)) return;
+            let zoomHost = zoomUserIsHost(zoomUser);
+            let hepcatUser = matchZoomUserToHepcat(zoomUser);
+            let hepcatAdmin = false;
             if (hepcatUser) {
-                holdOnOff = (hepcatUser.email in confEmails);
-                //setUserOnHold(zoomUser, holdOnOff)
-                setUserMute(zoomUser, holdOnOff)
+                hepcatAdmin = hepcatUser.role_is_admin;
+                holdOnOff = confEmails.includes(hepcatUser.email);
+                console.log('Checking for bool, hepcat email in list: ', holdOnOff, hepcatUser.email, confEmails);
+                setZoomUserOnOrOffHold(zoomUser, holdOnOff)
             }
-            else {
-                console.log('Zoom user not known to Hepcat: ', zoomUser.userName);
+            else if (!zoomHost) {
+                console.log('Zoom user (not host) unknown to Hepcat: ', zoomUser.userName);
+            }
+            // mute all zoom users who are neither zoom host nor hepcat admin
+            if (!hepcatAdmin && !zoomHost) {
+                setZoomUserMuteOn(zoomUser);
             }
         });
     }
