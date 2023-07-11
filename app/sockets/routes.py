@@ -946,12 +946,14 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     # if hide: queue is hidden so there are NO CONFLICTS:
     if hide or not current_paper or not current_paper.conf_users:
         nid = 0
+        oid = ''
         conflict_emails = []
     else:
         nid = current_paper.nid
+        oid = current_paper.oid
         conflict_list = list(current_paper.conf_users)
         conflict_emails = get_user_list_emails(conflict_list)
-    data = { 'room': room, 'paper': nid, 'show': show, 'emails': conflict_emails}
+    data = { 'room': room, 'paper': nid, 'paper_oid': oid, 'show': show, 'emails': conflict_emails}
     emit('conflicts', data, namespace=conflictbot_namespace, broadcast=True)
 
 socketio.on_namespace(Conflictbot(conflictbot_namespace))
