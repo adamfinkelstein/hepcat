@@ -197,21 +197,6 @@ def paper_conflicts(sidnum):
             debug_output += '* ' + user.full_name + '\n'
     return render_debug(debug_title, debug_output)
 
-@debug.route('/paper_reviews/<sidnum>')
-@login_required
-def paper_reviews(sidnum):
-    if not current_user_is_admin():
-        return render_debug('Must be admin to visit this URL', '')
-    sid = num_to_sid(int(sidnum))
-    paper = Paper.query.filter_by(sid=sid).first()
-    debug_title = 'Conflicts for ' + sid
-    debug_output = 'No matching paper found.'
-    if paper:
-        debug_output = '\n'
-        for rev in paper.reviews:
-            debug_output += debug_orm_to_string(rev) + '============\n\n\n'
-    return render_debug(debug_title, debug_output)
-
 @debug.route('/user_conflicts/<email>')
 @login_required
 def user_conflicts(email):

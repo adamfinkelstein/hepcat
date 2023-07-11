@@ -1,12 +1,13 @@
 import os
 import csv
+import uuid 
 from flask import flash, current_app
 from flask_login import current_user
 from . import db
-from .models import User, Paper, Review, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
+from .models import User, Paper, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
-    context_str_to_enum, status_str_to_enum, status_enum_to_str, \
-    ensure_admin, ensure_all_gqs, drop_and_rebuild_tables, get_config_or_default
+    context_str_to_enum, status_str_to_enum, \
+    ensure_admin, ensure_all_gqs, drop_and_rebuild_tables
 
 def delete_all_users():
     dump_users_papers_and_conflicts('Before deleting users')
@@ -21,7 +22,7 @@ def delete_all_users():
 
 def delete_all_papers():
     dump_users_papers_and_conflicts('Before deleting papers')
-    drop_and_rebuild_tables('history,conflicts,tags,labels,reviews,papers,glob_queue')
+    drop_and_rebuild_tables('history,conflicts,tags,labels,papers,glob_queue')
     ensure_all_gqs()
     dump_users_papers_and_conflicts('After deleting papers')
 
@@ -101,21 +102,6 @@ def delete_all_labels():
         print(msg)
         flash(msg)
     dump_users_papers_and_conflicts('After label deletion')
-
-# needed before uploading reviews
-def delete_all_reviews():
-    delete_all_history() # need to delete history (below)
-    dump_users_papers_and_conflicts('Before review deletion')
-    num_deleted = Review.query.delete()
-    try:
-        db.session.commit()
-        print(f'Deleted {num_deleted} reviews.')
-    except:
-        db.session.rollback()
-        msg = 'failed in delete_all_reviews'
-        print(msg)
-        flash(msg)
-    dump_users_papers_and_conflicts('After review deletion')
 
 # needed when deleting reviews (above)
 def delete_all_history():
@@ -208,11 +194,23 @@ def insert_user_rows(rows):
 def journal_only_from_dual(dual):
     return (dual != "yes")
 
+def gen_random_oid():
+    return uuid.uuid4().hex[:8] # 4 billion options on 8 hex digits
+
+def gen_unique_oids(n):
+    oids = []
+    while len(oids) < n:
+        oid = gen_random_oid()
+        if oid not in oids:
+            oids.append(oid)
+    return oids
+
 # 2022: Submission ID,Thumbnail URL,Title,Area,Abstract
 # 2023: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 def insert_paper_rows(rows):
     delete_all_papers()
     area_type = int(LabelType.Area)
+    oids = gen_unique_oids(len(rows))
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -220,8 +218,10 @@ def insert_paper_rows(rows):
         sid,thumbnail,title,areas,dual,abstract = row
         journal_only = journal_only_from_dual(dual)
         nid = sid_to_num(sid)
+        oid = oids.pop(0)
         paper = Paper(nid=nid, 
                     sid=sid,
+                    oid=oid,
                     thumbnail=thumbnail,
                     title=title,
                     journal_only=journal_only,
@@ -368,14 +368,7 @@ def areas_to_label_names(areas_string):
     labels = [area.strip() for area in areas]
     return labels
 
-def review_role_to_num(role):
-    if 'CHAIR' in role:
-        return 0
-    elif 'lead' in role:
-        return 1
-    elif 'Committee' in role:
-        return 2
-    return 3
+#### do we need these three funcs ???
 
 def float_str_to_int(s):
     return int(round(float(s)))
@@ -391,176 +384,39 @@ def review_str_to_int(s):
     i = int(round(f))
     return i
 
-rating_codes_dict = {-5:'_R_', -3:'R', -1:'r', 0:'?', 1:'a', 3:'A', 5:'_A_'}
-# [-3 -2 -1 1 2] -> [N C c j J]
-rec_codes_dict = {-3:'N', -2:'C', -1:'c', 0:'?', 1:'j', 2:'J'}
-
-def get_code_from_dict(rating, d):
-    rating = int(rating)
-    if rating in d:
-        return d[rating]
-    return '?'
-
-def ratings_to_string(scores, d, brackets):
-    codes = [ get_code_from_dict(score, d) for score in scores ]
-    line = brackets[0] + ' ' + ' '.join(codes) + ' ' + brackets[1]
-    return line
-
-def scores_to_string(scores):
-    return ratings_to_string(scores, rating_codes_dict, '[]')
-
-def recs_to_string(recs):
-    return ratings_to_string(recs, rec_codes_dict, '()')
-
-def get_consensus_info(consensus_recs):
-    # later: need to check for Conference / Journal?
-    if len(consensus_recs) == 2 and consensus_recs[0] == consensus_recs[1]:
-        enum = consensus_recs[0]
-    else:
-        enum = 0 # default is Tabled
-    name = status_enum_to_str(enum)
-    return enum, name
-
-def average_scores(chair_score, scores, boost):
-    if chair_score != None:
-        return chair_score
-    n = len(scores)
-    ave = 0.0
-    if n:
-        ave = 1.0 * sum(scores) / n
-    return ave + boost
-
-def non_zero_scores(scores):
-    scores = [ score for score in scores if score != 0 ]
-    return scores
-
-def all_scores_to_string(scores,recs,consensus_code,journal_only):
-    score_string = scores_to_string(scores) + ' '
-    if journal_only:
-        score_string += '(journal only)'
-    else:
-        score_string +=  recs_to_string(recs)
-    score_string += ' bbs: ' + consensus_code
-    return score_string
-
-def reviews_to_score_lists(reviews):
-    scores = []
-    recs = []
-    consensus_recs = []
-    chair_score = None
-    for review in reviews:
-        if review.role == 0: # CHAIR
-            chair_score = review.score
-        else:
-            scores.append( review.score )
-            recs.append( review.recommendation )
-            if review.role >= 1 and review.role <= 2: # primary or secondary
-                consensus_recs.append(review.consensus)
-    return scores,recs,consensus_recs,chair_score
-
-def consensus_num_code_to_enum(str):
-    if not len(str):
-        return status_str_to_enum('Tabled') # default
-    num = float_str_to_int(str)
-    if num == -1:
-        return status_str_to_enum('Reject')
-    elif num == 1:
-        return status_str_to_enum('Conference')
-    elif num == 2:
-        return status_str_to_enum('Journal')
-    return status_str_to_enum('Tabled') # default
-
-def get_boost_dual_submission_score_for_alla_sheffer():
-    boost = get_config_or_default('DUAL_BOOST_FOR_ALLA','0.0')
-    boost = float(boost)
-    return boost
-
-def papers_set_all_scores_and_status_from_reviews():
-    # now = datetime.now()
+def papers_clear_all_scores():
     papers = Paper.query.all()
-    dual_boost = get_boost_dual_submission_score_for_alla_sheffer()
     for paper in papers:
-        # add score summaries to paper
-        reviews = paper.reviews.order_by(Review.role)
-        if len(list(reviews)):
-            scores,recs,consensus_recs,chair_score = reviews_to_score_lists(reviews)
-            consensus_enum,consensus_str = get_consensus_info(consensus_recs)
-            boost = 0.0
-            if not paper.journal_only: # dual submission gets boost for Alla
-                boost = dual_boost
-            paper.sort_score = average_scores(chair_score,scores,boost)
-            paper.all_scores = all_scores_to_string(scores,recs,consensus_str,paper.journal_only)
-        else:
-            paper.sort_score = 0
-            paper.all_scores = 'This paper has no reviews.'
+        paper.sort_score = 0
+        paper.all_scores = 'This paper has no reviews.'
         db.session.add(paper)
 
-        # add BBS history ### ??? later: fix time below...
-        # then = now - timedelta(days = 7) # pretend this is a week ago (for debug)
-        context_enum = int(HistoryContext.BBS)
-        history = History(paper=paper,
-                        context_enum=context_enum,
-                        status_enum=consensus_enum)
-        db.session.add(history)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-        msg = 'failed to set scores and status from reviews'
-        print(msg)
-        flash(msg)
-
-#   orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
-#   2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-# S 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
-# SA2023: Submission ID,Role,Conference Score,Journal Score,Expertise,<i>Weighted max of the other scores.</i>
-def insert_review_rows(rows):
-    delete_all_reviews()
-    count = 0
-    for row in rows:
-        if len(row) < 5:
-            continue
-        sid,role,score,recommendation,expertise = row[:5]
-        consensus = row[5] if len(row) > 5 else '0' # default is tabled
-        paper = Paper.query.filter_by(sid=sid).first()
-        if paper:
-            # add review
-            role_num = review_role_to_num(role)
-            score = review_str_to_float(score)
-            recommendation = review_str_to_int(recommendation)
-            expertise = review_str_to_int(expertise)
-            consensus_enum = consensus_num_code_to_enum(consensus)
-            review = Review(paper=paper,
-                            role=role_num,
-                            score=score,
-                            recommendation=recommendation,
-                            expertise=expertise,
-                            consensus=consensus_enum)
-            db.session.add(review)
-            count += 1
-    try:
-        db.session.commit()
-        papers_set_all_scores_and_status_from_reviews()
-    except:
-        db.session.rollback()
-        msg = 'failed to insert reviews'
-        print(msg)
-        flash(msg)
-        return 0
-    return count
-
 def insert_chair_score_rows(rows):
+    delete_all_history() # clears both bbs status and stickies
+    papers_clear_all_scores()
+    # Submission ID,Sort Score,Status,Reviews
+    # ... ??? need to update below to match this!
     count = 0
     for row in rows:
-        if len(row) < 2:
+        if len(row) < 4:
             continue
-        sid,chair_score = row[:2]
+        sid,chair_score,status,reviews = row[:4]
         paper = Paper.query.filter_by(sid=sid).first()
-        if paper:
-            chair_score = review_str_to_float(chair_score)
-            paper.sort_score = chair_score
-            db.session.add(paper)
-            count += 1
+        if not paper:
+            continue
+        # update paper
+        chair_score = review_str_to_float(chair_score)
+        paper.sort_score = chair_score
+        paper.all_scores = reviews
+        db.session.add(paper)
+        # update paper history with new bbs entry
+        context_enum = int(HistoryContext.BBS)
+        consensus_enum = status_str_to_enum(status)
+        history = History(paper=paper,
+            context_enum=context_enum,
+            status_enum=consensus_enum)
+        db.session.add(history)
+        count += 1
     try:
         db.session.commit()
     except:
@@ -570,13 +426,6 @@ def insert_chair_score_rows(rows):
         flash(msg)
         return 0
     return count
-
-def status_letter_to_history(status_string):
-    letter = status_string[0]
-    for entry in HistoryStatus:
-        if entry.name[0] == letter:
-            return entry.value, entry.name
-    return 0, 'Tabled'
 
 # Submission ID,Seconds,Context,Status
 def insert_history_rows(rows):
@@ -591,9 +440,9 @@ def insert_history_rows(rows):
         # secs = int(secs) # Now ignoring time which was hack for debugging
         paper = Paper.query.filter_by(nid=nid).first()
         if paper:
-            # then = now - timedelta(seconds=secs)
+            # debug: then = now - timedelta(seconds=secs)
             context_enum = context_str_to_enum(context)
-            status_enum = consensus_num_code_to_enum(status)
+            status_enum = status_str_to_enum(status)
             history = History(paper=paper,
                             # when=then,
                             context_enum=context_enum,
@@ -617,9 +466,7 @@ csvLinklings = {
     'clusters' : 'clusters.csv',
     'paper_rooms' : 'paper_rooms.csv',
     'people_rooms' : 'people_rooms.csv',
-    'reviews' : 'status.csv',
-    'chair_scores' : 'chair_scores.csv',
-    'summaries' : 'commitee_notes.csv' }
+    'chair_scores' : 'chair_scores.csv' }
 
 csvTypes = {
     'users' : 'Email,First Name,Last Name,Role,Password',
@@ -628,8 +475,7 @@ csvTypes = {
     'clusters' : 'Submission ID,Cluster',
     'paper_rooms' : 'Submission ID,Room',
     'people_rooms' : 'Email,Rooms',
-    'reviews' : 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation',
-    'chair_scores': 'Submission ID,Chair Score',
+    'chair_scores': 'Submission ID,Sort Score,Status,Reviews',
     'summaries' : 'Submission ID,Committee Notes',
     'history' : 'Submission ID,Seconds,Context,Status' }
 
@@ -640,15 +486,14 @@ csvFunctions = {
     'clusters' : insert_cluster_rows,
     'paper_rooms' : insert_paper_room_rows,
     'people_rooms' : insert_people_room_rows,
-    'reviews' : insert_review_rows,
     'chair_scores' : insert_chair_score_rows,
     'summaries' : insert_summary_rows,
     'history' : insert_history_rows }
 
 csvDependence = {
     'users' : ['conflicts', 'people_rooms'],
-    'reviews' : ['history', 'chair_scores'],
-    'papers' : ['reviews', 'conflicts', 'history', 'clusters', 'paper_rooms', 'summaries', 'chair_scores'] }
+    'chair_scores' : ['history'],
+    'papers' : ['conflicts', 'history', 'clusters', 'paper_rooms', 'summaries', 'chair_scores'] }
 
 def is_csv(filename):
     if '.' not in filename:

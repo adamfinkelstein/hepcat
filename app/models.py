@@ -71,21 +71,6 @@ tags = db.Table( 'tags',
     db.Column('label_id', db.Integer, db.ForeignKey('labels.id') ),
     db.Column('paper_id', db.Integer, db.ForeignKey('papers.id') ) )
 
-# def drop_conflicts():
-#     print('about to drop conflicts table...')
-#     # drop works on sqlite but not on postgres:
-#     # conflicts.drop(db.engine)
-#     result = db.session.execute('DROP TABLE IF EXISTS conflicts CASCADE;')
-#     print('result:')
-#     print(result)
-#     # alternatives like this:
-#     # db.engine.execute(text("<sql here>")).execution_options(autocommit=True)) executes and commits it too. – 
-#     # discussed here:
-#     # https://stackoverflow.com/questions/17972020/
-#     print('about to recreate all...')
-#     db.create_all()
-#     print('...done')
-
 ######################
 # Regular Tables/Classes
 ######################
@@ -117,7 +102,7 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
-    login_token = db.Column(db.String(64), unique=True, index=True)
+    login_token = db.Column(db.String(64), unique=True, index=True) # unused
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     full_name = column_property(first_name + " " + last_name)
@@ -196,8 +181,9 @@ def load_user(user_id):
 class Paper(db.Model):
     __tablename__ = 'papers'
     id = db.Column(db.Integer, primary_key=True)
-    nid = db.Column(db.Integer, unique=True, index=True)
-    sid = db.Column(db.String(64), unique=True, index=True)
+    nid = db.Column(db.Integer, unique=True, index=True) # numeric
+    sid = db.Column(db.String(64), unique=True, index=True) # string
+    oid = db.Column(db.String(64), unique=True, index=True) # obfuscated
     sort_score = db.Column(db.Float, default=0.0)
     queue_id = db.Column(db.Integer, db.ForeignKey('glob_queue.id'))
     queue_order = db.Column(db.Integer, default=0)
@@ -205,9 +191,8 @@ class Paper(db.Model):
     title = db.Column(db.String())
     abstract = db.Column(db.String())
     summary = db.Column(db.String())
-    all_scores = db.Column(db.String(64))
+    all_scores = db.Column(db.String(256))
     journal_only = db.Column(db.Boolean, default=False)
-    reviews = db.relationship('Review', backref='paper', lazy='dynamic')
     conf_users = db.relationship('User', secondary=conflicts, lazy='dynamic', 
         order_by='(User.last_name,User.first_name)',
         backref=db.backref('conf_papers', lazy='dynamic'))
@@ -219,17 +204,6 @@ class Paper(db.Model):
 
     def __repr__(self):
         return '<Paper %r>' % self.nid
-
-# Submission ID,Role,Rating,Consensus Recommendation
-class Review(db.Model):
-    __tablename__ = 'reviews'
-    id = db.Column(db.Integer, primary_key=True)
-    paper_id = db.Column(db.Integer, db.ForeignKey('papers.id'))
-    role = db.Column(db.Integer)
-    score = db.Column(db.Float)
-    recommendation = db.Column(db.Integer) # conference or journal
-    expertise = db.Column(db.Integer)
-    consensus = db.Column(db.Integer) # later will be a status code????
 
 # Submission ID,DateTime,Status
 class History(db.Model):
@@ -324,7 +298,7 @@ class UserSchema(ma.Schema):
 
 class PaperSchema(ma.Schema):
     class Meta:
-        fields = ("nid", "sid", "sort_score", "all_scores", "queue_order", 
+        fields = ("nid", "sid", "oid", "sort_score", "all_scores", "queue_order", 
                 "journal_only", "thumbnail", "title", "abstract", "summary")
 
 class HistorySchema(ma.Schema):
@@ -384,7 +358,8 @@ def sid_to_num(sid):
     return int(n)
 
 def num_to_sid(n):
-    # should add leading zeros, but not needed if larger than 100
+    # should add leading zeros, but not needed if larger than 100.
+    # ...actually would be awkward starting with sa23 when numbers exceed 999.
     sid = f'papers_{n}'
     return sid
 
@@ -438,24 +413,10 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_CHAIR_LOGIN', 'chair@example.com')
     passwd = get_config_or_default('HEPCAT_CHAIR_PASSWD', 'chair')
     ensure_user(email, 'Chair', 'User', 'Super', passwd)
-    # When debugging on local machine, also add these test users:
-    # if allow_cors: 
-    #     # Add Screen User
-    #     email = get_config_or_default('HEPCAT_SCREEN_LOGIN', 'screen@example.com')
-    #     passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'pass')
-    #     ensure_user(email, 'Screen', 'User', 'Screen', passwd)
-    #     # Add Test Users
-    #     email = get_config_or_default('HEPCAT_TEST1_LOGIN', 'af@princeton.edu')
-    #     passwd = get_config_or_default('HEPCAT_TEST1_PASSWD', 'pass')
-    #     ensure_user(email, 'Adam', 'Finkelstein', 'Admin', passwd)
-    #     email = get_config_or_default('HEPCAT_TEST2_LOGIN', 'bonat@princeton.edu')
-    #     passwd = get_config_or_default('HEPCAT_TEST2_PASSWD', 'pass')
-    #     ensure_user(email, 'Baris', 'Onat', 'Admin', passwd)
 
 postgres_wipe_db_cmd = '''
 DROP TABLE IF EXISTS history CASCADE;
 DROP TABLE IF EXISTS conflicts CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS papers CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
@@ -491,18 +452,17 @@ def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
     num_users = User.query.count()
     num_papers = Paper.query.count()
-    num_reviews = Review.query.count()
     num_history = History.query.count()
     num_labels = Label.query.count()
     num_conf = db.session.query(conflicts).count()
     num_tags = db.session.query(tags).count()
     result  = f'{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}.'
-    result += f' Reviews={num_reviews}. History={num_history}. Labels={num_labels}.'
+    result += f' History={num_history}. Labels={num_labels}.'
     result += f' Tags={num_tags}. '
     print(result)
     return result
 
-ps_tables = 'history,conflicts,reviews,papers,users,roles,file_upload,glob_queue,labels,tags'.split(',')
+ps_tables = 'history,conflicts,papers,users,roles,file_upload,glob_queue,labels,tags'.split(',')
 
 def drop_and_rebuild_tables(table_list=None):
     output = ''

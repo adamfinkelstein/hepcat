@@ -66,21 +66,21 @@ def to_int(s):
 def format_status(code):
     code = to_int(code)
     if code < 0:
-        return 'R'
+        return 'Reject'
     elif code > 1:
-        return 'J'
+        return 'Journal'
     elif code == 1:
-        return 'C'
+        return 'Conference'
     else:
-        return 'T'
+        return 'Tabled'
 
 def get_status_from_review(row):
     if len(row) < 5:
-        return 'T'
+        return 'Tabled'
     return format_status(row[4])
 
 def get_status_from_pri_sec(pid_revs):
-    status = 'T'
+    status = 'Tabled'
     if len(pid_revs) > 1:
         status0 = get_status_from_review(pid_revs[0])
         status1 = get_status_from_review(pid_revs[1])
@@ -108,10 +108,10 @@ def get_review_ave(conf_scores, jour_scores, pid_is_dual):
     else:
         all_scores = jour_scores
     ave = sum(all_scores) / len(all_scores)
-    ave = round(ave, 2)
+    ave = round(ave, 3)
     return ave
 
-# Submission ID,Ave,Status,Reviews
+# Submission ID,Sort Score,Status,Reviews
 def format_pid_with_reviews(pid, pid_is_dual, pid_revs):
     pid_revs.sort(key=lambda row: row[0]) # sort by role (first column)
     status = get_status_from_pri_sec(pid_revs)
@@ -136,7 +136,7 @@ def write_file(fname, contents):
         f.write(contents)
 
 def write_chair(all_pids, dual_pids, reviews, fname):
-    lines = 'Submission ID,Ave,Status,Reviews\n'
+    lines = 'Submission ID,Sort Score,Status,Reviews\n'
     for pid in all_pids:
         pid_is_dual = pid in dual_pids
         pid_revs = None

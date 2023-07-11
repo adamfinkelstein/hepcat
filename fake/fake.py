@@ -237,10 +237,14 @@ def revs_to_rec(revs):
 
 def gen_status(rec):
     if rec == 0:
-        return '0' # Tabled
+        return '0','Tabled'
     if rec > 0:
-        return random.choice(['1','2']) # Conf or Jour
-    return '-1' # Reject
+        coin = bool(random.getrandbits(1))
+        if coin:
+            return '1','Conference'
+        else:
+            return '2', 'Journal'
+    return '-1','Reject'
 
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
@@ -256,7 +260,7 @@ def fake_paper_reviews(pid,is_dual):
     ter = 'Technical Papers Tertiary Reviewer'
     roles = [pri, sec, ter, ter, ter]
     jour_revs = rand_reviews(5)
-    rec = gen_status(revs_to_rec(jour_revs))
+    rec,rec_string = gen_status(revs_to_rec(jour_revs))
     if is_dual:
         conf_revs = rand_reviews(5)
     else:
@@ -266,7 +270,7 @@ def fake_paper_reviews(pid,is_dual):
     for i in range(5):
         reci = rec if i < 2 else ''
         result += fmt_review(pid, roles[i], conf_revs[i], jour_revs[i], reci)
-    return result, rec, jour_revs
+    return result, rec_string, jour_revs
 
 # orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation

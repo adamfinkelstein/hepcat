@@ -70,12 +70,9 @@ export default function Paper(){
 
     function formatScoresInHTML(scores) {
         let html = scores
-        // // now this is done at server: replace empty conf reviews
-        // const re = /c\[( \?)+ \]/; // regexp match 
-        // html = html.replace(re,'c[x]');
-        html = html.replaceAll('_A_','<b>A</b>')
-        html = html.replaceAll('_R_','<b>R</b>')
-        html = extraSpaceBefore(html, ' j[')
+        html = html.replaceAll('A!','<b>A</b>')
+        html = html.replaceAll('R!','<b>R</b>')
+        html = extraSpaceBefore(html, 'j[')
         html = extraSpaceBefore(html, 'c[')
         html = extraSpaceBefore(html, 'bbs:')
         const ret = {__html: html}
@@ -159,7 +156,6 @@ export default function Paper(){
                         (<p className='font-size-4'><span className="paper-par-header">History:</span> <span className='paper-history-text'>{formatHistoryList(hist)}</span></p>)
                     }
                     
-                    <CollapsibleParagraph title="Summary"  text={cp.summary} />
                     <CollapsibleParagraph title="Abstract" text={cp.abstract} />
 
                     <div className='paper-img-container'><img src={cp.thumbnail} className="paper-image" alt="Representative Pic for Paper"></img></div>
