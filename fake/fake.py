@@ -18,13 +18,22 @@ def setup_data_dir(dir):
 
 # users: Email,First Name,Last Name,Role,Password
 # people_rooms: Email,Rooms
-# papers: Submission ID,Thumbnail URL,Title,Abstract
+# papers: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 # paper_rooms: Submission ID,Room
 # conflicts: Submission ID,Email
 # clusters: Submission ID,Cluster
 # reviews: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # summaries: Submission ID,Committee Notes
 # history: Submission ID,Seconds,Status
+
+'''
+__SA23__ files from linklings have these headers:
+users: Email,First Name,Last Name,Admin,Password
+papers: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
+conflicts: Submission ID,Email
+clusters: Submission ID,Cluster
+reviews: Submission ID,Role,Conference Score,Journal Score,Expertise (*)
+'''
 
 def write_file(fname, contents):
     path = f'{DATA_DIR}/{fname}'
@@ -236,8 +245,9 @@ def gen_status(rec):
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
 # Expertise and Top 10 ignored for now in Hepcat
-def fmt_review(pid, role, rev, dual_rev, rec):
-    line = f'{pid},{role},{rev},{dual_rev},99,{rec},\n'
+# sa22: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
+def fmt_review(pid, role, conf, jour, rec):
+    line = f'{pid},{role},{conf},{jour},99,{rec},\n'
     return line
 
 def fake_paper_reviews(pid,is_dual):
@@ -245,24 +255,25 @@ def fake_paper_reviews(pid,is_dual):
     sec = 'Technical Papers Committee Member'
     ter = 'Technical Papers Tertiary Reviewer'
     roles = [pri, sec, ter, ter, ter]
-    revs = rand_reviews(5)
-    rec = gen_status(revs_to_rec(revs))
+    jour_revs = rand_reviews(5)
+    rec = gen_status(revs_to_rec(jour_revs))
     if is_dual:
-        dual_revs = [review_score_to_dual_rec(r) for r in revs]
+        conf_revs = rand_reviews(5)
     else:
-        dual_revs = ['' for _ in revs]
+        conf_revs = [0, 0, 0, 0, 0]
     # print(conf, revs)
     result = ''
     for i in range(5):
         reci = rec if i < 2 else ''
-        result += fmt_review(pid, roles[i], revs[i], dual_revs[i], reci)
-    return result, rec, revs
+        result += fmt_review(pid, roles[i], conf_revs[i], jour_revs[i], reci)
+    return result, rec, jour_revs
 
 # orig: Submission ID,Role,Conference Score,Journal Score,Consensus Recommendation
 # 2022: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 # 2023: Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%
+# sa23: Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
 def fake_reviews(papers, dual_pids, fname):
-    output = 'Submission ID,Role,Score,Conf/Jounal Rec,Expertise,Final Recommendation,Top 10%\n'
+    output = 'Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation\n'
     recs = {}
     all_revs = {}
     for pid in papers:
@@ -289,17 +300,17 @@ def all_revs_to_list(all_revs):
     return arr
 
 # chair_scores: Submission ID,Chair Score
-def fake_chair_scores(all_revs, fname):
-    revs = all_revs_to_list(all_revs)
-    mu, sigma = mean_and_std(revs)
-    output = 'Submission ID,Chair Score\n'
-    for pid in all_revs:
-        revs = all_revs[pid]
-        mean,_ = mean_and_std(revs)
-        score = (mean-mu) / sigma
-        line = f'{pid},{score}\n'
-        output += line
-    write_file(fname, output)
+# def fake_chair_scores(all_revs, fname):
+#     revs = all_revs_to_list(all_revs)
+#     mu, sigma = mean_and_std(revs)
+#     output = 'Submission ID,Chair Score\n'
+#     for pid in all_revs:
+#         revs = all_revs[pid]
+#         mean,_ = mean_and_std(revs)
+#         score = (mean-mu) / sigma
+#         line = f'{pid},{score}\n'
+#         output += line
+#     write_file(fname, output)
 
 # summary: Submission ID,Committee Notes
 def fake_summaries(papers, fname):
@@ -398,11 +409,13 @@ def main():
     papers,dual_pids = fake_papers(n_papers, 'papers.csv')
     paper_rooms = write_paper_rooms(papers,'paper_rooms.csv')
     fake_conflicts(emails, papers, 'conflicts.csv')
-    recs, all_revs = fake_reviews(papers, dual_pids, 'reviews.csv')
-    fake_chair_scores(all_revs, 'chair_scores.csv')
-    fake_summaries(papers, 'summaries.csv')
+    recs, _ = fake_reviews(papers, dual_pids, 'reviews.csv')
     fake_clusters(papers, 'clusters.csv')
     fake_history(paper_rooms, recs, 'history.csv')
+    # SA23: no longer write chair scores from this program,
+    # ...and no longer use summaries.
+    # fake_chair_scores(all_revs, 'chair_scores.csv')
+    # fake_summaries(papers, 'summaries.csv')
 
 if __name__ == "__main__":
     main()
