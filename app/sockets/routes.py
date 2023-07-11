@@ -989,6 +989,10 @@ def admin_upload_file(file):
         data = { 'message': msg, 'type': 'warning', 'which': which }
         emit('server_send_flasher', data)
     if logout:
-        logout_user()
-        emit('server_logout_user')
-    emit_admin_uploads(True)
+        emit('server_logout_user', broadcast=True) # everyone
+    elif header_type in ['chair_scores','history']:
+        # reload will cause new globals and grid, which are needed
+        emit('server_reload_user', broadcast=True)
+    else:
+        emit_admin_uploads(True)
+    

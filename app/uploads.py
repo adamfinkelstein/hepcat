@@ -6,7 +6,7 @@ from flask_login import current_user
 from . import db
 from .models import User, Paper, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
-    context_str_to_enum, status_str_to_enum, \
+    context_str_to_enum, status_str_to_enum, reset_all_gqs, \
     ensure_admin, ensure_all_gqs, drop_and_rebuild_tables
 
 def delete_all_users():
@@ -384,22 +384,23 @@ def review_str_to_int(s):
     i = int(round(f))
     return i
 
-def papers_clear_all_scores():
+def papers_clear_all_scores_and_queues():
     papers = Paper.query.all()
     for paper in papers:
         paper.sort_score = 0
         paper.all_scores = 'This paper has no reviews.'
+        paper.queue_id = None
+        paper.queue_order = 0
         db.session.add(paper)
 
 def insert_chair_score_rows(rows):
     delete_all_history() # clears both bbs status and stickies
-    papers_clear_all_scores()
-    # Submission ID,Sort Score,Status,Reviews
-    # ... ??? need to update below to match this!
+    papers_clear_all_scores_and_queues()
     count = 0
     for row in rows:
         if len(row) < 4:
             continue
+        # Submission ID,Sort Score,Status,Reviews
         sid,chair_score,status,reviews = row[:4]
         paper = Paper.query.filter_by(sid=sid).first()
         if not paper:
@@ -425,6 +426,7 @@ def insert_chair_score_rows(rows):
         print(msg)
         flash(msg)
         return 0
+    reset_all_gqs()
     return count
 
 # Submission ID,Seconds,Context,Status

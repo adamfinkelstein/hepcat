@@ -337,17 +337,21 @@ def get_or_create_gq(room):
         gq = None
     return gq
 
-# def reset_gq():
-#     get_or_create_gq()
-#     gq = GlobQueue.query.first()
-#     gq.current=-1
-#     gq.current_show=False
-#     db.session.add(gq)
-#     try:
-#         db.session.commit()
-#     except:
-#         db.session.rollback()
-#         print(f'failed to reset GC')
+def reset_gq(room):
+    gq = GlobQueue.query.filter_by(room=room).first()
+    if not gq:
+        gq = get_or_create_gq(room)
+    gq.hide_queue = False
+    gq.message = ''
+    gq.current=-1
+    gq.current_show=False
+    db.session.add(gq)
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(f'failed to reset GC')
+
 
 ######################
 # Helper functions
@@ -403,6 +407,10 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
 def ensure_all_gqs():
     for room in all_queue_rooms:
         get_or_create_gq(room)
+
+def reset_all_gqs():
+    for room in all_queue_rooms:
+        reset_gq(room)
 
 def ensure_admin():
     ensure_all_gqs() # Also init global queue variables, if needed
