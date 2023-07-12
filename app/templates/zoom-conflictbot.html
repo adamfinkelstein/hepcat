@@ -16,13 +16,18 @@
         margin-bottom: 0px;
         background-color: #174460;
     }
-    .navbar-brand {
-        color: white;
+    #main-background {
+        background-color: #b0b0e2;
+        height: 1600px;
     }
-    .spacedown {
-        height: 60px;
+    #main-background.started {
+        background-color: #e8c2bc;
     }
-    .debugging-output {
+    h2 {
+        padding-top: 60px;
+        padding-left: 20px;
+    }
+    #debugging-output {
         padding: 25px;
         margin-top: 20px;
         margin-left: 40px;
@@ -35,6 +40,7 @@
     </style>
 </head>
 <body>
+    <div id="main-background">
     <nav id="nav-tool1" class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -61,14 +67,12 @@
                     </div>
 
                     <button type="button" class="btn btn-primary" id="start_button">Start</button>
-                    <button type="button" class="btn btn-primary" id="mute_button">Mute</button>
                     <button type="button" class="btn btn-primary" id="bring_button">Bring</button>
                 </form>
             </div>
             <!--/.navbar-collapse -->
         </div>
     </nav>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.slim.min.js" integrity="sha512-5NqgLBAYtvRsyAzAvEBWhaW+NoB+vARl6QiA02AFMhCWvPpi7RWResDcTGYvQtzsHVCfiUhwvsijP+3ixUk1xw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
@@ -81,10 +85,9 @@
     <script src="https://source.zoom.us/2.12.2/lib/vendor/lodash.min.js"></script>
     <script src="https://source.zoom.us/zoom-meeting-2.12.2.min.js"></script>
 
-    <div class="spacedown"></div>
     <h2>Hepcat Zoom Conflictbut Debug Info:</h2>
 
-    <div class="debugging-output overflow-scroll">
+    <div id="debugging-output">
         
         Current Rooms (with conflicts):
         <ul id="room-list"></ul>
@@ -96,7 +99,8 @@
         <ul id="all-user-list"></ul>
 
     </div>
-            
+    </div>
+
     <script>
 
     // globals associated with hepcat
@@ -316,13 +320,11 @@
         if (globJoinedMeeting) {
             $("#join_button").html('Leave');
             $("#start_button").removeClass('disabled');
-            $("#mute_button").removeClass('disabled');
             $("#bring_button").removeClass('disabled');
         }
         else {
             $("#join_button").html('Join');
             $("#start_button").addClass('disabled');
-            $("#mute_button").addClass('disabled');
             $("#bring_button").addClass('disabled');
         }
     }
@@ -331,7 +333,6 @@
         $('#meeting_room').on('change', handleMeetingRoomChange );
         $("#join_button").click( handleJoinButton );
         $("#start_button").click( handleStartButton );
-        $("#mute_button").click( handleMuteButton );
         $("#bring_button").click( handleBringButton );
         setButtonStates();
     }
@@ -383,22 +384,18 @@
         if (globStartedQueue) { // was already started
             globStartedQueue = false;
             $("#start_button").html('Start');
+            $("#main-background").removeClass('started');
         }
         else {
             console.log('about to verify host and if so start queue...');
             verifyHostThenRunFunction(()=>{
                 globStartedQueue = true;
+                $("#main-background").addClass('started');
                 $("#start_button").html('Stop');
                 console.log('start queue then checkZoomConflictsIfStarted');
                 checkZoomConflictsIfStarted();
             });
         }
-    }
-
-    function handleMuteButton() {
-        verifyHostThenRunFunction(()=>{
-            muteZoomUsersExceptHosts();
-        });
     }
 
     function handleBringButton() {
@@ -552,15 +549,6 @@
             error: function (res) {
                 console.log('setZoomUserMuteOrUnmute name, error: ', name, res);
             },
-        });
-    }
-
-    function muteZoomUsersExceptHosts() {
-        console.log("muteZoomUsersExceptHosts");
-        processAllZoomAttendees( zoomUser => {
-            if (!zoomUserIsHost(zoomUser)) {
-                setZoomUserMuteOrUnmute(zoomUser, true);
-            }
         });
     }
 
