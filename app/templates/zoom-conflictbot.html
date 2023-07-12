@@ -11,6 +11,7 @@
     <meta http-equiv="origin-trial" content="">
 
     <style>
+    /* Note: Zoom code includes Bootstrap v3.1.1 */
     #nav-tool1 {
         margin-bottom: 0px;
         background-color: #174460;
@@ -21,13 +22,23 @@
     .spacedown {
         height: 60px;
     }
+    .debugging-output {
+        padding: 25px;
+        margin-top: 20px;
+        margin-left: 40px;
+        width: 600px;
+        height: 400px;
+        overflow-x: scroll;
+        overflow-y: scroll;
+        background-color: #eee;
+    }
     </style>
 </head>
 <body>
     <nav id="nav-tool1" class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">Hepcat Zoom Conflictbut</a>
+                <a class="navbar-brand" href="#">Zoom Conflictbot</a>
             </div>
             <div id="navbar" class="websdktest">
 
@@ -71,13 +82,20 @@
     <script src="https://source.zoom.us/zoom-meeting-2.12.2.min.js"></script>
 
     <div class="spacedown"></div>
-    <h1>Hepcat Zoom Conflictbut</h1>
+    <h2>Hepcat Zoom Conflictbut Debug Info:</h2>
 
-    All Users (showing current rooms):
-    <ul id="all-user-list"></ul>
-    
-    Current Rooms (with conflicts):
-    <ul id="room-list"></ul>
+    <div class="debugging-output overflow-scroll">
+        
+        Current Rooms (with conflicts):
+        <ul id="room-list"></ul>
+
+        Users without Unique Names:
+        <ul id="non-unique-user-list"></ul>
+
+        All Users (showing current rooms):
+        <ul id="all-user-list"></ul>
+
+    </div>
             
     <script>
 
@@ -102,17 +120,39 @@
     let globSignature = null;
     let globMyZoomUser = null;
 
+    function addLItoUL(ul, html) {
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        ul.appendChild(li);
+    }
+
+    function userToNameEmail(user) {
+        // note if we use angle brackets "<>" 
+        // ...we would need to be careful setting HTML
+        return user.full_name + " (" + user.email + ")";
+    }
+
+    function userArrToNameEmail(arr) {
+        return arr.map( user => userToNameEmail(user) );
+    }
+
     function receiveHepcatUsers(users) {
         const ul = document.getElementById('all-user-list');
         ul.innerHTML = ''; // clear old list
         for (let i = 0; i < users.length; i++) {
             const user = users[i];
             console.log(user);
-            const li = document.createElement('li');
-            let html = ' [' + user.room_name + '] '
-                        + user.full_name + " (" + user.email + ")";
-            li.innerHTML = html;
-            ul.appendChild(li);
+            let html = ' [' + user.room_name + '] ' + userToNameEmail(user);
+            addLItoUL(ul, html);
+        }
+    }
+
+    function addNamesToNonUniqueUserList(names) {
+        const ul = document.getElementById('non-unique-user-list');
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            addLItoUL(ul, name);
+            console.log(name);
         }
     }
 
@@ -176,8 +216,9 @@
             parts = user.full_name.split(' ');
             allNames = allNames.concat(parts);
         });
-        const uniqNames = uniqueInArr(allNames);
         globUniqueNames = {};
+        const uniqNames = uniqueInArr(allNames);
+        const issueNameWarnings = []
         hepcatUsers.forEach( user => {
             email = user.email.toLowerCase();
             globUniqueNames[email] = user;
@@ -190,17 +231,21 @@
                     userHasUniqName = true;
                 }
             });
-            if (!userHasUniqName) {
-                const msg = 'Warning! Hepcat user "' + user.full_name +
-                    '" has no unique parts in their name. Include email in zoom name: ' + email;
-                console.log(msg);
-                const warnedAlready = globUserWarningsShown.includes(email);
-                if (!warnedAlready) {
-                    globUserWarningsShown.push(email);
-                    alert(msg);
-                }
+            const warnedAlready = globUserWarningsShown.includes(email);
+            if (!userHasUniqName && !warnedAlready) {
+                issueNameWarnings.push(user);
+                globUserWarningsShown.push(email);
             }
         });
+        if (issueNameWarnings.length) {
+            // One alert box listing all users
+            const nameList = userArrToNameEmail(issueNameWarnings);
+            const nameString = nameList.join(', \n');
+            const msg = 'Warning! Some Hepcat users have no unique parts in their names, so include emails in their zoom names: \n' + nameString;
+            console.log(msg);
+            addNamesToNonUniqueUserList(nameList);
+            alert(msg);
+        }
         // console.log('unique names and dict', uniqNames, globUniqueNames);
     }
 

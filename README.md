@@ -160,11 +160,14 @@ Also set environment variables at Heroku, at least:
 * `SECRET_KEY`
 * `DATABASE_URL_HEROKU` (to the postgres database)
 * `FLASK_CONFIG=production` (later, make this default in code)
-* `MAIL_USERNAME`
-* `MAIL_PASSWORD`
 * `HEPCAT_ADMIN_LOGIN`
 * `HEPCAT_ADMIN_PASSWD`
 * `HEPCAT_USE_ORTOOLS=True`
+* `ZOOM_CONFLICTBOT_CLIENT_ID`
+* `ZOOM_CONFLICTBOT_CLIENT_SECRET`
+* `HEPCAT_CONFLICTBOT_SOCKET`
+
+** AF should check this list at Heroku and see if more updates are needed. **
 
 Finally, after sending local changes, deploy at Heroku like this:
 
