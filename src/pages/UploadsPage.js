@@ -15,7 +15,6 @@ export default function UploadsPage() {
     
     const globals = useAppGlobals();
     const user = globals.user
-    const isAdmin = globals.isAdmin
     const adminKey = globals.adminKey
     const isSuper = user && user.role_name === "Super"
     const socketEmit = globals.socketEmit;
@@ -112,7 +111,7 @@ export default function UploadsPage() {
                     <p>&nbsp;</p>
 
                     <Stack direction="horizontal">
-                    <a className="btn btn-primary" href={"/admin/zoom_conflictbot/"+adminKey} target="_blank">Zoom Conflictbot</a>
+                    <a className="btn btn-primary" href={"/admin/zoom_conflictbot/"+adminKey} target="_blank" rel="noopener noreferrer">Zoom Conflictbot</a>
                         &nbsp;&nbsp;Open Zoom Conflictbot in new tab.
                     </Stack>
                 </div>
@@ -120,7 +119,7 @@ export default function UploadsPage() {
                 <div>
                     <p>&nbsp;</p>
                     <Stack direction="horizontal">
-                    <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank">Download Results</a>
+                    <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
                         &nbsp;&nbsp;Download a CSV with the final status of all papers.
                     </Stack>
                 </div>

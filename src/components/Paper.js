@@ -1,13 +1,10 @@
 import moment from 'moment'
-import { Collapse } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import {useAppGlobals} from '../contexts/AppContext'
 import {useState, useEffect} from 'react'
 import CollapsibleParagraph from './CollapsibleParagraph.js'
 
 export default function Paper(){
-
-    const [open, setOpen] = useState(false);
 
     const [currentTime, setCurrentTime] = useState(Date.now())
 
