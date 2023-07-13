@@ -8,8 +8,6 @@ export function useGUI(){
 export default function GUIContext({children}){
   const [statusCheckbox, setStatusCheckbox] = useState([]);
   const [onlyCheckbox, setOnlyCheckbox] = useState([]);
-  const [message, setMessage] = useState("");
-  const [hideQ, setHideQ] = useState(false);
   const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
   const [lowRange, setLowRange] = useState(-9.0);
   const [highRange, setHighRange] = useState(9.0);
@@ -21,10 +19,6 @@ export default function GUIContext({children}){
         "setStatusCheckbox": setStatusCheckbox,
         "onlyCheckbox": onlyCheckbox,
         "setOnlyCheckbox": setOnlyCheckbox,
-        "message": message,
-        "setMessage": setMessage,
-        "hideQ": hideQ,
-        "setHideQ": setHideQ,
         "scoreSelection": scoreSelection,
         "setScoreSelection": setScoreSelection,
         "lowRange": lowRange,

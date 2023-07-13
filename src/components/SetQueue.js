@@ -20,6 +20,10 @@ const scoreOptions = [scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreO
 export default function SetQueue(){
     const [disableScoreInputs, setDisableScoreInputs] = useState("")
     const globals = useAppGlobals()
+    const hideQ = globals.hideQ
+    const setHideQ = globals.setHideQ
+    const hiddenMsg = globals.hiddenMsg
+    const setHiddenMsg = globals.setHiddenMsg
     const probeCount = globals.probeCount
     const probeWhen = globals.probeWhen
     const probeMessage = (probeWhen ? probeCount + " (" + probeWhen + ")" : "(not set)")
@@ -33,8 +37,8 @@ export default function SetQueue(){
     const filterList = (roomChoice === 'Plenary' ? filterListMain : [roomChoice, ...filterListMain])
     const statusList = globals["statusList"]
 
-    const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, message, setMessage,
-        hideQ, setHideQ, scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
+    const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, 
+        scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
         queueExplicitList, setQueueExplicitList} = useGUI()
 
     let flasher = useFlasher()
@@ -114,20 +118,23 @@ export default function SetQueue(){
     function handleInputChange(event){
         event.preventDefault(); // do not send the form!
         const target = event.target;
+        const name = target.name;
         const value = target.value;
-        if(target.name === "lowRange") setLowRange(value)
-        else if(target.name === "highRange") setHighRange(value)
-        else if(target.name === "message") setMessage(value)
-        else if(target.name === "queueExplicit") setQueueExplicitList(value)
-        else if(target.name === "bar") setGuiBar(value)
+        if     (name === "lowRange")      setLowRange(value)
+        else if(name === "highRange")     setHighRange(value)
+        else if(name === "message")       setHiddenMsg(value)
+        else if(name === "queueExplicit") setQueueExplicitList(value)
+        else if(name === "bar")           setGuiBar(value)
     }
 
     function handleHideQueueCheckbox(){
         const hide = !hideQ
         setHideQ(hide)
-        controlledLog('hide queue after click: '+hide)
+        const message = hide ? hiddenMsg : ""
         const data = { roomChoice, hide, message }
         socketEmit("admin_hide_queue", data)
+        controlledLog('admin_hide_queue:')
+        controlledLog(data)
     }
 
     function handleSetBarButton(){
@@ -163,7 +170,7 @@ export default function SetQueue(){
             <Flasher type="hide_queue"/>
             <div>
                 <Stack direction="horizontal">
-                    <Form.Check type="checkbox" defaultChecked={hideQ}
+                    <Form.Check type="checkbox" checked={hideQ}
                         onChange={handleHideQueueCheckbox}
                     />
                     <span className="hideQ-text font-size-4">Hide queue from everyone except admin.</span>
@@ -171,8 +178,8 @@ export default function SetQueue(){
                 <Stack direction="horizontal" className="set-message-row">
                     <span className="font-size-4">Message: </span>
                     <input
-                        name="message"
-                        value={message}
+                        name="message" 
+                        value={hiddenMsg}
                         onChange={handleInputChange}
                         className="message-input"
                     />

@@ -29,6 +29,8 @@ export default function AppContext({children}){
   const [newStatus, setNewStatus] = useState("Tabled")
   const [guiBar, setGuiBar] = useState('');
   const [aboutMD, setAboutMD] = useState('');
+  const [hideQ, setHideQ] = useState(false);
+  const [hiddenMsg, setHiddenMsg] = useState("");
   const flasher = useFlasher()
   const flash = flasher["flash"]
 
@@ -58,7 +60,7 @@ export default function AppContext({children}){
     socket.emit(message);
   }, [socket, controlledLog] );
 
-  const recordGlobs = useCallback( (data) => {
+  const recordGlobsForThisRoom = useCallback( (data) => {
     controlledLog('record globs:');
     controlledLog(data);
     if ('showAppLogs' in data) { // could be true or false or not exist
@@ -71,8 +73,10 @@ export default function AppContext({children}){
     if (status) {
       setNewStatus(status);
     }
-    // AF: XXX??? Maybe here is where to sync hideQ and message for Michi
-  }, [controlledLog, setShowLogs, setServerGlobs, setQueueCurrent, setNewStatus] );
+    setHideQ(data.hide_queue);
+    setHiddenMsg(data.message);
+  }, [ controlledLog, setShowLogs, setServerGlobs, setQueueCurrent, setNewStatus,
+    setHideQ, setHiddenMsg ] );
 
   useEffect(() => {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -84,7 +88,6 @@ export default function AppContext({children}){
   useEffect(() => {
     const showLogsEnv = Boolean(process.env.REACT_APP_SHOW_LOGS)
     if (showLogsEnv) {
-      console.log('showLogsEnv: ' + showLogsEnv)
       setShowLogs(showLogsEnv)  
     }
   }, [setShowLogs])
@@ -164,7 +167,7 @@ export default function AppContext({children}){
       controlledLog(data);
       const isTheRoom = (data.room === roomChoice);
       if (isTheRoom) {
-        recordGlobs(data);
+        recordGlobsForThisRoom(data);
         if (data.update) {
             updateQueueEntry(data.update.queue_index, data.update.status)
         }
@@ -297,7 +300,7 @@ export default function AppContext({children}){
       }
     };
   }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
-      controlledLog, socketEmit, recordGlobs]);
+      controlledLog, socketEmit, recordGlobsForThisRoom]);
 
 
   function locateGridEntry(grid_index, grid_list, nid) {
@@ -348,6 +351,10 @@ export default function AppContext({children}){
           "fileUploads": fileUploads,
           "guiBar": guiBar,
           "setGuiBar": setGuiBar,
+          "hideQ": hideQ,
+          "setHideQ": setHideQ,
+          "hiddenMsg": hiddenMsg,
+          "setHiddenMsg": setHiddenMsg,
           "controlledLog": controlledLog,
           "statusList": ['Tabled','Reject','Conference','Journal'],
           "checkValidNID": checkValidNID
