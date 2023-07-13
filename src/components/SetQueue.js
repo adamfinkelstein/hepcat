@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { Container } from "react-bootstrap"
 import {useState} from 'react'
 import {useAppGlobals} from '../contexts/AppContext'
@@ -5,7 +6,6 @@ import {useGUI} from '../contexts/GUIContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
-// import {useRef} from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Stack from "react-bootstrap/Stack"
@@ -127,10 +127,28 @@ export default function SetQueue(){
         else if(name === "bar")           setGuiBar(value)
     }
 
+    function setTimeInHiddenMessage(msg) {
+        const regexp = /_T\+\d+:\d+_/g
+        const matches = msg.match(regexp)
+        if (!matches) return msg
+        for (const match of matches) {
+            // replace non-digits with whitespace then split on whitespace
+            const parts = match.replace(/[^\d]/g, " ").trim().split(/\s+/)
+            const ints = parts.map(i => parseInt(i))
+            const hours = ints[0]
+            const mins = ints[1]
+            const dateNow = Date.now()
+            const utcThen = moment(dateNow).add(hours, 'h').add(mins, 'm').format()
+            const thenMomentStr = '===' + utcThen + '==='
+            msg = msg.replace(match, thenMomentStr)
+        }
+        return msg
+    }
+
     function handleHideQueueCheckbox(){
         const hide = !hideQ
         setHideQ(hide)
-        const message = hide ? hiddenMsg : ""
+        const message = hide ? setTimeInHiddenMessage(hiddenMsg) : ""
         const data = { roomChoice, hide, message }
         socketEmit("admin_hide_queue", data)
         controlledLog('admin_hide_queue:')

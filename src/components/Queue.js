@@ -21,6 +21,7 @@ export default function Queue(){
     const end_index = Math.min(counter + future_max, queue.length);
     const queueSlice = queue.slice(start_index, end_index);
     const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue
+    const hiddenMsg = globals.serverGlobs ? globals.serverGlobs.message : ""
     
     const [queueExpanded, setQueueExpanded] = useState(false);
     const expandButtonLabel = (queueExpanded ? "Hide Conflicts" : "Show Conflicts")
@@ -52,7 +53,7 @@ export default function Queue(){
             }
             <Container className="expand-bar">
                 { hideQueue &&
-                  (<div className="font-size-3 queue-hidden-for-non">(Queue is hidden for non-admin users.)</div>)
+                  (<div className="font-size-3 queue-hidden-for-non">(Queue is hidden for non-admin users, with this message: {hiddenMsg})</div>)
                 }
                 <Stack direction="horizontal">
                     <span className='font-size-2'>Current: {currentCount} {queue.length}</span>
