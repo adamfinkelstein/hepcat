@@ -183,7 +183,8 @@ class Paper(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nid = db.Column(db.Integer, unique=True, index=True) # numeric
     sid = db.Column(db.String(64), unique=True, index=True) # string
-    oid = db.Column(db.String(64), unique=True, index=True) # obfuscated
+    oid = db.Column(db.String(64), unique=True) # obfuscated
+    key = db.Column(db.String(64), unique=True) # decryption
     sort_score = db.Column(db.Float, default=0.0)
     queue_id = db.Column(db.Integer, db.ForeignKey('glob_queue.id'))
     queue_order = db.Column(db.Integer, default=0)

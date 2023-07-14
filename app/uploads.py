@@ -194,13 +194,15 @@ def insert_user_rows(rows):
 def journal_only_from_dual(dual):
     return (dual != "yes")
 
-def gen_random_oid():
-    return uuid.uuid4().hex[:8] # 4 billion options on 8 hex digits
+def gen_random_key(max_chars):
+    hex = uuid.uuid4().hex
+    hex = hex[:max_chars] # 4 billion options on 8 hex digits
+    return hex
 
-def gen_unique_oids(n):
+def gen_unique_keys(n, max_chars):
     oids = []
     while len(oids) < n:
-        oid = gen_random_oid()
+        oid = gen_random_key(max_chars)
         if oid not in oids:
             oids.append(oid)
     return oids
@@ -210,7 +212,9 @@ def gen_unique_oids(n):
 def insert_paper_rows(rows):
     delete_all_papers()
     area_type = int(LabelType.Area)
-    oids = gen_unique_oids(len(rows))
+    n = len(rows)
+    oids = gen_unique_keys(n, 8) 
+    keys = gen_unique_keys(n, 32) 
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -219,9 +223,11 @@ def insert_paper_rows(rows):
         journal_only = journal_only_from_dual(dual)
         nid = sid_to_num(sid)
         oid = oids.pop(0)
+        key = keys.pop(0)
         paper = Paper(nid=nid, 
                     sid=sid,
                     oid=oid,
+                    key=key,
                     thumbnail=thumbnail,
                     title=title,
                     journal_only=journal_only,
