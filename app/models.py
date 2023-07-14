@@ -382,6 +382,40 @@ def get_config_or_default(key, default):
             return value
     return default
 
+def insert_test_paper():
+    nid = 9999
+    paper = Paper.query.filter_by(nid=nid).first()
+    if paper:
+        return -1
+    sid = num_to_sid(nid)
+    oid = 'test_9999'
+    thumbnail = 'https://fakeimg.pl/600x450/685/f5c/?text=TEST&font_size=240&font=bebas'
+    title = 'Testing Conflictbot'
+    abstract = 'This paper should be conflicted with all users.'
+    paper = Paper(nid=nid, 
+                sid=sid,
+                oid=oid,
+                thumbnail=thumbnail,
+                title=title,
+                journal_only=False,
+                abstract=abstract)
+    db.session.add(paper)
+    users = User.query.all()
+    count = 0
+    for user in users:
+        if not user.role_is_admin:
+            user.conf_papers.append(paper)
+            db.session.add(user)
+            count += 1
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert test paper'
+        print(msg)
+        return -2
+    return count
+    
 def ensure_user(email, first_name, last_name, role_name, passwd):
     if not (email and first_name and last_name and role_name and passwd):
         print('cannot add user with incomplete info: ', 

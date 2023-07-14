@@ -61,6 +61,11 @@ export default function UploadsPage() {
         }
     }
 
+    function handleAddTestPaper(){
+        controlledLog('admin_add_test_paper button pressed.');
+        socketEmit("admin_add_test_paper")
+    }
+
     return(
         <Container className="titled-page">
             <span className='font-size-1'>Upload CSV Files Here</span>
@@ -106,33 +111,33 @@ export default function UploadsPage() {
                 <div>
                     <p>&nbsp;</p>
                     <hr/>
+                    <Flasher type="extra"/>
                     <p>&nbsp;</p>
                     <span className='font-size-2'>Extra Admin Functions</span>
-                    <p>&nbsp;</p>
-
-                    <Stack direction="horizontal">
-                    <a className="btn btn-primary" href={"/admin/zoom_conflictbot/"+adminKey} target="_blank" rel="noopener noreferrer">Zoom Conflictbot</a>
-                        &nbsp;&nbsp;Open Zoom Conflictbot in new tab.
-                    </Stack>
                 </div>
 
-                <div>
-                    <p>&nbsp;</p>
-                    <Stack direction="horizontal">
-                    <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
-                        &nbsp;&nbsp;Download a CSV with the final status of all papers.
-                    </Stack>
-                </div>
+                <Stack className="space-down-btn" direction="horizontal">
+                <Button variant="primary" onClick={handleAddTestPaper}>
+                    Add Test Paper</Button>
+                    &nbsp;&nbsp;This adds Papers_9999, conflicted with all users for testing conflictbot.
+                </Stack>
+
+                <Stack className="space-down-btn" direction="horizontal">
+                <a className="btn btn-primary" href={"/admin/zoom_conflictbot/"+adminKey} target="_blank" rel="noopener noreferrer">Zoom Conflictbot</a>
+                    &nbsp;&nbsp;Open Zoom Conflictbot in new tab.
+                </Stack>
+
+                <Stack className="space-down-btn" direction="horizontal">
+                <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
+                    &nbsp;&nbsp;Download a CSV with the final status of all papers.
+                </Stack>
 
                 { isSuper && (
-                    <div>
-                    <p>&nbsp;</p>
-                <Stack direction="horizontal">
-                    <Button variant="danger" onClick={handleWipeDBButton} 
-                        className="bulk-reject-btn">Wipe Database Clean</Button>
+                    <Stack className="space-down-btn" direction="horizontal">
+                    <Button variant="danger" onClick={handleWipeDBButton}> 
+                        Wipe Database Clean</Button>
                         &nbsp;&nbsp;This removes ALL data from the database!
                     </Stack>
-                    </div>
                 )}
 
             </Container>

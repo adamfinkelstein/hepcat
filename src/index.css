@@ -583,3 +583,7 @@ a.nav-link {
   font-style: italic;
   color: #f66;
 }
+
+.space-down-btn {
+  padding-top: 30px;
+}

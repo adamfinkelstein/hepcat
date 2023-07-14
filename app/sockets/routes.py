@@ -4,11 +4,11 @@ import random
 from datetime import datetime
 from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
-from flask_login import current_user, logout_user
+from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
 from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, \
-    HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms
+    HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms, insert_test_paper
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import current_user_is_admin, save_and_read_csv, pending_uploads
 
@@ -834,6 +834,22 @@ def admin_clear_stickies():
         msg = f'No stickies were cleared.'
         data = { 'message': msg, 'type': 'success', 'which': 'change_bar'}
         emit('server_send_flasher', data)
+
+@socketio.on('admin_add_test_paper')
+def admin_add_test_paper():
+    print('admin_add_test_paper')
+    count = insert_test_paper()
+    if count >=0:
+        msg = f'Added test paper with {count} conflicts.'
+        msgType = 'success'
+    elif count == -1:
+        msg = f'No need to add test paper 9999 - it already exists.'
+        msgType = 'warning'
+    else: # -2
+        msg = f'Failed to add test paper, for unknown reason.'
+        msgType = 'danger'
+    data = { 'message': msg, 'type': msgType, 'which': 'extra'}
+    emit('server_send_flasher', data)
 
 @socketio.on('user_set_stickie')
 def user_set_stickie(data):

@@ -350,12 +350,12 @@ export default function SetQueue(){
                     />
                 </Stack>
                 <hr className="horizontal-divider"/>
-                <Button variant="warning" onClick={handleClearStickiesButton} 
-                        className="bulk-reject-btn">Clear Stickies</Button>
+                <Button variant="warning" onClick={handleClearStickiesButton}>
+                    Clear Stickies</Button>
                 &nbsp;&nbsp;(Clear all stickies.)
                 <hr className="horizontal-divider"/>
-                <Button variant="warning" onClick={handleBulkRejectButton} 
-                        className="bulk-reject-btn">Bulk Reject</Button>
+                <Button variant="warning" onClick={handleBulkRejectButton}>
+                    Bulk Reject</Button>
                 &nbsp;&nbsp;(Mark status of all reject papers below bar as already discussed.)
             </div>
         </Container>

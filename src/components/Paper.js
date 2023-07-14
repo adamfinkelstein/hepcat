@@ -66,7 +66,7 @@ export default function Paper(){
     }
 
     function formatScoresInHTML(scores) {
-        let html = scores
+        let html = scores ? scores : ''
         html = html.replaceAll('A!','<b>A</b>')
         html = html.replaceAll('R!','<b>R</b>')
         html = extraSpaceBefore(html, 'j[')
