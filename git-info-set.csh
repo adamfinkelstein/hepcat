@@ -1,0 +1,1 @@
+heroku config:set HEPCAT_GIT_INFO="`python git-info-get.py`"

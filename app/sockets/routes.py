@@ -1,6 +1,7 @@
 import os
 import re
 import random
+import json
 from datetime import datetime
 from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
@@ -572,13 +573,31 @@ def get_git_info_from_file():
             md = file.read()
     return md
 
+def info_to_md(info):
+    result = '\n\n### Git Version\n\n'
+    for key in info:
+        result += f'* {key}: {info[key]}\n\n'
+    return result
+
+def get_git_info_from_env():
+    env_info = os.environ.get('HEPCAT_GIT_INFO')
+    if not env_info:
+        return None
+    json_info = env_info.replace("'",'"') # replace single w double
+    info = json.loads(json_info)
+    md = info_to_md(info)
+    return md
+
 def get_about_md(append_git_info):
     basedir = os.path.abspath(os.path.dirname(__file__))
     about_file = os.path.join(basedir, '../../public/about/about.md')
     with open(about_file, "r") as file:
         md = file.read()
     if append_git_info:
-        md += get_git_info_from_file()
+        info = get_git_info_from_env()
+        if not info:
+            info = get_git_info_from_file()
+        md += info
     return md
 
 def clear_all_stickies():
