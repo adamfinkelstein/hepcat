@@ -89,11 +89,14 @@
 
     <div id="debugging-output">
         
+        Hepcat Users without Unique Names:
+        <ul id="non-unique-user-list"></ul>
+
+        Zoom Users with Unrecognized Names:
+        <ul id="unrecognized-user-list"></ul>
+
         Current Rooms (with conflicts):
         <ul id="room-list"></ul>
-
-        Users without Unique Names:
-        <ul id="non-unique-user-list"></ul>
 
         All Users (showing current rooms):
         <ul id="all-user-list"></ul>
@@ -145,7 +148,7 @@
         ul.innerHTML = ''; // clear old list
         for (let i = 0; i < users.length; i++) {
             const user = users[i];
-            console.log(user);
+            // console.log(user);
             let html = ' [' + user.room_name + '] ' + userToNameEmail(user);
             addLItoUL(ul, html);
         }
@@ -153,6 +156,16 @@
 
     function addNamesToNonUniqueUserList(names) {
         const ul = document.getElementById('non-unique-user-list');
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            addLItoUL(ul, name);
+            // console.log(name);
+        }
+    }
+
+    function replaceUnrecognizedUserList(names) {
+        const ul = document.getElementById('unrecognized-user-list');
+        ul.innerHTML = ''; // clear old list
         for (let i = 0; i < names.length; i++) {
             const name = names[i];
             addLItoUL(ul, name);
@@ -385,6 +398,8 @@
             globStartedQueue = false;
             $("#start_button").html('Start');
             $("#main-background").removeClass('started');
+            // bring everyone from waiting room when we stop running
+            bringZoomUsersFromHold();
         }
         else {
             console.log('about to verify host and if so start queue...');
@@ -392,7 +407,7 @@
                 globStartedQueue = true;
                 $("#main-background").addClass('started');
                 $("#start_button").html('Stop');
-                console.log('start queue then checkZoomConflictsIfStarted');
+                console.log('start queue. check for conflicts...');
                 checkZoomConflictsIfStarted();
             });
         }
@@ -583,6 +598,7 @@
 
     function putConflictsOnHoldInZoom(confEmails) {
         console.log('putConflictsOnHoldInZoom ',confEmails);
+        const unrecognizedZoomUsers = [];
         processAllZoomAttendees( zoomUser => {
             if (myZoomUserIsThisUser(zoomUser)) return;
             let zoomHost = zoomUserIsHost(zoomUser);
@@ -595,6 +611,7 @@
                 setZoomUserOnOrOffHold(zoomUser, holdOnOff)
             }
             else if (!zoomHost) {
+                unrecognizedZoomUsers.push(zoomUser.userName);
                 console.log('Zoom user (not host) unknown to Hepcat: ', zoomUser.userName);
             }
             // mute all zoom users who are neither zoom host nor hepcat admin
@@ -602,6 +619,7 @@
                 setZoomUserMuteOrUnmute(zoomUser, true);
             }
         });
+        replaceUnrecognizedUserList(unrecognizedZoomUsers);
     }
 
 </script>
