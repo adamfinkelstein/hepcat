@@ -11,7 +11,7 @@ export default function Grid({isAbove,gridDisplay}){
     const aboveOrBelow = isAbove ? grid.above : grid.below;
     const notConflicted = aboveOrBelow.filter(
         // remove conflicted papers (and test paper) from grid
-        paper => (paper.nid != 9999 && !user.conflict_papers.includes(paper.nid)));
+        paper => (paper.nid !== 9999 && !user.conflict_papers.includes(paper.nid)));
     const favorites = useFavorites()
     
     let queueCurrentID = 0 // none has 0 nid
