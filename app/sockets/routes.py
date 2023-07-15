@@ -661,6 +661,16 @@ def call_users_to_room(room):
         print(msg)
         broadcast_admin_alert('Server Error',msg)
 
+def get_unconflicted_paper_keys(user):
+    conflict_papers = list(user.conf_papers)
+    conflict_ids = [p.nid for p in conflict_papers]
+    all_papers = Paper.query.all()
+    unconficted = {}
+    for p in all_papers:
+        if p.nid not in conflict_ids:
+            unconficted[p.oid] = p.key
+    return unconficted
+
 ###########
 ###########
 ########### Decorator (communication) functions mostly below here:
@@ -689,10 +699,7 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
         data['admin_key'] = current_app.config['INSTANCE']
-    msg = 'Hello world'
-    key = 'AAAAAAAAAAAAAAAA' 
-    encrypted = encrypt_str(msg, key)
-    data['encrypted'] = encrypted 
+    data['paper_keys'] = get_unconflicted_paper_keys(user)
     emit('server_welcome', data)
     if user.role_is_admin:
         emit_admin_uploads(False)
@@ -748,7 +755,9 @@ def admin_next_paper(data):
     print(f'admin request for next paper in {room} with status {status_update}')
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1) # also "hides" current
-    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
+    secret_status = encrypt_str(status_update, paper.key) 
+    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update,
+               'grid_oid': paper.oid, 'grid_msg': secret_status }
     globs,current_paper = get_globs_dump_with_status(room)
     globs['update'] = update
     emit('server_set_globs', globs, broadcast=True)

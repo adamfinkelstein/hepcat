@@ -8,13 +8,13 @@ var CryptoJS = require("crypto-js");
 
 const AppGlobalsContext = React.createContext() 
 
-function decryptMsgTesting(msg) {
-    const keyStr ='AAAAAAAAAAAAAAAA' //key used in Python
+function decryptMsgUsingKey(msg, keyStr) {
     const key = CryptoJS.enc.Utf8.parse(keyStr)
     const decrypted = CryptoJS.AES.decrypt(msg, key, {mode:CryptoJS.mode.ECB})
     const utf8 = decrypted.toString(CryptoJS.enc.Utf8)
-    console.log('\n\nencrypted message: ' + msg)
-    console.log('decrypted message: ' + utf8)
+    // console.log('\n\nencrypted message: ' + msg)
+    // console.log('decrypted message: ' + utf8)
+    return utf8
 }
 
 function getTimeInHiddenMessage(msg) {
@@ -38,6 +38,7 @@ export default function AppContext({children}){
     const [user, setUser] = useState(null)
     const [isAdmin, setIsAdmin] = useState(false)
     const [adminKey, setAdminKey] = useState("");
+    const [paperKeys, setPaperKeys] = useState(null);
     const [allUsers, setAllUsers] = useState([])
     const [roomCalledTo, setRoomCalledTo] = useState("Plenary");
     const [roomChoice, setRoomChoice] = useState("Plenary");
@@ -68,6 +69,16 @@ export default function AppContext({children}){
             console.log(...output);
         }
     }, [showLogs] );
+    
+    const oidIsConflict = useCallback( oid => {
+        return !(oid in paperKeys)
+    }, [paperKeys] );
+
+    const decryptMessageByOid = useCallback( (msg, oid) => {
+        if ( oidIsConflict(oid) ) return '';
+        const key = paperKeys[oid]
+        return decryptMsgUsingKey(msg, key)
+    }, [paperKeys, oidIsConflict] );
     
     const socketEmit = useCallback( (message, data) => {
         if (!socket || !socket.emit) {
@@ -142,7 +153,7 @@ export default function AppContext({children}){
                     setRoomCalledTo(data.user.room_name)
                 }
                 socketEmit('user_request_queue', roomChoice)
-                decryptMsgTesting(data.encrypted)
+                setPaperKeys(data.paper_keys)
             };
             
             function updateGridEntry(nid, status) {
@@ -151,10 +162,10 @@ export default function AppContext({children}){
                     grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
                 }
                 if (!grid_entry) {
-                    controlledLog('cannot find grid entry for nid:', nid);
+                    controlledLog('*** cannot find grid entry for nid:', nid);
                     return;
                 }
-                //controlledLog('about to update grid entry:', grid_entry)
+                // controlledLog('*** about to update grid entry:', grid_entry)
                 if (status) {
                     grid_entry.status = status;
                     grid_entry.stickie = false;
@@ -198,10 +209,20 @@ export default function AppContext({children}){
                 }
                 if (data.update) {
                     updateGridEntry(data.update.grid_nid, data.update.status);
+                    const oid = data.update.grid_oid
+                    const conf = oidIsConflict(oid)
+                    if (conf) {
+                        controlledLog('======= Conflicted grid oid: '+oid)
+                    }
+                    else {
+                        const enc = data.update.grid_msg
+                        const dec = decryptMessageByOid(enc, oid)
+                        controlledLog('======= oid stat msg: ' + oid + ' ' + data.update.status + ' ' + dec)
+                    }
                 }
                 const barString = data.bar + '';
                 setGuiBar(barString)
-                controlledLog('set bar to:', barString);  
+                // controlledLog('set bar to:', barString);  
             }
             
             const receiveQueue = (data) => {
@@ -324,7 +345,8 @@ export default function AppContext({children}){
                 }
             };
         }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
-            controlledLog, socketEmit, recordGlobsForThisRoom]);
+            controlledLog, socketEmit, recordGlobsForThisRoom,
+            oidIsConflict, decryptMessageByOid]);
             
             
             function locateGridEntry(grid_index, grid_list, nid) {
@@ -352,6 +374,7 @@ export default function AppContext({children}){
                     "user": user,
                     "isAdmin": isAdmin,
                     "adminKey": adminKey,
+                    "paperKeys": paperKeys,
                     "allUsers": allUsers,
                     "roomCalledTo": roomCalledTo,
                     "roomChoice": roomChoice,

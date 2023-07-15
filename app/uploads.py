@@ -204,7 +204,7 @@ def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
     n = len(rows)
     oids = gen_unique_keys(n, 8) 
-    keys = gen_unique_keys(n, 32) 
+    keys = gen_unique_keys(n, 16) 
     count = 0
     for row in rows:
         if len(row) < 5:
