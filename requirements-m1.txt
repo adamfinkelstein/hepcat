@@ -34,7 +34,9 @@ networkx==2.8.4
 numpy==1.23.0
 packaging==21.3
 psycopg2==2.9.3
+pycryptodome==3.18.0
 pyparsing==3.0.9
+python-dateutil==2.8.2
 python-dotenv==0.20.0
 python-engineio==4.3.2
 python-git-info==0.8.2

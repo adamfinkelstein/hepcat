@@ -4,23 +4,28 @@ import {useFlasher} from './FlasherContext'
 import smartquotes from 'smartquotes';
 import moment from 'moment'
 
+var CryptoJS = require("crypto-js");
+
 const AppGlobalsContext = React.createContext() 
+
+function decryptMsgTesting(msg) {
+    const keyStr ='AAAAAAAAAAAAAAAA' //key used in Python
+    const key = CryptoJS.enc.Utf8.parse(keyStr)
+    const decrypted = CryptoJS.AES.decrypt(msg, key, {mode:CryptoJS.mode.ECB})
+    const utf8 = decrypted.toString(CryptoJS.enc.Utf8)
+    console.log('\n\nencrypted message: ' + msg)
+    console.log('decrypted message: ' + utf8)
+}
 
 function getTimeInHiddenMessage(msg) {
     const regexp = /===.*===/g
     const matches = msg.match(regexp)
-    console.log(matches)
     if (!matches) return msg
     for (const match of matches) {
-        console.log(match)
         const timeStr = match.replace(/===/g,'')
-        console.log(timeStr)
-        // const utcThen = moment(timeStr).toDate().toLocaleString()
         const utcThen = moment(timeStr).format('ddd LT')
         msg = msg.replace(match, utcThen)
-        console.log(msg)
     }
-    console.log(msg)
     return msg
 }
 
@@ -137,6 +142,7 @@ export default function AppContext({children}){
                     setRoomCalledTo(data.user.room_name)
                 }
                 socketEmit('user_request_queue', roomChoice)
+                decryptMsgTesting(data.encrypted)
             };
             
             function updateGridEntry(nid, status) {

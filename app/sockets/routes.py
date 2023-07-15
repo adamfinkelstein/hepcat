@@ -2,6 +2,9 @@ import os
 import re
 import random
 import json
+import base64 
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad,unpad
 from datetime import datetime
 from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
@@ -20,6 +23,18 @@ papers_schema = PaperSchema(many=True)
 global_schema = GlobQueueSchema()
 history_schema = HistorySchema(many=True)
 uploads_schema = FileUploadSchema(many=True)
+
+# Uses ECB encryption, which is probably fine for our situation.
+# Key should be 16 char for AES128.
+# Modified from this article:
+# https://medium.com/@sachadehe/encrypt-decrypt-data-between-python-3-and-javascript-true-aes-algorithm-7c4e2fa3a9ff
+def encrypt_str(raw, key):
+    raw = pad(raw.encode(),16)
+    cipher = AES.new(key.encode('utf-8'), AES.MODE_ECB)
+    enc = base64.b64encode(cipher.encrypt(raw))
+    enc = enc.decode('utf-8')
+    # print('encrypted: ' + enc)
+    return enc
 
 def get_react_env_vars():
     vars = {}
@@ -674,6 +689,10 @@ def io_connect():
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
         data['admin_key'] = current_app.config['INSTANCE']
+    msg = 'Hello world'
+    key = 'AAAAAAAAAAAAAAAA' 
+    encrypted = encrypt_str(msg, key)
+    data['encrypted'] = encrypted 
     emit('server_welcome', data)
     if user.role_is_admin:
         emit_admin_uploads(False)
