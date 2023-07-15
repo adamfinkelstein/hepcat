@@ -36,6 +36,12 @@ def encrypt_str(raw, key):
     # print('encrypted: ' + enc)
     return enc
 
+def encrypt_obj_with_oid(obj, oid, key):
+    obj_string = json.dumps(obj)
+    enc_string = encrypt_str(obj_string, key)
+    package = {'oid': oid, 'enc': enc_string}
+    return package
+
 def get_react_env_vars():
     vars = {}
     for item, value in os.environ.items():
@@ -755,9 +761,9 @@ def admin_next_paper(data):
     print(f'admin request for next paper in {room} with status {status_update}')
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1) # also "hides" current
-    secret_status = encrypt_str(status_update, paper.key) 
-    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update,
-               'grid_oid': paper.oid, 'grid_msg': secret_status }
+    update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
+    update_secret = encrypt_obj_with_oid(update, paper.oid, paper.key)
+    update['secret'] = update_secret
     globs,current_paper = get_globs_dump_with_status(room)
     globs['update'] = update
     emit('server_set_globs', globs, broadcast=True)

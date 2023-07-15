@@ -79,7 +79,14 @@ export default function AppContext({children}){
         const key = paperKeys[oid]
         return decryptMsgUsingKey(msg, key)
     }, [paperKeys, oidIsConflict] );
-    
+
+    const decryptObjectOrNull = useCallback( obj => {
+        if ( oidIsConflict(obj.oid) ) return null;
+        const str = decryptMessageByOid(obj.enc, obj.oid)
+        controlledLog("======= decrypted json: " + str);
+        return JSON.parse(str)
+    }, [paperKeys, oidIsConflict, decryptMessageByOid] );
+
     const socketEmit = useCallback( (message, data) => {
         if (!socket || !socket.emit) {
             controlledLog("socket does not exist, message not sent.");
@@ -209,15 +216,13 @@ export default function AppContext({children}){
                 }
                 if (data.update) {
                     updateGridEntry(data.update.grid_nid, data.update.status);
-                    const oid = data.update.grid_oid
-                    const conf = oidIsConflict(oid)
-                    if (conf) {
-                        controlledLog('======= Conflicted grid oid: '+oid)
+                    const obj = decryptObjectOrNull(data.update.secret)
+                    if (!obj) {
+                        controlledLog('======= Conflicted grid update')
                     }
                     else {
-                        const enc = data.update.grid_msg
-                        const dec = decryptMessageByOid(enc, oid)
-                        controlledLog('======= oid stat msg: ' + oid + ' ' + data.update.status + ' ' + dec)
+                        controlledLog('======= Decrypted grid update: ')
+                        controlledLog(obj)
                     }
                 }
                 const barString = data.bar + '';
@@ -346,7 +351,7 @@ export default function AppContext({children}){
             };
         }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
             controlledLog, socketEmit, recordGlobsForThisRoom,
-            oidIsConflict, decryptMessageByOid]);
+            oidIsConflict, decryptMessageByOid, decryptObjectOrNull]);
             
             
             function locateGridEntry(grid_index, grid_list, nid) {
