@@ -595,9 +595,10 @@ def get_about_md(append_git_info):
         md = file.read()
     if append_git_info:
         info = get_git_info_from_env()
-        if not info:
-            info = get_git_info_from_file()
-        md += info
+        # if not info:
+        #     info = get_git_info_from_file()
+        if info:
+            md += info
     return md
 
 def clear_all_stickies():

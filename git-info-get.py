@@ -19,9 +19,9 @@ def info_to_md(info):
 if __name__ == '__main__':
     info = get_git_info_from_repo()
     md = info_to_md(info)
-    info_file = 'git-info.md'
-    with open(info_file, "w") as file:
-        file.write(md)
+    # info_file = 'git-info.md'
+    # with open(info_file, "w") as file:
+    #     file.write(md)
     # print(f'wrote this to file {info_file}:')
     json_string = json.dumps(info)
     json_string = json_string.replace("'","") # remove single quotes
