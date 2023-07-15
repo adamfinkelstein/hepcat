@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Hepcat Zoom Conflictbut</title>
+    <title>Zoom Conflictbot</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
     <link type="text/css" rel="stylesheet" href="https://source.zoom.us/2.12.2/css/bootstrap.css" />
@@ -439,13 +439,24 @@
         });
     }
 
+    function resetTabTitle() {
+        // because zoom changed title, change it back...
+        document.title = "Zoom Conflictbot";
+    }
+
+    function callResetTitleInASec() {
+        setTimeout(() => {
+            resetTabTitle();
+        }, "1000");
+    }
+
     function joinZoomAfterInit() {
         console.log('joinZoomAfterInit');
         ZoomMtg.join({
             meetingNumber: globMeetingNumber,
             passWord: globMeetingPasswd,
             userName: "=== Hepcat Zoom Conflictbot ===",
-            userEmail: "af.princeton@gmail.com",
+            userEmail: "conflictbot@example.com",
             // either apiKey or sdkKey is required:
             sdkKey: globZoomClientID,
             signature: globSignature, // set in function above
@@ -469,6 +480,7 @@
             success: function (res) {
                 globMyZoomUser = res.result.currentUser;
                 console.log("success getCurrentUser", globMyZoomUser);
+                callResetTitleInASec();
             },
             error: function (res) {
                 console.log('getMyZoomID error:');
@@ -493,6 +505,7 @@
 
     function checkIfZoomHostThenRunFunction(fnIfIsHost, fnIfNotHost) {
         console.log("checkIfZoomHostThenRunFunction");
+        resetTabTitle(); // (any time user clicks something)
         ZoomMtg.getCurrentUser({
             success: function (res) {
                 globMyZoomUser = res.result.currentUser;
