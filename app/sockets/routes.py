@@ -125,13 +125,6 @@ def get_grid_dump():
         'below_oids': below_oids }
     return grid_dump
 
-def get_user_dump(user):
-    user_dump = user_schema.dump(user)
-    conflict_papers = list(user.conf_papers)
-    conflict_ids = [p.nid for p in conflict_papers]
-    user_dump['conflict_papers'] = conflict_ids
-    return user_dump
-
 def get_user_list_dump(users, sort=True):
     user_list = list(users) # in case it was a set
     if sort:
@@ -699,7 +692,7 @@ def io_connect():
         disconnect()
         return
     print(f'client connected - send welcome to {user.full_name}')
-    user_dump = get_user_dump(user)
+    user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
     # print(about_md)
     # config_vars = get_react_env_vars()
