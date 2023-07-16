@@ -762,10 +762,10 @@ def admin_next_paper(data):
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1) # also "hides" current
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }
-    update_secret = encrypt_obj_with_oid(update, paper.oid, paper.key)
-    update['secret'] = update_secret
+    update_encrypted = encrypt_obj_with_oid(update, paper.oid, paper.key)
     globs,current_paper = get_globs_dump_with_status(room)
-    globs['update'] = update
+    # globs['update'] = update # only send encrypted version!
+    globs['update_encrypted'] = update_encrypted
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs,current_paper)
 

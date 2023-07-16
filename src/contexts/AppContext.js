@@ -83,9 +83,9 @@ export default function AppContext({children}){
     const decryptObjectOrNull = useCallback( obj => {
         if ( oidIsConflict(obj.oid) ) return null;
         const str = decryptMessageByOid(obj.enc, obj.oid)
-        controlledLog("======= decrypted json: " + str);
+        // controlledLog("======= decrypted json: " + str);
         return JSON.parse(str)
-    }, [paperKeys, oidIsConflict, decryptMessageByOid] );
+    }, [oidIsConflict, decryptMessageByOid] );
 
     const socketEmit = useCallback( (message, data) => {
         if (!socket || !socket.emit) {
@@ -101,7 +101,7 @@ export default function AppContext({children}){
     }, [socket, controlledLog] );
     
     const recordGlobsForThisRoom = useCallback( (data) => {
-        controlledLog('record globs:');
+        controlledLog('record globs for this room:');
         controlledLog(data);
         data.message = getTimeInHiddenMessage(data.message);
         setHideQ(data.hide_queue);
@@ -207,6 +207,12 @@ export default function AppContext({children}){
                 }
                 controlledLog('received globs:');
                 controlledLog(data);
+                // if there was an update, it was encrypted, so get it...
+                if (data.update_encrypted) {
+                    data.update = decryptObjectOrNull(data.update_encrypted)
+                    controlledLog('decrypt update:');
+                    controlledLog(data.update);
+                }
                 const isTheRoom = (data.room === roomChoice);
                 if (isTheRoom) {
                     recordGlobsForThisRoom(data);
@@ -216,15 +222,8 @@ export default function AppContext({children}){
                 }
                 if (data.update) {
                     updateGridEntry(data.update.grid_nid, data.update.status);
-                    const obj = decryptObjectOrNull(data.update.secret)
-                    if (!obj) {
-                        controlledLog('======= Conflicted grid update')
-                    }
-                    else {
-                        controlledLog('======= Decrypted grid update: ')
-                        controlledLog(obj)
-                    }
                 }
+                // bar is same for all rooms
                 const barString = data.bar + '';
                 setGuiBar(barString)
                 // controlledLog('set bar to:', barString);  
