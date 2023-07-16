@@ -5,13 +5,11 @@ import { useFavorites } from '../contexts/PreferencesContext';
 
 export default function Grid({isAbove,gridDisplay}){
     const globals = useAppGlobals();
-    const user = globals.user;
+    const favorites = useFavorites()
     const queue = globals.queue;
     const grid = globals.grid;
     const aboveOrBelowIDs = isAbove ? grid.above_nids : grid.below_nids;
-    const notConflicted = aboveOrBelowIDs.filter(
-        nid => (!user.conflict_papers.includes(nid))); // LATER FIX!!!
-    const favorites = useFavorites()
+    const idsOrEmpty = aboveOrBelowIDs ? aboveOrBelowIDs : [];
     
     let queueCurrentID = 0 // none has 0 nid
     if(queue.length && globals.queueCurrent < queue.length && globals.queueCurrent >= 0){
@@ -56,7 +54,7 @@ export default function Grid({isAbove,gridDisplay}){
 
     return(
         <div className="grid-container">
-        { notConflicted.map( nid => {
+        { idsOrEmpty.map( nid => {
             return <div key={nid} className={gridGetClasses(nid)}><span className='font-size-4'>{nid}</span></div>
           })
         }

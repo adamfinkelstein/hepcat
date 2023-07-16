@@ -71,19 +71,26 @@ export default function AppContext({children}){
     }, [showLogs] );
     
     const oidIsConflict = useCallback( oid => {
+        if (!paperKeys) return true;
         return !(oid in paperKeys)
     }, [paperKeys] );
 
+    const oidToNid = useCallback( oid => {
+        if ( oidIsConflict(oid) ) return 0;
+        return paperKeys[oid].nid
+    }, [paperKeys, oidIsConflict] );
+
     const decryptMessageByOid = useCallback( (msg, oid) => {
         if ( oidIsConflict(oid) ) return '';
-        const key = paperKeys[oid]
+        const key = paperKeys[oid].key
         return decryptMsgUsingKey(msg, key)
     }, [paperKeys, oidIsConflict] );
 
     const decryptObjectOrNull = useCallback( obj => {
         if ( oidIsConflict(obj.oid) ) return null;
         const str = decryptMessageByOid(obj.enc, obj.oid)
-        // controlledLog("======= decrypted json: " + str);
+        // controlledLog("======= decrypted json: " + str)
+        if (!str) return null
         return JSON.parse(str)
     }, [oidIsConflict, decryptMessageByOid] );
 
@@ -152,15 +159,15 @@ export default function AppContext({children}){
                 if (isAdmin && data.admin_key && data.admin_key.length) {
                     setAdminKey(data.admin_key);
                 }
-                setGrid(data.grid)
+                setPaperKeys(data.paper_keys)
                 setAboutMD(smartquotes(data.about))
                 if (data.user.room_name) {
                     //const room = roomCodeToRoom(data.user.in_room)
                     setRoomChoice(data.user.room_name)
                     setRoomCalledTo(data.user.room_name)
                 }
+                socketEmit('user_request_grid')
                 socketEmit('user_request_queue', roomChoice)
-                setPaperKeys(data.paper_keys)
             };
             
             function updateGridEntry(nid, status) {
@@ -280,8 +287,21 @@ export default function AppContext({children}){
                 }
             };
             
+            const oidListToNidList = (oids) => {
+                if (!oids || !oids.length) return null;
+                const nids = oids.map( oid => oidToNid(oid) );
+                const nids_no0 = nids.filter( nid => (nid > 0) )
+                return nids_no0
+            };
+
+            const decodeGridData = (data) => {
+                data.above_nids = oidListToNidList(data.above_oids)
+                data.below_nids = oidListToNidList(data.below_oids)
+            };
+
             const receiveGrid = (data) => {
-                controlledLog('received grid:');
+                decodeGridData(data);
+                controlledLog('received and decoded grid:');
                 controlledLog(data);
                 setGrid(data);
             };
@@ -345,11 +365,10 @@ export default function AppContext({children}){
                     socket.off('server_reload_user', receiveReload);  
                 }
             };
-        }, [queue, grid, socket, flash, isAdmin, roomChoice, user, 
-            controlledLog, socketEmit, recordGlobsForThisRoom,
+        }, [queue, grid, socket, flash, isAdmin, roomChoice, user, paperKeys,
+            controlledLog, socketEmit, recordGlobsForThisRoom, oidToNid,
             oidIsConflict, decryptMessageByOid, decryptObjectOrNull]);
             
-            // later add to grid data structure a list of ok nids
             function checkValidNID(nid){
                 if (!grid || !grid.papers) return false
                 return (nid in grid.papers)

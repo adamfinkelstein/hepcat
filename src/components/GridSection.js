@@ -15,9 +15,12 @@ export default function GridSection(){
     const globals = useAppGlobals();
     const guiBar = globals.guiBar
     const grid = globals.grid
-    const gridCountAbove = grid && grid.above_nids ? grid.above_nids.length : 0
-    const gridCountBelow = grid && grid.below_nids ? grid.below_nids.length : 0
+    const gridCountAbove = grid && grid.above_oids ? grid.above_oids.length : 0
+    const gridCountBelow = grid && grid.below_oids ? grid.below_oids.length : 0
+    const gridNidsAbove =  grid && grid.above_nids ? grid.above_nids.length : 0
+    const gridNidsBelow =  grid && grid.below_nids ? grid.below_nids.length : 0
     const papersTotal = gridCountAbove + gridCountBelow
+    const papersConflicted = papersTotal - gridNidsAbove - gridNidsBelow
     const socketEmit = globals.socketEmit
     const controlledLog = globals.controlledLog
     const checkValidNID = globals.checkValidNID
@@ -31,7 +34,6 @@ export default function GridSection(){
         const words = stickie.split(' ');
         const status = words[0];
         const nid = parseInt(ID);
-        controlledLog(nid);
         if(!checkValidNID(nid)){
             setModalTitle("ERROR");
             setModalBody("Please choose a valid paper id.");
@@ -49,9 +51,10 @@ export default function GridSection(){
         <Container>
             <Stack direction="horizontal" className="grid-control-bar">
             <div className="font-size-3">Bar:&nbsp;{guiBar} 
-                &nbsp;&nbsp; Above:&nbsp;{gridCountAbove}
-                &nbsp;&nbsp; Below:&nbsp;{gridCountBelow}
-                &nbsp;&nbsp; Total:&nbsp;{papersTotal}
+                &nbsp; Above:&nbsp;{gridNidsAbove}
+                &nbsp; Below:&nbsp;{gridNidsBelow}
+                &nbsp; Conf:&nbsp;{papersConflicted}
+                &nbsp; Total:&nbsp;{papersTotal}
             </div>
             <DropdownButton title={gridDisplay}
                             variant="secondary" className='grid-display-dropdown'>

@@ -324,7 +324,7 @@ all_queue_rooms = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(',')
 def get_or_create_gq(room):
     gq = GlobQueue.query.filter_by(room=room).first()
     if gq:
-        print(f'retrieved GC with room {room}')
+        # print(f'retrieved GC with room {room}')
         return gq
     called_users = (room == 'Plenary')
     gq = GlobQueue(room=room, called_users=called_users)

@@ -100,25 +100,26 @@ def get_grid_dump_by_ids():
     bar = get_bar()
     papers = Paper.query.order_by(Paper.sort_score.desc()).all()
     papers_all = {}
-    above_nids = []
-    below_nids = []
+    above_oids = []
+    below_oids = []
     for paper in papers:
         nid = paper.nid
+        oid = paper.oid
         if nid == 9999: # do not put test paper in grid
             continue
         if paper.sort_score >= bar: # above bar
-            above_nids.append(nid)
+            above_oids.append(oid)
         else:
-            below_nids.append(nid)
+            below_oids.append(oid)
         papers_all[nid] = get_grid_paper_dump(paper)
-    return papers_all, above_nids, below_nids
+    return papers_all, above_oids, below_oids
 
 def get_grid_dump():
-    papers_all, above_nids, below_nids = get_grid_dump_by_ids()
+    papers_all, above_oids, below_oids = get_grid_dump_by_ids()
     grid_dump = { 
         'papers': papers_all, 
-        'above_nids': above_nids, 
-        'below_nids': below_nids}
+        'above_oids': above_oids, 
+        'below_oids': below_oids }
     return grid_dump
 
 def get_user_dump(user):
@@ -675,7 +676,8 @@ def get_unconflicted_paper_keys(user):
     unconficted = {}
     for p in all_papers:
         if p.nid not in conflict_ids:
-            unconficted[p.oid] = p.key
+            entry = {'nid': p.nid, 'key': p.key}
+            unconficted[p.oid] = entry
     return unconficted
 
 ###########
@@ -694,23 +696,31 @@ def io_connect():
     if not user:
         disconnect()
         return
-    print(f'{user.full_name} - client connected')
+    print(f'client connected - send welcome to {user.full_name}')
     user_dump = get_user_dump(user)
-    grid_dump = get_grid_dump()
     about_md = get_about_md(user.role_is_admin)
     # print(about_md)
     # config_vars = get_react_env_vars()
     # later: 'config': config_vars }
-    data = {'user': user_dump, 'grid': grid_dump, 'about':about_md } 
+    paper_keys = get_unconflicted_paper_keys(user)
+    data = { 'user': user_dump, 'about':about_md, 'paper_keys':paper_keys } 
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
         data['all_users'] = all_users
         data['admin_key'] = current_app.config['INSTANCE']
-    data['paper_keys'] = get_unconflicted_paper_keys(user)
     emit('server_welcome', data)
     if user.role_is_admin:
         emit_admin_uploads(False)
-    # no need to send to conflictbot here (just user login)
+
+@socketio.on('user_request_grid')
+def user_request_grid():
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    print(f'{user.full_name} requested grid')
+    grid_dump = get_grid_dump()
+    emit('server_set_grid', grid_dump)
 
 @socketio.on('user_request_queue')
 def user_request_queue(room):
