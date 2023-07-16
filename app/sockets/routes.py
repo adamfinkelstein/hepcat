@@ -78,44 +78,45 @@ def current_user_is_admin():
         return True
     return False
 
-def get_grid_dump_above_bar(above):
-    bar = get_bar()
-    if above:
-        papers = Paper.query.filter(Paper.sort_score >= bar).order_by(Paper.sort_score.desc()).all()
-    else:
-        papers = Paper.query.filter(Paper.sort_score < bar).order_by(Paper.sort_score.desc()).all()
-    # later: order them here
-    papers_dump = []
+def get_grid_paper_dump(paper):
+    status = 'Unseen'
+    stickie = False
+    history = list(paper.history)
     context_stickie = int(HistoryContext.Stickie)
     context_plenary = int(HistoryContext.Plenary)
-    for paper in papers:
-        status = 'Unseen'
-        stickie = False
-        history = list(paper.history)
-        for h in history:
-            if h.context_enum == context_stickie:
-                stickie = True
-            elif h.context_enum >= context_plenary: # allow any room
-                stickie = False
-                status = h.status
-        paper_dump = { 'nid': paper.nid, \
-            'status': status, \
-            'stickie': stickie }
-        papers_dump.append(paper_dump)
-    return papers_dump
+    for h in history:
+        if h.context_enum == context_stickie:
+            stickie = True
+        elif h.context_enum >= context_plenary: # any room
+            stickie = False
+            status = h.status
+    paper_dump = { 
+        'nid': paper.nid, 
+        'status': status, 
+        'stickie': stickie }
+    return paper_dump
 
-def get_grid_nids(above):
-    nids = [entry['nid'] for entry in above]
-    return nids
+def get_grid_dump_by_ids():
+    bar = get_bar()
+    papers = Paper.query.order_by(Paper.sort_score.desc()).all()
+    papers_all = {}
+    above_nids = []
+    below_nids = []
+    for paper in papers:
+        nid = paper.nid
+        if nid == 9999: # do not put test paper in grid
+            continue
+        if paper.sort_score >= bar: # above bar
+            above_nids.append(nid)
+        else:
+            below_nids.append(nid)
+        papers_all[nid] = get_grid_paper_dump(paper)
+    return papers_all, above_nids, below_nids
 
 def get_grid_dump():
-    above = get_grid_dump_above_bar(True)
-    below = get_grid_dump_above_bar(False)
-    above_nids = get_grid_nids(above)
-    below_nids = get_grid_nids(below)
+    papers_all, above_nids, below_nids = get_grid_dump_by_ids()
     grid_dump = { 
-        'above': above, 
-        'below': below, 
+        'papers': papers_all, 
         'above_nids': above_nids, 
         'below_nids': below_nids}
     return grid_dump

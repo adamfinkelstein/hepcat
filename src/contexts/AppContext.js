@@ -164,10 +164,7 @@ export default function AppContext({children}){
             };
             
             function updateGridEntry(nid, status) {
-                let grid_entry = locateGridEntry(grid.above_nids, grid.above, nid);
-                if (!grid_entry) {
-                    grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
-                }
+                const grid_entry = grid && grid.papers ? grid.papers[nid] : null
                 if (!grid_entry) {
                     controlledLog('*** cannot find grid entry for nid:', nid);
                     return;
@@ -352,24 +349,10 @@ export default function AppContext({children}){
             controlledLog, socketEmit, recordGlobsForThisRoom,
             oidIsConflict, decryptMessageByOid, decryptObjectOrNull]);
             
-            
-            function locateGridEntry(grid_index, grid_list, nid) {
-                const index = grid_index.indexOf(nid);
-                if (index >= 0 && index < grid_list.length) {
-                    return grid_list[index];
-                }
-                return null;
-            }
-            
+            // later add to grid data structure a list of ok nids
             function checkValidNID(nid){
-                let grid_entry = locateGridEntry(grid.above_nids, grid.above, nid);
-                if (!grid_entry) {
-                    grid_entry = locateGridEntry(grid.below_nids, grid.below, nid);
-                }
-                if (!grid_entry) {
-                    return false
-                }
-                return true
+                if (!grid || !grid.papers) return false
+                return (nid in grid.papers)
             }
             
             return (

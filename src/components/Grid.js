@@ -8,10 +8,9 @@ export default function Grid({isAbove,gridDisplay}){
     const user = globals.user;
     const queue = globals.queue;
     const grid = globals.grid;
-    const aboveOrBelow = isAbove ? grid.above : grid.below;
-    const notConflicted = aboveOrBelow.filter(
-        // remove conflicted papers (and test paper) from grid
-        paper => (paper.nid !== 9999 && !user.conflict_papers.includes(paper.nid)));
+    const aboveOrBelowIDs = isAbove ? grid.above_nids : grid.below_nids;
+    const notConflicted = aboveOrBelowIDs.filter(
+        nid => (!user.conflict_papers.includes(nid))); // LATER FIX!!!
     const favorites = useFavorites()
     
     let queueCurrentID = 0 // none has 0 nid
@@ -19,7 +18,8 @@ export default function Grid({isAbove,gridDisplay}){
         queueCurrentID = queue[globals.queueCurrent].nid
     }
 
-    function gridClass(gridElem){
+    function gridGetClasses(nid){
+        const gridElem = grid.papers[nid]
         let className = "grid-item";
         let paperStatus = gridElem.status
    
@@ -55,8 +55,11 @@ export default function Grid({isAbove,gridDisplay}){
     }
 
     return(
-        notConflicted.map((gridElem, index) => {
-            return <div key={index} className={gridClass(gridElem)}><span className='font-size-4'>{gridElem.nid}</span></div>
-        })
+        <div className="grid-container">
+        { notConflicted.map( nid => {
+            return <div key={nid} className={gridGetClasses(nid)}><span className='font-size-4'>{nid}</span></div>
+          })
+        }
+        </div>
     )
 }

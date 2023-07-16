@@ -15,8 +15,8 @@ export default function GridSection(){
     const globals = useAppGlobals();
     const guiBar = globals.guiBar
     const grid = globals.grid
-    const gridCountAbove = grid && grid.above ? grid.above.length : 0
-    const gridCountBelow = grid && grid.below ? grid.below.length : 0
+    const gridCountAbove = grid && grid.above_nids ? grid.above_nids.length : 0
+    const gridCountBelow = grid && grid.below_nids ? grid.below_nids.length : 0
     const papersTotal = gridCountAbove + gridCountBelow
     const socketEmit = globals.socketEmit
     const controlledLog = globals.controlledLog
@@ -64,17 +64,12 @@ export default function GridSection(){
                 }
             </DropdownButton>
             </Stack>
-            <div className="grid-container">
-                <Grid isAbove gridDisplay={gridDisplay}/>
-            </div> 
+
+            <Grid isAbove gridDisplay={gridDisplay}/>
             <hr className="horizontal-divider"/>
-            <div className="grid-container">
-                <Grid gridDisplay={gridDisplay}/>
-            </div>
+            <Grid gridDisplay={gridDisplay}/>
             <hr className="horizontal-divider"/>
             <Flasher type="stickie"></Flasher>
-
-
 
             <Stack direction="horizontal">
                 <ColorsDisplay/>
