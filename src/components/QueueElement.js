@@ -14,7 +14,7 @@ export default function QueueElement({paper, active}){
     const queueIndex = paper ? paper.queue_order - 1 : -1
     const isCurrent = (queueIndex === globals.queueCurrent)
     const isPast = (queueIndex < globals.queueCurrent)
-    const isConflict = user.conflict_papers.includes(paper.nid)
+    const isConflict = (paper.nid === 0)
     const isFavorite = favorites.includes(paper.nid)
     const isScreen = user && user.role_name === "Screen"
     const showStatus = paper.status && !isCurrent && !isScreen

@@ -17,8 +17,8 @@ export default function Paper(){
     const currentShow = isPaper && globals.serverGlobs.current_show;
     const currentShowEnter = (isPaper ? globals.serverGlobs.current_show_enter : 0);
     const cp = isPaper ? queue[queueCurrent] : null; // current paper
+    const isConflict = cp ? (cp.nid === 0) : false
     const showTags = isPaper && globals.serverGlobs.current_tags
-    const isConflict = cp ? user.conflict_papers.includes(cp.nid) : false
     const hist = (isPaper ? globals.serverGlobs.current_history : []);
     const showHist = hist && hist.length > 0
     const safeScores = cp ? cp.all_scores : ''

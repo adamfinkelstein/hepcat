@@ -575,19 +575,18 @@ def get_queue(room):
     paper_list = []
     paper_prev = None
     for index,paper in enumerate(papers):
-        # conflicts = get_paper_conflicts_dump(paper)
         _,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper)
         paper_dump = paper_schema.dump(paper)
-        # paper_dump['history'] = history_dump
-        if index <= current_index:
+        if index <= current_index: # only show status for history
             paper_dump['status'] = get_latest_history_status(paper)
         paper_dump['conflicts'] = get_user_list_dump(conf_curr)
         paper_dump['enter'] = get_user_list_dump(enter)
         paper_dump['leave'] = get_user_list_dump(leave)
-        paper_list.append(paper_dump)
+        paper_enc = encrypt_obj_with_oid(paper_dump, paper.oid, paper.key)
+        paper_list.append(paper_enc)
         paper_prev = paper
     globs,current_paper = get_globs_dump_with_status(room)
-    queue = { 'paper_list': paper_list, 'globs': globs }
+    queue = { 'paper_list_encrypted': paper_list, 'globs': globs }
     return queue,current_paper # cur paper needed by conflictbot
 
 def get_git_info_from_file():

@@ -26,8 +26,8 @@ export default function Queue(){
     const [queueExpanded, setQueueExpanded] = useState(false);
     const expandButtonLabel = (queueExpanded ? "Hide Conflicts" : "Show Conflicts")
 
-    function currentClass(index, paper, nid){
-        const isConflict = user.conflict_papers.includes(paper.nid)
+    function currentClass(index, paper){
+        const isConflict = (paper.nid === 0)
 
         let className = "queue_element"
         if (index === globals.queueCurrent){

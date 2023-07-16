@@ -233,6 +233,16 @@ export default function AppContext({children}){
                 // controlledLog('set bar to:', barString);  
             }
             
+            const decryptPaperQueue = (arr) => {
+                const dummy = { nid: 0, conflicts: [], enter: [], leave:[] }
+                const result = arr.map( p => {
+                    const dec = decryptObjectOrNull(p) 
+                    const safe = dec ? dec : dummy
+                    return safe
+                })
+                return result
+            }
+
             const receiveQueue = (data) => {
                 controlledLog('received queue:')
                 controlledLog(data)
@@ -240,6 +250,7 @@ export default function AppContext({children}){
                 const isTheRoom = (room === roomChoice);
                 controlledLog('receiveQueue compare rooms: '+room+' '+roomChoice+' '+isTheRoom)
                 if (isTheRoom) {
+                    data.paper_list = decryptPaperQueue(data.paper_list_encrypted)
                     setQueue(data.paper_list) 
                     receiveGlobs(data.globs)
                     setProbeWhen('') // when queue arrives, invalidate probe
