@@ -87,7 +87,7 @@ export default function AppContext({children}){
     }, [paperKeys, oidIsConflict] );
 
     const decryptObjectOrNull = useCallback( obj => {
-        if ( oidIsConflict(obj.oid) ) return null;
+        if ( !obj || !obj.oid || oidIsConflict(obj.oid) ) return null;
         const str = decryptMessageByOid(obj.enc, obj.oid)
         // controlledLog("======= decrypted json: " + str)
         if (!str) return null
@@ -294,9 +294,23 @@ export default function AppContext({children}){
                 return nids_no0
             };
 
+            const decodeGridPapers = (arr) => {
+                const dec = arr.map( enc => decryptObjectOrNull(enc) )
+                // returns dictionary indexed by nid
+                const papers = {}
+                for (let i = 0; i < dec.length; i++) {
+                    const p = dec[i]
+                    if (p) {
+                        papers[p.nid] = p
+                    }
+                }
+                return papers
+            }
+
             const decodeGridData = (data) => {
                 data.above_nids = oidListToNidList(data.above_oids)
                 data.below_nids = oidListToNidList(data.below_oids)
+                data.papers = decodeGridPapers(data.papers_encrypted)
             };
 
             const receiveGrid = (data) => {

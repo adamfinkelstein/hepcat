@@ -99,25 +99,28 @@ def get_grid_paper_dump(paper):
 def get_grid_dump_by_ids():
     bar = get_bar()
     papers = Paper.query.order_by(Paper.sort_score.desc()).all()
-    papers_all = {}
+    papers_encrypted = []
     above_oids = []
     below_oids = []
     for paper in papers:
         nid = paper.nid
         oid = paper.oid
+        key = paper.key
         if nid == 9999: # do not put test paper in grid
             continue
         if paper.sort_score >= bar: # above bar
             above_oids.append(oid)
         else:
             below_oids.append(oid)
-        papers_all[nid] = get_grid_paper_dump(paper)
-    return papers_all, above_oids, below_oids
+        paper_dump = get_grid_paper_dump(paper)
+        paper_enc = encrypt_obj_with_oid(paper_dump, oid, key)
+        papers_encrypted.append(paper_enc)
+    return papers_encrypted, above_oids, below_oids
 
 def get_grid_dump():
-    papers_all, above_oids, below_oids = get_grid_dump_by_ids()
+    papers_encrypted, above_oids, below_oids = get_grid_dump_by_ids()
     grid_dump = { 
-        'papers': papers_all, 
+        'papers_encrypted': papers_encrypted, 
         'above_oids': above_oids, 
         'below_oids': below_oids }
     return grid_dump
