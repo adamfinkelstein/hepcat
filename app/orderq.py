@@ -336,7 +336,29 @@ def order_q_select_alg(distance_matrix):
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
     return nodes
 
-def order_q(papers, verbose=False):
+class Minipaper:
+    def __init__(self, nid, conf_users):
+        self.nid = nid
+        self.conf_users = conf_users
+
+def paper_conflicts_culled(p, letter):
+    conflicts_culled = []
+    for user in p.conf_users:
+        if user.rooms and letter in user.rooms:
+            conflicts_culled.append(user)
+    # paper_copy = {'nid': p.nid, 'conf_users':conflicts_culled} 
+    paper_copy = Minipaper(p.nid, conflicts_culled)
+    return paper_copy
+
+def papers_with_only_conflicts_in_room(papers, room):
+    if not room or room == 'Plenary':
+        return papers
+    letter = room[-1] # last character
+    print(f'culling paper conflicts for room {letter}...')
+    result = [paper_conflicts_culled(p, letter) for p in papers]
+    return result
+
+def order_q(papers, room, verbose=False):
     n = len(papers)
     maxn = 60
     over_max = False
@@ -350,7 +372,8 @@ def order_q(papers, verbose=False):
         random.shuffle(papers) # choose random subset
         papers = papers[:maxn] # only optimize these first ones
         over_max = maxn
-    distance_matrix = get_distance_matrix(papers)
+    papers_copy = papers_with_only_conflicts_in_room(papers, room)
+    distance_matrix = get_distance_matrix(papers_copy)
     permutation = order_q_select_alg(distance_matrix)
     if permutation:
         ordered_papers = permute_papers(papers, permutation)

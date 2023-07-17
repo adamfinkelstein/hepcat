@@ -397,7 +397,7 @@ def set_queue_to_paper_list(room, paper_list, solve_tsp):
             keepers.append(paper)
     over_max = False
     if solve_tsp:
-        order_papers, over_max = order_q(keepers)
+        order_papers, over_max = order_q(keepers, room)
     else:
         order_papers = keepers
     count = 0
@@ -592,7 +592,7 @@ def get_git_info_from_file():
     return md
 
 def info_to_md(info):
-    result = '\n\n### Git Version\n\n'
+    result = '\n\n### Git Version (only shown to Admins)\n\n'
     for key in info:
         result += f'* {key}: {info[key]}\n\n'
     return result
