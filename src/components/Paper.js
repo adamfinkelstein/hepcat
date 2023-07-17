@@ -26,6 +26,32 @@ export default function Paper(){
     const currentStart = isPaper && globals.serverGlobs.current_start
     const hideThisPaper = !isPaper || isConflict
     const hideMessage = isConflict ? "CONFLICTED!" : "No current paper."
+    const roomChoice = globals.roomChoice
+
+    function userBelongsInRoom(user, roomLetter) {
+        const rooms = user.rooms
+        return (rooms.indexOf(roomLetter) !== -1);
+    }
+
+    // sort through conflicts reording depending on whether they
+    // belong in this room or another room.
+    function siftConflicts(conflicts) {
+        if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') return conflicts;
+        const roomLetter = roomChoice.slice(-1) // gets final char
+        const inRoom = []
+        const outRoom = []
+        for (let i = 0; i < conflicts.length; i++) {
+            let ci = conflicts[i]
+            if (userBelongsInRoom(ci, roomLetter)) {
+                inRoom.push(ci)
+            } else {
+                ci.otherRoom = true
+                outRoom.push(ci)
+            }
+        }
+        const result = inRoom.concat(outRoom);
+        return result
+    }
 
     let current_enter = isPaper && currentShowEnter === 1 ? cp.enter : []
     let current_leave = isPaper && currentShowEnter === 1 ? cp.leave : []
@@ -42,19 +68,19 @@ export default function Paper(){
         {
             show: true,
             title: 'Conflicts:',
-            array: isPaper && cp && cp.conflicts ? cp.conflicts : [],
+            array: isPaper && cp && cp.conflicts ? siftConflicts(cp.conflicts) : [],
             default: '(none)'
         },
         {
             show: current_leave && current_leave.length,
             title: 'Leave:',
-            array: current_leave,
+            array: siftConflicts(current_leave),
             default: ''
         },
         {
             show: current_enter && current_enter.length,
             title: 'Return:',
-            array: current_enter,
+            array: siftConflicts(current_enter),
             default: ''
         }
     ]
@@ -115,6 +141,9 @@ export default function Paper(){
         if (user.role_is_admin) {
             className += ' admin-user'
         }
+        if (user.otherRoom) {
+            className += ' other-room'
+        }
         return className
     }
 
@@ -132,7 +161,7 @@ export default function Paper(){
                         <ul>
                             {conf_arr.array.map( (user,user_ind) => {
                                 return (
-                                    <li key={user_ind}><span className={userToClass(user)}>{user.full_name}</span></li>
+                                    <li key={user_ind}><span className={userToClass(user)}>{user.rooms}:&nbsp;{user.full_name}</span></li>
                                 )
                             })}
                         </ul>

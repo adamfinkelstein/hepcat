@@ -204,6 +204,10 @@ a.nav-link {
   color: blue;
 }
 
+.other-room {
+  color: gray;
+}
+
 .current-admin-user {
   color: #8DCEE6;
 }
