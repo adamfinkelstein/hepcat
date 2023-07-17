@@ -29,19 +29,31 @@ export default function Paper(){
     const roomChoice = globals.roomChoice
 
     function userBelongsInRoom(user, roomLetter) {
-        const rooms = user.rooms
+        const rooms = user.rooms;
+        if (!rooms || !rooms.length) return false;
         return (rooms.indexOf(roomLetter) !== -1);
+    }
+
+    function userAddRoomLetterPrefix(user, letterPos) {
+        const rooms = user.rooms;
+        if (!rooms || rooms.length < letterPos+1) return;
+        const roomLetter = rooms.charAt(letterPos);
+        user.room_prefix = roomLetter + ': ';
     }
 
     // sort through conflicts reording depending on whether they
     // belong in this room or another room.
     function siftConflicts(conflicts) {
-        if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') return conflicts;
+        if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') {
+            return conflicts; // no changes
+        }
         const roomLetter = roomChoice.slice(-1) // gets final char
+        const letterPos = (roomLetter === 'X' || roomLetter === 'Y') ? 1 : 0;
         const inRoom = []
         const outRoom = []
         for (let i = 0; i < conflicts.length; i++) {
             let ci = conflicts[i]
+            userAddRoomLetterPrefix(ci, letterPos);
             if (userBelongsInRoom(ci, roomLetter)) {
                 inRoom.push(ci)
             } else {
@@ -161,7 +173,7 @@ export default function Paper(){
                         <ul>
                             {conf_arr.array.map( (user,user_ind) => {
                                 return (
-                                    <li key={user_ind}><span className={userToClass(user)}>{user.rooms}:&nbsp;{user.full_name}</span></li>
+                                    <li key={user_ind}><span className={userToClass(user)}>{user.room_prefix}{user.full_name}</span></li>
                                 )
                             })}
                         </ul>
