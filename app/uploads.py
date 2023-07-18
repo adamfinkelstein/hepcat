@@ -4,7 +4,7 @@ import uuid
 from flask import flash, current_app
 from flask_login import current_user
 from . import db
-from .models import User, Paper, History, LabelType, HistoryContext, Label, FileUpload, \
+from .models import User, Paper, History, LabelType, HistoryContext, Label, FileUpload, Query, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
     context_str_to_enum, status_str_to_enum, reset_all_gqs, \
     ensure_admin, ensure_all_gqs, drop_and_rebuild_tables
@@ -150,6 +150,39 @@ def delete_all_uploads():
         print(msg)
         flash(msg)
     print(f'Deleted {num_deleted} file upload entries.')
+
+def delete_all_queries():
+    num_deleted = Query.query.delete()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed in delete_all_queries'
+        print(msg)
+        flash(msg)
+    print(f'Deleted {num_deleted} queries.')
+
+# Name,Query
+def insert_query_rows(rows):
+    delete_all_queries()
+    count = 0
+    for row in rows:
+        if len(row) < 2:
+            continue
+        name,json = row
+        json_quote = json.replace("'",'"') # replace single w double
+        query = Query(name=name,json=json_quote)
+        db.session.add(query)
+        count += 1
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = 'failed to insert query rows'
+        print(msg)
+        flash(msg)
+        return 0
+    return count
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
@@ -475,6 +508,7 @@ csvTypes = {
     'people_rooms' : 'Email,Rooms',
     'chair_scores': 'Submission ID,Sort Score,Status,Reviews',
     'summaries' : 'Submission ID,Committee Notes',
+    'queries' : 'Name,Query',
     'history' : 'Submission ID,Seconds,Context,Status' }
 
 csvFunctions = {
@@ -486,6 +520,7 @@ csvFunctions = {
     'people_rooms' : insert_people_room_rows,
     'chair_scores' : insert_chair_score_rows,
     'summaries' : insert_summary_rows,
+    'queries' : insert_query_rows,
     'history' : insert_history_rows }
 
 csvDependence = {
@@ -635,6 +670,16 @@ def get_results_as_rows():
         rows.append(row)
     return rows
 
+def get_queries_as_rows():
+    queries = Query.query.all()
+    header = 'Name,Query'
+    rows = [ header ]
+    for query in queries:
+        json_quote = query.json.replace('"',"'") # replace double w single
+        row = f'"{query.name}","{json_quote}"'
+        rows.append(row)
+    return rows
+
 def current_user_is_admin():
     # check current_user.is_authenticated
     user = current_user
@@ -648,13 +693,22 @@ def current_user_is_super():
         return True
     return False
 
-def write_results_csv():
+def write_csv_path(filename, rows):
     app = current_app._get_current_object()
     folder = app.config['UPLOAD_FOLDER']
     make_path_if_needed(folder)
-    filename = 'hepcat-results.csv'
     fullpath = os.path.join(folder, filename)
-    rows = get_results_as_rows()
     write_csv(rows, fullpath)
     return fullpath
 
+def write_results_csv():
+    filename = 'hepcat-results.csv'
+    rows = get_results_as_rows()
+    fullpath = write_csv_path(filename, rows)
+    return fullpath
+
+def write_queries_csv():
+    filename = 'hepcat-queries.csv'
+    rows = get_queries_as_rows()
+    fullpath = write_csv_path(filename, rows)
+    return fullpath

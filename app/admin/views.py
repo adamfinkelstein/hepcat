@@ -1,21 +1,25 @@
 from flask import flash, render_template, redirect, url_for, send_file, current_app
 from flask_login import login_required, logout_user
 from . import admin
-from ..uploads import current_user_is_admin, write_results_csv
+from ..uploads import current_user_is_admin, write_results_csv, write_queries_csv
 from ..models import wipe_db_clean
 
-@admin.route('/download_results_csv/<key>')
+@admin.route('/download_csv/<kind>/<key>')
 @login_required
-def download_results_csv(key):
+def download_results_csv(kind,key):
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     # print('instance and key: ', inst, key)
-    if key != inst:
-        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+    if key != inst or kind not in ['results','queries']:
+        msg ='Sorry -- something is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
-    fullpath = write_results_csv()
+    print(f'getting {kind} csv...')
+    if kind == 'results':
+        fullpath = write_results_csv()
+    else:
+        fullpath = write_queries_csv()
     return send_file(fullpath, as_attachment=True)
 
 @admin.route('/wipe_database/<key>')

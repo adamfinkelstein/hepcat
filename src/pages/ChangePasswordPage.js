@@ -94,7 +94,8 @@ export default function ChangePasswordPage(){
                                         )
                                     })
                                 }
-                            </DropdownButton></>)
+                            </DropdownButton>
+                            </>)
                         }
                         </Stack>)}
 

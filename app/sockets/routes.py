@@ -1154,4 +1154,5 @@ def admin_upload_file(file):
         emit('server_reload_user', broadcast=True)
     else:
         emit_admin_uploads(True)
+        emit_admin_queries(True)
     

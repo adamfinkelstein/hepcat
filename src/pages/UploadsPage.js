@@ -128,7 +128,13 @@ export default function UploadsPage() {
                 </Stack>
 
                 <Stack className="space-down-btn" direction="horizontal">
-                <a className="btn btn-warning" href={"/admin/download_results_csv/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
+                <a className="btn btn-primary" href={"/admin/download_csv/queries/"+adminKey} target="_blank" rel="noopener noreferrer">Download Queries</a>
+                    &nbsp;&nbsp;Download a CSV with current queries.
+                </Stack>
+
+
+                <Stack className="space-down-btn" direction="horizontal">
+                <a className="btn btn-warning" href={"/admin/download_csv/results/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
                     &nbsp;&nbsp;Download a CSV with the final status of all papers.
                 </Stack>
 
