@@ -11,7 +11,7 @@ from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .. import db, socketio, allow_cors
-from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, \
+from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, Query, \
     HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms, insert_test_paper
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import current_user_is_admin, save_and_read_csv, pending_uploads
@@ -706,6 +706,7 @@ def io_connect():
     emit('server_welcome', data)
     if user.role_is_admin:
         emit_admin_uploads(False)
+        emit_admin_queries(False)
 
 @socketio.on('user_request_grid')
 def user_request_grid():
@@ -820,6 +821,80 @@ def admin_set_queue(filters):
     conflictbots_broadcast_conflicts(globs,current_paper)
     data = { 'message': msg, 'type': 'success', 'which': 'set_queue'}
     emit('server_send_flasher', data)
+
+@socketio.on('admin_save_query')
+def admin_save_query(filters):
+    if not current_user_is_admin():
+        disconnect()
+        return
+    print('admin save query:', filters)
+    json_string = json.dumps(filters)
+    # print('json: '+json_string)
+    name = filters['queryName']
+    query = Query.query.filter_by(name=name).first()
+    if query: # if it exists... update:
+        query.json = json_string
+    else:     # otherwise... create:
+        query = Query(name=name, json=json_string)
+    db.session.add(query)
+    try:
+        db.session.commit()
+        emit_admin_queries(True)
+        msg = f'Saved query named: {name}.'
+        data = { 'message': msg, 'type': 'success', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
+    except:
+        db.session.rollback()
+        msg = f'Failed to add query {name} ({json_string}).'
+        print(msg)
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
+
+@socketio.on('admin_load_query')
+def admin_load_query(name):
+    if not current_user_is_admin():
+        disconnect()
+        return
+    print('admin load query:', name)
+    query = Query.query.filter_by(name=name).first()
+    if query:
+        filters = json.loads(query.json)
+        print('server_send_query', filters)
+        emit('server_send_query', filters)
+    else:
+        msg = f'Cannot find query with name: {name}'
+        print(msg)
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
+
+@socketio.on('admin_delete_query')
+def admin_delete_query(name):
+    if not current_user_is_admin():
+        disconnect()
+        return
+    print('admin delete query:', name)
+    query = Query.query.filter_by(name=name).first()
+    if not query:
+        msg = f'Cannot find query with name: {name}'
+        print(msg)
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
+        return
+    num_deleted = Query.query.filter_by(name=name).delete()
+    print(f'delete {num_deleted} queries (should be 1).')
+    try:
+        db.session.commit()
+        emit_admin_queries(True)
+        msg = f'Deleted query with name: {name}'
+        print(msg)
+        data = { 'message': msg, 'type': 'success', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
+    except:
+        db.session.rollback()
+        msg = f'Cannot delete query with name: {name}'
+        print(msg)
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        emit('server_send_flasher', data)
 
 @socketio.on('admin_probe_queue')
 def admin_probe_queue(filters):
@@ -976,6 +1051,12 @@ def user_change_password(data):
         message_type = 'warning'
     reply = { 'message': message, 'type': message_type, 'which': 'change_password'}
     emit('server_send_flasher', reply)
+
+def emit_admin_queries(broadcast):
+    queries = Query.query.all()
+    names = [query.name for query in queries]
+    names.sort()
+    emit('server_send_queries', names, broadcast=broadcast)
 
 #################################################
 #

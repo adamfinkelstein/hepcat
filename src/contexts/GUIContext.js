@@ -6,27 +6,12 @@ export function useGUI(){
   return useContext(GUIFiltersContext)
 }
 export default function GUIContext({children}){
-  const [statusCheckbox, setStatusCheckbox] = useState([]);
-  const [onlyCheckbox, setOnlyCheckbox] = useState([]);
-  const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
-  const [lowRange, setLowRange] = useState(-9.0);
-  const [highRange, setHighRange] = useState(9.0);
   const [queueExplicitList, setQueueExplicitList] = useState("");
 
   return(
     <GUIFiltersContext.Provider value={{
-        "statusCheckbox": statusCheckbox,
-        "setStatusCheckbox": setStatusCheckbox,
-        "onlyCheckbox": onlyCheckbox,
-        "setOnlyCheckbox": setOnlyCheckbox,
-        "scoreSelection": scoreSelection,
-        "setScoreSelection": setScoreSelection,
-        "lowRange": lowRange,
-        "setLowRange": setLowRange,
-        "highRange": highRange,
-        "setHighRange": setHighRange,
-        "queueExplicitList": queueExplicitList,
-        "setQueueExplicitList": setQueueExplicitList,
+      "queueExplicitList": queueExplicitList,
+      "setQueueExplicitList": setQueueExplicitList,
     }}>
         {children}
     </GUIFiltersContext.Provider>

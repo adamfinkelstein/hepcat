@@ -31,15 +31,27 @@ export default function SetQueue(){
     const setGuiBar = globals.setGuiBar
     const socketEmit = globals.socketEmit
     const roomChoice = globals.roomChoice
+    const queryName = globals.queryName
+    const setQueryName = globals.setQueryName
+    const adminQueries = globals.adminQueries
+    const statusCheckbox = globals.statusCheckbox
+    const setStatusCheckbox = globals.setStatusCheckbox
+    const onlyCheckbox = globals.onlyCheckbox
+    const setOnlyCheckbox = globals.setOnlyCheckbox
+    const lowRange = globals.lowRange
+    const setLowRange = globals.setLowRange
+    const highRange = globals.highRange
+    const setHighRange = globals.setHighRange
+    const scoreSelection = globals.scoreSelection
+    const setScoreSelection = globals.setScoreSelection
+
     let controlledLog = useAppGlobals()["controlledLog"]
 
     const filterListMain = ['Stickie Only','Unseen Only','Dual Only','Journal Only','No Clusters','No Admin Conf','Only Admin Conf']
     const filterList = (roomChoice === 'Plenary' ? filterListMain : [roomChoice, ...filterListMain])
     const statusList = globals["statusList"]
 
-    const {statusCheckbox, setStatusCheckbox, onlyCheckbox, setOnlyCheckbox, 
-        scoreSelection, setScoreSelection, lowRange, setLowRange, highRange, setHighRange,
-        queueExplicitList, setQueueExplicitList} = useGUI()
+    const {queueExplicitList, setQueueExplicitList} = useGUI()
 
     let flasher = useFlasher()
     let flash = flasher["flash"]
@@ -81,18 +93,36 @@ export default function SetQueue(){
         const only = filterList.filter( (f,index) =>
             document.getElementById("only-checkbox-"+index).checked
         )
-        const data = { roomChoice, statuses, only, lowRange, highRange }
+        const data = { roomChoice, statuses, only, lowRange, highRange, queryName }
         return data
     }
 
-    function handleGetFilteredCount(event) {
+    function handleGetFilterEvent(event, emit) {
         event.preventDefault() // do not send the form!
         const data = getQueueFilterInfo()
-        controlledLog('sending queue probe:')
+        controlledLog('sending filter info for '+emit)
         controlledLog(data)
-        socketEmit("admin_probe_queue", data)
-        // feels like too much here:
-        // flash("Request sent for queue count.", "success", "set_queue")
+        socketEmit(emit, data)
+    }
+
+    function handleGetFilteredCount(event) {
+        handleGetFilterEvent(event, "admin_probe_queue")
+    }
+
+    function handleSaveQuery(event) {
+        handleGetFilterEvent(event, "admin_save_query")
+    }
+
+    function handleLoadQuery(event) {
+        event.preventDefault() // do not send the form!
+        controlledLog('load query named: '+queryName)
+        socketEmit("admin_load_query", queryName)
+    }
+
+    function handleDeleteQuery(event) {
+        event.preventDefault() // do not send the form!
+        controlledLog('delete query named: '+queryName)
+        socketEmit("admin_delete_query", queryName)
     }
 
     function handleSetQueueButton(event) {
@@ -125,6 +155,7 @@ export default function SetQueue(){
         else if(name === "message")       setHiddenMsg(value)
         else if(name === "queueExplicit") setQueueExplicitList(value)
         else if(name === "bar")           setGuiBar(value)
+        else if(name === "queryName")     setQueryName(value)
     }
 
     function setTimeInHiddenMessage(msg) {
@@ -207,6 +238,32 @@ export default function SetQueue(){
             <hr className="horizontal-divider"/>
             <Flasher type="set_queue"/>
             <div>
+                <Stack direction="horizontal" gap={4} className="named-filters">
+                    <DropdownButton title="Queries" type="button"
+                                            variant="secondary" className='select-query-name'>
+                                {
+                                    adminQueries.map((name, index) => {
+                                        return(
+                                            <Dropdown.Item key={index} as="button" onClick={
+                                                () => setQueryName(name)}
+                                                >{name}</Dropdown.Item>
+                                        )
+                                    })
+                                }
+                    </DropdownButton>                    
+                    <input
+                        name="queryName"
+                        value={queryName}
+                        onChange={handleInputChange}
+                    />
+                    <Button variant="primary" onClick={handleLoadQuery} 
+                            className="change-bar-btn">Load</Button>
+                    <Button variant="warning" onClick={handleSaveQuery} 
+                            className="change-bar-btn">Save</Button>
+                    <Button variant="danger" onClick={handleDeleteQuery} 
+                            className="change-bar-btn">Delete</Button>
+                </Stack>
+                <p>&nbsp;</p>
                 <Stack direction="horizontal" gap={4} className="admin-filters">
                     <div>
                         <span className="font-size-3"><u>Include All</u>:</span>

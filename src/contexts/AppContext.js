@@ -8,6 +8,8 @@ var CryptoJS = require("crypto-js");
 
 const AppGlobalsContext = React.createContext() 
 
+const statusList = ['Tabled','Reject','Conference','Journal']
+
 function decryptMsgUsingKey(msg, keyStr) {
     const key = CryptoJS.enc.Utf8.parse(keyStr)
     const decrypted = CryptoJS.AES.decrypt(msg, key, {mode:CryptoJS.mode.ECB})
@@ -55,6 +57,15 @@ export default function AppContext({children}){
     const [aboutMD, setAboutMD] = useState('');
     const [hideQ, setHideQ] = useState(false);
     const [hiddenMsg, setHiddenMsg] = useState("");
+    const [statusCheckbox, setStatusCheckbox] = useState([]);
+    const [onlyCheckbox, setOnlyCheckbox] = useState([]);
+    const [scoreSelection, setScoreSelection] = useState("In Range"); // default matches SetQueue.js
+    const [lowRange, setLowRange] = useState(-9.0);
+    const [highRange, setHighRange] = useState(9.0);  
+    const [adminQueries, setAdminQueries] = useState([]);
+    const [queryName, setQueryName] = useState('')
+    const [queryStateHandler, setQueryStateHandler] = useState(null);  
+
     const flasher = useFlasher()
     const flash = flasher["flash"]
     
@@ -356,6 +367,32 @@ export default function AppContext({children}){
                 window.location.reload();
             }
             
+            const isRoomName = (item) => item.startsWith('Room_') 
+
+            const modifyOnlyFiltersInRoom = (onlyList) => {
+                if (roomChoice === 'Plenary') {
+                    return onlyList.filter( item => (!isRoomName(item)) );
+                }
+                return onlyList.map( item => 
+                    ( isRoomName(item) ? roomChoice : item ))
+            }
+
+            const receiveQuery = (filters) => {
+                const modOnly = modifyOnlyFiltersInRoom(filters.only)
+                controlledLog('received query, only:')
+                controlledLog(filters);
+                controlledLog(modOnly);
+                setOnlyCheckbox(modOnly)
+                setStatusCheckbox(filters.statuses)
+                setScoreSelection("In Range")
+                setLowRange(filters.lowRange)
+                setHighRange(filters.highRange)
+            }
+
+            const receiveQueries = (queries) => {
+                setAdminQueries(queries)
+            }
+
             if (socket && 'on' in socket) {
                 controlledLog('register welcome etc');
                 socket.on('server_welcome', receiveWelcome);
@@ -370,6 +407,8 @@ export default function AppContext({children}){
                 socket.on('server_call_to_room', receiveCallToRoom); 
                 socket.on('server_logout_user', receiveLogout); 
                 socket.on('server_reload_user', receiveReload); 
+                socket.on('server_send_query', receiveQuery);
+                socket.on('server_send_queries', receiveQueries);
             }
             
             // return from useEffect is function that does cleanup
@@ -388,6 +427,8 @@ export default function AppContext({children}){
                     socket.off('server_call_to_room', receiveCallToRoom);
                     socket.off('server_logout_user', receiveLogout);
                     socket.off('server_reload_user', receiveReload);  
+                    socket.off('server_send_query', receiveQuery);
+                    socket.off('server_send_queries', receiveQueries);
                 }
             };
         }, [queue, grid, socket, flash, isAdmin, roomChoice, user, paperKeys,
@@ -433,8 +474,26 @@ export default function AppContext({children}){
                     "setHideQ": setHideQ,
                     "hiddenMsg": hiddenMsg,
                     "setHiddenMsg": setHiddenMsg,
+
+                    "statusCheckbox": statusCheckbox,
+                    "setStatusCheckbox": setStatusCheckbox,
+                    "onlyCheckbox": onlyCheckbox,
+                    "setOnlyCheckbox": setOnlyCheckbox,
+                    "scoreSelection": scoreSelection,
+                    "setScoreSelection": setScoreSelection,
+                    "lowRange": lowRange,
+                    "setLowRange": setLowRange,
+                    "highRange": highRange,
+                    "setHighRange": setHighRange,
+                    
+                    "adminQueries": adminQueries, 
+                    "setAdminQueries": setAdminQueries,
+                    "queryName": queryName, 
+                    "setQueryName": setQueryName,
+                    "queryStateHandler": queryStateHandler, 
+                    "setQueryStateHandler": setQueryStateHandler,            
                     "controlledLog": controlledLog,
-                    "statusList": ['Tabled','Reject','Conference','Journal'],
+                    "statusList": statusList,
                     "checkValidNID": checkValidNID
                 }}>
                 {children}

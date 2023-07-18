@@ -95,10 +95,11 @@ DROP TABLE IF EXISTS conflicts CASCADE;
 DROP TABLE IF EXISTS papers CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
-DROP TABLE IF EXISTS file_upload CASCADE;
-DROP TABLE IF EXISTS glob_queue CASCADE;
+DROP TABLE IF EXISTS file_uploads CASCADE;
+DROP TABLE IF EXISTS glob_queues CASCADE;
 DROP TABLE IF EXISTS labels CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS queries CASCADE;
 ```
 
 (To do so at Heroku, log into Heroku panel and find the spot in settings for that database.)

@@ -4,7 +4,7 @@ import uuid
 from flask import flash, current_app
 from flask_login import current_user
 from . import db
-from .models import User, Paper, History, LabelType, HistoryContext, HistoryStatus, Label, FileUpload, \
+from .models import User, Paper, History, LabelType, HistoryContext, Label, FileUpload, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
     context_str_to_enum, status_str_to_enum, reset_all_gqs, \
     ensure_admin, ensure_all_gqs, drop_and_rebuild_tables
@@ -22,7 +22,7 @@ def delete_all_users():
 
 def delete_all_papers():
     dump_users_papers_and_conflicts('Before deleting papers')
-    drop_and_rebuild_tables('history,conflicts,tags,labels,papers,glob_queue')
+    drop_and_rebuild_tables('history,conflicts,tags,labels,papers,glob_queues')
     ensure_all_gqs()
     dump_users_papers_and_conflicts('After deleting papers')
 

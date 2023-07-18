@@ -186,7 +186,7 @@ class Paper(db.Model):
     oid = db.Column(db.String(64), unique=True) # obfuscated
     key = db.Column(db.String(64), unique=True) # decryption
     sort_score = db.Column(db.Float, default=0.0)
-    queue_id = db.Column(db.Integer, db.ForeignKey('glob_queue.id'))
+    queue_id = db.Column(db.Integer, db.ForeignKey('glob_queues.id'))
     queue_order = db.Column(db.Integer, default=0)
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
@@ -270,7 +270,7 @@ class Label(db.Model):
 
 
 class GlobQueue(db.Model):
-    __tablename__ = 'glob_queue'
+    __tablename__ = 'glob_queues'
     id = db.Column(db.Integer, primary_key=True)
     room = db.Column(db.String(8), unique=True)
     bar = db.Column(db.Float, default=0.0)
@@ -283,11 +283,17 @@ class GlobQueue(db.Model):
     called_users = db.Column(db.Boolean, default=False)
 
 class FileUpload(db.Model):
-    __tablename__ = 'file_upload'
+    __tablename__ = 'file_uploads'
     id = db.Column(db.Integer, primary_key=True)
     file = db.Column(db.String(64))
     count = db.Column(db.Integer, default=0)
     when = db.Column(db.DateTime, server_default=func.now())
+
+class Query(db.Model):
+    __tablename__ = 'queries'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, index=True)
+    json = db.Column(db.String(), default='')
 
 ######################
 # Marshmallo schemas
@@ -314,6 +320,10 @@ class GlobQueueSchema(ma.Schema):
     class Meta:
         fields = ("room", "bar", "hide_queue", "message", 
             "current", "current_show", "current_start", "current_show_enter", "called_users")
+
+class QuerySchema(ma.Schema):
+    class Meta:
+        fields = ("name", "json")
 
 ######################
 # Global queue vars
@@ -463,10 +473,11 @@ DROP TABLE IF EXISTS conflicts CASCADE;
 DROP TABLE IF EXISTS papers CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
-DROP TABLE IF EXISTS file_upload CASCADE;
-DROP TABLE IF EXISTS glob_queue CASCADE;
+DROP TABLE IF EXISTS file_uploads CASCADE;
+DROP TABLE IF EXISTS glob_queues CASCADE;
 DROP TABLE IF EXISTS labels CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS queries CASCADE;
 '''
 
 def wipe_db_clean():
@@ -505,7 +516,7 @@ def dump_users_papers_and_conflicts(title):
     print(result)
     return result
 
-ps_tables = 'history,conflicts,papers,users,roles,file_upload,glob_queue,labels,tags'.split(',')
+ps_tables = 'history,conflicts,papers,users,roles,file_uploads,glob_queues,labels,tags,queries'.split(',')
 
 def drop_and_rebuild_tables(table_list=None):
     output = ''
