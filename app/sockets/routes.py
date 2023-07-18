@@ -841,13 +841,13 @@ def admin_save_query(filters):
         db.session.commit()
         emit_admin_queries(True)
         msg = f'Saved query named: {name}.'
-        data = { 'message': msg, 'type': 'success', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'success', 'which': 'set_queue'}
         emit('server_send_flasher', data)
     except:
         db.session.rollback()
         msg = f'Failed to add query {name} ({json_string}).'
         print(msg)
-        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_queue'}
         emit('server_send_flasher', data)
 
 @socketio.on('admin_load_query')
@@ -864,7 +864,7 @@ def admin_load_query(name):
     else:
         msg = f'Cannot find query with name: {name}'
         print(msg)
-        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_queue'}
         emit('server_send_flasher', data)
 
 @socketio.on('admin_delete_query')
@@ -877,7 +877,7 @@ def admin_delete_query(name):
     if not query:
         msg = f'Cannot find query with name: {name}'
         print(msg)
-        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_queue'}
         emit('server_send_flasher', data)
         return
     num_deleted = Query.query.filter_by(name=name).delete()
@@ -887,13 +887,13 @@ def admin_delete_query(name):
         emit_admin_queries(True)
         msg = f'Deleted query with name: {name}'
         print(msg)
-        data = { 'message': msg, 'type': 'success', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'success', 'which': 'set_queue'}
         emit('server_send_flasher', data)
     except:
         db.session.rollback()
         msg = f'Cannot delete query with name: {name}'
         print(msg)
-        data = { 'message': msg, 'type': 'warning', 'which': 'set_explicit'}
+        data = { 'message': msg, 'type': 'warning', 'which': 'set_queue'}
         emit('server_send_flasher', data)
 
 @socketio.on('admin_probe_queue')
