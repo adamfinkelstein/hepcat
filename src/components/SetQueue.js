@@ -113,16 +113,16 @@ export default function SetQueue(){
         handleGetFilterEvent(event, "admin_save_query")
     }
 
-    function handleLoadQuery(event) {
-        event.preventDefault() // do not send the form!
-        controlledLog('load query named: '+queryName)
-        socketEmit("admin_load_query", queryName)
-    }
-
     function handleDeleteQuery(event) {
         event.preventDefault() // do not send the form!
         controlledLog('delete query named: '+queryName)
         socketEmit("admin_delete_query", queryName)
+    }
+
+    function handleLoadQuery(name) {
+        controlledLog('load query named: '+name)
+        setQueryName(name)
+        socketEmit("admin_load_query", name)
     }
 
     function handleSetQueueButton(event) {
@@ -240,12 +240,12 @@ export default function SetQueue(){
             <div>
                 <Stack direction="horizontal" gap={4} className="named-filters">
                     <DropdownButton title="Queries" type="button"
-                                            variant="secondary" className='select-query-name'>
+                                            variant="primary" className='select-query-name'>
                                 {
                                     adminQueries.map((name, index) => {
                                         return(
                                             <Dropdown.Item key={index} as="button" onClick={
-                                                () => setQueryName(name)}
+                                                () => handleLoadQuery(name)}
                                                 >{name}</Dropdown.Item>
                                         )
                                     })
@@ -256,8 +256,6 @@ export default function SetQueue(){
                         value={queryName}
                         onChange={handleInputChange}
                     />
-                    <Button variant="primary" onClick={handleLoadQuery} 
-                            className="change-bar-btn">Load</Button>
                     <Button variant="warning" onClick={handleSaveQuery} 
                             className="change-bar-btn">Save</Button>
                     <Button variant="danger" onClick={handleDeleteQuery} 
