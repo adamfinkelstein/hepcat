@@ -55,18 +55,21 @@ def get_random_admin():
     users = [user for user in users if user.role_is_admin]
     return random.choice(users)
 
+def get_random_user():
+    now = datetime.now()
+    seconds_since_epoch = now.timestamp()
+    ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
+    if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
+        user = get_random_admin()
+    else:
+        user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
+    return user
+
 def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
     if allow_cors: # hack to allow Rect debug on different port w/o login
-        now = datetime.now()
-        seconds_since_epoch = now.timestamp()
-        ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
-        if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
-            user = get_random_admin()
-        else:
-            user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
-        return user
+        return get_random_user()
     print('user is not logged in: should force disconnect.')
     return None
 

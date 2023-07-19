@@ -1,11 +1,8 @@
 from flask import render_template, redirect, request, url_for, flash
-from flask_login import login_user, logout_user, login_required, \
-    current_user
+from flask_login import login_user, logout_user, login_required
 from . import auth
-from .. import db
 from ..models import User, ensure_admin
-# from ..email import send_email
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm
 
 # AF changed this from main.index to app.index and now...
 main_index = 'main.send_static_index' 
@@ -19,14 +16,6 @@ main_index = 'main.send_static_index'
 #             and request.endpoint != 'static':
 #         print('redirect for auth unconfirmed')
 #         return redirect(url_for('auth.unconfirmed'))
-
-
-# @auth.route('/unconfirmed')
-# def unconfirmed():
-#     if current_user.is_anonymous or current_user.confirmed:
-#         return redirect(url_for(main_index))
-#     print('render auth unconfirmed')
-#     return render_template('auth/unconfirmed.html')
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -52,11 +41,9 @@ def login():
         flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
 
-
 @auth.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for(main_index))
-

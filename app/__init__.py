@@ -66,9 +66,6 @@ def create_app(config_name, build_path):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
-    from .debug import debug as debug_blueprint
-    app.register_blueprint(debug_blueprint, url_prefix='/debug')
-
     from .admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
