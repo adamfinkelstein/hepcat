@@ -1,20 +1,19 @@
 import os
 import re
-import random
 import json
 import base64 
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad,unpad
-from datetime import datetime
+from Crypto.Util.Padding import pad
 from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
-from .. import db, socketio, allow_cors
+from .. import db, socketio
 from ..models import User, Paper, Label, LabelType, FileUpload, UserSchema, PaperSchema, History, HistoryContext, Query, \
     HistorySchema, FileUploadSchema, GlobQueue, GlobQueueSchema, get_or_create_gq, status_str_to_enum, context_str_to_enum, all_queue_rooms, insert_test_paper
 from ..orderq import order_q, get_enter_leave_conf_sets
-from ..uploads import current_user_is_admin, save_and_read_csv, pending_uploads
+from ..util import current_user_is_admin, get_current_user_or_none, get_latest_history, get_latest_history_status, get_latest_room_history_status
+from ..uploads import save_and_read_csv, pending_uploads
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -48,38 +47,6 @@ def get_react_env_vars():
         if item.startswith('REACT_APP'):
             vars[item] = value
     return vars
-
-def get_random_admin():
-    users = User.query.all()
-    users = list(users)
-    users = [user for user in users if user.role_is_admin]
-    return random.choice(users)
-
-def get_random_user():
-    now = datetime.now()
-    seconds_since_epoch = now.timestamp()
-    ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
-    if ten_seconds_since_epoch % 2: # alternate every 10 seconds        
-        user = get_random_admin()
-    else:
-        user = User.query.order_by(func.random()).first() # works for PostgreSQL, SQLite
-    return user
-
-def get_current_user_or_none():
-    if current_user and not current_user.is_anonymous:
-        return current_user
-    if allow_cors: # hack to allow Rect debug on different port w/o login
-        return get_random_user()
-    print('user is not logged in: should force disconnect.')
-    return None
-
-def current_user_is_admin():
-    if allow_cors: # hack to allow Rect debug on different port w/o login
-        return True
-    user = get_current_user_or_none()
-    if user and user.role_is_admin:
-        return True
-    return False
 
 def get_grid_paper_dump(paper):
     status = 'Unseen'
@@ -182,23 +149,11 @@ def get_paper_tag_labels(paper):
     result = (', ').join(result)
     return result
 
-def get_latest_history(paper):
-    latest_history = History.query.filter_by(paper_id=paper.id) \
-        .order_by(History.when.desc()).first()
-    return latest_history
-
-def get_latest_history_status(paper):
-    latest = get_latest_history(paper)
-    if latest:
-        return latest.status
-    return None
-
 def is_paper_unseen(paper):
-    context_bbs = int(HistoryContext.BBS)
-    latest = get_latest_history(paper)
-    if not latest or latest.context_enum == context_bbs:
-        return True
-    return False
+    latest = get_latest_room_history_status(paper)
+    if latest:
+        return False
+    return True
 
 def is_paper_stickie(paper):
     context_stickie = int(HistoryContext.Stickie)
@@ -574,7 +529,7 @@ def get_queue(room):
         _,conf_curr,enter,leave = get_enter_leave_conf_sets(paper_prev,paper)
         paper_dump = paper_schema.dump(paper)
         if index <= current_index: # only show status for history
-            paper_dump['status'] = get_latest_history_status(paper)
+            paper_dump['status'] = get_latest_room_history_status(paper)
         paper_dump['conflicts'] = get_user_list_dump(conf_curr)
         paper_dump['enter'] = get_user_list_dump(enter)
         paper_dump['leave'] = get_user_list_dump(leave)

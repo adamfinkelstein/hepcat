@@ -2,8 +2,8 @@ import os
 import csv
 import uuid 
 from flask import flash, current_app
-from flask_login import current_user
 from . import db
+from .util import get_latest_room_history_status
 from .models import User, Paper, History, LabelType, HistoryContext, Label, FileUpload, Query, \
     sid_to_num, get_or_insert_role, dump_users_papers_and_conflicts, \
     context_str_to_enum, status_str_to_enum, reset_all_gqs, \
@@ -645,27 +645,12 @@ def write_csv(rows, filename):
     text = '\n'.join(rows)
     write_text_to_file(text, filename)
 
-# this function and the next duplicate functions in sockets/routes.py
-# they should be refactored!
-def get_latest_plenary_history(paper):
-    context_plenary = int(HistoryContext.Plenary)
-    latest_history = History.query.filter_by(paper_id=paper.id) \
-        .filter(History.context_enum >= context_plenary) \
-        .order_by(History.when.desc()).first()
-    return latest_history
-
-def get_latest_plenary_history_status(paper):
-    latest = get_latest_plenary_history(paper)
-    if latest:
-        return latest.status
-    return None
-
 def get_results_as_rows():
     papers = Paper.query.all()
     header = 'Submission ID,Status'
     rows = [ header ]
     for paper in papers:
-        status = get_latest_plenary_history_status(paper)
+        status = get_latest_room_history_status(paper)
         row = f'{paper.sid},{status}'
         rows.append(row)
     return rows
@@ -679,19 +664,6 @@ def get_queries_as_rows():
         row = f'"{query.name}","{json_quote}"'
         rows.append(row)
     return rows
-
-def current_user_is_admin():
-    # check current_user.is_authenticated
-    user = current_user
-    if user and user.is_authenticated and user.role_is_admin:
-        return True
-    return False
-
-def current_user_is_super():
-    user = current_user
-    if user and user.is_authenticated and user.role_is_super:
-        return True
-    return False
 
 def write_csv_path(filename, rows):
     app = current_app._get_current_object()

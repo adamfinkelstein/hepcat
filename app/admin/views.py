@@ -1,7 +1,8 @@
 from flask import flash, render_template, redirect, url_for, send_file, current_app
 from flask_login import login_required, logout_user
 from . import admin
-from ..uploads import current_user_is_admin, write_results_csv, write_queries_csv
+from ..util import current_user_is_admin
+from ..uploads import write_results_csv, write_queries_csv
 from ..models import wipe_db_clean
 
 @admin.route('/download_csv/<kind>/<key>')

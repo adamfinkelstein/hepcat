@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 # from sqlalchemy import MetaData
 
-from . import db, ma, login_manager #, allow_cors
+from . import db, ma, login_manager
 
 # metadata_obj = MetaData()
 
