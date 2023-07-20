@@ -7,7 +7,7 @@ export default function AboutPage() {
     const aboutMD = globals.aboutMD;
     const controlledLog = globals.controlledLog
     let imageURLprefix = process.env.REACT_APP_ABOUT_IMAGE_PREFIX
-    if (!imageURLprefix) imageURLprefix = 'https://hepcat.herokuapp.com/about'
+    if (!imageURLprefix) imageURLprefix = 'https://hepcat.herokuapp.com/about/'
 
     // This could be used to detect load and then only get MD after that.
     // import {useRef, useEffect} from 'react'
