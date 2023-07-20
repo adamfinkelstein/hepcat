@@ -42,7 +42,10 @@ export default function HeaderBar() {
                 <NavDropdown.Item as={NavLink} to="preferences">Preferences</NavDropdown.Item>
                 {
                   isAdmin &&
+                  <>
                   <NavDropdown.Item as={NavLink} to="uploads">Upload Files</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="users">Users</NavDropdown.Item>
+                  </>
                 }
                 <NavDropdown.Item as={NavLink} to="change_password">Change Password</NavDropdown.Item>
                 <NavDropdown.Divider />

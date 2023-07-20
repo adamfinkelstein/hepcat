@@ -1,13 +1,11 @@
 import moment from 'moment'
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-//import {useState, useRef} from 'react'
 import {useAppGlobals} from '../contexts/AppContext'
 import {useFlasher} from '../contexts/FlasherContext'
 import Flasher from '../components/Flasher'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button'
-//import Button from 'react-bootstrap/Button';
 
 export default function UploadsPage() {
     let flasher = useFlasher()

@@ -22,6 +22,7 @@ def before_main_request():
 @main.route("/about/")
 @main.route("/preferences/")
 @main.route("/uploads/")
+@main.route("/users/")
 @main.route("/")
 @login_required
 def send_static_index():
