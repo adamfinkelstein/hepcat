@@ -704,6 +704,7 @@ def user_request_queue(room):
         return
     print(f'{user.full_name} requested queue for {room}')
     data,_ = get_queue(room)
+    update_last_seen(user, room)
     emit('server_set_queue', data)
 
 @socketio.on('user_request_refresh')
