@@ -8,7 +8,7 @@ import {useAppGlobals} from '../contexts/AppContext'
 import Button from 'react-bootstrap/Button'
 
 function timeDiff(since) {
-    const then = moment(since)
+    const then = moment.utc(since)
     const diff = then.fromNow()
     return diff
 }

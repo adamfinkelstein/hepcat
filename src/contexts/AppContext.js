@@ -126,7 +126,7 @@ export default function AppContext({children}){
     const userPing = () => socketEmit('user_ping', roomRef.current)
 
     useEffect(() => {
-        const timeInMS = 60*1000 // every 2 minutes
+        const timeInMS = 60*1000 // every minute
         const pingTimer = setInterval(userPing, timeInMS); 
         return () => clearInterval(pingTimer);
     }, [socketEmit])
