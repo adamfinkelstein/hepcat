@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect, useCallback} from 'react'
+import React, {useState, useContext, useEffect, useCallback, useRef} from 'react'
 import socketIOClient from "socket.io-client";
 import {useFlasher} from './FlasherContext'
 import smartquotes from 'smartquotes';
@@ -74,13 +74,15 @@ export default function AppContext({children}){
     const [modalTitle, setModalTitle] = useState("")
     const [modalBody, setModalBody] = useState("")
     const [showLogs, setShowLogs] = useState(false)
-    
+    // https://medium.com/programming-essentials/how-to-access-the-state-in-settimeout-inside-a-react-function-component-39a9f031c76f
+    const roomRef = useRef(roomChoice)
+
     const controlledLog = useCallback( (...output) => {
         if (showLogs) {
             console.log(...output);
         }
     }, [showLogs] );
-    
+
     const oidIsConflict = useCallback( oid => {
         if (!paperKeys) return true;
         return !(oid in paperKeys)
@@ -117,7 +119,18 @@ export default function AppContext({children}){
         }
         socket.emit(message);
     }, [socket, controlledLog] );
-    
+
+    // challenges of setting a timer in react and accessing data in callback:
+    // https://upmostly.com/tutorials/settimeout-in-react-components-using-hooks
+    // https://medium.com/programming-essentials/how-to-access-the-state-in-settimeout-inside-a-react-function-component-39a9f031c76f
+    const userPing = () => socketEmit('user_ping', roomRef.current)
+
+    useEffect(() => {
+        const timeInMS = 60*1000 // every 2 minutes
+        const pingTimer = setInterval(userPing, timeInMS); 
+        return () => clearInterval(pingTimer);
+    }, [socketEmit])
+     
     const recordGlobsForThisRoom = useCallback( (data) => {
         controlledLog('record globs for this room:');
         controlledLog(data);
@@ -397,6 +410,12 @@ export default function AppContext({children}){
                 setAdminQueries(queries)
             }
 
+            const receiveRefresh = (all_users) => {
+                controlledLog('received refresh with all users:');
+                controlledLog(all_users)
+                setAllUsers(all_users)
+            }
+
             if (socket && 'on' in socket) {
                 controlledLog('register welcome etc');
                 socket.on('server_welcome', receiveWelcome);
@@ -413,6 +432,7 @@ export default function AppContext({children}){
                 socket.on('server_reload_user', receiveReload); 
                 socket.on('server_send_query', receiveQuery);
                 socket.on('server_send_queries', receiveQueries);
+                socket.on('server_refresh_users', receiveRefresh);
             }
             
             // return from useEffect is function that does cleanup
@@ -433,6 +453,7 @@ export default function AppContext({children}){
                     socket.off('server_reload_user', receiveReload);  
                     socket.off('server_send_query', receiveQuery);
                     socket.off('server_send_queries', receiveQueries);
+                    socket.off('server_refresh_users', receiveRefresh);
                 }
             };
         }, [queue, grid, socket, flash, isAdmin, roomChoice, user, paperKeys,

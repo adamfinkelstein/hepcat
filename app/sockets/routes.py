@@ -443,6 +443,17 @@ def set_queue_explicit(room, exp):
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     return msg
 
+def update_last_seen(user, room):
+    user.last_seen = func.now()
+    user.last_seen_in = room
+    db.session.add(user)
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        msg = f'failed to update user time last seen for {user.full_name}'
+        print(msg)
+
 def show_current_paper(room):
     gq = get_or_create_gq(room)
     gq.current_show = True
@@ -666,6 +677,15 @@ def io_connect():
         emit_admin_uploads(False)
         emit_admin_queries(False)
 
+@socketio.on('user_ping')
+def user_ping(room):
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    update_last_seen(user, room)
+    print(f'ping from {user.full_name} in room {room}')
+
 @socketio.on('user_request_grid')
 def user_request_grid():
     user = get_current_user_or_none()
@@ -685,6 +705,16 @@ def user_request_queue(room):
     print(f'{user.full_name} requested queue for {room}')
     data,_ = get_queue(room)
     emit('server_set_queue', data)
+
+@socketio.on('user_request_refresh')
+def user_request_refresh():
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    print(f'{user.full_name} requested refresh')
+    all_users = get_all_user_list_dump()
+    emit('server_refresh_users', all_users)
 
 @socketio.on('disconnect')
 def io_disconnect():

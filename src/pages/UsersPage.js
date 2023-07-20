@@ -1,3 +1,4 @@
+import moment from 'moment'
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 // import {useState} from 'react'
@@ -6,13 +7,19 @@ import Flasher from '../components/Flasher'
 import {useAppGlobals} from '../contexts/AppContext'
 import Button from 'react-bootstrap/Button'
 
+function timeDiff(since) {
+    const then = moment(since)
+    const diff = then.fromNow()
+    return diff
+}
+
 export default function UsersPage(){
     // let [lastPing, setLastPing] = useState(null)
     // let flasher = useFlasher()
     // let flash = flasher["flash"]
     
     const globals = useAppGlobals();
-    // const socketEmit = globals.socketEmit;
+    const socketEmit = globals.socketEmit;
     const isAdmin = globals.isAdmin
     const allUsers = isAdmin ? globals.allUsers : []
     const noSuper = allUsers.filter( (user)=> (user.role_name !== 'Super') )
@@ -20,15 +27,24 @@ export default function UsersPage(){
     const controlledLog = globals.controlledLog
 
     const userLine = (user) => {
-        let line = user.full_name + ' <' + user.email + '> ' + user.room_name 
-        if (user.rooms) {
-            line += ' [' + user.rooms + ']'
+        const { full_name, email, rooms, room_name, last_seen, last_seen_in } = user
+        let line = full_name + ' <' + email + '> ' + room_name 
+        if (rooms) line += ' [' + rooms + ']'
+        if (last_seen) {
+            line += ' (seen ' + timeDiff(last_seen)
+            if (last_seen_in) line += ' in ' + last_seen_in
+            line += ')'
         }
         return line
     }
 
     const userClasses = (user) => {
         return user.role_is_admin ? 'admin-user' : ''
+    }
+
+    const handleRefreshClick = () => {
+        socketEmit('user_request_refresh')
+        controlledLog('user_request_refresh')
     }
 
     const switchUserFunc = (user) => {
@@ -51,7 +67,11 @@ export default function UsersPage(){
             <Flasher type="users"/>
             <Container className="users-main-container">
                 <p>&nbsp;</p>
-                <span className='font-size-1'>All Users</span>
+                <Stack direction="horizontal">
+                    <span className='font-size-1'>All Users&nbsp;&nbsp;</span>
+                    <Button className="refresh-users-button" variant="primary" 
+                        onClick={()=>handleRefreshClick()}>Refresh Data</Button>
+                </Stack>
                 <Stack direction="vertical">
                 {
                     noSuper.map((user) => {

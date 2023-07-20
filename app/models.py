@@ -110,8 +110,9 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime)
-    rooms = db.Column(db.String(4))
-    in_room = db.Column(db.String(4))
+    last_seen_in = db.Column(db.String(8)) # like Room_A
+    rooms = db.Column(db.String(4))   # 2 char like: AX
+    in_room = db.Column(db.String(4)) # 1 char like: A
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -156,17 +157,17 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'confirm': self.id}).decode('utf-8')
 
-    def confirm(self, token):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token.encode('utf-8'))
-        except:
-            return False
-        if data.get('confirm') != self.id:
-            return False
-        self.confirmed = True
-        db.session.add(self)
-        return True
+    # def confirm(self, token):
+    #     s = Serializer(current_app.config['SECRET_KEY'])
+    #     try:
+    #         data = s.loads(token.encode('utf-8'))
+    #     except:
+    #         return False
+    #     if data.get('confirm') != self.id:
+    #         return False
+    #     self.confirmed = True
+    #     db.session.add(self)
+    #     return True
 
     def __repr__(self):
         return '<User %r>' % self.full_name
@@ -301,7 +302,7 @@ class Query(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("email", "full_name", "role_name", "role_is_admin", "rooms", "room_name")
+        fields = ("email", "full_name", "role_name", "role_is_admin", "rooms", "room_name", "last_seen", "last_seen_in")
 
 class PaperSchema(ma.Schema):
     class Meta:
