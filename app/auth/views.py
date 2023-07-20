@@ -20,7 +20,7 @@ main_index = 'main.send_static_index'
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    ensure_admin()
+    ensure_admin() # Esure that special (chair) admin exists at login
     form = LoginForm()
     if form.validate_on_submit():
         email_lower = form.email.data.lower() # ensure lower case email

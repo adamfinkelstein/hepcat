@@ -4,6 +4,7 @@ import Stack from "react-bootstrap/Stack";
 // import {useFlasher} from '../contexts/FlasherContext'
 import Flasher from '../components/Flasher'
 import {useAppGlobals} from '../contexts/AppContext'
+import Button from 'react-bootstrap/Button'
 
 export default function UsersPage(){
     // let [lastPing, setLastPing] = useState(null)
@@ -14,6 +15,9 @@ export default function UsersPage(){
     // const socketEmit = globals.socketEmit;
     const isAdmin = globals.isAdmin
     const allUsers = isAdmin ? globals.allUsers : []
+    const noSuper = allUsers.filter( (user)=> (user.role_name !== 'Super') )
+    const adminKey = globals.adminKey
+    const controlledLog = globals.controlledLog
 
     const userLine = (user) => {
         let line = user.full_name + ' <' + user.email + '> ' + user.room_name 
@@ -27,6 +31,21 @@ export default function UsersPage(){
         return user.role_is_admin ? 'admin-user' : ''
     }
 
+    const switchUserFunc = (user) => {
+        const name = user.full_name
+        const hrefPrefix="/admin/switch_user/"
+        const switchURL = hrefPrefix + user.email + '/' + adminKey
+        return () => {
+            let text = "Are you really sure you want to switch to become user " + name + '?'
+            if (window.confirm(text) === true) {
+                controlledLog('Switch user confirmed. Redirect.');
+                window.location.href = switchURL
+            } else {
+                controlledLog('Switch user canceled.');
+            }
+        }
+    }
+
     return(
         <Container className="UsersPage">
             <Flasher type="users"/>
@@ -35,11 +54,12 @@ export default function UsersPage(){
                 <span className='font-size-1'>All Users</span>
                 <Stack direction="vertical">
                 {
-                    allUsers.map((user, index) => {
+                    noSuper.map((user) => {
                         return(
-                            <div key={index} 
-                            className={userClasses(user)}
-                            >{userLine(user)}</div>
+                            <div key={user.email}>
+                                <Button className="switch-button" variant="secondary" onClick={switchUserFunc(user)}>Become</Button>
+                                <span className={userClasses(user)}>{userLine(user)}</span>
+                            </div>
                         )
                     })
                 }

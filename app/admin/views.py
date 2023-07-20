@@ -1,9 +1,9 @@
 from flask import flash, render_template, redirect, url_for, send_file, current_app
-from flask_login import login_required, logout_user
+from flask_login import login_user, logout_user, login_required
 from . import admin
 from ..util import current_user_is_admin
 from ..uploads import write_results_csv, write_queries_csv
-from ..models import wipe_db_clean
+from ..models import wipe_db_clean, User
 
 @admin.route('/download_csv/<kind>/<key>')
 @login_required
@@ -62,3 +62,26 @@ def zoom_conflictbot(key):
                            conflictbot_socket=conflictbot_socket, 
                            url=url, client_id=client_id, 
                            client_secret=client_secret)
+
+@admin.route('/switch_user/<email>/<key>')
+@login_required
+def switch_user(email,key):
+    if not current_user_is_admin():
+        return redirect(url_for('auth.login'))
+    inst = current_app.config['INSTANCE']
+    if key != inst:
+        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+        flash(msg)
+        return redirect(url_for('auth.login'))
+    email = email.lower()
+    user = User.query.filter_by(email=email).first()
+    if user:
+        remember_me = True
+        login_user(user, remember_me)
+        msg =f'You are now logged in as {user.full_name}.'
+    else:
+        msg =f'Unable to find user with email {email}!'
+    flash(msg)
+    main_index = 'main.send_static_index' 
+    next = url_for(main_index)
+    return redirect(next)

@@ -296,7 +296,11 @@ export default function AppContext({children}){
                 return false;
             }
             
-            const receiveCallToRoom = (room) => {
+            const receiveCallToRoom = (data) => {
+                const room = data.room
+                if (isAdmin && data.all_users && data.all_users.length) {
+                    setAllUsers(data.all_users);
+                }
                 if (room === roomChoice) { // already there
                     controlledLog('received call and already in room: '+room)
                     return; 

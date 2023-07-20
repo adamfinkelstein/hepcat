@@ -700,7 +700,9 @@ def admin_bring_to_room(room):
         return
     print(f'admin request to bring to room {room}')
     call_users_to_room(room)
-    emit('server_call_to_room', room, broadcast=True)
+    all_users = get_all_user_list_dump()
+    data = { 'room': room, 'all_users': all_users }
+    emit('server_call_to_room', data, broadcast=True)
     globs,_ = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_user_list()
