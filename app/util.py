@@ -68,7 +68,7 @@ def get_latest_room_history(paper):
         .order_by(History.when.desc()).first()
     return latest_history
 
-# status from any event (bbs, sticky, room)
+# status from any event (bbs, stickie, room)
 def get_latest_history_status(paper):
     latest = get_latest_history(paper)
     if latest:

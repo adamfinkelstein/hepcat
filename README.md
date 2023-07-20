@@ -127,7 +127,7 @@ python hepcat.py
 export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
 export HOST="localhost"
 export REACT_APP_SHOW_LOGS=True
-export REACT_APP_ABOUT_IMAGE_PREFIX="http://localhost:3000/about"
+export REACT_APP_ABOUT_IMAGE_PREFIX="http://localhost:3000/about/"
 npm start
 ```
 

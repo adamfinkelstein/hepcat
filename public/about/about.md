@@ -16,7 +16,7 @@ Hepcat is an application designed to help the ACM SIGGRAPH Technical Papers PC m
 
 ### Functionality
 
-The two main components of the application are (1) a "queue" of papers to be discussed in sequence, and (2) a "grid" showing the progress of all papers, on the left and right as shown here:
+The two main components of the application are (*left*) a "queue" of papers to be discussed in sequence, and (*right*) a "paper" area that has two tabs, showing either the paper currently being discussed or "grid" showing the progress of all papers.
 
 ![](main-page.png)
 
@@ -28,11 +28,15 @@ The progress of paper discussions can also be observed by the "grid" which can b
 
 ![](grid.png)
 
+Papers are ordered in the grid according to an average score computed by the Chair. The grid is divided into two sections" above and below the "bar", which is a score threshold determined by the Chair. By convention, all papers above the bar will be discussed during the PC meeting while many rejected papers below the bar may not be discussed during the meeting. 
+
 Colors of papers in the grid indicate their status as of the most recent discussion in the plenary meeting, for example red for "Reject", blue for "Conference", green for "Journal" and yellow for "Tabled". Papers over a light gray background have not yet been discussed. Below the grid is a legend, showing the color correspondence (shown below next to the stickie interface). All these colors are user-configurable, as discussed below under Customization.
 
-PC members can mark papers as ready to be discussed by filing a "stickie". (Prior to 2014 this was done by writing the paper ID on an actual "stickie note" and passing it to an administrator.) Just follow the three simple steps shown to send in a stickie:
+PC members can mark papers as "ready to be discussed" by filing a "stickie". (Prior to 2014 this was done by writing the paper ID on an actual "stickie note" and passing it to an administrator.) Just follow the three simple steps shown below to send in a stickie. After a stickie has been filed, the outline of the paper number in the grid is bolder, with more rounded corners.
 
 ![](stickie.png)
+
+**Important Note:** When you file a stickie, the status you choose does **not** become the status of the paper shown in the grid, which only shows the status as of the last time the paper was publicly discussed in the meeting room. The stickie status only provides a clue to the Chair (if not conflicted) as to whether the private discussion among the primary/secondary has converged to a particular status. Thus if a paper has not yet been discussed, and you file a stickie with status, say, Journal, the paper entry remains white in the grid (unseen). Likewise if a paper was most recently marked Tabled, and you file a Journal stickie, the paper remains yellow in the grid.
 
 ### Customization
 
