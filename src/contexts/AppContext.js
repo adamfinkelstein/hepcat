@@ -311,18 +311,16 @@ export default function AppContext({children}){
             
             const receiveCallToRoom = (data) => {
                 const room = data.room
+                const alreadyThere = (room === roomChoice)
                 if (isAdmin && data.all_users && data.all_users.length) {
                     setAllUsers(data.all_users);
                 }
-                if (room === roomChoice) { // already there
-                    controlledLog('received call and already in room: '+room)
-                    return; 
-                }
                 if (belongInRoom(room)) {
-                    controlledLog('called to room: '+room)
                     setRoomChoice(room)
                     setRoomCalledTo(room)
-                    flash("Admin brought you to "+room, "success", "room_change")
+                    if (!alreadyThere) {
+                        flash("Admin brought you to "+room, "success", "room_change")
+                    }
                 }
             };
             
