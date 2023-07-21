@@ -222,16 +222,18 @@ export default function SetQueue(){
                     <Form.Check type="checkbox" checked={hideQ}
                         onChange={handleHideQueueCheckbox}
                     />
-                    <span className="hideQ-text font-size-4">Hide queue from everyone except admin.</span>
+                    <span className="hideQ-text font-size-4">Hide queue from everyone except admin, showing...</span>
                 </Stack>
                 <Stack direction="horizontal" className="set-message-row">
-                    <span className="font-size-4">Message: </span>
+                    <span className="font-size-4">... this message:</span>
                     <input
                         name="message" 
                         value={hiddenMsg}
                         onChange={handleInputChange}
                         className="message-input"
                     />
+                    <span className="font-size-4">Can use time:&nbsp;</span>
+                    <span className="font-size-4 text-tty">_T+hh:mm_</span>
                 </Stack>
 
             </div>

@@ -123,9 +123,9 @@ export default function AppContext({children}){
     // challenges of setting a timer in react and accessing data in callback:
     // https://upmostly.com/tutorials/settimeout-in-react-components-using-hooks
     // https://medium.com/programming-essentials/how-to-access-the-state-in-settimeout-inside-a-react-function-component-39a9f031c76f
-    const userPing = () => socketEmit('user_ping', roomRef.current)
 
     useEffect(() => {
+        const userPing = () => socketEmit('user_ping', roomRef.current)
         const timeInMS = 60*1000 // every minute
         const pingTimer = setInterval(userPing, timeInMS); 
         return () => clearInterval(pingTimer);

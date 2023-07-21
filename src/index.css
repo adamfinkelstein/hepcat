@@ -513,6 +513,11 @@ a.nav-link {
 
 .message-input{
   margin-left: 10px;
+  margin-right: 10px;
+}
+
+.text-tty{
+  font-family: monospace;
 }
 
 .set-message-row{

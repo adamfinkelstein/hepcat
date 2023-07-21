@@ -684,7 +684,7 @@ def user_ping(room):
         disconnect()
         return
     update_last_seen(user, room)
-    # print(f'ping from {user.full_name} in room {room}')
+    print(f'ping from {user.full_name} in room {room}')
 
 @socketio.on('user_request_grid')
 def user_request_grid():
