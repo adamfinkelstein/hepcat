@@ -401,12 +401,14 @@ def insert_test_paper():
         return -1
     sid = num_to_sid(nid)
     oid = 'test_9999'
+    key = '1234567890123456' # must be 16 characters
     thumbnail = 'https://fakeimg.pl/600x450/685/f5c/?text=TEST&font_size=240&font=bebas'
     title = 'Testing Conflictbot'
     abstract = 'This paper should be conflicted with all users.'
     paper = Paper(nid=nid, 
                 sid=sid,
                 oid=oid,
+                key=key,
                 thumbnail=thumbnail,
                 title=title,
                 journal_only=False,
@@ -419,6 +421,7 @@ def insert_test_paper():
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
+            # print(f'9999 conflicted with {user.full_name} ({count})')
     try:
         db.session.commit()
     except:
