@@ -124,8 +124,8 @@ python hepcat.py
 * In another terminal run React server:
 
 ```
-export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
 export HOST="localhost"
+export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
 export REACT_APP_SHOW_LOGS=True
 export REACT_APP_ABOUT_IMAGE_PREFIX="http://localhost:3000/about/"
 npm start
@@ -158,15 +158,18 @@ heroku buildpacks
 
 Also set environment variables at Heroku, at least:
 
-* `SECRET_KEY`
+* `SECRET_KEY` (change resets all hepcat local store inc acts)
 * `DATABASE_URL_HEROKU` (to the postgres database)
 * `FLASK_CONFIG=production` (later, make this default in code)
 * `HEPCAT_ADMIN_LOGIN`
 * `HEPCAT_ADMIN_PASSWD`
+* `HEPCAT_CHAIR_LOGIN`
+* `HEPCAT_CHAIR_PASSWD`
 * `HEPCAT_USE_ORTOOLS=True`
 * `ZOOM_CONFLICTBOT_CLIENT_ID`
 * `ZOOM_CONFLICTBOT_CLIENT_SECRET`
 * `HEPCAT_CONFLICTBOT_SOCKET`
+* `REACT_APP_PING_TIMER_SECS` (unset or 0 means no pings)
 
 ** AF should check this list at Heroku and see if more updates are needed. **
 

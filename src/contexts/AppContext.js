@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect, useCallback, useRef} from 'react'
+import React, {useState, useContext, useEffect, useCallback} from 'react'
 import socketIOClient from "socket.io-client";
 import {useFlasher} from './FlasherContext'
 import smartquotes from 'smartquotes';
@@ -74,8 +74,6 @@ export default function AppContext({children}){
     const [modalTitle, setModalTitle] = useState("")
     const [modalBody, setModalBody] = useState("")
     const [showLogs, setShowLogs] = useState(false)
-    // https://medium.com/programming-essentials/how-to-access-the-state-in-settimeout-inside-a-react-function-component-39a9f031c76f
-    const roomRef = useRef(roomChoice)
 
     const controlledLog = useCallback( (...output) => {
         if (showLogs) {
@@ -119,17 +117,6 @@ export default function AppContext({children}){
         }
         socket.emit(message);
     }, [socket, controlledLog] );
-
-    // challenges of setting a timer in react and accessing data in callback:
-    // https://upmostly.com/tutorials/settimeout-in-react-components-using-hooks
-    // https://medium.com/programming-essentials/how-to-access-the-state-in-settimeout-inside-a-react-function-component-39a9f031c76f
-
-    useEffect(() => {
-        const userPing = () => socketEmit('user_ping', roomRef.current)
-        const timeInMS = 60*1000 // every minute
-        const pingTimer = setInterval(userPing, timeInMS); 
-        return () => clearInterval(pingTimer);
-    }, [socketEmit])
      
     const recordGlobsForThisRoom = useCallback( (data) => {
         controlledLog('record globs for this room:');
@@ -165,10 +152,18 @@ export default function AppContext({children}){
         }, [setShowLogs])
         
         useEffect(() => {
-            controlledLog('roomChoice is now '+roomChoice);
+            controlledLog('roomChoice is now ' + roomChoice);
             socketEmit('user_request_queue', roomChoice)
+            const userPing = () => socketEmit('user_ping', roomChoice)
+            const pingEnv = process.env.REACT_APP_PING_TIMER_SECS
+            const pingSec = pingEnv ? parseInt(pingEnv) : 0
+            if (pingSec) {
+                const pingTimer = setInterval(userPing, pingSec * 1000); 
+                controlledLog('set ping timer with secs ' + pingSec + ' and room ' + roomChoice);
+                return () => clearInterval(pingTimer);
+            }
         }, [roomChoice, controlledLog, socketEmit]);
-        
+            
         useEffect(() => {
             
             const receiveWelcome = (data) => {
@@ -220,7 +215,7 @@ export default function AppContext({children}){
                 }
                 queue[queue_index].status = status;
                 const newQueue = [...queue];
-                setQueue(newQueue);
+                setQueue(newQueue); // force update
             }
             
             const receiveStickie = (grid_nid) => {
@@ -411,8 +406,8 @@ export default function AppContext({children}){
             const receiveRefresh = (all_users) => {
                 controlledLog('received refresh with all users:');
                 controlledLog(all_users)
-                setAllUsers(all_users)
-            }
+                setAllUsers(all_users);
+        }
 
             if (socket && 'on' in socket) {
                 controlledLog('register welcome etc');
