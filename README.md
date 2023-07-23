@@ -178,3 +178,12 @@ Finally, after sending local changes, deploy at Heroku like this:
 ```
 git push heroku
 ```
+
+This appears to restart Heroku app but not clear if it picks up changes to environment vars:
+
+```
+heroku maintenance:on
+heroku restart
+heroku maintenance:off
+```
+
