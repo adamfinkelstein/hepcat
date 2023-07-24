@@ -95,6 +95,12 @@ class Role(db.Model):
             return True
         return False
 
+    @hybrid_property
+    def is_screen(self):
+        if self.name == 'Screen':
+            return True
+        return False
+
     def __repr__(self):
         return '<Role %r>' % self.name
 
@@ -141,6 +147,12 @@ class User(UserMixin, db.Model):
         if not self.role:
             return False
         return self.role.is_admin
+    
+    @hybrid_property
+    def role_is_screen(self):
+        if not self.role:
+            return False
+        return self.role.is_screen
 
     @property
     def password(self):
@@ -417,11 +429,12 @@ def insert_test_paper():
     users = User.query.all()
     count = 0
     for user in users:
-        if not user.role_is_admin:
-            user.conf_papers.append(paper)
-            db.session.add(user)
-            count += 1
-            # print(f'9999 conflicted with {user.full_name} ({count})')
+        if user.role_is_admin or user.role_is_screen:
+            continue
+        user.conf_papers.append(paper)
+        db.session.add(user)
+        count += 1
+        # print(f'9999 conflicted with {user.full_name} ({count})')
     try:
         db.session.commit()
     except:
