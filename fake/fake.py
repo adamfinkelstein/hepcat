@@ -174,8 +174,12 @@ def rand_num_conflicts():
     n = math.floor( np.random.poisson(3) )
     return n
 
+def filter_emails_without_screen(emails):
+    return [email for email in emails if not 'screen' in email]
+
 def rand_conflicts(emails, n):
-    ems = emails.copy()
+    # ems = emails.copy()
+    ems = filter_emails_without_screen(emails)
     random.shuffle(ems)
     ems = ems[:n]
     return ems
