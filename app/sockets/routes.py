@@ -750,13 +750,24 @@ def admin_prev_paper(room):
     conflictbots_broadcast_conflicts(globs,current_paper)
 
 @socketio.on('admin_next_paper')
+def admin_next_paper(room):
+    if not current_user_is_admin():
+        disconnect()
+        return
+    print(f'admin request for prev paper in {room}')
+    zero_or_inc_current_index(room, +1) # also "hides" current
+    globs,current_paper = get_globs_dump_with_status(room)
+    emit('server_set_globs', globs, broadcast=True)
+    conflictbots_broadcast_conflicts(globs,current_paper)
+
+@socketio.on('admin_advance_queue')
 def admin_next_paper(data):
     if not current_user_is_admin():
         disconnect()
         return
     room = data['roomChoice']
     status_update = data['newStatus']
-    print(f'admin request for next paper in {room} with status {status_update}')
+    print(f'admin request to advance queue in {room} with status {status_update}')
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1) # also "hides" current
     update = { 'queue_index':before_index, 'grid_nid':paper.nid, 'status':status_update }

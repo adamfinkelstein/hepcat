@@ -21,7 +21,13 @@ export default function AdminQueueControls() {
                         socketEmit("admin_prev_paper", roomChoice)
                     }}
             >
-            Prev
+            &uarr;
+            </button>
+            <button disabled={disableNext}
+                    type="button" className="btn btn-light paper-change-button" onClick={()=>{
+                        socketEmit("admin_next_paper", roomChoice)
+                    }}>
+            &darr;
             </button>
             <button disabled={disableShow}
                     type="button" className="btn btn-light paper-change-button" onClick={()=>{
@@ -29,14 +35,14 @@ export default function AdminQueueControls() {
                     }}>
             Show
             </button>
-            <button disabled={disableNext}
-                    type="button" className="btn btn-light paper-change-button" onClick={()=>{
-                        const data = {roomChoice, newStatus};
-                        socketEmit("admin_next_paper", data)
-                    }}>
-            Next
-            </button>
             <ChooseStatusDropdown currentStatus={newStatus} setValue={setNewStatus}/>
+            <button disabled={disableNext}
+                    type="button" className="btn btn-light paper-change-button advance-btn" onClick={()=>{
+                        const data = {roomChoice, newStatus};
+                        socketEmit("admin_advance_queue", data)
+                    }}>
+            Advance
+            </button>
         </Stack>
     )
 }

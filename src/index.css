@@ -232,6 +232,10 @@ a.nav-link {
   border: 1px dashed gray;
 }
 
+.advance-btn {
+  margin-left: 10px;
+}
+
 /* Paper Styling (right panel) */
 
 
