@@ -22,11 +22,12 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 static_folder = '' # this global is set in create_app below
 allow_cors = os.getenv('ALLOW_CORS')
+allow_cors_socket = os.getenv('ALLOW_CORS')
 
 # Set this in SocketIO(): max_http_buffer_size
 # See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
 # Default is 1^6 for 1MB. Probably want larger for file uploads.
-if allow_cors:
+if allow_cors or allow_cors_socket:
     print('ALLOW_CORS - allowing cross origin requests on SOCKET')
     socketio = SocketIO(cors_allowed_origins="*")
 else:
