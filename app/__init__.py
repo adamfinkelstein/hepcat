@@ -22,7 +22,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 static_folder = '' # this global is set in create_app below
 allow_cors = os.getenv('ALLOW_CORS')
-allow_cors_socket = os.getenv('ALLOW_CORS')
+allow_cors_socket = os.getenv('ALLOW_CORS_SOCKET')
 
 # Set this in SocketIO(): max_http_buffer_size
 # See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
