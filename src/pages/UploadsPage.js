@@ -64,6 +64,11 @@ export default function UploadsPage() {
         socketEmit("admin_add_test_paper")
     }
 
+    function handleBringToAllRooms(){
+        controlledLog('admin_bring_to_all_rooms button pressed.');
+        socketEmit("admin_bring_to_all_rooms")
+    }
+
     return(
         <Container className="titled-page">
             <span className='font-size-1'>Upload CSV Files Here</span>
@@ -118,6 +123,12 @@ export default function UploadsPage() {
                 <Button variant="primary" onClick={handleAddTestPaper}>
                     Add Test Paper</Button>
                     &nbsp;&nbsp;This adds Papers_9999, conflicted with all users for testing conflictbot.
+                </Stack>
+
+                <Stack className="space-down-btn" direction="horizontal">
+                <Button variant="primary" onClick={handleBringToAllRooms}>
+                    Bring to All Rooms</Button>
+                    &nbsp;&nbsp;This tells Conflictbot to bring everyone to the room they belong in.
                 </Stack>
 
                 <Stack className="space-down-btn" direction="horizontal">

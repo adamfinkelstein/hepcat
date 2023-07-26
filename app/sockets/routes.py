@@ -737,6 +737,14 @@ def admin_bring_to_room(room):
     globs,_ = get_globs_dump_with_status(room)
     emit('server_set_globs', globs, broadcast=True)
     conflictbots_broadcast_user_list()
+    conflictbots_broadcast_call_to_room(room)
+
+@socketio.on('admin_bring_to_all_rooms')
+def admin_bring_to_room():
+    if not current_user_is_admin():
+        disconnect()
+        return
+    conflictbots_broadcast_call_to_room(False)
 
 @socketio.on('admin_prev_paper')
 def admin_prev_paper(room):
@@ -1095,7 +1103,12 @@ else:
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
     emit('user-list', users_dump, namespace=conflictbot_namespace, broadcast=True)
-    
+
+def conflictbots_broadcast_call_to_room(room):
+    if not room:
+        room = 'ALL'
+    emit('call-to-room', room, namespace=conflictbot_namespace, broadcast=True)
+
 def conflictbots_broadcast_conflicts(globs, current_paper):
     room = globs['room']
     hide = globs['hide_queue']
