@@ -483,6 +483,10 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_CHAIR_LOGIN', 'chair@example.com')
     passwd = get_config_or_default('HEPCAT_CHAIR_PASSWD', 'chair')
     ensure_user(email, 'Chair', 'User', 'Super', passwd)
+    passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'screen')
+    ensure_user('screen.ax@example.com', 'Screen', 'AX', 'Screen', passwd)
+    ensure_user('screen.by@example.com', 'Screen', 'BY', 'Screen', passwd)
+    ensure_user('screen@example.com', 'Screen', 'Plenary', 'Screen', passwd)
 
 postgres_wipe_db_cmd = '''
 DROP TABLE IF EXISTS history CASCADE;
