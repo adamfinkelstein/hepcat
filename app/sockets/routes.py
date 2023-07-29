@@ -1107,6 +1107,7 @@ def conflictbots_broadcast_user_list():
 def conflictbots_broadcast_call_to_room(room):
     if not room:
         room = 'ALL'
+    print('call-to-room:', room)
     emit('call-to-room', room, namespace=conflictbot_namespace, broadcast=True)
 
 def conflictbots_broadcast_conflicts(globs, current_paper):

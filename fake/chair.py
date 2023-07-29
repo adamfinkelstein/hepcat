@@ -2,6 +2,9 @@ import sys
 import csv
 import requests
 
+# global
+verbose = False
+
 def get_indices(arr, indices):
     return [ arr[i] for i in indices ]
 
@@ -61,6 +64,8 @@ def read_reviews(reviews_file):
     return reviews
 
 def to_int(s):
+    if not s:
+        return 0
     return int(round(float(s)))
 
 def format_status(code):
@@ -164,9 +169,10 @@ def check_pids(all_pids, reviews):
     if len(diff):
         paper_set_warning('Warning! Reviews for unrecognized papers: ', diff)
 
-USE = 'python3 chair.py [papers.csv] [reviews.csv|https://reviews] [chair.csv]'
+USE = 'python3 chair.py [papers.csv|https://papers] [reviews.csv|https://reviews] [chair.csv] [--verbose]'
 
 def parse_args():
+    global verbose
     ok = True
     papers_file = 'data/papers.csv'
     reviews_file = 'data/reviews.csv'
@@ -181,14 +187,32 @@ def parse_args():
         reviews_file = sys.argv[2]
     if len(sys.argv) > 3:
         chair_file = sys.argv[3]
+    if len(sys.argv) > 4:
+        verbose = True
     return ok, papers_file, reviews_file, chair_file
 
+def report_array(arr, name):
+    print(f'{name} has {len(arr)} entries, starting:')
+    print(arr[:10])
+
+def report_dict(dict, name):
+    print(f'{name} has {len(dict)} entries, starting:')
+    keys = list(dict.keys())
+    keys = keys[:10]
+    for key in keys:
+        print(dict[key])
+
 def main():
+    global verbose
     ok, papers_file, reviews_file, chair_file = parse_args()
     if not ok:
         return
     all_pids, dual_pids = read_papers(papers_file)
     reviews = read_reviews(reviews_file)
+    if verbose:
+        report_array(all_pids, 'all_pids')
+        report_array(dual_pids, 'dual_pids')
+        report_dict(reviews, 'reviews')
     write_chair(all_pids, dual_pids, reviews, chair_file)
     check_pids(all_pids, reviews)
 
