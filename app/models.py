@@ -116,6 +116,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime)
+    # the three columns below should be made more consistent
+    # (maybe could be achieved with column property like full_name)
     last_seen_in = db.Column(db.String(8)) # like Room_A
     rooms = db.Column(db.String(4))   # 2 char like: AX
     in_room = db.Column(db.String(4)) # 1 char like: A
@@ -483,6 +485,7 @@ def ensure_admin():
     email = get_config_or_default('HEPCAT_CHAIR_LOGIN', 'chair@example.com')
     passwd = get_config_or_default('HEPCAT_CHAIR_PASSWD', 'chair')
     ensure_user(email, 'Chair', 'User', 'Super', passwd)
+    # This code below should be moved to location of upload users...
     passwd = get_config_or_default('HEPCAT_SCREEN_PASSWD', 'screen')
     ensure_user('screen.ax@example.com', 'Screen', 'AX', 'Screen', passwd)
     ensure_user('screen.by@example.com', 'Screen', 'BY', 'Screen', passwd)

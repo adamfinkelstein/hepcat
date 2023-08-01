@@ -82,7 +82,7 @@ export default function GridSection(){
                     <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie}/>
                     <p className="stickie-step font-size-3">Step 2 &mdash; type the numeric paper ID:</p>
                     <div>
-                        <input maxLength={3}
+                        <input maxLength={4}
                             name="id"
                             onChange={(event) => { setID(event.target.value) }}
                         />
