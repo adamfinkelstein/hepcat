@@ -665,6 +665,15 @@ def get_queries_as_rows():
         rows.append(row)
     return rows
 
+def get_history_as_rows():
+    history = History.query.order_by(History.when).all()
+    header = 'When,Context,Paper,Status'
+    rows = [ header ]
+    for h in history:
+        row = f'"{h.when}",{h.context},{h.paper.sid},{h.status}'
+        rows.append(row)
+    return rows
+
 def write_csv_path(filename, rows):
     app = current_app._get_current_object()
     folder = app.config['UPLOAD_FOLDER']
@@ -673,14 +682,15 @@ def write_csv_path(filename, rows):
     write_csv(rows, fullpath)
     return fullpath
 
-def write_results_csv():
-    filename = 'hepcat-results.csv'
-    rows = get_results_as_rows()
-    fullpath = write_csv_path(filename, rows)
-    return fullpath
-
-def write_queries_csv():
-    filename = 'hepcat-queries.csv'
-    rows = get_queries_as_rows()
+def write_kind_of_csv(kind):
+    filename = f'hepcat-{kind}.csv'
+    if kind == 'results':
+        rows = get_results_as_rows()
+    elif kind == 'queries':
+        rows = get_queries_as_rows()
+    elif kind == 'history':
+        rows = get_history_as_rows()
+    else:
+        return None
     fullpath = write_csv_path(filename, rows)
     return fullpath

@@ -141,10 +141,14 @@ export default function UploadsPage() {
                     &nbsp;&nbsp;Download a CSV with current queries.
                 </Stack>
 
-
                 <Stack className="space-down-btn" direction="horizontal">
                 <a className="btn btn-warning" href={"/admin/download_csv/results/"+adminKey} target="_blank" rel="noopener noreferrer">Download Results</a>
                     &nbsp;&nbsp;Download a CSV with the final status of all papers.
+                </Stack>
+
+                <Stack className="space-down-btn" direction="horizontal">
+                <a className="btn btn-warning" href={"/admin/download_csv/history/"+adminKey} target="_blank" rel="noopener noreferrer">Download History</a>
+                    &nbsp;&nbsp;Download a CSV with the history of paper status the meeting.
                 </Stack>
 
                 { isSuper && (

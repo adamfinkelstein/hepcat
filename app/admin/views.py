@@ -2,7 +2,7 @@ from flask import flash, render_template, redirect, url_for, send_file, current_
 from flask_login import login_user, logout_user, login_required
 from . import admin
 from ..util import current_user_is_admin
-from ..uploads import write_results_csv, write_queries_csv
+from ..uploads import write_kind_of_csv
 from ..models import wipe_db_clean, User
 
 @admin.route('/download_csv/<kind>/<key>')
@@ -12,15 +12,13 @@ def download_results_csv(kind,key):
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     # print('instance and key: ', inst, key)
-    if key != inst or kind not in ['results','queries']:
+    ok_kinds = ['results','queries','history']
+    if key != inst or kind not in ok_kinds:
         msg ='Sorry -- something is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
     print(f'getting {kind} csv...')
-    if kind == 'results':
-        fullpath = write_results_csv()
-    else:
-        fullpath = write_queries_csv()
+    fullpath = write_kind_of_csv(kind)
     return send_file(fullpath, as_attachment=True)
 
 @admin.route('/wipe_database/<key>')
