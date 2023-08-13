@@ -543,17 +543,21 @@ def dump_users_papers_and_conflicts(title):
 ps_tables = 'history,conflicts,papers,users,roles,file_uploads,glob_queues,labels,tags,queries'.split(',')
 
 def drop_and_rebuild_tables(table_list=None):
+    db_uri = current_app.config['SQLALCHEMY_DATABASE_URI']
+    is_pg = db_uri.startswith('postgres')
+
     output = ''
     if table_list:
         table_list = table_list.split(',')
     ps_cmd = ''
     for table in ps_tables:
         if not table_list or table in table_list:
-            ps_cmd += f'DROP TABLE IF EXISTS {table} CASCADE;\n'
+            ps_cmd += f'DROP TABLE IF EXISTS {table}{" CASCADE" if is_pg else ""};\n'
     if ps_cmd:
         title = f'\nBefore dropping tables {table_list}'
         output += dump_users_papers_and_conflicts(title)
-        db.session.execute(ps_cmd)
+        for line in ps_cmd.split('\n'):
+            db.session.execute(line)
         db.session.commit()
         db.create_all()
         title = f'\nAfter dropping tables {table_list}'
