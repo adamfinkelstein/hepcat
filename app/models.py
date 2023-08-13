@@ -1,6 +1,6 @@
 from enum import IntEnum
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.orm import column_property
@@ -167,9 +167,10 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_confirmation_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id}).decode('utf-8')
+    # appears to be unused! might be used for email confirmations.
+    # def generate_confirmation_token(self, expiration=3600):
+    #     s = Serializer(current_app.config['SECRET_KEY'], expiration)
+    #     return s.dumps({'confirm': self.id}).decode('utf-8')
 
     # def confirm(self, token):
     #     s = Serializer(current_app.config['SECRET_KEY'])
