@@ -1,0 +1,45 @@
+# dependency management
+pip-tools
+
+# Flask & core extensions
+flask
+flask-login
+flask-mail
+flask-moment
+flask-cors
+flask-bootstrap
+python-dotenv
+
+# database
+flask-sqlalchemy
+psycopg2-binary
+
+# serialization
+flask-marshmallow
+marshmallow-sqlalchemy
+
+# forms
+flask-wtf
+email-validator
+
+# Socket.IO
+flask-socketio
+simple-websocket
+eventlet
+
+# web server
+gunicorn
+
+# solvers
+numpy
+python-tsp
+ortools; platform_machine != 'arm64'
+
+# encryption
+pycryptodome
+
+# git
+python-git-info
+
+# fake data
+faker
