@@ -75,6 +75,10 @@ def create_app(config_name, build_path):
 
     app.register_blueprint(sockets_blueprint)
 
+    from .cli import cli as cli_blueprint
+
+    app.register_blueprint(cli_blueprint)
+
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.
         # Follows this:

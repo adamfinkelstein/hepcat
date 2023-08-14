@@ -39,3 +39,4 @@ fake/fake-*
 node_modules
 af-notes
 custom_bin
+.coverage

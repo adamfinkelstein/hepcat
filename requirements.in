@@ -49,3 +49,7 @@ python-git-info
 
 # fake data
 faker
+
+# testing
+pytest
+pytest-cov
