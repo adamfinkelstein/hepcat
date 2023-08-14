@@ -1,54 +1,62 @@
-import {useAppGlobals} from '../contexts/AppContext'
-import {useRef} from 'react'
-import Container from 'react-bootstrap/Container'
-import Stack from 'react-bootstrap/Stack'
-import PaperConflict from './PaperConflict'
-import { useFavorites } from '../contexts/PreferencesContext'
+import { useAppGlobals } from '../contexts/AppContext';
+import { useRef } from 'react';
+import Container from 'react-bootstrap/Container';
+import Stack from 'react-bootstrap/Stack';
+import PaperConflict from './PaperConflict';
+import { useFavorites } from '../contexts/PreferencesContext';
 
-export default function QueueElement({paper, active}){
+export default function QueueElement({ paper, active }) {
+  const globals = useAppGlobals();
+  const favorites = useFavorites();
+  const content = useRef(null);
+  const user = globals.user;
+  const queueIndex = paper ? paper.queue_order - 1 : -1;
+  const isCurrent = queueIndex === globals.queueCurrent;
+  const isPast = queueIndex < globals.queueCurrent;
+  const isConflict = paper.nid === 0;
+  const isFavorite = favorites.includes(paper.nid);
+  const isScreen = user && user.role_name === 'Screen';
+  const showStatus = paper.status && !isCurrent && !isScreen;
+  const status = showStatus ? paper.status : '';
+  const starSymbol = '\u2605';
+  const confSymbol = '\u26D4';
+  const prefixSym = isConflict ? confSymbol : isFavorite ? starSymbol : '';
+  const showTitle = isPast ? '' : paper.title;
+  let qLine = ' (' + paper.nid + '): ' + status + showTitle;
 
-    const globals = useAppGlobals()
-    const favorites = useFavorites()
-    const content = useRef(null)
-    const user = globals.user;
-    const queueIndex = paper ? paper.queue_order - 1 : -1
-    const isCurrent = (queueIndex === globals.queueCurrent)
-    const isPast = (queueIndex < globals.queueCurrent)
-    const isConflict = (paper.nid === 0)
-    const isFavorite = favorites.includes(paper.nid)
-    const isScreen = user && user.role_name === "Screen"
-    const showStatus = paper.status && !isCurrent && !isScreen
-    const status =  showStatus ? paper.status : ""
-    const starSymbol = '\u2605'
-    const confSymbol = '\u26D4'
-    const prefixSym = isConflict ? confSymbol : (isFavorite ? starSymbol : '')
-    const showTitle = isPast ? "" : paper.title
-    let qLine =  ' (' + paper.nid + '): ' + status + showTitle 
+  if (isScreen) qLine = '';
+  else if (isConflict) qLine = ': CONFLICTED!';
 
-    if (isScreen) qLine = ''
-    else if (isConflict) qLine = ': CONFLICTED!'
+  // ??? AF cut this from below: `${content.current.scrollHeight}px`
 
-    // ??? AF cut this from below: `${content.current.scrollHeight}px`
-
-    return(
-        <Container className="queue-element-container">
-            <Stack direction="horizontal">
-                <span className="queue-title font-size-4">
-                    Q{paper.queue_order}{qLine}
-                </span>
-                <div className="qSymbol">{prefixSym}</div>
-            </Stack>
+  return (
+    <Container className="queue-element-container">
+      <Stack direction="horizontal">
+        <span className="queue-title font-size-4">
+          Q{paper.queue_order}
+          {qLine}
+        </span>
+        <div className="qSymbol">{prefixSym}</div>
+      </Stack>
+      {!isPast && (
+        <div
+          ref={content}
+          style={
+            // this next line was broken so AF comment it out:
             {
-                !isPast &&
-                (<div ref={content} style={ // this next line was broken so AF comment it out:
-                    { // maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
-                        maxHeight: `${(active === false || content === null) ? "0" : "100"}px`
-                    }} className="queue-conflicts">
-                    <div>
-                        <PaperConflict conflicts={paper.conflicts} isCurrent={isCurrent} />
-                    </div>
-                </div>)
+              // maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
+              maxHeight: `${
+                active === false || content === null ? '0' : '100'
+              }px`,
             }
-        </Container>
-    )
+          }
+          className="queue-conflicts"
+        >
+          <div>
+            <PaperConflict conflicts={paper.conflicts} isCurrent={isCurrent} />
+          </div>
+        </div>
+      )}
+    </Container>
+  );
 }

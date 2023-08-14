@@ -29,23 +29,23 @@ code {
   overflow: hidden;
 }
 
-.Body{
+.Body {
   position: fixed;
   margin: 0px;
   padding: 0px;
 }
 
-.left-panel{
+.left-panel {
   overflow-y: auto;
   padding-top: 15px;
   padding-bottom: 100px;
 }
-.right-panel{
+.right-panel {
   overflow-y: auto;
   padding-bottom: 100px;
 }
 
-.tabs{
+.tabs {
   width: 100%;
   padding-top: 30px;
   padding-bottom: 15px;
@@ -55,7 +55,7 @@ code {
   z-index: 10;
 }
 
-.tab{
+.tab {
   margin-top: 100px;
 }
 
@@ -65,9 +65,9 @@ code {
 }
 
 .me-auto.my-2.my-lg-0.navbar-nav.navbar-nav-scroll {
-  position:  fixed; 
+  position: fixed;
   right: 0px;
-  padding-right: 100px
+  padding-right: 100px;
 }
 
 a.nav-link {
@@ -76,29 +76,30 @@ a.nav-link {
 
 /* Queue Styling */
 
-.Queue ul{
+.Queue ul {
   list-style: none;
   padding: 0;
 }
 
-.Queue ul li{
+.Queue ul li {
   list-style: none;
   padding: 5px;
 }
 
-.expand-buttons{
+.expand-buttons {
   margin-left: auto;
 }
 
-.expand-bar{
+.expand-bar {
   padding: 20px 5px;
 }
 
-.expand-button, .collapse-button{
+.expand-button,
+.collapse-button {
   border: 1px solid black;
 }
 
-.conflict-element{
+.conflict-element {
   line-height: 90%;
   /* these do nothing:
   display: list-item;
@@ -123,7 +124,7 @@ a.nav-link {
 
 /* Queue Item Styling */
 
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap");
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap');
 
 /* Style the buttons that are used to open and close the accordion panel */
 
@@ -137,7 +138,7 @@ a.nav-link {
 }
 
 .accordion_title {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   text-align: left;
   display: inline-block;
@@ -167,36 +168,36 @@ a.nav-link {
   transition: max-height 0.25s linear;
 }
 
-.queue-title{
+.queue-title {
   line-height: 110%;
 }
 
-.queue-element-container{
+.queue-element-container {
   padding: 5px;
-  width: 100%
+  width: 100%;
 }
 
-.queue_element{
+.queue_element {
   /* margin-top:-1px; this avoids double-border between elements */
   padding: 10px 5px;
   cursor: pointer;
-  border-right:  1px solid #aaa;
+  border-right: 1px solid #aaa;
   border-bottom: 1px solid #aaa;
-  border-left:   1px solid #aaa;
+  border-left: 1px solid #aaa;
 }
 
-.queue_element.Past{
+.queue_element.Past {
   border-top: 1px solid black;
-  border-right:  1px solid black;
-  border-left:   1px solid black;
+  border-right: 1px solid black;
+  border-left: 1px solid black;
   border-bottom: 0;
 }
 
-.queue_element.Current{
+.queue_element.Current {
   border: 1px solid black;
 }
 
-.queue_element.odd_row{
+.queue_element.odd_row {
   background-color: #eee;
 }
 
@@ -209,10 +210,10 @@ a.nav-link {
 }
 
 .current-admin-user {
-  color: #8DCEE6;
+  color: #8dcee6;
 }
 
-.AdminQueueControls{
+.AdminQueueControls {
   margin-top: 15px;
 }
 
@@ -238,7 +239,6 @@ a.nav-link {
 
 /* Paper Styling (right panel) */
 
-
 .paper-timer {
   position: absolute;
   right: 16px;
@@ -255,12 +255,12 @@ a.nav-link {
   margin-right: 80px;
 }
 
-.paper-image{
+.paper-image {
   width: 75%;
   margin-top: 20px;
 }
 
-.paper-img-container{
+.paper-img-container {
   text-align: center;
 }
 
@@ -275,7 +275,7 @@ a.nav-link {
 
 /* Split Screen CSS */
 
-.split{
+.split {
   display: flex;
   flex-direction: row;
   height: 100vh;
@@ -294,18 +294,18 @@ a.nav-link {
 
 /* Grid Styling */
 
-.grid-container{
+.grid-container {
   display: grid;
   grid-gap: 2px;
   grid-template-columns: repeat(auto-fit, 50px);
   text-align: center;
 }
 
-.grid_legend{
+.grid_legend {
   margin-top: 10px;
 }
 
-.grid-display-dropdown{
+.grid-display-dropdown {
   margin-left: auto;
 }
 
@@ -314,25 +314,25 @@ a.nav-link {
   overflow: scroll;
 }
 
-.grid-controls{
+.grid-controls {
   padding: 20px 5px;
 }
 
-.grid-control-bar{
+.grid-control-bar {
   margin-bottom: 20px;
 }
 
-.legend-container{
+.legend-container {
   list-style: none;
   padding: 3px;
 }
 
-.grid-item{
+.grid-item {
   border: 1px solid #444;
   border-radius: 4px;
 }
 
-.rectangle{
+.rectangle {
   width: 15px;
   height: 15px;
   border-radius: 4px;
@@ -342,12 +342,12 @@ a.nav-link {
   display: inline-block;
 }
 
-.has-stickie{
+.has-stickie {
   border: 2.5px solid black;
   border-radius: 8px;
 }
 
-.stickie{
+.stickie {
   border: 2px solid black;
   color: white;
   background-color: gray;
@@ -361,39 +361,39 @@ a.nav-link {
   margin-top: 20px;
 }
 
-.non-stickie{
+.non-stickie {
   color: white;
   background-color: gray;
-  opacity: 0.2
+  opacity: 0.2;
 }
 
-.set-stickie{
+.set-stickie {
   margin-left: 40px;
 }
 
 /* Preferences Page Styling */
 
-.grid_colors_preferences{
+.grid_colors_preferences {
   list-style: none;
 }
-.grid_colors_preferences li{
+.grid_colors_preferences li {
   padding: 0 15px;
 }
 
-.preferences-container{
+.preferences-container {
   margin-top: 20px;
   padding: 20px 5px;
 }
 
-.titled-page{
+.titled-page {
   margin-top: 35px;
 }
 
-.font-size-dropdown{
+.font-size-dropdown {
   margin-left: 15px;
 }
 
-.color-preferences-container{
+.color-preferences-container {
   margin-top: 30px;
 }
 
@@ -416,115 +416,115 @@ a.nav-link {
   border-radius: 6px;
 }
 
-.favorite-preferences-container{
+.favorite-preferences-container {
   margin-top: 30px;
 }
 
-.favorites-input{
+.favorites-input {
   margin-left: 10px;
 }
 
-.favorites-submit-btn{
+.favorites-submit-btn {
   margin-left: 10px;
 }
 
-.favorites-list{
+.favorites-list {
   list-style: none;
 }
 
-.example-favorites{
+.example-favorites {
   margin-left: 10px;
 }
 
-.delete-all-btn{
+.delete-all-btn {
   margin-left: 10px;
 }
 
-.current-favorites-bar{
+.current-favorites-bar {
   margin-top: 10px;
 }
 
-.current-favorites-container{
+.current-favorites-container {
   margin-top: 10px;
 }
 
-.current-favorites-container li{
+.current-favorites-container li {
   margin: 5px 0;
 }
 
-.color-picker{
+.color-picker {
   margin-left: 150px;
 }
 
 /* Change Password Page Styling */
-.ChangePasswordPage{
+.ChangePasswordPage {
   margin-top: 30px;
 }
 
-.change-password-main-container{
+.change-password-main-container {
   padding: 50px 10px;
 }
 
-.reset-password{
+.reset-password {
   margin: 0 auto;
 }
 
-.password-switch{
+.password-switch {
   margin: 20px 5px 20px 0px;
 }
 
-.password-fields{
+.password-fields {
   margin: 40px 0 0 40px;
 }
 
-.form-title{
+.form-title {
   font-size: 20px;
 }
 
-.reset-password-row{
+.reset-password-row {
   margin: 20px 5px 20px 0px;
 }
 
 /* Set GUI Styling */
-.change-bar-btn{
+.change-bar-btn {
   margin-right: 10px;
 }
 
-.queue-explicit-btn{
+.queue-explicit-btn {
   margin-top: 20px;
 }
 
-.queue-explicit-instructions{
+.queue-explicit-instructions {
   margin-left: 40px;
 }
 
-.horizontal-divider{
+.horizontal-divider {
   border-top: 3px solid #000;
   border-radius: 2px;
   margin: 20px 0;
 }
 
-.vertical-divider{
+.vertical-divider {
   border-left: 3px solid #000;
   border-radius: 2px;
   margin: 0 0px 0 40px;
   height: 150px !important;
 }
 
-.hideQ-text{
+.hideQ-text {
   margin-left: 10px;
 }
 
-.message-input{
+.message-input {
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.text-tty{
+.text-tty {
   font-family: monospace;
 }
 
-.set-message-row{
+.set-message-row {
   margin-top: 10px;
 }
 
@@ -554,7 +554,7 @@ a.nav-link {
   margin-top: 20px;
 }
 
-.about-container img{
+.about-container img {
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -570,7 +570,7 @@ a.nav-link {
   /* width: 160px; */
   border: 1px solid black;
   border-radius: 4px;
-  outline:0;
+  outline: 0;
 }
 
 #status-dropdown-menu:hover {
@@ -601,6 +601,6 @@ a.nav-link {
   padding-top: 30px;
 }
 
-.switch-button{
+.switch-button {
   margin: 6px;
 }

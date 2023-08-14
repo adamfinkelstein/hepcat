@@ -5,21 +5,23 @@ from ..util import current_user_is_admin
 from ..uploads import write_kind_of_csv
 from ..models import wipe_db_clean, User
 
+
 @admin.route('/download_csv/<kind>/<key>')
 @login_required
-def download_results_csv(kind,key):
+def download_results_csv(kind, key):
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     # print('instance and key: ', inst, key)
-    ok_kinds = ['results','queries','history']
+    ok_kinds = ['results', 'queries', 'history']
     if key != inst or kind not in ok_kinds:
-        msg ='Sorry -- something is wrong. Try logging back in.'
+        msg = 'Sorry -- something is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
     print(f'getting {kind} csv...')
     fullpath = write_kind_of_csv(kind)
     return send_file(fullpath, as_attachment=True)
+
 
 @admin.route('/wipe_database/<key>')
 @login_required
@@ -28,19 +30,20 @@ def wipe_database(key):
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
-        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+        msg = 'Sorry -- the admin key is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
     print('about to wipe database...')
     success = wipe_db_clean()
     if success:
-        msg ='The database was wiped clean. You have been logged out.'
+        msg = 'The database was wiped clean. You have been logged out.'
         flash(msg)
         logout_user()
         return redirect(url_for('auth.login'))
-    msg ='The database wipe failed!'
+    msg = 'The database wipe failed!'
     flash(msg)
     return redirect(url_for('upload.upload_main'))
+
 
 @admin.route('/zoom_conflictbot/<key>')
 @login_required
@@ -49,26 +52,30 @@ def zoom_conflictbot(key):
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
-        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+        msg = 'Sorry -- the admin key is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
     url = f'/admin/zoom_conflictbot/{inst}'
     client_id = current_app.config['ZOOM_CONFLICTBOT_CLIENT_ID']
     client_secret = current_app.config['ZOOM_CONFLICTBOT_CLIENT_SECRET']
     conflictbot_socket = current_app.config['HEPCAT_CONFLICTBOT_SOCKET']
-    return render_template('zoom-conflictbot.html', 
-                           conflictbot_socket=conflictbot_socket, 
-                           url=url, client_id=client_id, 
-                           client_secret=client_secret)
+    return render_template(
+        'zoom-conflictbot.html',
+        conflictbot_socket=conflictbot_socket,
+        url=url,
+        client_id=client_id,
+        client_secret=client_secret,
+    )
+
 
 @admin.route('/switch_user/<email>/<key>')
 @login_required
-def switch_user(email,key):
+def switch_user(email, key):
     if not current_user_is_admin():
         return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
-        msg ='Sorry -- the admin key is wrong. Try logging back in.'
+        msg = 'Sorry -- the admin key is wrong. Try logging back in.'
         flash(msg)
         return redirect(url_for('auth.login'))
     email = email.lower()
@@ -76,10 +83,10 @@ def switch_user(email,key):
     if user:
         remember_me = True
         login_user(user, remember_me)
-        msg =f'You are now logged in as {user.full_name}.'
+        msg = f'You are now logged in as {user.full_name}.'
     else:
-        msg =f'Unable to find user with email {email}!'
+        msg = f'Unable to find user with email {email}!'
     flash(msg)
-    main_index = 'main.send_static_index' 
+    main_index = 'main.send_static_index'
     next = url_for(main_index)
     return redirect(next)

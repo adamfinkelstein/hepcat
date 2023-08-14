@@ -10,22 +10,21 @@ Visit: `https://hepcat.herokuapp.com/`
 
 This app uses the following major components:
 
-* Flask - backend
-	* SQAlchemy (database)
-	* Flask-Login (for authentication)
-* React - frontend
-	* Bootstrap for styling/widgets
-	* Commpiled static version served in production
-* Socket.IO - communication between backend and frontend
+- Flask - backend
+  - SQAlchemy (database)
+  - Flask-Login (for authentication)
+- React - frontend
+  - Bootstrap for styling/widgets
+  - Commpiled static version served in production
+- Socket.IO - communication between backend and frontend
 
 ## To clone and set up locally:
 
 First, you need Postgres. If you skip this step, you will get an error like `pg_config is required to build psycopg2 from source` when doing the pip install below. On mac you can install it several ways, including:
 
-* [Postgres.app](https://postgresapp.com/downloads.html)
-* Homebrew `brew install postgresql`
-* Build from source (probably slower)
-
+- [Postgres.app](https://postgresapp.com/downloads.html)
+- Homebrew `brew install postgresql`
+- Build from source (probably slower)
 
 Next this works, at least in python version 3.9.13 (generally 3.9.x -- note that Python 3.9.13 is what is specified in runtime.txt):
 
@@ -45,13 +44,13 @@ npm run build
 
 This works in python version 3.9.13 (generally 3.9.x):
 
-* Installed python 3.9.13 for MacOS from python.org
+- Installed python 3.9.13 for MacOS from python.org
 
-* Located the right version of python under usr/local/bin as python3.9
+- Located the right version of python under usr/local/bin as python3.9
 
-* Used /usr/local/bin/python3.9 -m venv venv to build environment
+- Used /usr/local/bin/python3.9 -m venv venv to build environment
 
-* We also had to brew install postgresql to install one of the packages.
+- We also had to brew install postgresql to install one of the packages.
 
 ## Adam's notes on installation above
 
@@ -79,12 +78,12 @@ python fake.py
 
 ## Local database options
 
-* Postgress / SQL [quick notes](https://hasura.io/blog/top-psql-commands-and-flags-you-need-to-know-postgresql/)
+- Postgress / SQL [quick notes](https://hasura.io/blog/top-psql-commands-and-flags-you-need-to-know-postgresql/)
 
-* If you don't specify the database URL it writes a local sqlite/SQL file-based database. To wipe it out, do `rm data-dev.sqlite`
+- If you don't specify the database URL it writes a local sqlite/SQL file-based database. To wipe it out, do `rm data-dev.sqlite`
 
-* To connect to a local Postgres database via:  `DEV_DATABASE_URL=postgresql://localhost`
-(AF tested on Mac with Postgres Version 2.5.6.)
+- To connect to a local Postgres database via: `DEV_DATABASE_URL=postgresql://localhost`
+  (AF tested on Mac with Postgres Version 2.5.6.)
 
 ## To drop all tables in local Postgres
 
@@ -106,22 +105,22 @@ DROP TABLE IF EXISTS queries CASCADE;
 
 ## To run locally with static build:
 
-* If you plan to use Postgres, start that server and set environment variable (see above).
-* If you made changes to the React app, first run `npm run build`.
-* Run `python hepcat.py` - This lauches the Flask server. 
-* Navigate browser to `http://127.0.0.1:5000` (not localhost, which gives a 503 error for some reason?!?) The Flask server serves the files compiled by `npm` into the build folder.
-* Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`).
+- If you plan to use Postgres, start that server and set environment variable (see above).
+- If you made changes to the React app, first run `npm run build`.
+- Run `python hepcat.py` - This lauches the Flask server.
+- Navigate browser to `http://127.0.0.1:5000` (not localhost, which gives a 503 error for some reason?!?) The Flask server serves the files compiled by `npm` into the build folder.
+- Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`).
 
 ## To run locally using npm to serve React:
 
-* In one terminal run Flask server:
+- In one terminal run Flask server:
 
 ```
 export ALLOW_CORS=True
 python hepcat.py
 ```
 
-* In another terminal run React server:
+- In another terminal run React server:
 
 ```
 export HOST="localhost"
@@ -131,8 +130,7 @@ export REACT_APP_ABOUT_IMAGE_PREFIX="http://localhost:3000/about/"
 npm start
 ```
 
-* Now navigate browser to `http://127.0.0.1:3000`
-
+- Now navigate browser to `http://127.0.0.1:3000`
 
 ## To set up Heroku:
 
@@ -158,18 +156,18 @@ heroku buildpacks
 
 Also set environment variables at Heroku, at least:
 
-* `SECRET_KEY` (change resets all hepcat local store inc acts)
-* `DATABASE_URL_HEROKU` (to the postgres database)
-* `FLASK_CONFIG=production` (later, make this default in code)
-* `HEPCAT_ADMIN_LOGIN`
-* `HEPCAT_ADMIN_PASSWD`
-* `HEPCAT_CHAIR_LOGIN`
-* `HEPCAT_CHAIR_PASSWD`
-* `HEPCAT_USE_ORTOOLS=True`
-* `ZOOM_CONFLICTBOT_CLIENT_ID`
-* `ZOOM_CONFLICTBOT_CLIENT_SECRET`
-* `HEPCAT_CONFLICTBOT_SOCKET`
-* `REACT_APP_PING_TIMER_SECS` (unset or 0 means no pings)
+- `SECRET_KEY` (change resets all hepcat local store inc acts)
+- `DATABASE_URL_HEROKU` (to the postgres database)
+- `FLASK_CONFIG=production` (later, make this default in code)
+- `HEPCAT_ADMIN_LOGIN`
+- `HEPCAT_ADMIN_PASSWD`
+- `HEPCAT_CHAIR_LOGIN`
+- `HEPCAT_CHAIR_PASSWD`
+- `HEPCAT_USE_ORTOOLS=True`
+- `ZOOM_CONFLICTBOT_CLIENT_ID`
+- `ZOOM_CONFLICTBOT_CLIENT_SECRET`
+- `HEPCAT_CONFLICTBOT_SOCKET`
+- `REACT_APP_PING_TIMER_SECS` (unset or 0 means no pings)
 
 ** AF should check this list at Heroku and see if more updates are needed. **
 
@@ -186,4 +184,3 @@ heroku maintenance:on
 heroku restart
 heroku maintenance:off
 ```
-

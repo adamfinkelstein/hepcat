@@ -2,21 +2,21 @@
 
 Hepcat is an application designed to help the ACM SIGGRAPH Technical Papers PC meeting run efficiently. It serves several goals:
 
-* Track the progress of paper decisions during the meeting.
+- Track the progress of paper decisions during the meeting.
 
-* Report the list of people conflicted with specific papers so they can leave during the discussion and return to the meeting after the paper has been discussed.
+- Report the list of people conflicted with specific papers so they can leave during the discussion and return to the meeting after the paper has been discussed.
 
-* Assist the Chair in ordering the discussion of various papers so as to:
+- Assist the Chair in ordering the discussion of various papers so as to:
 
-	- Minimize the in-and-out flow of people conflicted with papers.
+  - Minimize the in-and-out flow of people conflicted with papers.
 
-	- Allow people who leave the meeting stay out for runs of a few papers, if possible. 
+  - Allow people who leave the meeting stay out for runs of a few papers, if possible.
 
-	- Avoid discussing a paper until the PC members involved with that paper are ready to discuss it.
+  - Avoid discussing a paper until the PC members involved with that paper are ready to discuss it.
 
 ### Functionality
 
-The two main components of the application are (*left*) a "queue" of papers to be discussed in sequence, and (*right*) a "paper" area that has two tabs, showing either the paper currently being discussed or "grid" showing the progress of all papers.
+The two main components of the application are (_left_) a "queue" of papers to be discussed in sequence, and (_right_) a "paper" area that has two tabs, showing either the paper currently being discussed or "grid" showing the progress of all papers.
 
 ![](main-page.png)
 
@@ -28,7 +28,7 @@ The progress of paper discussions can also be observed by the "grid" which can b
 
 ![](grid.png)
 
-Papers are ordered in the grid according to an average score computed by the Chair. The grid is divided into two sections" above and below the "bar", which is a score threshold determined by the Chair. By convention, all papers above the bar will be discussed during the PC meeting while many rejected papers below the bar may not be discussed during the meeting. 
+Papers are ordered in the grid according to an average score computed by the Chair. The grid is divided into two sections" above and below the "bar", which is a score threshold determined by the Chair. By convention, all papers above the bar will be discussed during the PC meeting while many rejected papers below the bar may not be discussed during the meeting.
 
 Colors of papers in the grid indicate their status as of the most recent discussion in the plenary meeting, for example red for "Reject", blue for "Conference", green for "Journal" and yellow for "Tabled". Papers over a light gray background have not yet been discussed. Below the grid is a legend, showing the color correspondence (shown below next to the stickie interface). All these colors are user-configurable, as discussed below under Customization.
 
@@ -54,14 +54,14 @@ Note that all preferences are saved in local storage in your browser, which has 
 
 This application was originally designed and written by
 [Ben Edelman](https://www.benjaminedelman.com/) (Princeton '18) and
-[Adam Finkelstein](http://www.cs.princeton.edu/~af/) for use during the SIGGRAPH 2014 PC meeting, and it has been incremementally adapted for every SIGGRAPH PC since then. 
+[Adam Finkelstein](http://www.cs.princeton.edu/~af/) for use during the SIGGRAPH 2014 PC meeting, and it has been incremementally adapted for every SIGGRAPH PC since then.
 
 In spring 2020, the PC meeting shifted from in person to online in Zoom.
 [Szymon Rusinkiewicz](http://www.cs.princeton.edu/~smr/) wrote an application
-called "Conflictbot" that listens to Hepcat's server communication and 
+called "Conflictbot" that listens to Hepcat's server communication and
 moved participants in and out of the plenary Zoom room based on their conflicts.
-Subsequent meetings switched to using Ohyay for the online meeting, and 
-Conflictbot was rewritten for Ohyay by 
+Subsequent meetings switched to using Ohyay for the online meeting, and
+Conflictbot was rewritten for Ohyay by
 [Kayvon Fatahalian](https://graphics.stanford.edu/~kayvonf/).
 
 In summer 2022, the software was rebuilt from the ground up by

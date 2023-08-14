@@ -1,14 +1,20 @@
 {% extends "base.html" %}
-
 {% block title %}Hepcat{% endblock %}
-
 {% block page_content %}
-<div class="page-header">
-    <h1>Debugging {% if debug_title %}{{ debug_title }}{% else %}Output{% endif %}:</h1>
-</div>
-<div class="w-100 p-3">
-    <pre>
+    <div class="page-header">
+        <h1>
+            Debugging
+            {% if debug_title %}
+                {{ debug_title }}
+            {% else %}
+                Output
+            {% endif %}
+            :
+        </h1>
+    </div>
+    <div class="w-100 p-3">
+        <pre>
     {{ debug_output }}
     </pre>
-</div>
+    </div>
 {% endblock %}

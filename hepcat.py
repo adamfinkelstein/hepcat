@@ -1,9 +1,11 @@
 import os
+
 # import click
 # from flask_migrate import Migrate
 # from flask import render_template, current_app, send_from_directory
 from app import create_app, socketio
-#from app.models import User, Role
+
+# from app.models import User, Role
 
 config_name = os.getenv('FLASK_CONFIG') or 'default'
 build_path = os.getcwd() + '/build'

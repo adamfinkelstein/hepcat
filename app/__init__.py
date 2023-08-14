@@ -20,7 +20,7 @@ db = SQLAlchemy()
 ma = Marshmallow()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
-static_folder = '' # this global is set in create_app below
+static_folder = ''  # this global is set in create_app below
 allow_cors = os.getenv('ALLOW_CORS')
 allow_cors_socket = os.getenv('ALLOW_CORS_SOCKET')
 
@@ -33,12 +33,11 @@ if allow_cors or allow_cors_socket:
 else:
     socketio = SocketIO()
 
+
 def create_app(config_name, build_path):
     global static_folder
-    app = Flask(__name__,
-            static_url_path='', 
-            static_folder=build_path)
-    static_folder = build_path # save this for use in app/main
+    app = Flask(__name__, static_url_path='', static_folder=build_path)
+    static_folder = build_path  # save this for use in app/main
     if allow_cors:
         CORS(app)
         print('ALLOW_CORS - allowing cross origin requests on APP')
@@ -61,15 +60,19 @@ def create_app(config_name, build_path):
     socketio.init_app(app)
 
     from .main import main as main_blueprint
+
     app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
+
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     from .admin import admin as admin_blueprint
+
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
     from .sockets import sockets as sockets_blueprint
+
     app.register_blueprint(sockets_blueprint)
 
     with app.app_context():

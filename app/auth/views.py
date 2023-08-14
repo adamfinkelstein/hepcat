@@ -5,7 +5,7 @@ from ..models import User, ensure_admin
 from .forms import LoginForm
 
 # AF changed this from main.index to app.index and now...
-main_index = 'main.send_static_index' 
+main_index = 'main.send_static_index'
 
 # @auth.before_app_request
 # def before_request():
@@ -20,10 +20,10 @@ main_index = 'main.send_static_index'
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    ensure_admin() # Esure that special (chair) admin exists at login
+    ensure_admin()  # Esure that special (chair) admin exists at login
     form = LoginForm()
     if form.validate_on_submit():
-        email_lower = form.email.data.lower() # ensure lower case email
+        email_lower = form.email.data.lower()  # ensure lower case email
         user = User.query.filter_by(email=email_lower).first()
         if user is not None and user.verify_password(form.password.data):
             # possibly here set new token and last-login time for user, here.
@@ -40,6 +40,7 @@ def login():
             return redirect(next)
         flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
+
 
 @auth.route('/logout')
 @login_required
