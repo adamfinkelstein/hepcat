@@ -6,7 +6,7 @@ import numpy as np
 from python_tsp.heuristics import solve_tsp_local_search
 from flask import current_app
 
-use_ortools = os.environ.get('HEPCAT_USE_ORTOOLS')
+use_ortools = True or os.environ.get('HEPCAT_USE_ORTOOLS')
 
 if use_ortools:
     from ortools.constraint_solver import routing_enums_pb2

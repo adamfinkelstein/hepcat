@@ -36,7 +36,10 @@ gunicorn
 # solvers
 numpy
 python-tsp
-ortools; platform_machine != 'arm64'
+ortools
+
+# No longer needed: how we would skip ortools on M1:
+# ortools; platform_machine != 'arm64'
 
 # encryption
 pycryptodome
