@@ -9,6 +9,7 @@ class HepcatTestCase(unittest.TestCase):
         # create an app
         build_path = os.getcwd() + '/build'
         self.app = create_app('testing', build_path)
+        self.client = self.app.test_client()
         self.app_ctx = self.app.app_context()
         self.app_ctx.push()
 
@@ -27,3 +28,15 @@ class HepcatTestCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_ctx.pop()
+
+    def login(self, email='screen@example.com', password='screen'):
+        response = self.client.post(
+            '/auth/login',
+            data={
+                'email': email,
+                'password': password,
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert b'<title>Hepcat - Login</title>' not in response.data

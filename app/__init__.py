@@ -51,14 +51,6 @@ def create_app(config_name, build_path):
     app.logger.addHandler(logging.StreamHandler(sys.stdout))
     app.logger.setLevel(logging.ERROR)
 
-    bootstrap.init_app(app)
-    mail.init_app(app)
-    moment.init_app(app)
-    db.init_app(app)
-    ma.init_app(app)
-    login_manager.init_app(app)
-    socketio.init_app(app)
-
     from .main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
@@ -78,6 +70,14 @@ def create_app(config_name, build_path):
     from .cli import cli as cli_blueprint
 
     app.register_blueprint(cli_blueprint)
+
+    bootstrap.init_app(app)
+    mail.init_app(app)
+    moment.init_app(app)
+    db.init_app(app)
+    ma.init_app(app)
+    login_manager.init_app(app)
+    socketio.init_app(app)
 
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.
