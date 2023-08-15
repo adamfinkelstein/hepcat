@@ -25,6 +25,8 @@ click==8.1.6
     #   flask
     #   pip-tools
     #   tsplib95
+coverage[toml]==7.3.0
+    # via pytest-cov
 deprecated==1.2.14
     # via tsplib95
 distlib==0.3.7
@@ -39,6 +41,8 @@ email-validator==2.0.0.post2
     # via -r requirements.in
 eventlet==0.33.3
     # via -r requirements.in
+exceptiongroup==1.1.3
+    # via pytest
 faker==19.3.0
     # via -r requirements.in
 filelock==3.12.2
@@ -74,7 +78,9 @@ flask-sqlalchemy==3.0.5
 flask-wtf==1.1.1
     # via -r requirements.in
 greenlet==2.0.2
-    # via eventlet
+    # via
+    #   eventlet
+    #   sqlalchemy
 gunicorn==21.2.0
     # via -r requirements.in
 h11==0.14.0
@@ -87,6 +93,8 @@ idna==3.4
     #   requests
 importlib-metadata==6.8.0
     # via flask
+iniconfig==2.0.0
+    # via pytest
 itsdangerous==2.1.2
     # via
     #   flask
@@ -123,10 +131,13 @@ packaging==23.1
     #   gunicorn
     #   marshmallow
     #   marshmallow-sqlalchemy
+    #   pytest
 pip-tools==7.3.0
     # via -r requirements.in
 platformdirs==3.10.0
     # via virtualenv
+pluggy==1.2.0
+    # via pytest
 pre-commit==3.3.3
     # via -r requirements.in
 protobuf==4.24.0
@@ -137,6 +148,12 @@ pycryptodome==3.18.0
     # via -r requirements.in
 pyproject-hooks==1.0.0
     # via build
+pytest==7.4.0
+    # via
+    #   -r requirements.in
+    #   pytest-cov
+pytest-cov==4.1.0
+    # via -r requirements.in
 python-dateutil==2.8.2
     # via faker
 python-dotenv==1.0.0
@@ -168,8 +185,10 @@ tabulate==0.8.10
 tomli==2.0.1
     # via
     #   build
+    #   coverage
     #   pip-tools
     #   pyproject-hooks
+    #   pytest
 tsplib95==0.7.1
     # via python-tsp
 typing-extensions==4.7.1
