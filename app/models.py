@@ -658,7 +658,7 @@ def drop_and_rebuild_tables(table_list=None):
         title = f'\nBefore dropping tables {table_list}'
         output += dump_users_papers_and_conflicts(title)
         for line in ps_cmd.split('\n'):
-            db.session.execute(line)
+            db.session.execute(db.text(line))
         db.session.commit()
         db.create_all()
         title = f'\nAfter dropping tables {table_list}'
