@@ -1,0 +1,29 @@
+from app import socketio
+from tests.hepcat_test_case import HepcatTestCase
+
+
+class TestSockets(HepcatTestCase):
+    def setUp(self):
+        super().setUp()
+        self.login()
+        self.socket_client = socketio.test_client(
+            self.app, flask_test_client=self.client
+        )
+
+    def tearDown(self):
+        self.socket_client.disconnect()
+        super().tearDown()
+
+    def test_connected(self):
+        assert self.socket_client.is_connected()
+        events = self.socket_client.get_received()
+        assert len(events) == 1
+        assert events[0]['name'] == 'server_welcome'
+        assert events[0]['args'][0]['user']['email'] == 'screen@example.com'
+
+    def test_grid(self):
+        self.socket_client.get_received()  # clear receive buffer
+        self.socket_client.emit('user_request_grid')
+        events = self.socket_client.get_received()
+        assert len(events) == 1
+        assert events[0]['name'] == 'server_set_grid'
