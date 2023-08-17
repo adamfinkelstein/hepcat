@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { Container } from 'react-bootstrap';
 import { useState } from 'react';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useGUI } from '../contexts/GUIContext';
 import { useFlasher } from '../contexts/FlasherContext';
@@ -24,6 +25,7 @@ const scoreOptions = [
 
 export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
+  const { controlledLog } = useControlledLog();
   const globals = useAppGlobals();
   const hideQ = globals.hideQ;
   const setHideQ = globals.setHideQ;
@@ -51,8 +53,6 @@ export default function SetQueue() {
   const setHighRange = globals.setHighRange;
   const scoreSelection = globals.scoreSelection;
   const setScoreSelection = globals.setScoreSelection;
-
-  let controlledLog = useAppGlobals()['controlledLog'];
 
   const filterListMain = [
     'Stickie Only',

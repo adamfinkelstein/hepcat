@@ -3,6 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import Flasher from '../components/Flasher';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -11,12 +12,12 @@ export default function UploadsPage() {
   let flasher = useFlasher();
   let flash = flasher['flash'];
 
+  const { controlledLog } = useControlledLog();
   const globals = useAppGlobals();
   const user = globals.user;
   const adminKey = globals.adminKey;
   const isSuper = user && user.role_name === 'Super';
   const socketEmit = globals.socketEmit;
-  const controlledLog = globals.controlledLog;
   const fileUploads = globals.fileUploads;
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];

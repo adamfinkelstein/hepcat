@@ -5,12 +5,13 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 //import NavItem from "react-bootstrap/NavItem";
 import { NavLink } from 'react-router-dom';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 export default function HeaderBar() {
   const globals = useAppGlobals();
-  const controlledLog = globals.controlledLog;
+  const { controlledLog } = useControlledLog();
   const user = globals.user;
   const isAdmin = globals.isAdmin;
   let userNamePlus = user && user.full_name ? user.full_name : 'User';

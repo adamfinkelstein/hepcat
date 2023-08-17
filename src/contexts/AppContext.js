@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import socketIOClient from 'socket.io-client';
 import { useFlasher } from './FlasherContext';
+import { useControlledLog } from './ControlledLogContext';
 import smartquotes from 'smartquotes';
 import moment from 'moment';
 
@@ -36,6 +37,7 @@ export function useAppGlobals() {
 }
 
 export default function AppContext({ children }) {
+  const { controlledLog, setShowLogs } = useControlledLog();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminKey, setAdminKey] = useState('');
@@ -72,16 +74,6 @@ export default function AppContext({ children }) {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
-  const [showLogs, setShowLogs] = useState(false);
-
-  const controlledLog = useCallback(
-    (...output) => {
-      if (showLogs) {
-        console.log(...output);
-      }
-    },
-    [showLogs],
-  );
 
   const oidIsConflict = useCallback(
     (oid) => {
@@ -171,13 +163,6 @@ export default function AppContext({ children }) {
     setSocket(newSocket);
     return () => newSocket.close();
   }, [setSocket]);
-
-  useEffect(() => {
-    const showLogsEnv = Boolean(process.env.REACT_APP_SHOW_LOGS);
-    if (showLogsEnv) {
-      setShowLogs(showLogsEnv);
-    }
-  }, [setShowLogs]);
 
   useEffect(() => {
     controlledLog('roomChoice is now ' + roomChoice);

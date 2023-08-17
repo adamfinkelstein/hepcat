@@ -9,6 +9,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import Flasher from './Flasher';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
 
 export default function GridSection() {
   const [gridDisplay, setGridDisplay] = useState('Normal');
@@ -22,13 +23,13 @@ export default function GridSection() {
   const papersTotal = gridCountAbove + gridCountBelow;
   const papersConflicted = papersTotal - gridNidsAbove - gridNidsBelow;
   const socketEmit = globals.socketEmit;
-  const controlledLog = globals.controlledLog;
   const checkValidNID = globals.checkValidNID;
   const setModalTitle = globals.setModalTitle;
   const setModalBody = globals.setModalBody;
   const setShowModal = globals.setShowModal;
   const [stickie, setStickie] = useState('Tabled');
   const [ID, setID] = useState('');
+  const { controlledLog } = useControlledLog();
 
   function sendStickie() {
     const words = stickie.split(' ');

@@ -5,6 +5,7 @@ import Stack from 'react-bootstrap/Stack';
 // import {useFlasher} from '../contexts/FlasherContext'
 import Flasher from '../components/Flasher';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import Button from 'react-bootstrap/Button';
 
 function timeDiff(since) {
@@ -25,7 +26,7 @@ export default function UsersPage() {
   const allUsers = isAdmin ? globals.allUsers : [];
   const noSuper = allUsers.filter((user) => user.role_name !== 'Super');
   const adminKey = globals.adminKey;
-  const controlledLog = globals.controlledLog;
+  const { controlledLog } = useControlledLog();
   const pingEnv = process.env.REACT_APP_PING_TIMER_SECS;
   const pingSec = pingEnv ? parseInt(pingEnv) : 0;
 
