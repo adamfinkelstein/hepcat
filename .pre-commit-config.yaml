@@ -1,6 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+  # generic code formatting checkers
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -8,20 +9,49 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+
+  # python linter
+  # (issues need to be addressed before enabling this hook)
+  #- repo: https://github.com/pycqa/flake8
+  #  rev: '6.1.0'
+  #  hooks:
+  #    - id: flake8
+  #      args:
+  #        - --max-line-length=88
+  #        - --extend-ignore=E203
+
+  # python code formatter
   - repo: https://github.com/psf/black
     rev: '23.7.0'
     hooks:
       - id: black
         args:
           - --skip-string-normalization
+
+  # jinja code formatter
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: 'v1.32.1'
     hooks:
       - id: djlint-reformat
         args:
           - --profile=jinja
+
+  # javascript linter
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: 'v8.47.0'
+    hooks:
+      - id: eslint
+
+  # css linter
+  # (issues need to be addressed before enabling this hook)
+  #- repo: https://github.com/pre-commit/mirrors-csslint
+  #  rev: ''
+  #  hooks:
+  #    - id: csslint
+
+  # javascript/css/markdown code formatter
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: 'v3.0.1'
+    rev: 'v3.0.2'
     hooks:
       - id: prettier
         args:
