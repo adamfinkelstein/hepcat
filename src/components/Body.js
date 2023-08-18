@@ -1,6 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Split from 'react-split';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useSocketIO } from '../contexts/SocketIOContext';
 import Queue from './Queue';
 import Paper from './Paper';
 import GridSection from './GridSection';
@@ -18,10 +19,10 @@ import {
 } from '../contexts/PreferencesContext';
 
 export default function Body() {
+  const { socketEmit } = useSocketIO();
   const globals = useAppGlobals();
   const user = globals.user;
   const isAdmin = globals.isAdmin;
-  const socketEmit = globals.socketEmit;
   const roomCalledTo = globals.roomCalledTo;
   const roomChoice = globals.roomChoice;
   const setRoomChoice = globals.setRoomChoice;

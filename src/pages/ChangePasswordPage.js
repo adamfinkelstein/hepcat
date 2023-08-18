@@ -3,6 +3,8 @@ import Stack from 'react-bootstrap/Stack';
 import { useState } from 'react';
 import { useFlasher } from '../contexts/FlasherContext';
 import Flasher from '../components/Flasher';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -19,10 +21,9 @@ export default function ChangePasswordPage() {
   let [forEmail, setForEmail] = useState('');
   let [isForOther, setIsForOther] = useState(false);
 
-  let controlledLog = useAppGlobals()['controlledLog'];
-
+  const { controlledLog } = useControlledLog();
+  const { socketEmit } = useSocketIO();
   const globals = useAppGlobals();
-  const socketEmit = globals.socketEmit;
   const isAdmin = globals.isAdmin;
   const allUsers = globals.allUsers;
 

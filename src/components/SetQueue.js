@@ -2,6 +2,7 @@ import moment from 'moment';
 import { Container } from 'react-bootstrap';
 import { useState } from 'react';
 import { useControlledLog } from '../contexts/ControlledLogContext';
+import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useGUI } from '../contexts/GUIContext';
 import { useFlasher } from '../contexts/FlasherContext';
@@ -26,6 +27,7 @@ const scoreOptions = [
 export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
   const { controlledLog } = useControlledLog();
+  const { socketEmit } = useSocketIO();
   const globals = useAppGlobals();
   const hideQ = globals.hideQ;
   const setHideQ = globals.setHideQ;
@@ -38,7 +40,6 @@ export default function SetQueue() {
     : '(not set)';
   const guiBarString = globals.guiBar + '';
   const setGuiBar = globals.setGuiBar;
-  const socketEmit = globals.socketEmit;
   const roomChoice = globals.roomChoice;
   const queryName = globals.queryName;
   const setQueryName = globals.setQueryName;

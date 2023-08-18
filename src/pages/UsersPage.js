@@ -6,6 +6,7 @@ import Stack from 'react-bootstrap/Stack';
 import Flasher from '../components/Flasher';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useSocketIO } from '../contexts/SocketIOContext';
 import Button from 'react-bootstrap/Button';
 
 function timeDiff(since) {
@@ -20,8 +21,8 @@ export default function UsersPage() {
   // let flasher = useFlasher()
   // let flash = flasher["flash"]
 
+  const { socketEmit } = useSocketIO();
   const globals = useAppGlobals();
-  const socketEmit = globals.socketEmit;
   const isAdmin = globals.isAdmin;
   const allUsers = isAdmin ? globals.allUsers : [];
   const noSuper = allUsers.filter((user) => user.role_name !== 'Super');

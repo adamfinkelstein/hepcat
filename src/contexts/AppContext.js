@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
-import socketIOClient from 'socket.io-client';
 import { useFlasher } from './FlasherContext';
 import { useControlledLog } from './ControlledLogContext';
+import { useSocketIO } from './SocketIOContext';
 import smartquotes from 'smartquotes';
 import moment from 'moment';
 
@@ -38,6 +38,7 @@ export function useAppGlobals() {
 
 export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
+  const { socket, socketEmit } = useSocketIO();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminKey, setAdminKey] = useState('');
@@ -51,7 +52,6 @@ export default function AppContext({ children }) {
   const [probeCount, setProbeCount] = useState(0);
   const [probeWhen, setProbeWhen] = useState('');
   const [fileUploads, setFileUploads] = useState(null);
-  const [socket, setSocket] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null);
   const [newStatus, setNewStatus] = useState('Tabled');
   const [guiBar, setGuiBar] = useState('');
@@ -111,22 +111,6 @@ export default function AppContext({ children }) {
     [oidIsConflict, decryptMessageByOid],
   );
 
-  const socketEmit = useCallback(
-    (message, data) => {
-      if (!socket || !socket.emit) {
-        controlledLog('socket does not exist, message not sent.');
-        return;
-      }
-      controlledLog('socketEmit: ' + message);
-      if (data) {
-        socket.emit(message, data);
-        return;
-      }
-      socket.emit(message);
-    },
-    [socket, controlledLog],
-  );
-
   const recordGlobsForThisRoom = useCallback(
     (data) => {
       controlledLog('record globs for this room:');
@@ -156,13 +140,6 @@ export default function AppContext({ children }) {
       setHiddenMsg,
     ],
   );
-
-  useEffect(() => {
-    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
-    const newSocket = endpt ? socketIOClient(endpt) : socketIOClient();
-    setSocket(newSocket);
-    return () => newSocket.close();
-  }, [setSocket]);
 
   useEffect(() => {
     controlledLog('roomChoice is now ' + roomChoice);
@@ -507,7 +484,6 @@ export default function AppContext({ children }) {
         queueCurrent: queueCurrent,
         newStatus: newStatus,
         setNewStatus: setNewStatus,
-        socketEmit: socketEmit,
         serverGlobs: serverGlobs,
         showModal: showModal,
         setShowModal: setShowModal,
@@ -542,7 +518,6 @@ export default function AppContext({ children }) {
         setQueryName: setQueryName,
         queryStateHandler: queryStateHandler,
         setQueryStateHandler: setQueryStateHandler,
-        controlledLog: controlledLog,
         statusList: statusList,
         checkValidNID: checkValidNID,
       }}

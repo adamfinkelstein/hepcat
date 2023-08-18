@@ -12,10 +12,12 @@ import {
 // import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
 import Button from 'react-bootstrap/Button';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 
 export default function ColorPreferences() {
+  const { controlledLog } = useControlledLog();
   let colors = useColors();
   let changeColor = useChangeColor();
   let defaultColors = Object.values(useDefaultColors()['defaultColors']);
@@ -23,8 +25,6 @@ export default function ColorPreferences() {
   // let textColors = useTextColors()
   let changeTextColors = useChangeTextColors();
   let [pickingFor, setPickingFor] = useState('Unseen');
-
-  let controlledLog = useAppGlobals()['controlledLog'];
 
   let flasher = useFlasher();
   let flash = flasher['flash'];
