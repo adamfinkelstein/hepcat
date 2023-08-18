@@ -35,8 +35,10 @@ gunicorn
 
 # solvers
 numpy
-python-tsp
 ortools
+
+# No longer needed: another TSP solver
+# python-tsp
 
 # No longer needed: how we would skip ortools on M1:
 # ortools; platform_machine != 'arm64'

@@ -1,12 +1,15 @@
 import os
 import time
 import random
-from subprocess import check_output, CalledProcessError, STDOUT
+
+# from subprocess import check_output, CalledProcessError, STDOUT
+from subprocess import run
 import numpy as np
-from python_tsp.heuristics import solve_tsp_local_search
+
+# from python_tsp.heuristics import solve_tsp_local_search
 from flask import current_app
 
-use_ortools = True or os.environ.get('HEPCAT_USE_ORTOOLS')
+use_ortools = os.environ.get('HEPCAT_USE_ORTOOLS')
 
 if use_ortools:
     from ortools.constraint_solver import routing_enums_pb2
@@ -19,17 +22,28 @@ def make_path_if_needed(path):
         os.makedirs(path)
 
 
-# duplicates a function in debug/views.py
-def run_cmd(cmd):
-    try:
-        result = check_output(cmd, stderr=STDOUT, shell=True)
-        return True, result.decode("utf-8")
-    except CalledProcessError as e:
-        return False, e.output.decode("utf-8")
-    except Exception as err:
-        out = err.output
-        msg = f'Unexpected {err=}, {type(err)=}, {out}'
-        return False, msg
+# old, unused:
+# def run_cmd_check_output(cmd):
+#     # note shell=True allows cmd as single string
+#     try:
+#         result = check_output(cmd, stderr=STDOUT, shell=True)
+#         return True, result.decode("utf-8")
+#     except CalledProcessError as e:
+#         return False, e.output.decode("utf-8")
+#     except Exception as err:
+#         out = err.output
+#         msg = f'Unexpected {err=}, {type(err)=}, {out}'
+#         return False, msg
+
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.run
+# for unknown reasons, concorde returns code 255 (error) even when successful.
+def run_cmd(cmd, ignore_errors=False):
+    words = cmd.split()
+    result = run(words, capture_output=True)
+    if result.returncode and not ignore_errors:
+        return False, f'run command error: {result}'
+    return True, ''
 
 
 def get_paper_conficts_set(p):
@@ -129,25 +143,31 @@ def tour_cost(distance_matrix, permutation):
 ########### CONCORDE ############
 
 
+def write_string_to_file(contents, fname):
+    with open(fname, 'w') as f:
+        f.write(contents)
+
+
 def write_concorde_input(matrix, fname):
-    dim = str(len(matrix))
-    f = open(fname, "w")
-    f.write(
-        f"""NAME: papers
+    dim = len(matrix)
+    # For format, see Example 2 here:
+    # https://www.math.uwaterloo.ca/tsp/iphone/help.html
+    contents = f'''NAME: papers
 TYPE: TSP
 COMMENT: PC Meeting Conflicts
 DIMENSION: {dim}
 EDGE_WEIGHT_TYPE: EXPLICIT
-EDGE_WEIGHT_FORMAT: FULL_MATRIX
+EDGE_WEIGHT_FORMAT: LOWER_DIAG_ROW
 EDGE_WEIGHT_SECTION
-"""
-    )
-    for row in matrix:
-        strings = [str(d) for d in row]
-        line = " ".join(strings) + "\n"
-        f.write(line)
-    f.write("EOF")
-    f.close()
+'''
+    for i in range(dim):
+        row = matrix[i]
+        row = row[: i + 1]  # only up to diag
+        row = [str(int(round(v))) for v in row]
+        row = ' '.join(row) + '\n'
+        contents += row
+    contents += 'EOF\n'
+    write_string_to_file(contents, fname)
 
 
 def call_concorde(concorde_path, concorde_input):
@@ -158,7 +178,7 @@ def call_concorde(concorde_path, concorde_input):
     # -o f : output solution to file f
     cmd = f'{concorde_path} -s 0 -x -V {concorde_input}'
     # print(cmd)
-    return run_cmd(cmd)
+    return run_cmd(cmd, True)
 
 
 def read_solution(solution_file):
@@ -359,12 +379,6 @@ def order_q_select_alg(distance_matrix):
     cost = tour_cost(distance_matrix, nodes)
     print(f'cost of linear path: {cost}')
 
-    # start_timer()
-    # nodes = setup_and_run_concorde(distance_matrix)
-    # diff = elapsed_time()
-    # cost = tour_cost(distance_matrix, nodes)
-    # print(f'cost of concorde path: {cost} (time {diff})')
-
     if use_ortools:  # global set at top of file
         start_timer()
         nodes = solve_tsp_ortools(distance_matrix)
@@ -373,10 +387,10 @@ def order_q_select_alg(distance_matrix):
         print(f'cost of ortools path: {cost} (time {diff})')
     else:
         start_timer()
-        nodes, _ = solve_tsp_local_search(distance_matrix, max_processing_time=8.0)
+        nodes = setup_and_run_concorde(distance_matrix)
         diff = elapsed_time()
         cost = tour_cost(distance_matrix, nodes)
-        print(f'cost of local path: {cost} (time {diff})')
+        print(f'cost of concorde path: {cost} (time {diff})')
     if not nodes:
         return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
