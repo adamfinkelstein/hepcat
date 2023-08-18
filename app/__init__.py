@@ -21,27 +21,21 @@ ma = Marshmallow()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 static_folder = ''  # this global is set in create_app below
-allow_cors = os.getenv('ALLOW_CORS')
-allow_cors_socket = os.getenv('ALLOW_CORS_SOCKET')
 
 # Set this in SocketIO(): max_http_buffer_size
 # See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
 # Default is 1^6 for 1MB. Probably want larger for file uploads.
-if allow_cors or allow_cors_socket:
-    print('ALLOW_CORS - allowing cross origin requests on SOCKET')
-    socketio = SocketIO(cors_allowed_origins="*")
-else:
-    socketio = SocketIO()
+socketio = SocketIO()
 
 
 def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__, static_url_path='', static_folder=build_path)
+    app.config.from_object(config[config_name])
     static_folder = build_path  # save this for use in app/main
-    if allow_cors:
+    if app.config['ALLOW_CORS']:
         CORS(app)
         print('ALLOW_CORS - allowing cross origin requests on APP')
-    app.config.from_object(config[config_name])
     # config[config_name].init_app(app) # AF not needed (just pass)
 
     # a random string associated with this instance
@@ -77,7 +71,13 @@ def create_app(config_name, build_path):
     db.init_app(app)
     ma.init_app(app)
     login_manager.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(
+        app,
+        async_mode='eventlet' if app.config['USE_EVENTLET'] else 'threading',
+        cors_allowed_origins='*'
+        if app.config['ALLOW_CORS'] or app.config['ALLOW_CORS_SOCKET']
+        else None,
+    )
 
     with app.app_context():
         # AF added this to create db without migrations. It is idempotent.

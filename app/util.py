@@ -1,11 +1,10 @@
 import os
 import random
 from datetime import datetime
+from flask import current_app
 from flask_login import current_user
 from sqlalchemy.sql import func
 from .models import User, History, HistoryContext
-
-allow_cors = os.getenv('ALLOW_CORS')
 
 
 def get_random_admin():
@@ -31,14 +30,18 @@ def get_random_user():
 def get_current_user_or_none():
     if current_user and not current_user.is_anonymous:
         return current_user
-    if allow_cors:  # hack to allow Rect debug on different port w/o login
+    if current_app.config[
+        'ALLOW_CORS'
+    ]:  # hack to allow Rect debug on different port w/o login
         return get_random_user()
     print('user is not logged in: should force disconnect.')
     return None
 
 
 def current_user_is_admin():
-    if allow_cors:  # hack to allow Rect debug on different port w/o login
+    if current_app.config[
+        'ALLOW_CORS'
+    ]:  # hack to allow Rect debug on different port w/o login
         return True
     user = get_current_user_or_none()
     if user and user.is_authenticated and user.role_is_admin:
