@@ -5,7 +5,7 @@ import { useFlasher } from '../contexts/FlasherContext';
 import Flasher from '../components/Flasher';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
@@ -23,9 +23,7 @@ export default function ChangePasswordPage() {
 
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
-  const globals = useAppGlobals();
-  const isAdmin = globals.isAdmin;
-  const allUsers = globals.allUsers;
+  const { isAdmin, allUsers } = useUser();
 
   function handleSubmit() {
     // Verify that the passwords match

@@ -1,7 +1,7 @@
 import Stack from 'react-bootstrap/Stack';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBorderAll } from '@fortawesome/free-solid-svg-icons';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 
 export default function GridControls({
   showingStickie,
@@ -11,9 +11,7 @@ export default function GridControls({
   showingQueueGUI,
   setShowingQueueGUI,
 }) {
-  const globals = useAppGlobals();
-  const user = globals.user;
-  const isAdmin = globals.isAdmin;
+  const { user, isAdmin } = useUser();
   return (
     <Stack direction="horizontal" className="grid-controls">
       {!showingQueueGUI && (

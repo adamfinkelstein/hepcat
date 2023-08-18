@@ -1,15 +1,16 @@
 import Stack from 'react-bootstrap/Stack';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import { useUser } from '../contexts/UserContext';
 import { useAppGlobals } from '../contexts/AppContext';
 //import DropdownButton from "react-bootstrap/DropdownButton"
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 
 export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
+  const { roomChoice } = useUser();
   const globals = useAppGlobals();
   const newStatus = globals.newStatus;
   const setNewStatus = globals.setNewStatus;
-  const roomChoice = globals.roomChoice;
   const completed = globals.queueCurrent >= globals.queue.length;
   const disablePrev = globals.queueCurrent === 0 ? 'disabled' : '';
   const disableShow =

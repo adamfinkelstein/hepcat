@@ -13,7 +13,6 @@ import {
 import ColorsDisplay from './ColorsDisplay';
 import Button from 'react-bootstrap/Button';
 import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 
 export default function ColorPreferences() {

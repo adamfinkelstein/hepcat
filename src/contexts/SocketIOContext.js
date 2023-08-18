@@ -8,15 +8,6 @@ export default function SocketIOContext({ children }) {
   const [socket, setSocket] = React.useState(null);
   const { controlledLog } = useControlledLog();
 
-  React.useEffect(() => {
-    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
-    const s = socketIOClient(endpt);
-    setSocket(s);
-    return () => {
-      s.disconnect();
-    };
-  }, []);
-
   const socketEmit = React.useCallback(
     (message, data) => {
       if (!socket || !socket.emit) {
@@ -32,6 +23,15 @@ export default function SocketIOContext({ children }) {
     },
     [socket, controlledLog],
   );
+
+  React.useEffect(() => {
+    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
+    const s = socketIOClient(endpt);
+    setSocket(s);
+    return () => {
+      s.disconnect();
+    };
+  }, []);
 
   return (
     <socketIOContext.Provider value={{ socket, socketEmit }}>

@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { useFlasher } from './FlasherContext';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
-import smartquotes from 'smartquotes';
+import { useUser } from './UserContext';
 import moment from 'moment';
 
 var CryptoJS = require('crypto-js');
@@ -39,13 +39,6 @@ export function useAppGlobals() {
 export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
   const { socket, socketEmit } = useSocketIO();
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminKey, setAdminKey] = useState('');
-  const [paperKeys, setPaperKeys] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
-  const [roomCalledTo, setRoomCalledTo] = useState('Plenary');
-  const [roomChoice, setRoomChoice] = useState('Plenary');
   const [queue, setQueue] = useState([]);
   const [grid, setGrid] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
@@ -55,7 +48,6 @@ export default function AppContext({ children }) {
   const [serverGlobs, setServerGlobs] = useState(null);
   const [newStatus, setNewStatus] = useState('Tabled');
   const [guiBar, setGuiBar] = useState('');
-  const [aboutMD, setAboutMD] = useState('');
   const [hideQ, setHideQ] = useState(false);
   const [hiddenMsg, setHiddenMsg] = useState('');
   const [statusCheckbox, setStatusCheckbox] = useState([]);
@@ -66,6 +58,8 @@ export default function AppContext({ children }) {
   const [adminQueries, setAdminQueries] = useState([]);
   const [queryName, setQueryName] = useState('');
   const [queryStateHandler, setQueryStateHandler] = useState(null);
+
+  const { user, isAdmin, paperKeys, roomChoice } = useUser();
 
   const flasher = useFlasher();
   const flash = flasher['flash'];
@@ -157,29 +151,6 @@ export default function AppContext({ children }) {
   }, [roomChoice, controlledLog, socketEmit]);
 
   useEffect(() => {
-    const receiveWelcome = (data) => {
-      controlledLog('received welcome:');
-      controlledLog(data);
-      setUser(data.user);
-      const isAdmin = data.user && data.user.role_is_admin;
-      setIsAdmin(isAdmin);
-      if (isAdmin && data.all_users && data.all_users.length) {
-        setAllUsers(data.all_users);
-      }
-      if (isAdmin && data.admin_key && data.admin_key.length) {
-        setAdminKey(data.admin_key);
-      }
-      setPaperKeys(data.paper_keys);
-      setAboutMD(smartquotes(data.about));
-      if (data.user.room_name) {
-        //const room = roomCodeToRoom(data.user.in_room)
-        setRoomChoice(data.user.room_name);
-        setRoomCalledTo(data.user.room_name);
-      }
-      socketEmit('user_request_grid');
-      socketEmit('user_request_queue', roomChoice);
-    };
-
     function updateGridEntry(nid, status) {
       const grid_entry = grid && grid.papers ? grid.papers[nid] : null;
       if (!grid_entry) {
@@ -289,32 +260,6 @@ export default function AppContext({ children }) {
       setProbeWhen(fmt);
     };
 
-    const belongInRoom = (room) => {
-      if (room === 'Plenary') {
-        return true;
-      }
-      const roomLetter = room.slice(-1); // last letter of room string
-      if (user && user.rooms && user.rooms.includes(roomLetter)) {
-        return true;
-      }
-      return false;
-    };
-
-    const receiveCallToRoom = (data) => {
-      const room = data.room;
-      const alreadyThere = room === roomChoice;
-      if (isAdmin && data.all_users && data.all_users.length) {
-        setAllUsers(data.all_users);
-      }
-      if (belongInRoom(room)) {
-        setRoomChoice(room);
-        setRoomCalledTo(room);
-        if (!alreadyThere) {
-          flash('Admin brought you to ' + room, 'success', 'room_change');
-        }
-      }
-    };
-
     const oidListToNidList = (oids) => {
       if (!oids || !oids.length) return null;
       const nids = oids.map((oid) => oidToNid(oid));
@@ -398,15 +343,8 @@ export default function AppContext({ children }) {
       setAdminQueries(queries);
     };
 
-    const receiveRefresh = (all_users) => {
-      controlledLog('received refresh with all users:');
-      controlledLog(all_users);
-      setAllUsers(all_users);
-    };
-
     if (socket && 'on' in socket) {
       controlledLog('register welcome etc');
-      socket.on('server_welcome', receiveWelcome);
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
@@ -415,19 +353,16 @@ export default function AppContext({ children }) {
       socket.on('server_send_flasher', receiveFlasher);
       socket.on('server_probe_count', receiveProbe);
       socket.on('server_file_uploads', receiveFileUploads);
-      socket.on('server_call_to_room', receiveCallToRoom);
       socket.on('server_logout_user', receiveLogout);
       socket.on('server_reload_user', receiveReload);
       socket.on('server_send_query', receiveQuery);
       socket.on('server_send_queries', receiveQueries);
-      socket.on('server_refresh_users', receiveRefresh);
     }
 
     // return from useEffect is function that does cleanup
     return () => {
       if (socket && 'off' in socket) {
         controlledLog('socket cleanup');
-        socket.off('server_welcome', receiveWelcome);
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
@@ -436,12 +371,10 @@ export default function AppContext({ children }) {
         socket.off('server_send_flasher', receiveFlasher);
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_file_uploads', receiveFileUploads);
-        socket.off('server_call_to_room', receiveCallToRoom);
         socket.off('server_logout_user', receiveLogout);
         socket.off('server_reload_user', receiveReload);
         socket.off('server_send_query', receiveQuery);
         socket.off('server_send_queries', receiveQueries);
-        socket.off('server_refresh_users', receiveRefresh);
       }
     };
   }, [
@@ -470,17 +403,8 @@ export default function AppContext({ children }) {
   return (
     <AppGlobalsContext.Provider
       value={{
-        user: user,
-        isAdmin: isAdmin,
-        adminKey: adminKey,
-        paperKeys: paperKeys,
-        allUsers: allUsers,
-        roomCalledTo: roomCalledTo,
-        roomChoice: roomChoice,
-        setRoomChoice: setRoomChoice,
         queue: queue,
         grid: grid,
-        aboutMD: aboutMD,
         queueCurrent: queueCurrent,
         newStatus: newStatus,
         setNewStatus: setNewStatus,

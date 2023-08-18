@@ -5,6 +5,7 @@ import ModalDialog from './components/ModalDialog.js';
 import { BrowserRouter } from 'react-router-dom';
 import ControlledLogContext from './contexts/ControlledLogContext.js';
 import SocketIOContext from './contexts/SocketIOContext.js';
+import UserContext from './contexts/UserContext.js';
 import AppContext from './contexts/AppContext.js';
 import PreferencesContext from './contexts/PreferencesContext';
 import FlasherContext from './contexts/FlasherContext.js';
@@ -15,19 +16,21 @@ export default function App() {
     <Container fluid className="App">
       <BrowserRouter>
         <ControlledLogContext>
-          <SocketIOContext>
-            <FlasherContext>
-              <AppContext>
-                <PreferencesContext>
-                  <GUIContext>
-                    <ModalDialog />
-                    <HeaderBar />
-                    <AppRoutes />
-                  </GUIContext>
-                </PreferencesContext>
-              </AppContext>
-            </FlasherContext>
-          </SocketIOContext>
+          <FlasherContext>
+            <SocketIOContext>
+              <UserContext>
+                <AppContext>
+                  <PreferencesContext>
+                    <GUIContext>
+                      <ModalDialog />
+                      <HeaderBar />
+                      <AppRoutes />
+                    </GUIContext>
+                  </PreferencesContext>
+                </AppContext>
+              </UserContext>
+            </SocketIOContext>
+          </FlasherContext>
         </ControlledLogContext>
       </BrowserRouter>
     </Container>

@@ -1,11 +1,10 @@
 import Container from 'react-bootstrap/Container';
 import ReactMarkdown from 'react-markdown';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 
 export default function AboutPage() {
-  const globals = useAppGlobals();
-  const aboutMD = globals.aboutMD;
+  const { aboutMD } = useUser();
   const { controlledLog } = useControlledLog();
   let imageURLprefix = process.env.REACT_APP_ABOUT_IMAGE_PREFIX;
   if (!imageURLprefix) imageURLprefix = 'https://hepcat.herokuapp.com/about/';

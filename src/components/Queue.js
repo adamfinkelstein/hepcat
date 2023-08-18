@@ -1,15 +1,15 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 import QueueElement from './QueueElement.js';
 import { useState } from 'react';
 import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {
+  const { user, isAdmin } = useUser();
   const globals = useAppGlobals();
   const queue = globals.queue;
-  const user = globals.user;
-  const isAdmin = globals.isAdmin;
   const current = globals.queueCurrent;
   const counter = current + 1;
   const currentCount = counter > queue.length ? 'completed' : counter + ' of';

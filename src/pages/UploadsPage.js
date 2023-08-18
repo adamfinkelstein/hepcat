@@ -5,6 +5,7 @@ import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import { useUser } from '../contexts/UserContext';
 import Flasher from '../components/Flasher';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -15,10 +16,9 @@ export default function UploadsPage() {
 
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
-  const globals = useAppGlobals();
-  const user = globals.user;
-  const adminKey = globals.adminKey;
+  const { user, adminKey } = useUser();
   const isSuper = user && user.role_name === 'Super';
+  const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];

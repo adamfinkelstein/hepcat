@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useState } from 'react';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import { useUser } from '../contexts/UserContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useGUI } from '../contexts/GUIContext';
 import { useFlasher } from '../contexts/FlasherContext';
@@ -28,6 +29,7 @@ export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
+  const { roomChoice } = useUser();
   const globals = useAppGlobals();
   const hideQ = globals.hideQ;
   const setHideQ = globals.setHideQ;
@@ -40,7 +42,6 @@ export default function SetQueue() {
     : '(not set)';
   const guiBarString = globals.guiBar + '';
   const setGuiBar = globals.setGuiBar;
-  const roomChoice = globals.roomChoice;
   const queryName = globals.queryName;
   const setQueryName = globals.setQueryName;
   const adminQueries = globals.adminQueries;

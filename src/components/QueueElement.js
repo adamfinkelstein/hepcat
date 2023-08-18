@@ -1,4 +1,5 @@
 import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 import { useRef } from 'react';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
@@ -6,10 +7,10 @@ import PaperConflict from './PaperConflict';
 import { useFavorites } from '../contexts/PreferencesContext';
 
 export default function QueueElement({ paper, active }) {
+  const { user } = useUser();
   const globals = useAppGlobals();
   const favorites = useFavorites();
   const content = useRef(null);
-  const user = globals.user;
   const queueIndex = paper ? paper.queue_order - 1 : -1;
   const isCurrent = queueIndex === globals.queueCurrent;
   const isPast = queueIndex < globals.queueCurrent;

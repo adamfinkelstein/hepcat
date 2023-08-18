@@ -6,14 +6,13 @@ import AboutPage from '../pages/AboutPage.js';
 import UploadsPage from '../pages/UploadsPage.js';
 import UsersPage from '../pages/UsersPage.js';
 import ChangePasswordPage from '../pages/ChangePasswordPage.js';
-import { useAppGlobals } from '../contexts/AppContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
+import { useUser } from '../contexts/UserContext';
 
 export default function AppRoutes() {
-  const globals = useAppGlobals();
+  const { user, isAdmin } = useUser();
   const { controlledLog } = useControlledLog();
-  const isAdmin = globals.isAdmin;
-  controlledLog(globals.user);
+  controlledLog(user);
 
   return (
     <Routes>
