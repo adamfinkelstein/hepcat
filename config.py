@@ -15,6 +15,9 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'tmp')
     BIN_FOLDER = os.path.join(basedir, 'custom_bin')
+    USE_EVENTLET = os.environ.get('USE_EVENTLET')
+    ALLOW_CORS = os.getenv('ALLOW_CORS')
+    ALLOW_CORS_SOCKET = os.getenv('ALLOW_CORS_SOCKET')
 
 
 class DevelopmentConfig(Config):

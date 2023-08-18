@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 import os
+
+if os.getenv('USE_EVENTLET'):
+    # monkey patch the standard library to make it non-blocking under eventlet
+    # this also includes a patch for psycopg2
+    import eventlet
+
+    eventlet.monkey_patch()
+
 import sys
 
 import click
