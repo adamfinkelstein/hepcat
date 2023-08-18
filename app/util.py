@@ -46,12 +46,11 @@ def current_user_is_admin():
     return False
 
 
-# not used right as of now, but might be useful...
-# def current_user_is_super():
-#     user = current_user
-#     if user and user.is_authenticated and user.role_is_super:
-#         return True
-#     return False
+def current_user_is_super():
+    user = get_current_user_or_none()
+    if user and user.is_authenticated and user.role_is_super:
+        return True
+    return False
 
 
 ######################
