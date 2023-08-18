@@ -1,9 +1,9 @@
 from functools import wraps
 from flask_socketio import disconnect
-from app.util import current_user_is_admin, current_user_is_super
+from app.util import current_user_is_admin
 
 
-def admin_required(f):
+def admin_required_for_io(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user_is_admin():
@@ -14,12 +14,13 @@ def admin_required(f):
     return decorated
 
 
-def super_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user_is_super():
-            disconnect()
-            return
-        return f(*args, **kwargs)
+# currently not needed, but might be useful later:
+# def super_required_for_io(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         if not current_user_is_super():
+#             disconnect()
+#             return
+#         return f(*args, **kwargs)
 
-    return decorated
+#     return decorated

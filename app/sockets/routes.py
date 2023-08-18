@@ -8,7 +8,7 @@ from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
-from .decorators import admin_required
+from .decorators import admin_required_for_io
 from .. import db, socketio
 from ..models import (
     User,
@@ -814,7 +814,7 @@ def io_disconnect():
 
 
 @socketio.on('admin_bring_to_room')
-@admin_required
+@admin_required_for_io
 def admin_bring_to_room(room):
     print(f'admin request to bring to room {room}')
     call_users_to_room(room)
@@ -828,13 +828,13 @@ def admin_bring_to_room(room):
 
 
 @socketio.on('admin_bring_to_all_rooms')
-@admin_required
+@admin_required_for_io
 def admin_bring_to_room():
     conflictbots_broadcast_call_to_room(False)
 
 
 @socketio.on('admin_prev_paper')
-@admin_required
+@admin_required_for_io
 def admin_prev_paper(room):
     print(f'admin request for prev paper in {room}')
     zero_or_inc_current_index(room, -1)  # also "hides" current
@@ -844,7 +844,7 @@ def admin_prev_paper(room):
 
 
 @socketio.on('admin_next_paper')
-@admin_required
+@admin_required_for_io
 def admin_next_paper(room):
     print(f'admin request for prev paper in {room}')
     zero_or_inc_current_index(room, +1)  # also "hides" current
@@ -854,7 +854,7 @@ def admin_next_paper(room):
 
 
 @socketio.on('admin_advance_queue')
-@admin_required
+@admin_required_for_io
 def admin_next_paper(data):
     room = data['roomChoice']
     status_update = data['newStatus']
@@ -875,7 +875,7 @@ def admin_next_paper(data):
 
 
 @socketio.on('admin_show_current')
-@admin_required
+@admin_required_for_io
 def admin_show_current(room):
     print(f'admin request for show paper in {room}')
     show_current_paper(room)
@@ -885,7 +885,7 @@ def admin_show_current(room):
 
 
 @socketio.on('admin_hide_queue')
-@admin_required
+@admin_required_for_io
 def admin_hide_queue(data):
     room = data['roomChoice']
     hide = data['hide']
@@ -904,7 +904,7 @@ def admin_hide_queue(data):
 
 
 @socketio.on('admin_set_queue')
-@admin_required
+@admin_required_for_io
 def admin_set_queue(filters):
     room = filters['roomChoice']
     print(f'admin request for set queue in {room}:', filters)
@@ -918,7 +918,7 @@ def admin_set_queue(filters):
 
 
 @socketio.on('admin_save_query')
-@admin_required
+@admin_required_for_io
 def admin_save_query(filters):
     print('admin save query:', filters)
     json_string = json.dumps(filters)
@@ -945,7 +945,7 @@ def admin_save_query(filters):
 
 
 @socketio.on('admin_load_query')
-@admin_required
+@admin_required_for_io
 def admin_load_query(name):
     print('admin load query:', name)
     query = Query.query.filter_by(name=name).first()
@@ -961,7 +961,7 @@ def admin_load_query(name):
 
 
 @socketio.on('admin_delete_query')
-@admin_required
+@admin_required_for_io
 def admin_delete_query(name):
     print('admin delete query:', name)
     query = Query.query.filter_by(name=name).first()
@@ -989,7 +989,7 @@ def admin_delete_query(name):
 
 
 @socketio.on('admin_probe_queue')
-@admin_required
+@admin_required_for_io
 def admin_probe_queue(filters):
     print('admin probe queue:', filters)
     count = get_filter_paper_count(filters)
@@ -997,7 +997,7 @@ def admin_probe_queue(filters):
 
 
 @socketio.on('admin_set_queue_explicit')
-@admin_required
+@admin_required_for_io
 def admin_set_queue_explicit(data):
     room = data['roomChoice']
     explicit = data['explicit']
@@ -1012,7 +1012,7 @@ def admin_set_queue_explicit(data):
 
 
 @socketio.on('admin_set_bar')
-@admin_required
+@admin_required_for_io
 def admin_set_bar(bar):
     print(f'admin request set bar to {bar}')
     set_bar(bar)
@@ -1026,7 +1026,7 @@ def admin_set_bar(bar):
 
 
 @socketio.on('admin_bulk_reject')
-@admin_required
+@admin_required_for_io
 def admin_bulk_reject():
     msg = 'got request admin_bulk_reject'
     print(msg)
@@ -1040,7 +1040,7 @@ def admin_bulk_reject():
 
 
 @socketio.on('admin_clear_stickies')
-@admin_required
+@admin_required_for_io
 def admin_clear_stickies():
     msg = 'got request admin_clear_stickies'
     print(msg)
@@ -1241,7 +1241,7 @@ def emit_admin_uploads(broadcast):
 
 
 @socketio.on('admin_file_upload')
-@admin_required
+@admin_required_for_io
 def admin_upload_file(file):
     print('admin_file_upload')
     filename = 'upload.csv'

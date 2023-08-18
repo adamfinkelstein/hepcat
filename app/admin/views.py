@@ -1,18 +1,14 @@
 from flask import flash, render_template, redirect, url_for, send_file, current_app
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user
 from . import admin
-from ..util import current_user_is_admin
 from ..uploads import write_kind_of_csv
 from ..models import wipe_db_clean, User
-
-# from ../decorators import admin_required, super_required
+from .decorators import admin_required_for_route, super_required_for_route
 
 
 @admin.route('/download_csv/<kind>/<key>')
-@login_required
+@admin_required_for_route
 def download_results_csv(kind, key):
-    if not current_user_is_admin():
-        return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     # print('instance and key: ', inst, key)
     ok_kinds = ['results', 'queries', 'history']
@@ -26,10 +22,8 @@ def download_results_csv(kind, key):
 
 
 @admin.route('/wipe_database/<key>')
-@login_required
+@super_required_for_route
 def wipe_database(key):
-    if not current_user_is_admin():
-        return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
         msg = 'Sorry -- the admin key is wrong. Try logging back in.'
@@ -48,10 +42,8 @@ def wipe_database(key):
 
 
 @admin.route('/zoom_conflictbot/<key>')
-@login_required
+@admin_required_for_route
 def zoom_conflictbot(key):
-    if not current_user_is_admin():
-        return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
         msg = 'Sorry -- the admin key is wrong. Try logging back in.'
@@ -71,10 +63,8 @@ def zoom_conflictbot(key):
 
 
 @admin.route('/switch_user/<email>/<key>')
-@login_required
+@admin_required_for_route
 def switch_user(email, key):
-    if not current_user_is_admin():
-        return redirect(url_for('auth.login'))
     inst = current_app.config['INSTANCE']
     if key != inst:
         msg = 'Sorry -- the admin key is wrong. Try logging back in.'
