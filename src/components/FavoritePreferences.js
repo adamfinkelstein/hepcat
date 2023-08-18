@@ -4,11 +4,13 @@ import {
   useChangeFavorites,
   useFavorites,
 } from '../contexts/PreferencesContext';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import Button from 'react-bootstrap/Button';
 import { useAppGlobals } from '../contexts/AppContext';
 
 export default function FavoritePreferences() {
+  const { controlledLog } = useControlledLog();
   let favorites = useFavorites();
   let changeFavorites = useChangeFavorites();
 
@@ -16,7 +18,6 @@ export default function FavoritePreferences() {
   let flash = flasher['flash'];
 
   let globals = useAppGlobals();
-  let controlledLog = globals['controlledLog'];
   let checkValidNID = globals['checkValidNID'];
 
   function handleSubmit(event) {

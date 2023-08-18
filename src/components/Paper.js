@@ -1,14 +1,15 @@
 import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 import { useState, useEffect } from 'react';
 import CollapsibleParagraph from './CollapsibleParagraph.js';
 
 export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
+  const { user, roomChoice } = useUser();
   const globals = useAppGlobals();
-  const user = globals.user;
   const isScreen = user && user.role_name === 'Screen';
   const queue = globals.queue;
   const isPaper =
@@ -29,7 +30,6 @@ export default function Paper() {
   const currentStart = isPaper && globals.serverGlobs.current_start;
   const hideThisPaper = !isPaper || isConflict;
   const hideMessage = isConflict ? 'CONFLICTED!' : 'No current paper.';
-  const roomChoice = globals.roomChoice;
 
   function userBelongsInRoom(user, roomLetter) {
     const rooms = user.rooms;

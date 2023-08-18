@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Grid from './Grid.js';
 import { useState } from 'react';
+import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import ColorsDisplay from './ColorsDisplay';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -9,9 +10,11 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import Flasher from './Flasher';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
 
 export default function GridSection() {
   const [gridDisplay, setGridDisplay] = useState('Normal');
+  const { socketEmit } = useSocketIO();
   const globals = useAppGlobals();
   const guiBar = globals.guiBar;
   const grid = globals.grid;
@@ -21,14 +24,13 @@ export default function GridSection() {
   const gridNidsBelow = grid && grid.below_nids ? grid.below_nids.length : 0;
   const papersTotal = gridCountAbove + gridCountBelow;
   const papersConflicted = papersTotal - gridNidsAbove - gridNidsBelow;
-  const socketEmit = globals.socketEmit;
-  const controlledLog = globals.controlledLog;
   const checkValidNID = globals.checkValidNID;
   const setModalTitle = globals.setModalTitle;
   const setModalBody = globals.setModalBody;
   const setShowModal = globals.setShowModal;
   const [stickie, setStickie] = useState('Tabled');
   const [ID, setID] = useState('');
+  const { controlledLog } = useControlledLog();
 
   function sendStickie() {
     const words = stickie.split(' ');
