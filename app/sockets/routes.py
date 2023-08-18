@@ -8,6 +8,7 @@ from flask import current_app
 from flask_socketio import Namespace, emit, disconnect
 from flask_login import current_user
 from sqlalchemy.sql.expression import func
+from .decorators import admin_required
 from .. import db, socketio
 from ..models import (
     User,
@@ -32,7 +33,6 @@ from ..models import (
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
-    current_user_is_admin,
     get_current_user_or_none,
     get_latest_history,
     get_latest_history_status,
@@ -814,10 +814,8 @@ def io_disconnect():
 
 
 @socketio.on('admin_bring_to_room')
+@admin_required
 def admin_bring_to_room(room):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print(f'admin request to bring to room {room}')
     call_users_to_room(room)
     all_users = get_all_user_list_dump()
@@ -830,18 +828,14 @@ def admin_bring_to_room(room):
 
 
 @socketio.on('admin_bring_to_all_rooms')
+@admin_required
 def admin_bring_to_room():
-    if not current_user_is_admin():
-        disconnect()
-        return
     conflictbots_broadcast_call_to_room(False)
 
 
 @socketio.on('admin_prev_paper')
+@admin_required
 def admin_prev_paper(room):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print(f'admin request for prev paper in {room}')
     zero_or_inc_current_index(room, -1)  # also "hides" current
     globs, current_paper = get_globs_dump_with_status(room)
@@ -850,10 +844,8 @@ def admin_prev_paper(room):
 
 
 @socketio.on('admin_next_paper')
+@admin_required
 def admin_next_paper(room):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print(f'admin request for prev paper in {room}')
     zero_or_inc_current_index(room, +1)  # also "hides" current
     globs, current_paper = get_globs_dump_with_status(room)
@@ -862,10 +854,8 @@ def admin_next_paper(room):
 
 
 @socketio.on('admin_advance_queue')
+@admin_required
 def admin_next_paper(data):
-    if not current_user_is_admin():
-        disconnect()
-        return
     room = data['roomChoice']
     status_update = data['newStatus']
     print(f'admin request to advance queue in {room} with status {status_update}')
@@ -885,10 +875,8 @@ def admin_next_paper(data):
 
 
 @socketio.on('admin_show_current')
+@admin_required
 def admin_show_current(room):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print(f'admin request for show paper in {room}')
     show_current_paper(room)
     globs, current_paper = get_globs_dump_with_status(room)
@@ -897,10 +885,8 @@ def admin_show_current(room):
 
 
 @socketio.on('admin_hide_queue')
+@admin_required
 def admin_hide_queue(data):
-    if not current_user_is_admin():
-        disconnect()
-        return
     room = data['roomChoice']
     hide = data['hide']
     message = data['message']
@@ -918,10 +904,8 @@ def admin_hide_queue(data):
 
 
 @socketio.on('admin_set_queue')
+@admin_required
 def admin_set_queue(filters):
-    if not current_user_is_admin():
-        disconnect()
-        return
     room = filters['roomChoice']
     print(f'admin request for set queue in {room}:', filters)
     msg = set_queue(room, filters)
@@ -934,10 +918,8 @@ def admin_set_queue(filters):
 
 
 @socketio.on('admin_save_query')
+@admin_required
 def admin_save_query(filters):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print('admin save query:', filters)
     json_string = json.dumps(filters)
     # print('json: '+json_string)
@@ -963,10 +945,8 @@ def admin_save_query(filters):
 
 
 @socketio.on('admin_load_query')
+@admin_required
 def admin_load_query(name):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print('admin load query:', name)
     query = Query.query.filter_by(name=name).first()
     if query:
@@ -981,10 +961,8 @@ def admin_load_query(name):
 
 
 @socketio.on('admin_delete_query')
+@admin_required
 def admin_delete_query(name):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print('admin delete query:', name)
     query = Query.query.filter_by(name=name).first()
     if not query:
@@ -1011,20 +989,16 @@ def admin_delete_query(name):
 
 
 @socketio.on('admin_probe_queue')
+@admin_required
 def admin_probe_queue(filters):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print('admin probe queue:', filters)
     count = get_filter_paper_count(filters)
     emit('server_probe_count', count)
 
 
 @socketio.on('admin_set_queue_explicit')
+@admin_required
 def admin_set_queue_explicit(data):
-    if not current_user_is_admin():
-        disconnect()
-        return
     room = data['roomChoice']
     explicit = data['explicit']
     print(f'admin request for set explicit queue {room}: {explicit}')
@@ -1038,10 +1012,8 @@ def admin_set_queue_explicit(data):
 
 
 @socketio.on('admin_set_bar')
+@admin_required
 def admin_set_bar(bar):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print(f'admin request set bar to {bar}')
     set_bar(bar)
     globs, _ = get_globs_dump_with_status('Plenary')  # YYY ???
@@ -1054,10 +1026,8 @@ def admin_set_bar(bar):
 
 
 @socketio.on('admin_bulk_reject')
+@admin_required
 def admin_bulk_reject():
-    if not current_user_is_admin():
-        disconnect()
-        return
     msg = 'got request admin_bulk_reject'
     print(msg)
     success = bulk_reject_below_bar()
@@ -1070,10 +1040,8 @@ def admin_bulk_reject():
 
 
 @socketio.on('admin_clear_stickies')
+@admin_required
 def admin_clear_stickies():
-    if not current_user_is_admin():
-        disconnect()
-        return
     msg = 'got request admin_clear_stickies'
     print(msg)
     count = clear_all_stickies()
@@ -1273,10 +1241,8 @@ def emit_admin_uploads(broadcast):
 
 
 @socketio.on('admin_file_upload')
+@admin_required
 def admin_upload_file(file):
-    if not current_user_is_admin():
-        disconnect()
-        return
     print('admin_file_upload')
     filename = 'upload.csv'
     msg, logout, header_type = save_and_read_csv(file, filename)

@@ -11,7 +11,8 @@ class TestSockets(HepcatTestCase):
         )
 
     def tearDown(self):
-        self.socket_client.disconnect()
+        if self.socket_client.is_connected():
+            self.socket_client.disconnect()
         super().tearDown()
 
     def test_connected(self):
@@ -27,3 +28,10 @@ class TestSockets(HepcatTestCase):
         events = self.socket_client.get_received()
         assert len(events) == 1
         assert events[0]['name'] == 'server_set_grid'
+
+    def test_invalid_admin_access(self):
+        """this test sends an admin event from a regular user account to
+        confirm that the user is immediately disconnected."""
+        self.socket_client.get_received()  # clear receive buffer
+        self.socket_client.emit('admin_file_upload')
+        assert not self.socket_client.is_connected()
