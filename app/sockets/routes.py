@@ -899,7 +899,7 @@ def admin_hide_queue(data):
         reply = "Queue is now hidden for everyone except the admin."
     else:
         reply = "Queue is now visible for everyone."
-    data = {'message': reply, 'type': 'success', 'which': 'hide_queue'}
+    data = {'message': reply, 'type': 'success'}
     emit('server_send_flasher', data)
 
 
@@ -913,7 +913,7 @@ def admin_set_queue(filters):
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs, current_paper)
-    data = {'message': msg, 'type': 'success', 'which': 'set_queue'}
+    data = {'message': msg, 'type': 'success'}
     emit('server_send_flasher', data)
 
 
@@ -934,13 +934,13 @@ def admin_save_query(filters):
         db.session.commit()
         emit_admin_queries(True)
         msg = f'Saved query named: {name}.'
-        data = {'message': msg, 'type': 'success', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'success'}
         emit('server_send_flasher', data)
     except:
         db.session.rollback()
         msg = f'Failed to add query {name} ({json_string}).'
         print(msg)
-        data = {'message': msg, 'type': 'warning', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'warning'}
         emit('server_send_flasher', data)
 
 
@@ -956,7 +956,7 @@ def admin_load_query(name):
     else:
         msg = f'Cannot find query with name: {name}'
         print(msg)
-        data = {'message': msg, 'type': 'warning', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'warning'}
         emit('server_send_flasher', data)
 
 
@@ -968,7 +968,7 @@ def admin_delete_query(name):
     if not query:
         msg = f'Cannot find query with name: {name}'
         print(msg)
-        data = {'message': msg, 'type': 'warning', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'warning'}
         emit('server_send_flasher', data)
         return
     num_deleted = Query.query.filter_by(name=name).delete()
@@ -978,13 +978,13 @@ def admin_delete_query(name):
         emit_admin_queries(True)
         msg = f'Deleted query with name: {name}'
         print(msg)
-        data = {'message': msg, 'type': 'success', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'success'}
         emit('server_send_flasher', data)
     except:
         db.session.rollback()
         msg = f'Cannot delete query with name: {name}'
         print(msg)
-        data = {'message': msg, 'type': 'warning', 'which': 'set_queue'}
+        data = {'message': msg, 'type': 'warning'}
         emit('server_send_flasher', data)
 
 
@@ -1007,7 +1007,7 @@ def admin_set_queue_explicit(data):
     emit('server_set_queue', queue, broadcast=True)
     globs = queue['globs']
     conflictbots_broadcast_conflicts(globs, current_paper)
-    data = {'message': msg, 'type': 'success', 'which': 'set_explicit'}
+    data = {'message': msg, 'type': 'success'}
     emit('server_send_flasher', data)
 
 
@@ -1021,7 +1021,7 @@ def admin_set_bar(bar):
     grid_dump = get_grid_dump()
     emit('server_set_grid', grid_dump, broadcast=True)
     message = f'Bar is now updated ({bar}).'
-    data = {'message': message, 'type': 'success', 'which': 'change_bar'}
+    data = {'message': message, 'type': 'success'}
     emit('server_send_flasher', data)
 
 
@@ -1035,7 +1035,7 @@ def admin_bulk_reject():
         grid_dump = get_grid_dump()
         emit('server_set_grid', grid_dump, broadcast=True)
         msg = 'Mark unseen reject papers below bar as now seen.'
-        data = {'message': msg, 'type': 'success', 'which': 'change_bar'}
+        data = {'message': msg, 'type': 'success'}
         emit('server_send_flasher', data)
 
 
@@ -1049,11 +1049,11 @@ def admin_clear_stickies():
         grid_dump = get_grid_dump()
         emit('server_set_grid', grid_dump, broadcast=True)
         msg = f'All {count} stickies are now cleared.'
-        data = {'message': msg, 'type': 'success', 'which': 'change_bar'}
+        data = {'message': msg, 'type': 'success'}
         emit('server_send_flasher', data)
     else:
         msg = f'No stickies were cleared.'
-        data = {'message': msg, 'type': 'success', 'which': 'change_bar'}
+        data = {'message': msg, 'type': 'success'}
         emit('server_send_flasher', data)
 
 
@@ -1070,7 +1070,7 @@ def admin_add_test_paper():
     else:  # -2
         msg = f'Failed to add test paper, for unknown reason.'
         msgType = 'danger'
-    data = {'message': msg, 'type': msgType, 'which': 'extra'}
+    data = {'message': msg, 'type': msgType}
     emit('server_send_flasher', data)
 
 
@@ -1096,7 +1096,7 @@ def user_set_stickie(data):
         db.session.commit()
         emit('server_set_stickie', nid, broadcast=True)
         message = f'Stickie filed for paper {nid} ({status}).'
-        data = {'message': message, 'type': 'success', 'which': 'stickie'}
+        data = {'message': message, 'type': 'success'}
         emit('server_send_flasher', data)
     except:
         db.session.rollback()
@@ -1138,7 +1138,7 @@ def user_change_password(data):
     if not success:
         message = "Error setting password."
         message_type = 'warning'
-    reply = {'message': message, 'type': message_type, 'which': 'change_password'}
+    reply = {'message': message, 'type': message_type}
     emit('server_send_flasher', reply)
 
 
@@ -1254,7 +1254,7 @@ def admin_upload_file(file):
         which = 'uploads'
         if logout:
             which = 'login'  # need to flash the login page because of logout
-        data = {'message': msg, 'type': 'warning', 'which': which}
+        data = {'message': msg, 'type': 'warning'}
         emit('server_send_flasher', data)
     if logout:
         emit('server_logout_user', broadcast=True)  # everyone

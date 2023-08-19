@@ -9,7 +9,6 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
-import Flasher from './Flasher';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 
 export default function GridSection() {
@@ -82,7 +81,6 @@ export default function GridSection() {
       <hr className="horizontal-divider" />
       <Grid gridDisplay={gridDisplay} />
       <hr className="horizontal-divider" />
-      <Flasher type="stickie"></Flasher>
 
       <Stack direction="horizontal">
         <ColorsDisplay />

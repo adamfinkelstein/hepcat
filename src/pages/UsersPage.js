@@ -3,7 +3,6 @@ import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 // import {useState} from 'react'
 // import {useFlasher} from '../contexts/FlasherContext'
-import Flasher from '../components/Flasher';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
@@ -68,7 +67,6 @@ export default function UsersPage() {
 
   return (
     <Container className="UsersPage">
-      <Flasher type="users" />
       <Container className="users-main-container">
         <p>&nbsp;</p>
         <Stack direction="horizontal">

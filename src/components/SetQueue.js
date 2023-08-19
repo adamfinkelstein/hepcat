@@ -12,7 +12,6 @@ import Form from 'react-bootstrap/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Stack from 'react-bootstrap/Stack';
-import Flasher from './Flasher';
 
 const scoreOptionAll = 'All Scores';
 const scoreOptionAbove = 'At/Above Bar';
@@ -149,7 +148,7 @@ export default function SetQueue() {
     controlledLog('sending queue request:');
     controlledLog(data);
     socketEmit('admin_set_queue', data);
-    flash('Sent queue request.', 'success', 'set_queue');
+    flash('Sent queue request.', 'success');
   }
 
   function handleSetQueueExplicitButton(event) {
@@ -160,7 +159,7 @@ export default function SetQueue() {
     const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_';
     const data = { roomChoice, explicit };
     socketEmit('admin_set_queue_explicit', data);
-    flash('Sent explicit queue request.', 'success', 'set_explicit');
+    flash('Sent explicit queue request.', 'success');
   }
 
   function handleInputChange(event) {
@@ -207,7 +206,7 @@ export default function SetQueue() {
   function handleSetBarButton() {
     controlledLog('bar set:', guiBarString);
     socketEmit('admin_set_bar', guiBarString);
-    // flash("Bar set to " + guiBarString + ".", "success", "change_bar")
+    flash('Bar set to ' + guiBarString + '.', 'success');
   }
 
   function handleBulkRejectButton() {
@@ -234,7 +233,6 @@ export default function SetQueue() {
 
   return (
     <Container>
-      <Flasher type="hide_queue" />
       <div>
         <Stack direction="horizontal">
           <Form.Check
@@ -259,7 +257,6 @@ export default function SetQueue() {
         </Stack>
       </div>
       <hr className="horizontal-divider" />
-      <Flasher type="set_queue" />
       <div>
         <Stack direction="horizontal" gap={4} className="named-filters">
           <DropdownButton
@@ -438,7 +435,6 @@ export default function SetQueue() {
         </div>
       </div>
       <hr className="horizontal-divider" />
-      <Flasher type="set_explicit" />
       <div>
         <Stack direction="horizontal">
           <div>
@@ -467,7 +463,6 @@ export default function SetQueue() {
         </Stack>
       </div>
       <hr className="horizontal-divider" />
-      <Flasher type="change_bar" />
       <div>
         <Stack direction="horizontal">
           <Button
