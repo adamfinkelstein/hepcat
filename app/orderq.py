@@ -1,50 +1,16 @@
 import os
 import time
 import random
-from .util import write_text_to_file, read_lines_from_file
-
-# from subprocess import check_output, CalledProcessError, STDOUT
-from subprocess import run
 import numpy as np
-
-# from python_tsp.heuristics import solve_tsp_local_search
 from flask import current_app
+from .util import make_path_if_needed, write_text_to_file, read_lines_from_file
+
 
 use_ortools = os.environ.get('HEPCAT_USE_ORTOOLS')
 
 if use_ortools:
     from ortools.constraint_solver import routing_enums_pb2
     from ortools.constraint_solver import pywrapcp
-
-
-# duplicates a function in upload/views.py
-def make_path_if_needed(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-
-# old, unused:
-# def run_cmd_check_output(cmd):
-#     # note shell=True allows cmd as single string
-#     try:
-#         result = check_output(cmd, stderr=STDOUT, shell=True)
-#         return True, result.decode("utf-8")
-#     except CalledProcessError as e:
-#         return False, e.output.decode("utf-8")
-#     except Exception as err:
-#         out = err.output
-#         msg = f'Unexpected {err=}, {type(err)=}, {out}'
-#         return False, msg
-
-
-# https://docs.python.org/3/library/subprocess.html#subprocess.run
-# for unknown reasons, concorde returns code 255 (error) even when successful.
-def run_cmd(cmd, ignore_errors=False):
-    words = cmd.split()
-    result = run(words, capture_output=True)
-    if result.returncode and not ignore_errors:
-        return False, f'run command error: {result}'
-    return True, ''
 
 
 def get_paper_conficts_set(p):
