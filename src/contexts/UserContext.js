@@ -99,6 +99,7 @@ export default function UserContext({ children }) {
         allUsers,
         roomCalledTo,
         roomChoice,
+        setRoomChoice,
         aboutMD,
       }}
     >
