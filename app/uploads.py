@@ -3,7 +3,12 @@ import csv
 import uuid
 from flask import flash, current_app
 from . import db
-from .util import get_latest_room_history_status, write_data_to_file, write_text_to_file
+from .util import (
+    get_latest_room_history_status,
+    make_path_if_needed,
+    write_data_to_file,
+    write_text_to_file,
+)
 from .models import (
     User,
     Paper,
@@ -602,12 +607,6 @@ def is_csv(filename):
         return False
     ext = filename.rsplit('.', 1)[1].lower()
     return ext == 'csv'
-
-
-# same func appears in orderq.py (should consolidate somehow)
-def make_path_if_needed(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 
 def csv_row_strip_whitespace(row):

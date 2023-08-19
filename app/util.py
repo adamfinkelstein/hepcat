@@ -1,10 +1,23 @@
 import os
 import random
 from datetime import datetime
+from subprocess import run
 from flask import current_app
 from flask_login import current_user
 from sqlalchemy.sql import func
 from .models import User, History, HistoryContext
+
+
+#######################
+#
+# Files and OS
+#
+#######################
+
+
+def make_path_if_needed(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def write_text_to_file(text, filename):
@@ -25,6 +38,39 @@ def read_text_from_file(filename):
 def read_lines_from_file(filename):
     with open(filename, 'r') as f:
         return f.readlines()
+
+
+# old, unused:
+# needs this:
+# from subprocess import check_output, CalledProcessError, STDOUT
+# def run_cmd_check_output(cmd):
+#     # note shell=True allows cmd as single string
+#     try:
+#         result = check_output(cmd, stderr=STDOUT, shell=True)
+#         return True, result.decode("utf-8")
+#     except CalledProcessError as e:
+#         return False, e.output.decode("utf-8")
+#     except Exception as err:
+#         out = err.output
+#         msg = f'Unexpected {err=}, {type(err)=}, {out}'
+#         return False, msg
+
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.run
+# for unknown reasons, concorde returns code 255 (error) even when successful.
+def run_cmd(cmd, ignore_errors=False):
+    words = cmd.split()
+    result = run(words, capture_output=True)
+    if result.returncode and not ignore_errors:
+        return False, f'run command error: {result}'
+    return True, ''
+
+
+#######################
+#
+# Relating to models/database
+#
+#######################
 
 
 def get_random_admin():
