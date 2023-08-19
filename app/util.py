@@ -7,6 +7,26 @@ from sqlalchemy.sql import func
 from .models import User, History, HistoryContext
 
 
+def write_text_to_file(text, filename):
+    with open(filename, 'w') as f:
+        f.write(text)
+
+
+def write_data_to_file(data, filename):
+    with open(filename, 'wb') as f:
+        f.write(data)
+
+
+def read_text_from_file(filename):
+    with open(filename, 'r') as f:
+        return f.read()
+
+
+def read_lines_from_file(filename):
+    with open(filename, 'r') as f:
+        return f.readlines()
+
+
 def get_random_admin():
     users = User.query.all()
     users = list(users)

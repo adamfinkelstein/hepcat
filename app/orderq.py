@@ -1,6 +1,7 @@
 import os
 import time
 import random
+from .util import write_text_to_file, read_lines_from_file
 
 # from subprocess import check_output, CalledProcessError, STDOUT
 from subprocess import run
@@ -143,11 +144,6 @@ def tour_cost(distance_matrix, permutation):
 ########### CONCORDE ############
 
 
-def write_string_to_file(contents, fname):
-    with open(fname, 'w') as f:
-        f.write(contents)
-
-
 def write_concorde_input(matrix, fname):
     dim = len(matrix)
     # For format, see Example 2 here:
@@ -167,7 +163,7 @@ EDGE_WEIGHT_SECTION
         row = ' '.join(row) + '\n'
         contents += row
     contents += 'EOF\n'
-    write_string_to_file(contents, fname)
+    write_text_to_file(contents, fname)
 
 
 def call_concorde(concorde_path, concorde_input):
@@ -182,9 +178,7 @@ def call_concorde(concorde_path, concorde_input):
 
 
 def read_solution(solution_file):
-    f = open(solution_file, "r")
-    lines = f.readlines()
-    f.close()
+    lines = read_lines_from_file(solution_file)
     del lines[0]  # first row just contains number of nodes
     order = []
     for line in lines:

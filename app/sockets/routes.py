@@ -10,6 +10,7 @@ from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io
 from .. import db, socketio
+from ..util import read_text_from_file
 from ..models import (
     User,
     Paper,
@@ -630,8 +631,7 @@ def get_git_info_from_file():
     md = '\n\n### (no git info available)\n'
     info_file = os.path.join(basedir, '../../git-info.md')
     if os.path.exists(info_file):
-        with open(info_file, "r") as file:
-            md = file.read()
+        md = read_text_from_file(info_file)
     return md
 
 
@@ -655,8 +655,7 @@ def get_git_info_from_env():
 def get_about_md(append_git_info):
     basedir = os.path.abspath(os.path.dirname(__file__))
     about_file = os.path.join(basedir, '../../public/about/about.md')
-    with open(about_file, "r") as file:
-        md = file.read()
+    md = read_text_from_file(about_file)
     if append_git_info:
         info = get_git_info_from_env()
         # if not info:

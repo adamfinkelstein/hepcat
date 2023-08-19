@@ -3,7 +3,7 @@ import csv
 import uuid
 from flask import flash, current_app
 from . import db
-from .util import get_latest_room_history_status
+from .util import get_latest_room_history_status, write_data_to_file, write_text_to_file
 from .models import (
     User,
     Paper,
@@ -710,16 +710,10 @@ def save_and_read_csv(data, filename):
     make_path_if_needed(folder)
     fullpath = os.path.join(folder, filename)
     # file.save(fullpath) # when it was a file upload
-    with open(fullpath, "wb") as f:
-        f.write(data)
+    write_data_to_file(data, fullpath)
     # flash('saved csv file here: '+fullpath)
     msg, logout, header_type = read_csv(fullpath)
     return msg, logout, header_type
-
-
-def write_text_to_file(text, filename):
-    with open(filename, 'w') as f:
-        f.write(text)
 
 
 def write_csv(rows, filename):
