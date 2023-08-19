@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
-import { useFlasher } from './FlasherContext';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 import { useUser } from './UserContext';
@@ -60,9 +59,6 @@ export default function AppContext({ children }) {
   const [queryStateHandler, setQueryStateHandler] = useState(null);
 
   const { user, isAdmin, paperKeys, roomChoice } = useUser();
-
-  const flasher = useFlasher();
-  const flash = flasher['flash'];
 
   // for modal dialog
   const [showModal, setShowModal] = useState(false);
@@ -301,12 +297,6 @@ export default function AppContext({ children }) {
       }
     };
 
-    const receiveFlasher = (data) => {
-      controlledLog('got flasher:');
-      controlledLog(data);
-      flash(data.message, data.type, data.which);
-    };
-
     const receiveLogout = () => {
       controlledLog('got request to logout');
       window.location.href = '/auth/logout';
@@ -350,7 +340,6 @@ export default function AppContext({ children }) {
       socket.on('server_set_globs', receiveGlobs);
       socket.on('server_set_stickie', receiveStickie);
       socket.on('server_send_alert', receiveAlert);
-      socket.on('server_send_flasher', receiveFlasher);
       socket.on('server_probe_count', receiveProbe);
       socket.on('server_file_uploads', receiveFileUploads);
       socket.on('server_logout_user', receiveLogout);
@@ -368,7 +357,6 @@ export default function AppContext({ children }) {
         socket.off('server_set_globs', receiveGlobs);
         socket.off('server_set_stickie', receiveStickie);
         socket.off('server_send_alert', receiveAlert);
-        socket.off('server_send_flasher', receiveFlasher);
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_file_uploads', receiveFileUploads);
         socket.off('server_logout_user', receiveLogout);
@@ -381,7 +369,6 @@ export default function AppContext({ children }) {
     queue,
     grid,
     socket,
-    flash,
     isAdmin,
     roomChoice,
     user,

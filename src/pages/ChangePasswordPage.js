@@ -2,7 +2,6 @@ import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useState } from 'react';
 import { useFlasher } from '../contexts/FlasherContext';
-import Flasher from '../components/Flasher';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
@@ -28,7 +27,7 @@ export default function ChangePasswordPage() {
   function handleSubmit() {
     // Verify that the passwords match
     if (password !== passwordAgain) {
-      flash("Passwords don't match.", 'warning', 'change_password');
+      flash("Passwords don't match.", 'warning');
       return;
     }
 
@@ -40,14 +39,13 @@ export default function ChangePasswordPage() {
         flash(
           'Passwords needs to contain 6-16 valid characters, contain a number and a special character.',
           'warning',
-          'change_password',
         );
         return;
       }
     }
 
     if (isForOther && forEmail === '') {
-      flash('Please pick a user.', 'warning', 'change_password');
+      flash('Please pick a user.', 'warning');
       return;
     }
 
@@ -76,7 +74,6 @@ export default function ChangePasswordPage() {
 
   return (
     <Container className="ChangePasswordPage">
-      <Flasher type="change_password" />
       <Container className="change-password-main-container">
         <span className="font-size-1">Change Password</span>
         <div className="password-fields">

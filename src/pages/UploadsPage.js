@@ -6,7 +6,6 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
-import Flasher from '../components/Flasher';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
@@ -39,7 +38,7 @@ export default function UploadsPage() {
     if (ext !== 'csv') {
       const msg =
         "The file '" + fileName + "' does not appear to be a CSV file.";
-      flash(msg, 'warning', 'uploads');
+      flash(msg, 'warning');
       fileUp.value = null; // reset the upload
       return;
     }
@@ -80,7 +79,6 @@ export default function UploadsPage() {
   return (
     <Container className="titled-page">
       <span className="font-size-1">Upload CSV Files Here</span>
-      <Flasher type="uploads" />
       <Container className="change-password-main-container">
         <Form>
           <Form.Group controlId="form-file-upload" className="mb-3">
@@ -125,7 +123,6 @@ export default function UploadsPage() {
         <div>
           <p>&nbsp;</p>
           <hr />
-          <Flasher type="extra" />
           <p>&nbsp;</p>
           <span className="font-size-2">Extra Admin Functions</span>
         </div>

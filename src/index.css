@@ -64,6 +64,59 @@ code {
   border-bottom: 1px solid #ddd;
 }
 
+.Flasher {
+  /* this is a transparent sidebar on which notifications are rendered */
+  padding: 50px 0 0 30px;
+  border: none;
+  transition: none;
+  background-color: rgba(0, 0, 0, 0); /* fully transparent */
+  pointer-events: none; /* allow clicks to pass through */
+}
+
+.Flasher .vstack {
+  /* container for notifications */
+  height: 100%;
+  padding: 10px;
+  overflow-x: hidden;
+}
+
+.Flasher .vstack .filler {
+  /* filler space when aligning notifications to bottom of page */
+  flex-grow: 1; /* 0 for notifications in top-right corner, 1 for bottom-right */
+}
+
+@keyframes FlasherSlideInAnimation {
+  from {
+    left: 400px;
+  }
+  to {
+    left: 0px;
+  }
+}
+
+@keyframes FlasherSlideOutAnimation {
+  from {
+    left: 0px;
+  }
+  to {
+    left: 400px;
+  }
+}
+
+.FlasherAlert {
+  box-shadow: 0 0 15px #aaa;
+  pointer-events: all;
+  margin-bottom: 0;
+  animation-name: FlasherSlideInAnimation;
+  animation-duration: 0.25s;
+  animation-fill-mode: forwards;
+}
+
+.FlasherAlertClosed {
+  animation-name: FlasherSlideOutAnimation;
+  animation-fill-mode: forwards;
+}
+
 .me-auto.my-2.my-lg-0.navbar-nav.navbar-nav-scroll {
   position: fixed;
   right: 0px;
