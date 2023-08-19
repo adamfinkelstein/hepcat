@@ -28,11 +28,12 @@ def get_enter_leave_conf_sets(paper_prev, paper_curr):
     return conf_prev, conf_curr, enter, leave
 
 
-def get_user_cost(user):
-    if user.role_is_admin:
-        # print('big cost for admin user with name ', user.full_name)
-        return 100
-    return 1
+# old version counted admin more
+# def get_user_cost(user):
+#     if user.role_is_admin:
+#         # print('big cost for admin user with name ', user.full_name)
+#         return 100
+#     return 1
 
 
 def get_enter_leave_cost(users):
@@ -107,83 +108,7 @@ def tour_cost(distance_matrix, permutation):
     return cost
 
 
-########### CONCORDE ############
-
-
-def write_concorde_input(matrix, fname):
-    dim = len(matrix)
-    # For format, see Example 2 here:
-    # https://www.math.uwaterloo.ca/tsp/iphone/help.html
-    contents = f'''NAME: papers
-TYPE: TSP
-COMMENT: PC Meeting Conflicts
-DIMENSION: {dim}
-EDGE_WEIGHT_TYPE: EXPLICIT
-EDGE_WEIGHT_FORMAT: LOWER_DIAG_ROW
-EDGE_WEIGHT_SECTION
-'''
-    for i in range(dim):
-        row = matrix[i]
-        row = row[: i + 1]  # only up to diag
-        row = [str(int(round(v))) for v in row]
-        row = ' '.join(row) + '\n'
-        contents += row
-    contents += 'EOF\n'
-    write_text_to_file(contents, fname)
-
-
-def call_concorde(concorde_path, concorde_input):
-    # flags passed to concorde:
-    # -s 0 : seed random number generator to 0 so answer is deterministic
-    # -x   : delete files on completion (sav pul mas)
-    # -V   : just run fast cuts
-    # -o f : output solution to file f
-    cmd = f'{concorde_path} -s 0 -x -V {concorde_input}'
-    # print(cmd)
-    return run_cmd(cmd, True)
-
-
-def read_solution(solution_file):
-    lines = read_lines_from_file(solution_file)
-    del lines[0]  # first row just contains number of nodes
-    order = []
-    for line in lines:
-        parts = line.split()
-        indices = [int(i) for i in parts]
-        order.extend(indices)
-    return order
-
-
-def setup_and_run_concorde(distance_matrix):
-    app = current_app._get_current_object()
-    working_folder = app.config['UPLOAD_FOLDER']
-    bin_folder = app.config['BIN_FOLDER']
-    make_path_if_needed(working_folder)
-    concorde_input = 'concorde_data.txt'
-    concorde_output = 'concorde_data.sol'
-    concorde_path = os.path.join(bin_folder, 'concorde')
-    current_directory = os.getcwd()  # remember where we were
-    os.chdir(working_folder)
-    write_concorde_input(distance_matrix, concorde_input)
-    ok, output = call_concorde(concorde_path, concorde_input)
-    if ok:
-        print(f'concorde claimed ok -- output:\n{output}')
-    else:
-        print(f'concorde claimed error -- output:\n{output}')
-    node_order = read_solution(concorde_output)
-    os.chdir(current_directory)  # return to where we were
-    return node_order
-
-
-########### ORTOOLS ############
-
-
-def pack_data(distance_matrix):
-    data = {}
-    data['distance_matrix'] = distance_matrix.tolist()
-    data['num_vehicles'] = 1
-    data['depot'] = 0
-    return data
+########### IMPROVE TOUR (CURRENTLY UNUSED) ############
 
 
 # mylist = [1, 3, 5, 7, 9]
@@ -262,7 +187,86 @@ def improve_tour(papers, distance_matrix, nodes):
     return nodes, distance
 
 
-def get_tsp_solution(manager, routing, solution):
+########### CONCORDE ############
+
+
+def write_concorde_input(matrix, fname):
+    dim = len(matrix)
+    # For format, see Example 2 here:
+    # https://www.math.uwaterloo.ca/tsp/iphone/help.html
+    contents = f'''NAME: papers
+TYPE: TSP
+COMMENT: PC Meeting Conflicts
+DIMENSION: {dim}
+EDGE_WEIGHT_TYPE: EXPLICIT
+EDGE_WEIGHT_FORMAT: LOWER_DIAG_ROW
+EDGE_WEIGHT_SECTION
+'''
+    for i in range(dim):
+        row = matrix[i]
+        row = row[: i + 1]  # only up to diag
+        row = [str(int(round(v))) for v in row]
+        row = ' '.join(row) + '\n'
+        contents += row
+    contents += 'EOF\n'
+    write_text_to_file(contents, fname)
+
+
+def call_concorde(concorde_path, concorde_input):
+    # flags passed to concorde:
+    # -s 0 : seed random number generator to 0 so answer is deterministic
+    # -x   : delete files on completion (sav pul mas)
+    # -V   : just run fast cuts
+    # -o f : output solution to file f
+    cmd = f'{concorde_path} -s 0 -x -V {concorde_input}'
+    # print(cmd)
+    return run_cmd(cmd, True)
+
+
+def read_solution(solution_file):
+    lines = read_lines_from_file(solution_file)
+    del lines[0]  # first row just contains number of nodes
+    order = []
+    for line in lines:
+        parts = line.split()
+        indices = [int(i) for i in parts]
+        order.extend(indices)
+    return order
+
+
+def setup_and_run_concorde(distance_matrix):
+    app = current_app._get_current_object()
+    working_folder = app.config['UPLOAD_FOLDER']
+    bin_folder = app.config['BIN_FOLDER']
+    make_path_if_needed(working_folder)
+    concorde_input = 'concorde_data.txt'
+    concorde_output = 'concorde_data.sol'
+    concorde_path = os.path.join(bin_folder, 'concorde')
+    current_directory = os.getcwd()  # remember where we were
+    os.chdir(working_folder)
+    write_concorde_input(distance_matrix, concorde_input)
+    ok, output = call_concorde(concorde_path, concorde_input)
+    if ok:
+        print(f'concorde claimed ok -- output:\n{output}')
+    else:
+        print(f'concorde claimed error -- output:\n{output}')
+    node_order = read_solution(concorde_output)
+    os.chdir(current_directory)  # return to where we were
+    return node_order
+
+
+########### ORTOOLS ############
+
+
+def ortools_pack_data(distance_matrix):
+    data = {}
+    data['distance_matrix'] = distance_matrix.tolist()
+    data['num_vehicles'] = 1
+    data['depot'] = 0
+    return data
+
+
+def ortools_get_tsp_solution(manager, routing, solution):
     nodes = []
     costs = []
     index = routing.Start(0)
@@ -276,21 +280,21 @@ def get_tsp_solution(manager, routing, solution):
     return nodes, costs
 
 
-def solve_tsp_ortools(distance_matrix):
-    data = pack_data(distance_matrix)
+def solve_tsp_with_ortools(distance_matrix):
+    data = ortools_pack_data(distance_matrix)
     manager = pywrapcp.RoutingIndexManager(
         len(data['distance_matrix']), data['num_vehicles'], data['depot']
     )
     routing = pywrapcp.RoutingModel(manager)
 
-    def distance_callback(from_index, to_index):
+    def ortools_distance_callback(from_index, to_index):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
         return data['distance_matrix'][from_node][to_node]
 
-    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+    transit_callback_index = routing.RegisterTransitCallback(ortools_distance_callback)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
@@ -298,7 +302,7 @@ def solve_tsp_ortools(distance_matrix):
     )
     solution = routing.SolveWithParameters(search_parameters)
     if solution:
-        nodes, _ = get_tsp_solution(manager, routing, solution)
+        nodes, _ = ortools_get_tsp_solution(manager, routing, solution)
         return nodes
     return None
 
@@ -341,7 +345,7 @@ def order_q_select_alg(distance_matrix):
 
     if use_ortools:  # global set at top of file
         start_timer()
-        nodes = solve_tsp_ortools(distance_matrix)
+        nodes = solve_tsp_with_ortools(distance_matrix)
         diff = elapsed_time()
         cost = tour_cost(distance_matrix, nodes)
         print(f'cost of ortools path: {cost} (time {diff})')
@@ -355,6 +359,13 @@ def order_q_select_alg(distance_matrix):
         return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
     return nodes
+
+
+#
+# Minipaper Class contains a temp copy of the paper only including
+# conflicts that are the current room. This allows optimization
+# only over conflicts in this room.
+#
 
 
 class Minipaper:
