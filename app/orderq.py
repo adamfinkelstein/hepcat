@@ -215,13 +215,17 @@ def run_concorde(bin_folder, input_file):
     # -V   : just run fast cuts
     # -o f : output solution to file f
     concorde_path = os.path.join(bin_folder, "concorde")
+    if not os.path.isfile(concorde_path):
+        print(f"concorde path does not exist: {concorde_path}")
+        return
     cmd = f"{concorde_path} -s 0 -x -V {input_file}"
+    run_cmd(cmd, True)
     # print(cmd)
-    ok, output = run_cmd(cmd, True)
-    if ok:
-        print(f"concorde claimed ok -- output:\n{output}")
-    else:
-        print(f"concorde claimed error -- output:\n{output}")
+    # ok, output = run_cmd(cmd, True)
+    # if ok:
+    #     print(f"concorde claimed ok -- output:\n{output}")
+    # else:
+    #     print(f"concorde claimed error -- output:\n{output}")
 
 
 def run_ortools(app_folder, input_file):
@@ -230,7 +234,7 @@ def run_ortools(app_folder, input_file):
     # print(cmd)
     ok, output = run_cmd(cmd, False)
     if ok:
-        print(f"tsp_ortools claimed ok -- output:\n{output}")
+        print(f"tsp_ortools claimed ok")
     else:
         print(f"tsp_ortools claimed error -- output:\n{output}")
 
