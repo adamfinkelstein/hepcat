@@ -4,6 +4,7 @@ import uuid
 from flask import flash, current_app
 from . import db
 from .util import (
+    run_cmd,
     get_latest_room_history_status,
     make_path_if_needed,
     write_data_to_file,
@@ -31,32 +32,32 @@ from .models import (
 
 
 def delete_all_users():
-    dump_users_papers_and_conflicts('Before deleting users')
+    dump_users_papers_and_conflicts("Before deleting users")
     users = User.query.all()
     count = len(users)
     # slightly lame optimization: prevents need to logout
     if count < 3:  # account for admin and chair
         return
-    drop_and_rebuild_tables('conflicts,users,roles')
+    drop_and_rebuild_tables("conflicts,users,roles")
     ensure_admin()
-    dump_users_papers_and_conflicts('After deleting users')
+    dump_users_papers_and_conflicts("After deleting users")
 
 
 def delete_all_papers():
-    dump_users_papers_and_conflicts('Before deleting papers')
-    drop_and_rebuild_tables('history,conflicts,tags,labels,papers,glob_queues')
+    dump_users_papers_and_conflicts("Before deleting papers")
+    drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues")
     ensure_all_gqs()
-    dump_users_papers_and_conflicts('After deleting papers')
+    dump_users_papers_and_conflicts("After deleting papers")
 
 
 def delete_all_conflicts():
-    dump_users_papers_and_conflicts('Before deleting conflicts')
-    drop_and_rebuild_tables('conflicts')
-    dump_users_papers_and_conflicts('After deleting conflicts')
+    dump_users_papers_and_conflicts("Before deleting conflicts")
+    drop_and_rebuild_tables("conflicts")
+    dump_users_papers_and_conflicts("After deleting conflicts")
 
 
 def delete_all_clusters():
-    dump_users_papers_and_conflicts('Before deleting clusters')
+    dump_users_papers_and_conflicts("Before deleting clusters")
     papers = Paper.query.all()
     for paper in papers:
         # first remove all cluster labels from paper
@@ -66,20 +67,20 @@ def delete_all_clusters():
             paper.tag_labels = new_labels
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_cluster).delete()
-    print(f'delete {num_deleted} cluster labels.')
+    print(f"delete {num_deleted} cluster labels.")
     try:
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in deleting clusters'
+        msg = "failed in deleting clusters"
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After deleting clusters')
+    dump_users_papers_and_conflicts("After deleting clusters")
 
 
 # this function mimics delete_all_clusters above
 def delete_all_paper_rooms():
-    dump_users_papers_and_conflicts('Before deleting paper rooms')
+    dump_users_papers_and_conflicts("Before deleting paper rooms")
     papers = Paper.query.all()
     for paper in papers:
         # first remove all room labels from paper
@@ -89,20 +90,20 @@ def delete_all_paper_rooms():
             paper.tag_labels = new_labels
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_room).delete()
-    print(f'delete {num_deleted} cluster labels.')
+    print(f"delete {num_deleted} cluster labels.")
     try:
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in deleting paper rooms'
+        msg = "failed in deleting paper rooms"
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After deleting paper rooms')
+    dump_users_papers_and_conflicts("After deleting paper rooms")
 
 
 # 2023?
 def delete_all_labels():
-    dump_users_papers_and_conflicts('Before label deletion')
+    dump_users_papers_and_conflicts("Before label deletion")
     labels = Label.query.all()
     for label in labels:
         label.tag_papers = []  # empty list
@@ -111,62 +112,62 @@ def delete_all_labels():
         db.session.commit()
         num_deleted = Label.query.delete()
         db.session.commit()
-        print(f'deleted {num_deleted} labels')
+        print(f"deleted {num_deleted} labels")
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_labels'
+        msg = "failed in delete_all_labels"
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After label deletion')
+    dump_users_papers_and_conflicts("After label deletion")
 
 
 # needed when deleting reviews (above)
 def delete_all_history():
-    dump_users_papers_and_conflicts('Before History deletion')
+    dump_users_papers_and_conflicts("Before History deletion")
     num_deleted = History.query.delete()
     try:
         db.session.commit()
-        print(f'Deleted {num_deleted} history entries.')
+        print(f"Deleted {num_deleted} history entries.")
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_history'
+        msg = "failed in delete_all_history"
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After History deletion')
+    dump_users_papers_and_conflicts("After History deletion")
 
 
 # 2023?
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
-    dump_users_papers_and_conflicts('Before non-BBS History deletion')
+    dump_users_papers_and_conflicts("Before non-BBS History deletion")
     context_bbs = int(HistoryContext.BBS)
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
     try:
         db.session.commit()
-        print(f'Deleted {num_deleted} history entries.')
+        print(f"Deleted {num_deleted} history entries.")
     except:
         db.session.rollback()
-        msg = 'failed in delete_non_bbs_history'
+        msg = "failed in delete_non_bbs_history"
         print(msg)
         flash(msg)
-    dump_users_papers_and_conflicts('After non-BBS History deletion')
+    dump_users_papers_and_conflicts("After non-BBS History deletion")
 
 
 def delete_all_summaries():
     papers = Paper.query.all()
     count = len(papers)
     for paper in papers:
-        paper.summary = ''
+        paper.summary = ""
         db.session.add(paper)
     try:
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_summaries'
+        msg = "failed in delete_all_summaries"
         print(msg)
         flash(msg)
-    print(f'Deleted {count} summaries.')
+    print(f"Deleted {count} summaries.")
 
 
 # 2023?
@@ -176,10 +177,10 @@ def delete_all_uploads():
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_uploads'
+        msg = "failed in delete_all_uploads"
         print(msg)
         flash(msg)
-    print(f'Deleted {num_deleted} file upload entries.')
+    print(f"Deleted {num_deleted} file upload entries.")
 
 
 def delete_all_queries():
@@ -188,10 +189,10 @@ def delete_all_queries():
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed in delete_all_queries'
+        msg = "failed in delete_all_queries"
         print(msg)
         flash(msg)
-    print(f'Deleted {num_deleted} queries.')
+    print(f"Deleted {num_deleted} queries.")
 
 
 # Name,Query
@@ -210,7 +211,7 @@ def insert_query_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert query rows'
+        msg = "failed to insert query rows"
         print(msg)
         flash(msg)
         return 0
@@ -242,11 +243,11 @@ def insert_user_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert user rows (possible duplicate email?)'
+        msg = "failed to insert user rows (possible duplicate email?)"
         print(msg)
         flash(msg)
         return 0
-    dump_users_papers_and_conflicts('After insertion')
+    dump_users_papers_and_conflicts("After insertion")
     return count
 
 
@@ -311,7 +312,7 @@ def insert_paper_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert paper rows (possible duplicate paper id?)'
+        msg = "failed to insert paper rows (possible duplicate paper id?)"
         print(msg)
         flash(msg)
         return 0
@@ -336,7 +337,7 @@ def insert_conflict_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert conflict rows'
+        msg = "failed to insert conflict rows"
         print(msg)
         flash(msg)
         return 0
@@ -360,7 +361,7 @@ def insert_summary_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert summaries'
+        msg = "failed to insert summaries"
         print(msg)
         flash(msg)
         return 0
@@ -391,7 +392,7 @@ def insert_label_rows(rows, label_type):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = f'failed to insert labels of type {label_type}'
+        msg = f"failed to insert labels of type {label_type}"
         print(msg)
         flash(msg)
         return 0
@@ -437,7 +438,7 @@ def insert_people_room_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = f'failed to insert people rooms'
+        msg = f"failed to insert people rooms"
         print(msg)
         flash(msg)
         return 0
@@ -445,7 +446,7 @@ def insert_people_room_rows(rows):
 
 
 def areas_to_label_names(areas_string):
-    areas = areas_string.split('/')
+    areas = areas_string.split("/")
     labels = [area.strip() for area in areas]
     return labels
 
@@ -474,7 +475,7 @@ def papers_clear_all_scores_and_queues():
     papers = Paper.query.all()
     for paper in papers:
         paper.sort_score = 0
-        paper.all_scores = 'This paper has no reviews.'
+        paper.all_scores = "This paper has no reviews."
         paper.queue_id = None
         paper.queue_order = 0
         db.session.add(paper)
@@ -509,7 +510,7 @@ def insert_chair_score_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert chair scores'
+        msg = "failed to insert chair scores"
         print(msg)
         flash(msg)
         return 0
@@ -545,7 +546,7 @@ def insert_history_rows(rows):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to insert history'
+        msg = "failed to insert history"
         print(msg)
         flash(msg)
         return 0
@@ -553,60 +554,60 @@ def insert_history_rows(rows):
 
 
 csvLinklings = {
-    'users': 'users.csv',
-    'papers': 'abstracts.csv',
-    'conflicts': 'conflicts.csv',
-    'clusters': 'clusters.csv',
-    'paper_rooms': 'paper_rooms.csv',
-    'people_rooms': 'people_rooms.csv',
-    'chair_scores': 'chair_scores.csv',
+    "users": "users.csv",
+    "papers": "abstracts.csv",
+    "conflicts": "conflicts.csv",
+    "clusters": "clusters.csv",
+    "paper_rooms": "paper_rooms.csv",
+    "people_rooms": "people_rooms.csv",
+    "chair_scores": "chair_scores.csv",
 }
 
 csvTypes = {
-    'users': 'Email,First Name,Last Name,Role,Password',
-    'papers': 'Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract',
-    'conflicts': 'Submission ID,Email',
-    'clusters': 'Submission ID,Cluster',
-    'paper_rooms': 'Submission ID,Room',
-    'people_rooms': 'Email,Rooms',
-    'chair_scores': 'Submission ID,Sort Score,Status,Reviews',
-    'summaries': 'Submission ID,Committee Notes',
-    'queries': 'Name,Query',
-    'history': 'Submission ID,Seconds,Context,Status',
+    "users": "Email,First Name,Last Name,Role,Password",
+    "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
+    "conflicts": "Submission ID,Email",
+    "clusters": "Submission ID,Cluster",
+    "paper_rooms": "Submission ID,Room",
+    "people_rooms": "Email,Rooms",
+    "chair_scores": "Submission ID,Sort Score,Status,Reviews",
+    "summaries": "Submission ID,Committee Notes",
+    "queries": "Name,Query",
+    "history": "Submission ID,Seconds,Context,Status",
 }
 
-csvFunctions = {
-    'users': insert_user_rows,
-    'papers': insert_paper_rows,
-    'conflicts': insert_conflict_rows,
-    'clusters': insert_cluster_rows,
-    'paper_rooms': insert_paper_room_rows,
-    'people_rooms': insert_people_room_rows,
-    'chair_scores': insert_chair_score_rows,
-    'summaries': insert_summary_rows,
-    'queries': insert_query_rows,
-    'history': insert_history_rows,
+csvInsertFunctions = {
+    "users": insert_user_rows,
+    "papers": insert_paper_rows,
+    "conflicts": insert_conflict_rows,
+    "clusters": insert_cluster_rows,
+    "paper_rooms": insert_paper_room_rows,
+    "people_rooms": insert_people_room_rows,
+    "chair_scores": insert_chair_score_rows,
+    "summaries": insert_summary_rows,
+    "queries": insert_query_rows,
+    "history": insert_history_rows,
 }
 
 csvDependence = {
-    'users': ['conflicts', 'people_rooms'],
-    'chair_scores': ['history'],
-    'papers': [
-        'conflicts',
-        'history',
-        'clusters',
-        'paper_rooms',
-        'summaries',
-        'chair_scores',
+    "users": ["conflicts", "people_rooms"],
+    "chair_scores": ["history"],
+    "papers": [
+        "conflicts",
+        "history",
+        "clusters",
+        "paper_rooms",
+        "summaries",
+        "chair_scores",
     ],
 }
 
 
 def is_csv(filename):
-    if '.' not in filename:
+    if "." not in filename:
         return False
-    ext = filename.rsplit('.', 1)[1].lower()
-    return ext == 'csv'
+    ext = filename.rsplit(".", 1)[1].lower()
+    return ext == "csv"
 
 
 def csv_row_strip_whitespace(row):
@@ -631,7 +632,7 @@ def read_csv_rows(filename):
     if len(rows) < 1:
         return None, None
     header = rows[0]
-    header = ','.join(header)
+    header = ",".join(header)
     rows = rows[1:]
     return header, rows
 
@@ -643,7 +644,7 @@ def get_csv_type(header):
     for typ in csvTypes:
         knownHeader = csvTypes[typ].lower()  # lower case
         if header.startswith(knownHeader):
-            cols = knownHeader.split(',')
+            cols = knownHeader.split(",")
             ncols = len(cols)
             return typ, ncols
     return None, 0
@@ -656,7 +657,7 @@ def omit_extra_cols(rows, ncols):
 
 def delete_prev_file_uploads(header_type):
     if header_type not in csvDependence:
-        print('about to delete header_type: ', header_type)
+        print("about to delete header_type: ", header_type)
         FileUpload.query.filter_by(file=header_type).delete()
         return
     del_list = csvDependence[header_type]
@@ -664,21 +665,21 @@ def delete_prev_file_uploads(header_type):
     del_list.append(header_type)
     for name in del_list:
         num_deleted = FileUpload.query.filter_by(file=name).delete()
-        print(f'delete {num_deleted} file of types {name}')
+        print(f"delete {num_deleted} file of types {name}")
 
 
 def read_csv(filename):
     header, rows = read_csv_rows(filename)
     header_type, ncols = get_csv_type(header)
-    if not header_type or header_type not in csvFunctions:
-        return False, False, ''
+    if not header_type or header_type not in csvInsertFunctions:
+        return False, False, ""
     rows = omit_extra_cols(rows, ncols)
-    func = csvFunctions[header_type]
+    func = csvInsertFunctions[header_type]
     if not func:
-        return False, False, ''  # this should never happen because of test above
+        return False, False, ""  # this should never happen because of test above
     count = func(rows)
     if count < 0:
-        return "already_sent_flash_msg", False, ''
+        return "already_sent_flash_msg", False, ""
     delete_prev_file_uploads(header_type)
     upload = FileUpload(file=header_type, count=count)
     db.session.add(upload)
@@ -686,11 +687,11 @@ def read_csv(filename):
         db.session.commit()
     except:
         db.session.rollback()
-        msg = 'failed to add file upload record'
+        msg = "failed to add file upload record"
         print(msg)
-    msg = dump_users_papers_and_conflicts('After Upload')
-    if header_type == 'users':
-        msg += ' You have been logged out because users were updated.'
+    msg = dump_users_papers_and_conflicts("After Upload")
+    if header_type == "users":
+        msg += " You have been logged out because users were updated."
         return msg, True, header_type
     return msg, False, header_type
 
@@ -703,10 +704,15 @@ def pending_uploads(uploads):
     return pending
 
 
-def save_and_read_csv(data, filename):
+def get_or_make_upload_folder():
     app = current_app._get_current_object()
-    folder = app.config['UPLOAD_FOLDER']
+    folder = app.config["UPLOAD_FOLDER"]
     make_path_if_needed(folder)
+    return folder
+
+
+def save_and_read_csv(data, filename):
+    folder = get_or_make_upload_folder()
     fullpath = os.path.join(folder, filename)
     # file.save(fullpath) # when it was a file upload
     write_data_to_file(data, fullpath)
@@ -715,25 +721,59 @@ def save_and_read_csv(data, filename):
     return msg, logout, header_type
 
 
-def write_csv(rows, filename):
-    text = '\n'.join(rows)
-    write_text_to_file(text, filename)
+def get_paper_conflicts(paper):
+    conflicts = paper.conf_users
+    conflicts = [user.email for user in conflicts]
+    return conflicts
+
+
+def get_paper_room(paper):
+    labels = paper.tag_labels
+    paper_room = None
+    for label in labels:
+        if label.is_room:
+            paper_room = label.name
+    return paper_room
+
+
+def get_paper_clusters(paper):
+    labels = paper.tag_labels
+    paper_clusters = []
+    for label in labels:
+        if label.is_cluster:
+            paper_clusters.append(label.name)
+    return paper_clusters
+
+
+def get_paper_areas(paper):
+    labels = paper.tag_labels
+    paper_areas = []
+    for label in labels:
+        if label.is_area:
+            paper_areas.append(label.name)
+    return paper_areas
+
+
+def get_paper_areas_string(paper):
+    paper_areas = get_paper_areas(paper)
+    paper_areas = "/".join(paper_areas)
+    return paper_areas
 
 
 def get_results_as_rows():
     papers = Paper.query.all()
-    header = 'Submission ID,Status'
+    header = "Submission ID,Status"
     rows = [header]
     for paper in papers:
         status = get_latest_room_history_status(paper)
-        row = f'{paper.sid},{status}'
+        row = f"{paper.sid},{status}"
         rows.append(row)
     return rows
 
 
 def get_queries_as_rows():
     queries = Query.query.all()
-    header = 'Name,Query'
+    header = "Name,Query"
     rows = [header]
     for query in queries:
         json_quote = query.json.replace('"', "'")  # replace double w single
@@ -744,7 +784,7 @@ def get_queries_as_rows():
 
 def get_history_as_rows():
     history = History.query.order_by(History.when).all()
-    header = 'When,Context,Paper,Status'
+    header = "When,Context,Paper,Status"
     rows = [header]
     for h in history:
         row = f'"{h.when}",{h.context},{h.paper.sid},{h.status}'
@@ -752,24 +792,154 @@ def get_history_as_rows():
     return rows
 
 
+def get_users_as_rows():
+    users = User.query.order_by(User.role_id, User.full_name).all()
+    header = "Email,First Name,Last Name,Role,Password"
+    rows = [header]
+    empty = ""
+    for u in users:
+        role = u.role_name
+        if role == "Super" or role == "Screen":
+            # these are created automatically
+            continue
+        row = f"{u.email},{u.first_name},{u.last_name},{role},{empty}"
+        rows.append(row)
+    return rows
+
+
+def get_people_rooms_as_rows():
+    users = User.query.order_by(User.email).all()
+    header = "Email,Rooms"
+    rows = [header]
+    for u in users:
+        rooms = u.rooms
+        if rooms:
+            row = f"{u.email},{rooms}"
+            rows.append(row)
+    return rows
+
+
+def get_papers_as_rows():
+    papers = Paper.query.order_by(Paper.nid).all()
+    header = "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract"
+    rows = [header]
+    for p in papers:
+        dual = "no" if p.journal_only else "yes"
+        areas = get_paper_areas_string(p)
+        row = f'{p.sid},{p.thumbnail},"{p.title}",{areas},{dual},"{p.abstract}"'
+        rows.append(row)
+    return rows
+
+
+def get_paper_rooms_as_rows():
+    papers = Paper.query.order_by(Paper.nid).all()
+    header = "Submission ID,Room"
+    rows = [header]
+    for p in papers:
+        room = get_paper_room(p)
+        if room:
+            row = f"{p.sid},{room}"
+            rows.append(row)
+    return rows
+
+
+def get_chair_scores_as_rows():
+    papers = Paper.query.order_by(Paper.nid).all()
+    header = "Submission ID,Sort Score,Status,Reviews"
+    rows = [header]
+    for p in papers:
+        bbs = p.all_scores.split()[-1]  # a little hacky
+        row = f'{p.sid},{p.sort_score},{bbs},"{p.all_scores}"'
+        rows.append(row)
+    return rows
+
+
+def get_clusters_as_rows():
+    papers = Paper.query.order_by(Paper.nid).all()
+    header = "Submission ID,Cluster"
+    rows = [header]
+    for p in papers:
+        clusters = get_paper_clusters(p)
+        for c in clusters:
+            row = f"{p.sid},{c}"
+            rows.append(row)
+    return rows
+
+
+def get_conflicts_as_rows():
+    papers = Paper.query.order_by(Paper.nid).all()
+    header = "Submission ID,Email"
+    rows = [header]
+    for p in papers:
+        conflicts = get_paper_conflicts(p)
+        for c in conflicts:
+            row = f"{p.sid},{c}"
+            rows.append(row)
+    return rows
+
+
+def write_csv_rows(rows, filename):
+    text = "\n".join(rows)
+    write_text_to_file(text, filename)
+
+
 def write_csv_path(filename, rows):
-    app = current_app._get_current_object()
-    folder = app.config['UPLOAD_FOLDER']
-    make_path_if_needed(folder)
+    folder = get_or_make_upload_folder()
     fullpath = os.path.join(folder, filename)
-    write_csv(rows, fullpath)
+    write_csv_rows(rows, fullpath)
     return fullpath
+
+
+csvExtractFunctions = {
+    "results": get_results_as_rows,
+    "queries": get_queries_as_rows,
+    "history": get_history_as_rows,
+    "users": get_users_as_rows,
+    "people_rooms": get_people_rooms_as_rows,
+    "papers": get_papers_as_rows,
+    "paper_rooms": get_paper_rooms_as_rows,
+    "chair_scores": get_chair_scores_as_rows,
+    "conflicts": get_conflicts_as_rows,
+    "clusters": get_clusters_as_rows,
+}
 
 
 def write_kind_of_csv(kind):
-    filename = f'hepcat-{kind}.csv'
-    if kind == 'results':
-        rows = get_results_as_rows()
-    elif kind == 'queries':
-        rows = get_queries_as_rows()
-    elif kind == 'history':
-        rows = get_history_as_rows()
-    else:
+    csv_kinds = csvExtractFunctions.keys()
+    if kind not in csv_kinds:
         return None
+    filename = f"hepcat_{kind}.csv"
+    func = csvExtractFunctions[kind]
+    rows = func()
     fullpath = write_csv_path(filename, rows)
     return fullpath
+
+
+def write_all_csvs():
+    csv_kinds = csvExtractFunctions.keys()
+    paths = []
+    for kind in csv_kinds:
+        fullpath = write_kind_of_csv(kind)
+        paths.append(fullpath)
+    return paths
+
+
+def write_zip_of_all_csvs():
+    csv_paths = write_all_csvs()
+    csv_paths = " ".join(csv_paths)
+    folder = get_or_make_upload_folder()
+    zipfile = "hepcat_data.zip"
+    zipfile_path = os.path.join(folder, zipfile)
+    # First remove the zip file if it exists (to avoid adding to it).
+    if os.path.exists(zipfile_path):
+        os.remove(zipfile_path)
+    # The -j option avoids writing full paths into the zip file.
+    cmd = f"/usr/bin/zip -j {zipfile_path} {csv_paths}"
+    print(cmd)
+    ok, output = run_cmd(cmd, False)
+    if ok:
+        print(f"zip claimed ok")
+        return zipfile_path
+    else:
+        print(f"zip claimed error -- output:\n{output}")
+        return None

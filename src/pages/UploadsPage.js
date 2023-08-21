@@ -182,14 +182,13 @@ export default function UploadsPage() {
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-warning"
-            href={'/admin/download_csv/history/' + adminKey}
+            href={'/admin/download_zip/' + adminKey}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Download History
+            Download ZIP
           </a>
-          &nbsp;&nbsp;Download a CSV with the history of paper status the
-          meeting.
+          &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
         </Stack>
 
         {isSuper && (
