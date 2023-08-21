@@ -760,13 +760,25 @@ def get_paper_areas_string(paper):
     return paper_areas
 
 
+def double_quote_text_for_csv(text):
+    text = text.replace('"', '""')  # double up double quotes
+    text = '"' + text + '"'
+    return text
+
+
+def paper_is_test(paper):
+    return paper.nid >= 9999
+
+
 def get_results_as_rows():
     papers = Paper.query.all()
     header = "Submission ID,Status"
     rows = [header]
-    for paper in papers:
-        status = get_latest_room_history_status(paper)
-        row = f"{paper.sid},{status}"
+    for p in papers:
+        if paper_is_test(p):
+            continue
+        status = get_latest_room_history_status(p)
+        row = f"{p.sid},{status}"
         rows.append(row)
     return rows
 
@@ -777,7 +789,9 @@ def get_queries_as_rows():
     rows = [header]
     for query in queries:
         json_quote = query.json.replace('"', "'")  # replace double w single
-        row = f'"{query.name}","{json_quote}"'
+        json_quote = double_quote_text_for_csv(json_quote)
+        query_name = double_quote_text_for_csv(query.name)
+        row = f"{query_name},{json_quote}"
         rows.append(row)
     return rows
 
@@ -787,7 +801,9 @@ def get_history_as_rows():
     header = "When,Context,Paper,Status"
     rows = [header]
     for h in history:
-        row = f'"{h.when}",{h.context},{h.paper.sid},{h.status}'
+        when = str(h.when)
+        when = double_quote_text_for_csv(when)
+        row = f"{when},{h.context},{h.paper.sid},{h.status}"
         rows.append(row)
     return rows
 
@@ -824,9 +840,13 @@ def get_papers_as_rows():
     header = "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract"
     rows = [header]
     for p in papers:
+        if paper_is_test(p):
+            continue
         dual = "no" if p.journal_only else "yes"
         areas = get_paper_areas_string(p)
-        row = f'{p.sid},{p.thumbnail},"{p.title}",{areas},{dual},"{p.abstract}"'
+        title = double_quote_text_for_csv(p.title)
+        abstract = double_quote_text_for_csv(p.abstract)
+        row = f"{p.sid},{p.thumbnail},{title},{areas},{dual},{abstract}"
         rows.append(row)
     return rows
 
@@ -836,6 +856,8 @@ def get_paper_rooms_as_rows():
     header = "Submission ID,Room"
     rows = [header]
     for p in papers:
+        if paper_is_test(p):
+            continue
         room = get_paper_room(p)
         if room:
             row = f"{p.sid},{room}"
@@ -848,13 +870,14 @@ def get_chair_scores_as_rows():
     header = "Submission ID,Sort Score,Status,Reviews"
     rows = [header]
     for p in papers:
-        if p.nid >= 9999:
+        if paper_is_test(p):
             continue
         bbs = ""
         scores = p.all_scores
         if scores:
             bbs = scores.split()[-1]  # a little hacky
-        row = f'{p.sid},{p.sort_score},{bbs},"{scores}"'
+            scores = double_quote_text_for_csv(scores)
+        row = f"{p.sid},{p.sort_score},{bbs},{scores}"
         rows.append(row)
     return rows
 
@@ -876,6 +899,8 @@ def get_conflicts_as_rows():
     header = "Submission ID,Email"
     rows = [header]
     for p in papers:
+        if paper_is_test(p):
+            continue
         conflicts = get_paper_conflicts(p)
         for c in conflicts:
             row = f"{p.sid},{c}"
