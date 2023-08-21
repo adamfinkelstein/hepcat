@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import Alert from 'react-bootstrap/Alert';
@@ -24,50 +30,58 @@ export default function FlashContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { socket } = useSocketIO();
 
-  const flash = (message, type, which) => {
-    const duration = 4;
-    const id = ++flashId;
+  const hideFlash = useCallback(
+    (id) => {
+      controlledLog('hideFlash', id);
+      setMessages((messages) =>
+        messages.map((message) =>
+          message.flashId === id ? { ...message, visible: false } : message,
+        ),
+      );
 
-    controlledLog(
-      'flash',
-      id,
-      'other active alerts',
-      messages.map((message) => message.flashId),
-    );
-    setMessages((messages) => [
-      ...messages,
-      { message, type, flashId: id, visible: true },
-    ]);
-    if (duration) {
-      setTimeout(hideFlash.bind(null, id), duration * 1000);
-    }
-  };
+      // let the slide out animation play, then delete this alert
+      const deleteFlash = (id) => {
+        controlledLog('deleteFlash', id);
+        setMessages((messages) =>
+          messages.filter((message) => message.flashId !== id),
+        );
+      };
+      setTimeout(deleteFlash.bind(null, id), 600);
+    },
+    [controlledLog],
+  );
 
-  const deleteFlash = (id) => {
-    controlledLog('deleteFlash', id);
-    setMessages((messages) =>
-      messages.filter((message) => message.flashId !== id),
-    );
-  };
+  const flash = useCallback(
+    (message, type) => {
+      const duration = 4;
+      const id = ++flashId;
 
-  const hideFlash = (id) => {
-    controlledLog('hideFlash', id);
-    setMessages((messages) =>
-      messages.map((message) =>
-        message.flashId === id ? { ...message, visible: false } : message,
-      ),
-    );
-
-    // let the slide out animation play, then delete this alert
-    setTimeout(deleteFlash.bind(null, id), 600);
-  };
+      controlledLog(
+        'flash',
+        id,
+        'other active alerts',
+        messages.map((message) => message.flashId),
+      );
+      setMessages((messages) => [
+        ...messages,
+        { message, type, flashId: id, visible: true },
+      ]);
+      if (duration) {
+        setTimeout(hideFlash.bind(null, id), duration * 1000);
+      }
+    },
+    [messages, controlledLog, hideFlash],
+  );
 
   // Socket.IO handler for the server to push a flashed message */
-  const receiveFlasher = (data) => {
-    controlledLog('got flasher:');
-    controlledLog(data);
-    flash(data.message, data.type);
-  };
+  const receiveFlasher = useCallback(
+    (data) => {
+      controlledLog('got flasher:');
+      controlledLog(data);
+      flash(data.message, data.type);
+    },
+    [controlledLog, flash],
+  );
 
   useEffect(() => {
     if (socket) {
@@ -76,7 +90,7 @@ export default function FlashContext({ children }) {
         socket.off('server_send_flasher', receiveFlasher);
       };
     }
-  }, [socket]);
+  }, [socket, receiveFlasher]);
 
   return (
     <FlasherContext.Provider
