@@ -848,8 +848,13 @@ def get_chair_scores_as_rows():
     header = "Submission ID,Sort Score,Status,Reviews"
     rows = [header]
     for p in papers:
-        bbs = p.all_scores.split()[-1]  # a little hacky
-        row = f'{p.sid},{p.sort_score},{bbs},"{p.all_scores}"'
+        if p.nid >= 9999:
+            continue
+        bbs = ""
+        scores = p.all_scores
+        if scores:
+            bbs = scores.split()[-1]  # a little hacky
+        row = f'{p.sid},{p.sort_score},{bbs},"{scores}"'
         rows.append(row)
     return rows
 
