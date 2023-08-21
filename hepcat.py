@@ -33,6 +33,8 @@ def cli():
     """Management script for Hepcat"""
 
 
+app = create_configured_app()
+
 ### THIS WORKS BUT NOT NEEDED:
 # @app.route("/chat/", endpoint='chat')
 # @app.route('/chat/<path:filepath>', endpoint='chat')
@@ -50,11 +52,10 @@ def cli():
 
 # AF removed some things here about migrations and shell contexts
 
+
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         # no arguments provided, run the web app as usual
-        app = create_configured_app()
-
         print('running from main using socketio...')
         socketio.run(app)
     else:
