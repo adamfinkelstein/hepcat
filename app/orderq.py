@@ -6,11 +6,7 @@ from flask import current_app
 from .util import run_cmd, make_path_if_needed, write_text_to_file, read_lines_from_file
 
 
-use_ortools = os.environ.get('HEPCAT_USE_ORTOOLS')
-
-if use_ortools:
-    from ortools.constraint_solver import routing_enums_pb2
-    from ortools.constraint_solver import pywrapcp
+use_ortools = os.environ.get("HEPCAT_USE_ORTOOLS")
 
 
 def get_paper_conficts_set(p):
@@ -51,10 +47,10 @@ def get_paper_distance(paper_prev, paper_curr, verbose=False):
     total = get_enter_leave_cost(enter) + get_enter_leave_cost(leave)
     if verbose:
         stay = conf_curr.intersection(conf_prev)
-        print('stay out: ', stay)
-        print('enter: ', enter)
-        print('leave: ', leave)
-        print('total: ', total)
+        print("stay out: ", stay)
+        print("enter: ", enter)
+        print("leave: ", leave)
+        print("total: ", total)
     return total
 
 
@@ -84,8 +80,8 @@ def permute_papers(papers, permutation):
 
 
 def debug_order(distance_matrix, permutation, distance, ordered_papers):
-    print('distances:\n', distance_matrix)
-    print('solution:', permutation, distance)
+    print("distances:\n", distance_matrix)
+    print("solution:", permutation, distance)
     hops = len(ordered_papers) - 1
     for i in range(hops):
         pi = ordered_papers[i]
@@ -123,7 +119,7 @@ def split_tour_at_max_cost(nodes, trans_costs):
     leftshift = maxindex + 1
     cost = trans_costs[maxindex]
     print(
-        f'splitting tour at location {maxindex} (leftshift {leftshift}) with max cost {cost}'
+        f"splitting tour at location {maxindex} (leftshift {leftshift}) with max cost {cost}"
     )
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
@@ -141,7 +137,7 @@ def split_tour_at_last_high_cost(nodes, trans_costs):
     cost = trans_costs[high_index]
     leftshift = high_index + 1
     print(
-        f'splitting tour at location {high_index} (leftshift {leftshift}) with high cost {cost}'
+        f"splitting tour at location {high_index} (leftshift {leftshift}) with high cost {cost}"
     )
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
@@ -159,7 +155,7 @@ def split_tour_at_min_pair_node_cost(nodes, node_costs):
     leftshift = min_i + 1
     cost = pair_costs[min_i]
     print(
-        f'splitting tour at location {min_i} (leftshift {leftshift}) with low pair cost {cost}'
+        f"splitting tour at location {min_i} (leftshift {leftshift}) with low pair cost {cost}"
     )
     nodes = rotate_list_left(nodes, leftshift)
     node_costs = rotate_list_left(node_costs, leftshift)
@@ -173,13 +169,13 @@ def split_tour_at_min_pair_node_cost(nodes, node_costs):
 def improve_tour(papers, distance_matrix, nodes):
     trans_costs = tsp_transition_costs(nodes, distance_matrix)
     node_costs = get_node_costs(papers, nodes)
-    print('after split... trans_costs and node_costs:')
+    print("after split... trans_costs and node_costs:")
     print(trans_costs)
     print(node_costs)
     # nodes, trans_costs = split_tour_at_last_high_cost(nodes, trans_costs)
     # nodes, trans_costs = split_tour_at_max_cost(nodes, trans_costs)
     nodes, node_costs = split_tour_at_min_pair_node_cost(nodes, node_costs)
-    print('after split... trans_costs and node_costs:')
+    print("after split... trans_costs and node_costs:")
     print(trans_costs)
     print(node_costs)
     costs_minus_last = trans_costs[:-1]
@@ -187,40 +183,56 @@ def improve_tour(papers, distance_matrix, nodes):
     return nodes, distance
 
 
-########### CONCORDE ############
+########### RUN EXTERNAL TSP ############
 
 
-def write_concorde_input(matrix, fname):
+def write_tsp_input(matrix, fname):
     dim = len(matrix)
     # For format, see Example 2 here:
     # https://www.math.uwaterloo.ca/tsp/iphone/help.html
-    contents = f'''NAME: papers
+    contents = f"""NAME: papers
 TYPE: TSP
 COMMENT: PC Meeting Conflicts
 DIMENSION: {dim}
 EDGE_WEIGHT_TYPE: EXPLICIT
 EDGE_WEIGHT_FORMAT: LOWER_DIAG_ROW
 EDGE_WEIGHT_SECTION
-'''
+"""
     for i in range(dim):
         row = matrix[i]
         row = row[: i + 1]  # only up to diag
         row = [str(int(round(v))) for v in row]
-        row = ' '.join(row) + '\n'
+        row = " ".join(row) + "\n"
         contents += row
-    contents += 'EOF\n'
+    contents += "EOF\n"
     write_text_to_file(contents, fname)
 
 
-def call_concorde(concorde_path, concorde_input):
+def run_concorde(bin_folder, input_file):
     # flags passed to concorde:
     # -s 0 : seed random number generator to 0 so answer is deterministic
     # -x   : delete files on completion (sav pul mas)
     # -V   : just run fast cuts
     # -o f : output solution to file f
-    cmd = f'{concorde_path} -s 0 -x -V {concorde_input}'
+    concorde_path = os.path.join(bin_folder, "concorde")
+    cmd = f"{concorde_path} -s 0 -x -V {input_file}"
     # print(cmd)
-    return run_cmd(cmd, True)
+    ok, output = run_cmd(cmd, True)
+    if ok:
+        print(f"concorde claimed ok -- output:\n{output}")
+    else:
+        print(f"concorde claimed error -- output:\n{output}")
+
+
+def run_ortools(app_folder, input_file):
+    script_path = os.path.join(app_folder, "tsp_ortools.py")
+    cmd = f"python {script_path} {input_file}"
+    # print(cmd)
+    ok, output = run_cmd(cmd, False)
+    if ok:
+        print(f"tsp_ortools claimed ok -- output:\n{output}")
+    else:
+        print(f"tsp_ortools claimed error -- output:\n{output}")
 
 
 def read_solution(solution_file):
@@ -234,80 +246,29 @@ def read_solution(solution_file):
     return order
 
 
-def setup_and_run_concorde(distance_matrix):
+def setup_and_run_tsp_opt(distance_matrix):
     app = current_app._get_current_object()
-    working_folder = app.config['UPLOAD_FOLDER']
-    bin_folder = app.config['BIN_FOLDER']
+    working_folder = app.config["UPLOAD_FOLDER"]
+    bin_folder = app.config["BIN_FOLDER"]
+    app_folder = app.config["APP_FOLDER"]
     make_path_if_needed(working_folder)
-    concorde_input = 'concorde_data.txt'
-    concorde_output = 'concorde_data.sol'
-    concorde_path = os.path.join(bin_folder, 'concorde')
+    input_file = "tsp_matrix.txt"
+    output_file = "tsp_matrix.sol"
     current_directory = os.getcwd()  # remember where we were
     os.chdir(working_folder)
-    write_concorde_input(distance_matrix, concorde_input)
-    ok, output = call_concorde(concorde_path, concorde_input)
-    if ok:
-        print(f'concorde claimed ok -- output:\n{output}')
+    write_tsp_input(distance_matrix, input_file)
+    if use_ortools:  # global set at top of file
+        solver = "ortools"
+        run_ortools(app_folder, input_file)
     else:
-        print(f'concorde claimed error -- output:\n{output}')
-    node_order = read_solution(concorde_output)
+        solver = "concorde"
+        run_concorde(bin_folder, input_file)
+    node_order = read_solution(output_file)
     os.chdir(current_directory)  # return to where we were
-    return node_order
+    return node_order, solver
 
 
-########### ORTOOLS ############
-
-
-def ortools_pack_data(distance_matrix):
-    data = {}
-    data['distance_matrix'] = distance_matrix.tolist()
-    data['num_vehicles'] = 1
-    data['depot'] = 0
-    return data
-
-
-def ortools_get_tsp_solution(manager, routing, solution):
-    nodes = []
-    costs = []
-    index = routing.Start(0)
-    while not routing.IsEnd(index):
-        node = manager.IndexToNode(index)
-        previous_index = index
-        index = solution.Value(routing.NextVar(index))
-        cost = routing.GetArcCostForVehicle(previous_index, index, 0)
-        nodes.append(node)
-        costs.append(cost)
-    return nodes, costs
-
-
-def solve_tsp_with_ortools(distance_matrix):
-    data = ortools_pack_data(distance_matrix)
-    manager = pywrapcp.RoutingIndexManager(
-        len(data['distance_matrix']), data['num_vehicles'], data['depot']
-    )
-    routing = pywrapcp.RoutingModel(manager)
-
-    def ortools_distance_callback(from_index, to_index):
-        """Returns the distance between the two nodes."""
-        # Convert from routing variable Index to distance matrix NodeIndex.
-        from_node = manager.IndexToNode(from_index)
-        to_node = manager.IndexToNode(to_index)
-        return data['distance_matrix'][from_node][to_node]
-
-    transit_callback_index = routing.RegisterTransitCallback(ortools_distance_callback)
-    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    )
-    solution = routing.SolveWithParameters(search_parameters)
-    if solution:
-        nodes, _ = ortools_get_tsp_solution(manager, routing, solution)
-        return nodes
-    return None
-
-
-######## END ORTOOLS #########
+######## ORDER QUEUE #########
 
 
 def tsp_transition_costs(nodes, distance_matrix):
@@ -341,20 +302,12 @@ def elapsed_time():
 def order_q_select_alg(distance_matrix):
     nodes = list(range(len(distance_matrix[0])))
     cost = tour_cost(distance_matrix, nodes)
-    print(f'cost of linear path: {cost}')
-
-    if use_ortools:  # global set at top of file
-        start_timer()
-        nodes = solve_tsp_with_ortools(distance_matrix)
-        diff = elapsed_time()
-        cost = tour_cost(distance_matrix, nodes)
-        print(f'cost of ortools path: {cost} (time {diff})')
-    else:
-        start_timer()
-        nodes = setup_and_run_concorde(distance_matrix)
-        diff = elapsed_time()
-        cost = tour_cost(distance_matrix, nodes)
-        print(f'cost of concorde path: {cost} (time {diff})')
+    print(f"cost of linear path: {cost}")
+    start_timer()
+    nodes, solver = setup_and_run_tsp_opt(distance_matrix)
+    diff = elapsed_time()
+    cost = tour_cost(distance_matrix, nodes)
+    print(f"cost of {solver} path: {cost} (time {diff})")
     if not nodes:
         return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
@@ -385,10 +338,10 @@ def paper_conflicts_culled(p, letter):
 
 
 def papers_with_only_conflicts_in_room(papers, room):
-    if not room or room == 'Plenary':
+    if not room or room == "Plenary":
         return papers
     letter = room[-1]  # last character
-    print(f'culling paper conflicts for room {letter}...')
+    print(f"culling paper conflicts for room {letter}...")
     result = [paper_conflicts_culled(p, letter) for p in papers]
     return result
 
@@ -399,7 +352,7 @@ def order_q(papers, room, verbose=False):
     over_max = False
     # remainder = None
     if n < 3:
-        print(f'skip ordering {n} papers because it is too few.')
+        print(f"skip ordering {n} papers because it is too few.")
         return papers, over_max
     if n > maxn:
         n = maxn
@@ -416,7 +369,7 @@ def order_q(papers, room, verbose=False):
         ordered_papers = papers
     if verbose:
         debug_order(distance_matrix, permutation, 0, ordered_papers)
-    print(f'ordered {n} papers')  # with total cost {distance}')
+    print(f"ordered {n} papers")  # with total cost {distance}')
     # if remainder:
     #     print('(The other papers were not ordered and just appended.)')
     #     ordered_papers += remainder
