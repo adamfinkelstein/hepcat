@@ -26,11 +26,12 @@ from ..models import (
     FileUploadSchema,
     GlobQueue,
     GlobQueueSchema,
+    all_queue_rooms,
     get_or_create_gq,
     status_str_to_enum,
     context_str_to_enum,
-    all_queue_rooms,
     insert_test_paper,
+    try_sql_commit,
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
@@ -307,30 +308,12 @@ def bulk_reject_below_bar():
             paper=paper, context_enum=context_plenary, status_enum=status_enum
         )
         db.session.add(history)
-    try:
-        db.session.commit()
+    if try_sql_commit():
         return True
-    except:
-        db.session.rollback()
-        msg = "failed to bulk_reject_below_bar"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
-        return False
-
-
-# Old code appears to never get called...
-# def clear_queue():
-#     papers = Paper.query.all()
-#     for paper in papers:
-#         paper.queue_order = 0
-#         db.session.add(paper)
-#     try:
-#         db.session.commit()
-#     except:
-#         db.session.rollback()
-#         msg = 'failed to clear queue'
-#         print(msg)
-#         broadcast_admin_alert('Server Error',msg)
+    msg = "failed commit in bulk_reject_below_bar"
+    print(msg)
+    broadcast_admin_alert("Server Error", msg)
+    return False
 
 
 def zero_or_inc_current_index(room, zero_or_inc):
@@ -347,10 +330,7 @@ def zero_or_inc_current_index(room, zero_or_inc):
         gq.current_show_enter = 0
     gq.current_show = False
     db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = f"failed to set queue index in room {room} (inc {zero_or_inc})"
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -368,10 +348,7 @@ def set_bar(bar):
     for gq in queues:
         gq.bar = bar
         db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = "failed to set bar"
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -517,10 +494,7 @@ def update_last_seen(user, room):
     user.last_seen = func.now()
     user.last_seen_in = room
     db.session.add(user)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = f"failed to update user time last seen for {user.full_name}"
         print(msg)
 
@@ -530,10 +504,7 @@ def show_current_paper(room):
     gq.current_show = True
     gq.current_start = func.now()
     db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = "failed to show current paper"
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -547,10 +518,7 @@ def set_hide_queue(room, hide, message):
         gq.current_show = False  # then hide the current paper.
         gq.current_show_enter = 0  # and do not show enter/leave.
     db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = "failed to hide queue"
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -669,10 +637,7 @@ def clear_all_stickies():
     context_stickie = int(HistoryContext.Stickie)
     count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
     print(f"this should clear {count_deleted} stickies")
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         return 0
     return count_deleted
 
@@ -703,10 +668,7 @@ def call_users_to_room(room):
         if gq:
             gq.called_users = False
             db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = f"error in call users to room {room}"
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -929,14 +891,12 @@ def admin_save_query(filters):
     else:  # otherwise... create:
         query = Query(name=name, json=json_string)
     db.session.add(query)
-    try:
-        db.session.commit()
+    if try_sql_commit():
         emit_admin_queries(True)
         msg = f"Saved query named: {name}."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
-    except:
-        db.session.rollback()
+    else:
         msg = f"Failed to add query {name} ({json_string})."
         print(msg)
         data = {"message": msg, "type": "warning"}
@@ -972,15 +932,13 @@ def admin_delete_query(name):
         return
     num_deleted = Query.query.filter_by(name=name).delete()
     print(f"delete {num_deleted} queries (should be 1).")
-    try:
-        db.session.commit()
+    if try_sql_commit():
         emit_admin_queries(True)
         msg = f"Deleted query with name: {name}"
         print(msg)
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
-    except:
-        db.session.rollback()
+    else:
         msg = f"Cannot delete query with name: {name}"
         print(msg)
         data = {"message": msg, "type": "warning"}
@@ -1091,14 +1049,12 @@ def user_set_stickie(data):
         paper=paper, context_enum=context_stickie, status_enum=status_enum
     )
     db.session.add(history)
-    try:
-        db.session.commit()
+    if try_sql_commit():
         emit("server_set_stickie", nid, broadcast=True)
         message = f"Stickie filed for paper {nid} ({status})."
         data = {"message": message, "type": "success"}
         emit("server_send_flasher", data)
-    except:
-        db.session.rollback()
+    else:
         msg = f"Failed attempt to file stickie for paper {nid} ({status})."
         print(msg)
         broadcast_admin_alert("Server Error", msg)
@@ -1128,11 +1084,9 @@ def user_change_password(data):
         print(f"change password for {for_user.full_name}")
         for_user.password = new_password
         db.session.add(for_user)
-        try:
-            db.session.commit()
+        if try_sql_commit():
             message_type = "success"
-        except:
-            db.session.rollback()
+        else:
             success = False
     if not success:
         message = "Error setting password."

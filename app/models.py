@@ -4,16 +4,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
-from sqlalchemy import MetaData
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
-
-# from sqlalchemy import MetaData
-
 from . import db, ma, login_manager
 
-# metadata_obj = MetaData()
+
+def try_sql_commit():
+    try:
+        db.session.commit()
+        return True
+    except SQLAlchemyError:
+        print("SQLAlchemyError! Rolling back db...")
+        db.session.rollback()
+        return False
+
 
 ######################
 # History Context / Status
@@ -429,11 +435,9 @@ def get_or_create_gq(room):
     called_users = room == "Plenary"
     gq = GlobQueue(room=room, called_users=called_users)
     db.session.add(gq)
-    try:
-        db.session.commit()
+    if try_sql_commit():
         print(f"created GC with room {room}")
-    except:
-        db.session.rollback()
+    else:
         print(f"failed to create GC")
         gq = None
     return gq
@@ -448,11 +452,10 @@ def reset_gq(room):
     gq.current = -1
     gq.current_show = False
     db.session.add(gq)
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-        print(f"failed to reset GC")
+    if try_sql_commit():
+        print(f"reset GQ in room {room}")
+    else:
+        print(f"failed to reset GQ in room {room}")
 
 
 ######################
@@ -520,10 +523,7 @@ def insert_test_paper():
         db.session.add(user)
         count += 1
         # print(f'9999 conflicted with {user.full_name} ({count})')
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
+    if not try_sql_commit():
         msg = "failed to insert test paper"
         print(msg)
         return -2
@@ -553,11 +553,9 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
             confirmed=True,
         )
         db.session.add(user)
-        try:
-            db.session.commit()
+        if try_sql_commit():
             print(f"created user with email {email}")
-        except:
-            db.session.rollback()
+        else:
             print(f"failed to create user with email {email}")
 
 
