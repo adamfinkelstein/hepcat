@@ -39,7 +39,7 @@ def delete_all_users():
     if count < 3:  # account for admin and chair
         return
     drop_and_rebuild_tables("conflicts,users,roles")
-    ensure_admin()
+    # ensure_admin() causes warnings and not needed.
     dump_users_papers_and_conflicts("After deleting users")
 
 
@@ -518,7 +518,7 @@ def insert_chair_score_rows(rows):
     return count
 
 
-# Submission ID,Seconds,Context,Status
+# Submission ID,When,Context,Status
 def insert_history_rows(rows):
     delete_non_bbs_history()  # delete history since BBS
     # now = datetime.now()
@@ -527,21 +527,24 @@ def insert_history_rows(rows):
         if len(row) < 4:
             continue
         sid, _, context, status = row
+        if context == "BBS":  # these get set by status file
+            continue
         nid = sid_to_num(sid)
         # secs = int(secs) # Now ignoring time which was hack for debugging
         paper = Paper.query.filter_by(nid=nid).first()
-        if paper:
-            # debug: then = now - timedelta(seconds=secs)
-            context_enum = context_str_to_enum(context)
-            status_enum = status_str_to_enum(status)
-            history = History(
-                paper=paper,
-                # when=then,
-                context_enum=context_enum,
-                status_enum=status_enum,
-            )
-            db.session.add(history)
-            count += 1
+        if not paper:
+            continue
+        # debug: then = now - timedelta(seconds=secs)
+        context_enum = context_str_to_enum(context)
+        status_enum = status_str_to_enum(status)
+        history = History(
+            paper=paper,
+            # when=then,
+            context_enum=context_enum,
+            status_enum=status_enum,
+        )
+        db.session.add(history)
+        count += 1
     try:
         db.session.commit()
     except:
@@ -573,7 +576,7 @@ csvTypes = {
     "chair_scores": "Submission ID,Sort Score,Status,Reviews",
     "summaries": "Submission ID,Committee Notes",
     "queries": "Name,Query",
-    "history": "Submission ID,Seconds,Context,Status",
+    "history": "Submission ID,When,Context,Status",
 }
 
 csvInsertFunctions = {
@@ -798,12 +801,12 @@ def get_queries_as_rows():
 
 def get_history_as_rows():
     history = History.query.order_by(History.when).all()
-    header = "When,Context,Paper,Status"
+    header = "Submission ID,When,Context,Status"
     rows = [header]
     for h in history:
         when = str(h.when)
         when = double_quote_text_for_csv(when)
-        row = f"{when},{h.context},{h.paper.sid},{h.status}"
+        row = f"{h.paper.sid},{when},{h.context},{h.status}"
         rows.append(row)
     return rows
 
