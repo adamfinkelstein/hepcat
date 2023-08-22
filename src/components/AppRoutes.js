@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MainPage from '../pages/MainPage.js';
 import PreferencesPage from '../pages/PreferencesPage.js';
 import AboutPage from '../pages/AboutPage.js';
+import LoginPage from '../pages/LoginPage.js';
 import UploadsPage from '../pages/UploadsPage.js';
 import UsersPage from '../pages/UsersPage.js';
 import ChangePasswordPage from '../pages/ChangePasswordPage.js';
@@ -17,6 +18,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/preferences" element={<PreferencesPage />} />
       {isAdmin && (
