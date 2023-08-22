@@ -1,4 +1,12 @@
-from flask import flash, render_template, redirect, url_for, send_file, current_app
+from flask import (
+    abort,
+    flash,
+    render_template,
+    redirect,
+    url_for,
+    send_file,
+    current_app,
+)
 from flask_login import login_user, logout_user
 from . import admin
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
@@ -17,7 +25,7 @@ def download_results_csv(kind, key):
             return send_file(fullpath, as_attachment=True)
     msg = "Sorry -- something is wrong. Try logging back in."
     flash(msg)
-    return redirect(url_for("auth.login"))
+    return abort(404)
 
 
 @admin.route("/download_zip/<key>")
@@ -31,7 +39,7 @@ def download_zip(key):
             return send_file(fullpath, as_attachment=True)
     msg = "Sorry -- something is wrong. Try logging back in."
     flash(msg)
-    return redirect(url_for("auth.login"))
+    return abort(404)
 
 
 @admin.route("/wipe_database/<key>")
@@ -41,7 +49,7 @@ def wipe_database(key):
     if key != inst:
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)
-        return redirect(url_for("auth.login"))
+        return abort(404)
     print("about to wipe database...")
     success = wipe_db_clean()
     if success:
@@ -51,7 +59,7 @@ def wipe_database(key):
         return redirect(url_for("auth.login"))
     msg = "The database wipe failed!"
     flash(msg)
-    return redirect(url_for("upload.upload_main"))
+    return abort(404)
 
 
 @admin.route("/zoom_conflictbot/<key>")

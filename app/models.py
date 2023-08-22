@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
+from sqlalchemy import MetaData
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
@@ -586,43 +587,6 @@ def ensure_admin():
     ensure_user("screen@example.com", "Screen", "Plenary", "Screen", passwd)
 
 
-postgres_wipe_db_cmd = """
-DROP TABLE IF EXISTS history CASCADE;
-DROP TABLE IF EXISTS conflicts CASCADE;
-DROP TABLE IF EXISTS papers CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
-DROP TABLE IF EXISTS file_uploads CASCADE;
-DROP TABLE IF EXISTS glob_queues CASCADE;
-DROP TABLE IF EXISTS labels CASCADE;
-DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS queries CASCADE;
-"""
-
-
-def wipe_db_clean():
-    db_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
-    is_sqlite = db_uri.startswith("sqlite")
-    print(f"About to wipe db clean ({db_uri})...")
-    try:
-        if is_sqlite:
-            print("about to drop all tables (sqlite)...")
-            db.drop_all()
-        else:  # postgres:
-            print("about to drop all tables (postgres)...")
-            db.session.execute(postgres_wipe_db_cmd)
-            db.session.commit()
-        print("...about to recreate all tables...")
-        db.create_all()
-        print("...success clean slate!")
-        # should ensure_admin() instead wait for next reload?
-        ensure_admin()
-        return True
-    except:
-        print("...failed to wipe clean!")
-        return False
-
-
 def dump_users_papers_and_conflicts(title):
     ### ??? Later: return here, if not in special mode for debugging uploads
     num_users = User.query.count()
@@ -638,29 +602,70 @@ def dump_users_papers_and_conflicts(title):
     return result
 
 
-ps_tables = "history,conflicts,papers,users,roles,file_uploads,glob_queues,labels,tags,queries".split(
-    ","
-)
-
-
-def drop_and_rebuild_tables(table_list=None):
+def db_is_sqlite():
     db_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
-    is_pg = db_uri.startswith("postgres")
+    is_sqlite = db_uri.startswith("sqlite")
+    return is_sqlite
 
+
+def execute_sql_cmd(cmd):
+    rows = db.session.execute(db.text(cmd))
+    return rows
+
+
+def get_table_names():
+    cmd = """SELECT table_name
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE'
+AND table_schema NOT IN ('pg_catalog', 'information_schema');
+"""
+    rows = execute_sql_cmd(cmd)
+    tables = [row[0] for row in rows]
+    tables = [t for t in tables if t != "alembic_version"]
+    return tables
+
+
+def sql_drop_table(table):
+    is_postgres = not db_is_sqlite()
+    cascade = "CASCADE" if is_postgres else ""
+    cmd = f"DROP TABLE IF EXISTS {table} {cascade};\n"
+    execute_sql_cmd(cmd)
+
+
+def drop_and_rebuild_tables(tables_to_drop=None):
+    all_tables = get_table_names()
     output = ""
-    if table_list:
-        table_list = table_list.split(",")
-    ps_cmd = ""
-    for table in ps_tables:
-        if not table_list or table in table_list:
-            ps_cmd += f'DROP TABLE IF EXISTS {table}{" CASCADE" if is_pg else ""};\n'
-    if ps_cmd:
-        title = f"\nBefore dropping tables {table_list}"
-        output += dump_users_papers_and_conflicts(title)
-        for line in ps_cmd.split("\n"):
-            db.session.execute(db.text(line))
-        db.session.commit()
-        db.create_all()
-        title = f"\nAfter dropping tables {table_list}"
-        output += dump_users_papers_and_conflicts(title)
+    if tables_to_drop:
+        drop_list = tables_to_drop.split(",")
+    else:
+        tables_to_drop = "ALL"
+        drop_list = all_tables
+    title = f"\nBefore dropping tables {tables_to_drop}"
+    output += dump_users_papers_and_conflicts(title)
+    for table in drop_list:
+        if table not in all_tables:
+            print("warning -- tried to drop non-table: ", table)
+            continue
+        sql_drop_table(table)
+    db.session.commit()
+    db.create_all()
+    title = f"\nAfter dropping tables {tables_to_drop}"
+    output += dump_users_papers_and_conflicts(title)
     return output
+
+
+def wipe_db_clean():
+    db_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+    is_sqlite = db_uri.startswith("sqlite")
+    print(f"About to wipe db clean ({db_uri})...")
+    if is_sqlite:
+        print("about to drop all tables (sqlite)...")
+        db.drop_all()
+        db.session.commit()  # needed?
+        db.create_all()
+    else:  # postgres:
+        print("about to drop all tables (postgres)...")
+        drop_and_rebuild_tables()
+    # ensure_admin() causes warning here, and no need.
+    # instead, it will be invoked at the next login.
+    return True
