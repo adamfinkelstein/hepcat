@@ -612,14 +612,20 @@ def execute_sql_cmd(cmd):
 
 
 def get_table_names():
-    cmd = """SELECT table_name
+    if db_is_sqlite():
+        cmd = """SELECT name FROM sqlite_schema
+WHERE type = 'table' AND name NOT LIKE 'sqlite_%';
+"""
+    else:
+        cmd = """SELECT table_name
 FROM information_schema.tables
 WHERE table_type = 'BASE TABLE'
+AND table_name NOT LIKE 'alembic_%'
 AND table_schema NOT IN ('pg_catalog', 'information_schema');
 """
     rows = execute_sql_cmd(cmd)
     tables = [row[0] for row in rows]
-    tables = [t for t in tables if t != "alembic_version"]
+    print("all db tables: ", tables)
     return tables
 
 
@@ -653,14 +659,15 @@ def drop_and_rebuild_tables(tables_to_drop=None):
 
 
 def wipe_db_clean():
-    db_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
-    is_sqlite = db_uri.startswith("sqlite")
-    print(f"About to wipe db clean ({db_uri})...")
-    if is_sqlite:
+    if db_is_sqlite():
         print("about to drop all tables (sqlite)...")
         db.drop_all()
-        db.session.commit()  # needed?
-        db.create_all()
+        if try_sql_commit():  # needed?
+            print("about to recreate all tables (sqlite)")
+            db.create_all()
+        else:
+            print("commit failed after drop all tables (sqlite)")
+            return False
     else:  # postgres:
         print("about to drop all tables (postgres)...")
         drop_and_rebuild_tables()

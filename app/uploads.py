@@ -619,7 +619,7 @@ def delete_prev_file_uploads(header_type):
     del_list.append(header_type)
     for name in del_list:
         num_deleted = FileUpload.query.filter_by(file=name).delete()
-        print(f"delete {num_deleted} file of types {name}")
+        print(f"delete {num_deleted} prev file upload of type {name}")
 
 
 def read_csv(filename):
