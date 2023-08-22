@@ -651,7 +651,8 @@ def drop_and_rebuild_tables(tables_to_drop=None):
             print("warning -- tried to drop non-table: ", table)
             continue
         sql_drop_table(table)
-    db.session.commit()
+    if not try_sql_commit():  # is this needed???
+        print(f"oops... commit failed after dropping tables: {drop_list}")
     db.create_all()
     title = f"\nAfter dropping tables {tables_to_drop}"
     output += dump_users_papers_and_conflicts(title)
