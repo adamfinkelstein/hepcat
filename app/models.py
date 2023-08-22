@@ -638,22 +638,23 @@ def sql_drop_table(table):
 
 def drop_and_rebuild_tables(tables_to_drop=None):
     all_tables = get_table_names()
-    output = ""
     if tables_to_drop:
         drop_list = tables_to_drop.split(",")
     else:
         tables_to_drop = "ALL"
         drop_list = all_tables
-    title = f"\nBefore dropping tables {tables_to_drop}"
-    output += dump_users_papers_and_conflicts(title)
+    title = f"Before dropping tables {tables_to_drop}"
+    output = dump_users_papers_and_conflicts(title)
     for table in drop_list:
-        if table not in all_tables:
-            print("warning -- tried to drop non-table: ", table)
-            continue
-        sql_drop_table(table)
-    if not try_sql_commit():  # is this needed???
-        print(f"oops... commit failed after dropping tables: {drop_list}")
+        if table in all_tables:
+            sql_drop_table(table)
+        else:
+            print(f"no need to drop non-existant table {table}")
+    print("having dropped tables, about to rebuild...")
+    if not try_sql_commit():
+        print("try_sql_commit error")
     db.create_all()
+    print("...rebuild done.")
     title = f"\nAfter dropping tables {tables_to_drop}"
     output += dump_users_papers_and_conflicts(title)
     return output
@@ -661,17 +662,18 @@ def drop_and_rebuild_tables(tables_to_drop=None):
 
 def wipe_db_clean():
     if db_is_sqlite():
-        print("about to drop all tables (sqlite)...")
+        print("wipe_db_clean: about to drop all db tables (sqlite)...")
         db.drop_all()
-        if try_sql_commit():  # needed?
-            print("about to recreate all tables (sqlite)")
-            db.create_all()
-        else:
-            print("commit failed after drop all tables (sqlite)")
-            return False
-    else:  # postgres:
-        print("about to drop all tables (postgres)...")
+        print("wipe_db_clean: about to create all db tables (sqlite)...")
+        db.create_all()
+    else:
         drop_and_rebuild_tables()
-    # ensure_admin() causes warning here, and no need.
-    # instead, it will be invoked at the next login.
-    return True
+
+
+# THIS FAILS ON POSTGRES!
+def wipe_db_clean_broken():
+    print("wipe_db_clean: about to drop all db tables...")
+    db.drop_all()
+    # never reaches the following print statement on postgres:
+    print("wipe_db_clean: about to create all db tables...")
+    db.create_all()

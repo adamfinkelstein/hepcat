@@ -1109,6 +1109,8 @@ def emit_admin_queries(broadcast):
 #################################################
 
 
+# FUTURE: move these two functions below conflictbot_namespace declaration
+# and eliminate class.
 class Conflictbot(Namespace):
     def on_connect(self):
         print("conflictbot connected:", self)

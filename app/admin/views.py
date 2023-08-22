@@ -51,15 +51,11 @@ def wipe_database(key):
         flash(msg)
         return abort(404)
     print("about to wipe database...")
-    success = wipe_db_clean()
-    if success:
-        msg = "The database was wiped clean. You have been logged out."
-        flash(msg)
-        logout_user()
-        return redirect(url_for("auth.login"))
-    msg = "The database wipe failed!"
+    wipe_db_clean()
+    msg = "The database was wiped clean. You have been logged out."
     flash(msg)
-    return abort(404)
+    logout_user()
+    return redirect(url_for("auth.login"))
 
 
 @admin.route("/zoom_conflictbot/<key>")
