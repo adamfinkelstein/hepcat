@@ -2,8 +2,7 @@ import os
 import random
 from datetime import datetime
 from subprocess import run
-from flask import current_app
-from flask_login import current_user
+from flask import current_app, session
 from sqlalchemy.sql import func
 from .models import User, History, HistoryContext
 
@@ -94,30 +93,22 @@ def get_random_user():
 
 
 def get_current_user_or_none():
-    if current_user and not current_user.is_anonymous:
-        return current_user
-    if current_app.config[
-        'ALLOW_CORS'
-    ]:  # hack to allow Rect debug on different port w/o login
-        return get_random_user()
-    print('user is not logged in: should force disconnect.')
-    return None
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+    return User.query.get(user_id)
 
 
 def current_user_is_admin():
-    if current_app.config[
-        'ALLOW_CORS'
-    ]:  # hack to allow Rect debug on different port w/o login
-        return True
     user = get_current_user_or_none()
-    if user and user.is_authenticated and user.role_is_admin:
+    if user and user.role_is_admin:
         return True
     return False
 
 
 def current_user_is_super():
     user = get_current_user_or_none()
-    if user and user.is_authenticated and user.role_is_super:
+    if user and user.role_is_super:
         return True
     return False
 

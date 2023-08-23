@@ -6,12 +6,15 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
+import { useSocketIO } from '../contexts/SocketIOContext';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
   const { user, isAdmin } = useUser();
+  const { socketLogout } = useSocketIO();
+
   let userNamePlus = user && user.full_name ? user.full_name : 'User';
   if (isAdmin) {
     userNamePlus += ' (Admin)';
@@ -64,7 +67,7 @@ export default function HeaderBar() {
                 <NavDropdown.Item
                   onClick={() => {
                     controlledLog('clicked logout');
-                    window.location.href = '/auth/logout';
+                    socketLogout();
                   }}
                 >
                   Log Out

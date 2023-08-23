@@ -86,6 +86,11 @@ export default function UserContext({ children }) {
         socket.off('server_call_to_room', receiveCallToRoom);
         socket.off('server_refresh_users', receiveRefresh);
       };
+    } else {
+      setUser(null);
+      setIsAdmin(false);
+      setAdminKey('');
+      setPaperKeys(null);
     }
   }, [socket, controlledLog, flash, isAdmin, roomChoice, socketEmit, user]);
 

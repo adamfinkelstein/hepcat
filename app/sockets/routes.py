@@ -4,9 +4,8 @@ import json
 import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from flask import current_app
+from flask import current_app, session
 from flask_socketio import Namespace, emit, disconnect
-from flask_login import current_user
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io
 from .. import db, socketio
@@ -32,6 +31,7 @@ from ..models import (
     context_str_to_enum,
     insert_test_paper,
     try_sql_commit,
+    ensure_admin,
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
@@ -699,11 +699,19 @@ def broadcast_admin_alert(title, body):
 
 
 @socketio.on("connect")
-def io_connect():
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
+def io_connect(auth):
+    ensure_admin()  # Esure that special (chair) admin exists at login
+
+    print(f'Received connection request from {auth.get("email")}')
+    email_lower = auth.get('email', '').lower()
+    user = User.query.filter_by(email=email_lower).first()
+    if user is None or not user.verify_password(auth.get('password', '')):
+        # invalid user or password, reject the connection
+        return False
+
+    # valid user, accept the connection and remember it in the session
+    session['user_id'] = user.id
+
     print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
@@ -769,8 +777,9 @@ def user_request_refresh():
 @socketio.on("disconnect")
 def io_disconnect():
     user_name = "Unknown User"
-    if current_user and not current_user.is_anonymous:
-        user_name = current_user.full_name
+    user = get_current_user_or_none()
+    if user:
+        user_name = user.full_name
     print(f"{user_name} - client disconnected")
 
 

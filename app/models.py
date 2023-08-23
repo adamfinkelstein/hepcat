@@ -8,7 +8,7 @@ from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
-from . import db, ma, login_manager
+from . import db, ma
 
 
 def try_sql_commit():
@@ -208,13 +208,6 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return "<User %r>" % self.full_name
-
-
-# This gets the user ID for the login manager.
-# Could be used to help prevent multiple login.
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
 
 
 # initially: Submission ID,Thumbnail URL,Title,Abstract
@@ -660,7 +653,7 @@ def drop_and_rebuild_tables(tables_to_drop=None):
     return output
 
 
-def wipe_db_clean():
+def wipe_db_clean_1():
     if db_is_sqlite():
         print("wipe_db_clean: about to drop all db tables (sqlite)...")
         db.drop_all()
@@ -671,7 +664,9 @@ def wipe_db_clean():
 
 
 # THIS FAILS ON POSTGRES!
-def wipe_db_clean_broken():
+def wipe_db_clean():
+    db.close_all_sessions()
+
     print("wipe_db_clean: about to drop all db tables...")
     db.drop_all()
     # never reaches the following print statement on postgres:
