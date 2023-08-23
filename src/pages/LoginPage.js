@@ -1,16 +1,22 @@
 import Button from 'react-bootstrap/Button';
 import { useState, useEffect, useRef } from 'react';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import { useFlasher } from '../contexts/FlasherContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const emailField = useRef();
   const { socketLogin } = useSocketIO();
+  const { flash } = useFlasher();
 
   const handleLoginButton = (ev) => {
     ev.preventDefault();
-    socketLogin(email, password);
+    socketLogin(email, password, (error) => {
+      if (error) {
+        flash(error, 'danger');
+      }
+    });
   };
 
   const handleInputChange = (event) => {
@@ -23,7 +29,6 @@ export default function LoginPage() {
   useEffect(() => {
     // set focus on the email field
     if (emailField.current) {
-      console.log(emailField.current);
       emailField.current.focus();
     }
   }, [emailField]);

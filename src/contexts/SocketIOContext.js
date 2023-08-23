@@ -3,13 +3,15 @@ import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
 
 const socketIOContext = React.createContext();
+let errorCallback = null;
 
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = React.useState(null);
   const [auth, setAuth] = React.useState(null);
   const { controlledLog } = useControlledLog();
 
-  const socketLogin = React.useCallback((email, password) => {
+  const socketLogin = React.useCallback((email, password, cb) => {
+    errorCallback = cb;
     setAuth({ email, password });
   }, []);
 
@@ -42,6 +44,12 @@ export default function SocketIOContext({ children }) {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
     const s = socketIOClient(endpt, { auth });
     setSocket(s);
+
+    s.on('connect_error', (err) => {
+      if (errorCallback) {
+        errorCallback('Invalid username or password');
+      }
+    });
 
     s.on('disconnect', () => {
       socketLogout();
