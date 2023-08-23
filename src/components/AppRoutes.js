@@ -16,19 +16,25 @@ export default function AppRoutes() {
   controlledLog(user);
 
   return (
-    <Routes>
-      <Route path="/" element={<MainPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/preferences" element={<PreferencesPage />} />
-      {isAdmin && (
-        <>
-          <Route path="/uploads" element={<UploadsPage />} />
-          <Route path="/users" element={<UsersPage />} />
-        </>
+    <>
+      {!user ? (
+        <LoginPage />
+      ) : (
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/preferences" element={<PreferencesPage />} />
+          {isAdmin && (
+            <>
+              <Route path="/uploads" element={<UploadsPage />} />
+              <Route path="/users" element={<UsersPage />} />
+            </>
+          )}
+          <Route path="/change_password" element={<ChangePasswordPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       )}
-      <Route path="/change_password" element={<ChangePasswordPage />} />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+    </>
   );
 }

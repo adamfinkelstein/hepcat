@@ -8,7 +8,6 @@ from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from config import config
@@ -18,8 +17,6 @@ mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 ma = Marshmallow()
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
 static_folder = ''  # this global is set in create_app below
 
 # Set this in SocketIO(): max_http_buffer_size
@@ -49,10 +46,6 @@ def create_app(config_name, build_path):
 
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
-
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
-
     from .admin import admin as admin_blueprint
 
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
@@ -70,7 +63,6 @@ def create_app(config_name, build_path):
     moment.init_app(app)
     db.init_app(app)
     ma.init_app(app)
-    login_manager.init_app(app)
     socketio.init_app(
         app,
         async_mode='eventlet' if app.config['USE_EVENTLET'] else 'threading',

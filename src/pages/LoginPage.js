@@ -1,12 +1,16 @@
 import Button from 'react-bootstrap/Button';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSocketIO } from '../contexts/SocketIOContext';
 
 export default function LoginPage() {
-  let [email, setEmail] = useState('');
-  let [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const emailField = useRef();
+  const { socketLogin } = useSocketIO();
 
-  const handleLoginButton = () => {
-    alert('login button pressed. email=' + email + ' password=' + password);
+  const handleLoginButton = (ev) => {
+    ev.preventDefault();
+    socketLogin(email, password);
   };
 
   const handleInputChange = (event) => {
@@ -15,6 +19,14 @@ export default function LoginPage() {
     if (target.name === 'email') setEmail(target.value);
     else if (target.name === 'password') setPassword(target.value);
   };
+
+  useEffect(() => {
+    // set focus on the email field
+    if (emailField.current) {
+      console.log(emailField.current);
+      emailField.current.focus();
+    }
+  }, [emailField]);
 
   return (
     <div className="LoginPage">
@@ -30,6 +42,7 @@ export default function LoginPage() {
               className="form-control mt-1"
               placeholder="Enter email"
               onChange={handleInputChange}
+              ref={emailField}
             />
           </div>
           <div className="form-group mt-3">
