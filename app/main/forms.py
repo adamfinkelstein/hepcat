@@ -5,5 +5,5 @@ from wtforms.validators import DataRequired
 
 # AF: Is this even used?
 class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    name = StringField("What is your name?", validators=[DataRequired()])
+    submit = SubmitField("Submit")

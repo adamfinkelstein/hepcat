@@ -19,19 +19,19 @@ class TestSockets(HepcatTestCase):
         assert self.socket_client.is_connected()
         events = self.socket_client.get_received()
         assert len(events) == 1
-        assert events[0]['name'] == 'server_welcome'
-        assert events[0]['args'][0]['user']['email'] == 'screen@example.com'
+        assert events[0]["name"] == "server_welcome"
+        assert events[0]["args"][0]["user"]["email"] == "screen@example.com"
 
     def test_grid(self):
         self.socket_client.get_received()  # clear receive buffer
-        self.socket_client.emit('user_request_grid')
+        self.socket_client.emit("user_request_grid")
         events = self.socket_client.get_received()
         assert len(events) == 1
-        assert events[0]['name'] == 'server_set_grid'
+        assert events[0]["name"] == "server_set_grid"
 
     def test_invalid_admin_access(self):
         """this test sends an admin event from a regular user account to
         confirm that the user is immediately disconnected."""
         self.socket_client.get_received()  # clear receive buffer
-        self.socket_client.emit('admin_file_upload')
+        self.socket_client.emit("admin_file_upload")
         assert not self.socket_client.is_connected()

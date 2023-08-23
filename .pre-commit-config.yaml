@@ -22,15 +22,15 @@ repos:
 
   # python code formatter
   - repo: https://github.com/psf/black
-    rev: '23.7.0'
+    rev: "23.7.0"
     hooks:
       - id: black
-        args:
-          - --skip-string-normalization
+        # args:
+        #   - --skip-string-normalization
 
   # jinja code formatter
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: 'v1.32.1'
+    rev: "v1.32.1"
     hooks:
       - id: djlint-reformat
         args:
@@ -38,7 +38,7 @@ repos:
 
   # javascript linter
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v8.47.0'
+    rev: "v8.47.0"
     hooks:
       - id: eslint
 
@@ -51,7 +51,7 @@ repos:
 
   # javascript/css/markdown code formatter
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: 'v3.0.2'
+    rev: "v3.0.2"
     hooks:
       - id: prettier
         args:

@@ -3,7 +3,7 @@ from gitinfo import get_git_info
 
 
 def get_git_info_from_repo():
-    keys = 'commit,author,author_date,message'.split(',')
+    keys = "commit,author,author_date,message".split(",")
     info = get_git_info()
     result = {}
     for key in keys:
@@ -13,13 +13,13 @@ def get_git_info_from_repo():
 
 
 def info_to_md(info):
-    result = '\n\n### Git Version\n\n'
+    result = "\n\n### Git Version\n\n"
     for key in info:
-        result += f'* {key}: {info[key]}\n\n'
+        result += f"* {key}: {info[key]}\n\n"
     return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     info = get_git_info_from_repo()
     md = info_to_md(info)
     json_string = json.dumps(info)

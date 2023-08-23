@@ -5,7 +5,7 @@ from ..models import User, ensure_admin
 from .forms import LoginForm
 
 # AF changed this from main.index to app.index and now...
-main_index = 'main.send_static_index'
+main_index = "main.send_static_index"
 
 # @auth.before_app_request
 # def before_request():
@@ -18,7 +18,7 @@ main_index = 'main.send_static_index'
 #         return redirect(url_for('auth.unconfirmed'))
 
 
-@auth.route('/login', methods=['GET', 'POST'])
+@auth.route("/login", methods=["GET", "POST"])
 def login():
     ensure_admin()  # Esure that special (chair) admin exists at login
     form = LoginForm()
@@ -30,21 +30,21 @@ def login():
             # then use that token in user_loader (models.py).
             remember_me = True
             login_user(user, remember_me)
-            next = request.args.get('next')
+            next = request.args.get("next")
             # according to this:
             # https://flask-login.readthedocs.io/en/latest/#login-example
             # we should validate next here. is this sufficient???
             # perhaps always just send to '/' ???
-            if next is None or not next.startswith('/'):
+            if next is None or not next.startswith("/"):
                 next = url_for(main_index)
             return redirect(next)
-        flash('Invalid email or password.')
-    return render_template('auth/login.html', form=form)
+        flash("Invalid email or password.")
+    return render_template("auth/login.html", form=form)
 
 
-@auth.route('/logout')
+@auth.route("/logout")
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.')
+    flash("You have been logged out.")
     return redirect(url_for(main_index))

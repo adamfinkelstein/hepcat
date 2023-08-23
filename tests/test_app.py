@@ -12,13 +12,13 @@ class TestApp(HepcatTestCase):
             cluster.name
             for cluster in Label.query.filter_by(type_enum=LabelType.Cluster)
         ]
-        for cluster in ['a', 'b', 'c', 'd', 'e']:
+        for cluster in ["a", "b", "c", "d", "e"]:
             assert cluster in clusters
         rooms = [room.name for room in Label.query.filter_by(type_enum=LabelType.Room)]
-        for room in ['P', 'A', 'B', 'X', 'Y']:
+        for room in ["P", "A", "B", "X", "Y"]:
             assert room in rooms
         for user in User.query:
-            assert user.rooms in [None, 'AX', 'BX', 'AY', 'BY']
+            assert user.rooms in [None, "AX", "BX", "AY", "BY"]
         for paper in Paper.query:
             assert paper.sort_score != 0.0
         assert History.query.count() == 198

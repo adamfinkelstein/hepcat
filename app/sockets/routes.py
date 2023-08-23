@@ -704,14 +704,14 @@ def io_connect(auth):
     ensure_admin()  # Esure that special (chair) admin exists at login
 
     print(f'Received connection request from {auth.get("email")}')
-    email_lower = auth.get('email', '').lower()
+    email_lower = auth.get("email", "").lower()
     user = User.query.filter_by(email=email_lower).first()
-    if user is None or not user.verify_password(auth.get('password', '')):
+    if user is None or not user.verify_password(auth.get("password", "")):
         # invalid user or password, reject the connection
         return False
 
     # valid user, accept the connection and remember it in the session
-    session['user_id'] = user.id
+    session["user_id"] = user.id
 
     print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
@@ -1238,5 +1238,5 @@ def admin_wipe_database():
     wipe_db_clean()
 
     # log user out
-    session['user_id'] = None
+    session["user_id"] = None
     disconnect()

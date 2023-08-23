@@ -20,22 +20,22 @@ def make_path_if_needed(path):
 
 
 def write_text_to_file(text, filename):
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write(text)
 
 
 def write_data_to_file(data, filename):
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         f.write(data)
 
 
 def read_text_from_file(filename):
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         return f.read()
 
 
 def read_lines_from_file(filename):
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         return f.readlines()
 
 
@@ -61,8 +61,8 @@ def run_cmd(cmd, ignore_errors=False):
     words = cmd.split()
     result = run(words, capture_output=True)
     if result.returncode and not ignore_errors:
-        return False, f'run command error: {result}'
-    return True, ''
+        return False, f"run command error: {result}"
+    return True, ""
 
 
 #######################
@@ -93,7 +93,7 @@ def get_random_user():
 
 
 def get_current_user_or_none():
-    user_id = session.get('user_id')
+    user_id = session.get("user_id")
     if not user_id:
         return None
     return User.query.get(user_id)
