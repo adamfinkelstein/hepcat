@@ -431,7 +431,7 @@ def get_or_create_gq(room):
     if try_sql_commit():
         print(f"created GC with room {room}")
     else:
-        print(f"failed to create GC")
+        print("failed to create GC")
         gq = None
     return gq
 
@@ -579,7 +579,7 @@ def ensure_admin():
 
 
 def dump_users_papers_and_conflicts(title):
-    ### ??? Later: return here, if not in special mode for debugging uploads
+    # ??? Later: return here, if not in special mode for debugging uploads
     num_users = User.query.count()
     num_papers = Paper.query.count()
     num_history = History.query.count()

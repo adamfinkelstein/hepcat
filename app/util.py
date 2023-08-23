@@ -2,7 +2,7 @@ import os
 import random
 from datetime import datetime
 from subprocess import run
-from flask import current_app, session
+from flask import session
 from sqlalchemy.sql import func
 from .models import User, History, HistoryContext
 

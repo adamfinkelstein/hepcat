@@ -7,11 +7,11 @@ from flask import (
     send_file,
     current_app,
 )
-from flask_login import login_user, logout_user
+from flask_login import login_user
 from . import admin
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
-from ..models import wipe_db_clean, User
-from .decorators import admin_required_for_route, super_required_for_route
+from ..models import User
+from .decorators import admin_required_for_route
 
 
 @admin.route("/download_csv/<kind>/<key>")
@@ -31,7 +31,7 @@ def download_results_csv(kind, key):
 def download_zip(key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
-        print(f"getting zip...")
+        print("getting zip...")
         fullpath = write_zip_of_all_csvs()
         if fullpath:
             return send_file(fullpath, as_attachment=True)

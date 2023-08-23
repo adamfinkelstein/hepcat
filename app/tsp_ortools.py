@@ -74,9 +74,6 @@ def write_solution(nodes, fname):
     write_text_to_file(content, fname)
 
 
-########## ORTOOLS ##########
-
-
 def ortools_pack_data(distance_matrix):
     data = {}
     data["distance_matrix"] = distance_matrix.tolist()
@@ -124,9 +121,6 @@ def solve_tsp_with_ortools(distance_matrix):
         nodes, _ = ortools_get_tsp_solution(manager, routing, solution)
         return nodes
     return None
-
-
-########## MAIN ##########
 
 
 def main():

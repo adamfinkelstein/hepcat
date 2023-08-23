@@ -244,7 +244,6 @@ def paper_in_room(paper, room):
     return False
 
 
-# const filterListMain = ['Stickie Only','Unseen Only','Dual Only','Journal Only','No Clusters','No Admin Conf','Only Admin Conf']
 def include_paper_in_queue(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters["lowRange"])
@@ -379,13 +378,12 @@ def message_from_set_queue(count, skipped, over_max):
 
 def set_queue_to_paper_list(room, paper_list, solve_tsp):
     gq = clear_queue(room)
-    ### remove any papers already in other queues...
+    # remove any papers already in other queues...
     keepers = []
     skipped = 0
     for paper in paper_list:
         if paper.queue_id:
             skipped += 1
-            # print(f'cannot add paper {paper.nid} to q {gq.id} because it is already in a different q {paper.queue_id}')
         else:
             keepers.append(paper)
     over_max = False
@@ -688,9 +686,9 @@ def get_unconflicted_paper_keys(user):
 
 
 ###########
-###########
-########### Decorator (communication) functions mostly below here:
-###########
+#
+# Decorator (communication) functions mostly below here:
+#
 ###########
 
 
@@ -800,7 +798,7 @@ def admin_bring_to_room(room):
 
 @socketio.on("admin_bring_to_all_rooms")
 @admin_required_for_io
-def admin_bring_to_room():
+def admin_bring_to_all_rooms():
     conflictbots_broadcast_call_to_room(False)
 
 
@@ -826,7 +824,7 @@ def admin_next_paper(room):
 
 @socketio.on("admin_advance_queue")
 @admin_required_for_io
-def admin_next_paper(data):
+def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["newStatus"]
     print(f"admin request to advance queue in {room} with status {status_update}")
@@ -1019,7 +1017,7 @@ def admin_clear_stickies():
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
-        msg = f"No stickies were cleared."
+        msg = "No stickies were cleared."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
 
@@ -1032,10 +1030,10 @@ def admin_add_test_paper():
         msg = f"Added test paper with {count} conflicts."
         msgType = "success"
     elif count == -1:
-        msg = f"No need to add test paper 9999 - it already exists."
+        msg = "No need to add test paper 9999 - it already exists."
         msgType = "warning"
     else:  # -2
-        msg = f"Failed to add test paper, for unknown reason."
+        msg = "Failed to add test paper, for unknown reason."
         msgType = "danger"
     data = {"message": msg, "type": msgType}
     emit("server_send_flasher", data)
@@ -1215,10 +1213,7 @@ def admin_upload_file(file):
         if msg:
             msg = f"File upload ({header_type}) successful. {msg}"
         else:
-            msg = f"Unable to read the uploaded CSV. Perhaps the header is wrong?"
-        which = "uploads"
-        if logout:
-            which = "login"  # need to flash the login page because of logout
+            msg = "Unable to read the uploaded CSV. Perhaps the header is wrong?"
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
     if logout:

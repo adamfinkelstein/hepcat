@@ -104,7 +104,11 @@ def tour_cost(distance_matrix, permutation):
     return cost
 
 
-########### IMPROVE TOUR (CURRENTLY UNUSED) ############
+###########
+#
+# IMPROVE TOUR (CURRENTLY UNUSED)
+#
+###########
 
 
 # mylist = [1, 3, 5, 7, 9]
@@ -118,9 +122,9 @@ def split_tour_at_max_cost(nodes, trans_costs):
     maxindex = np.argmax(trans_costs)
     leftshift = maxindex + 1
     cost = trans_costs[maxindex]
-    print(
-        f"splitting tour at location {maxindex} (leftshift {leftshift}) with max cost {cost}"
-    )
+    msg = f"splitting tour at location {maxindex}"
+    msg += f" (leftshift {leftshift}) with max cost {cost}"
+    print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
     return nodes, trans_costs
@@ -136,9 +140,9 @@ def split_tour_at_last_high_cost(nodes, trans_costs):
         return nodes, trans_costs
     cost = trans_costs[high_index]
     leftshift = high_index + 1
-    print(
-        f"splitting tour at location {high_index} (leftshift {leftshift}) with high cost {cost}"
-    )
+    msg = f"splitting tour at location {high_index}"
+    msg += f" (leftshift {leftshift}) with high cost {cost}"
+    print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
     return nodes, trans_costs
@@ -154,18 +158,20 @@ def split_tour_at_min_pair_node_cost(nodes, node_costs):
     min_i = np.argmin(pair_costs)
     leftshift = min_i + 1
     cost = pair_costs[min_i]
-    print(
-        f"splitting tour at location {min_i} (leftshift {leftshift}) with low pair cost {cost}"
-    )
+    msg = f"splitting tour at location {min_i}"
+    msg += f" (leftshift {leftshift}) with low pair cost {cost}"
+    print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     node_costs = rotate_list_left(node_costs, leftshift)
     return nodes, node_costs
 
 
 # Two potential improvements to a circular tour:
-# 1. Since we do not return to the starting paper, split at the most expensive transition.
-# 2. Once split, we can tour in either order, so possibly reverse to put most conflicts at end
-# later add second opt here
+# 1. Since we do not return to the starting paper,
+#    split at the most expensive transition.
+# 2. Once split, we can tour in either order,
+#    so possibly reverse to put most conflicts at end.
+# (later add second opt here)
 def improve_tour(papers, distance_matrix, nodes):
     trans_costs = tsp_transition_costs(nodes, distance_matrix)
     node_costs = get_node_costs(papers, nodes)
@@ -183,7 +189,11 @@ def improve_tour(papers, distance_matrix, nodes):
     return nodes, distance
 
 
-########### RUN EXTERNAL TSP ############
+###########
+#
+# RUN EXTERNAL TSP
+#
+###########
 
 
 def write_tsp_input(matrix, fname):
@@ -234,7 +244,7 @@ def run_ortools(app_folder, input_file):
     # print(cmd)
     ok, output = run_cmd(cmd, False)
     if ok:
-        print(f"tsp_ortools claimed ok")
+        print("tsp_ortools claimed ok")
     else:
         print(f"tsp_ortools claimed error -- output:\n{output}")
 
@@ -272,7 +282,11 @@ def setup_and_run_tsp_opt(distance_matrix):
     return node_order, solver
 
 
-######## ORDER QUEUE #########
+###########
+#
+# ORDER QUEUE
+#
+# #########
 
 
 def tsp_transition_costs(nodes, distance_matrix):
@@ -318,11 +332,13 @@ def order_q_select_alg(distance_matrix):
     return nodes
 
 
+###########
 #
 # Minipaper Class contains a temp copy of the paper only including
 # conflicts that are the current room. This allows optimization
 # only over conflicts in this room.
 #
+###########
 
 
 class Minipaper:

@@ -395,7 +395,7 @@ def insert_people_room_rows(rows):
             db.session.add(person)
             count += 1
     if not try_sql_commit():
-        msg = f"failed commit when insert people rooms"
+        msg = "failed commit when insert people rooms"
         print(msg)
         flash(msg)
         return 0
@@ -408,24 +408,11 @@ def areas_to_label_names(areas_string):
     return labels
 
 
-#### do we need these three funcs ???
-
-
-def float_str_to_int(s):
-    return int(round(float(s)))
-
-
 def review_str_to_float(s):
     s = s.strip()
     if len(s):
         return float(s)
     return 0
-
-
-def review_str_to_int(s):
-    f = review_str_to_float(s)
-    i = int(round(f))
-    return i
 
 
 def papers_clear_all_scores_and_queues():
@@ -920,7 +907,7 @@ def write_zip_of_all_csvs():
     print(cmd)
     ok, output = run_cmd(cmd, False)
     if ok:
-        print(f"zip claimed ok")
+        print("zip claimed ok")
         return zipfile_path
     else:
         print(f"zip claimed error -- output:\n{output}")
