@@ -7,7 +7,7 @@ from Crypto.Util.Padding import pad
 from flask import current_app, session
 from flask_socketio import Namespace, emit, disconnect
 from sqlalchemy.sql.expression import func
-from .decorators import admin_required_for_io
+from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio
 from ..util import read_text_from_file
 from ..models import (
@@ -32,6 +32,7 @@ from ..models import (
     insert_test_paper,
     try_sql_commit,
     ensure_admin,
+    wipe_db_clean,
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
@@ -1228,3 +1229,14 @@ def admin_upload_file(file):
     else:
         emit_admin_uploads(True)
         emit_admin_queries(True)
+
+
+@socketio.on("admin_wipe_database")
+@super_required_for_io
+def admin_wipe_database():
+    print("about to wipe database...")
+    wipe_db_clean()
+
+    # log user out
+    session['user_id'] = None
+    disconnect()

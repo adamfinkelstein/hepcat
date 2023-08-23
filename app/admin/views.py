@@ -15,7 +15,6 @@ from .decorators import admin_required_for_route, super_required_for_route
 
 
 @admin.route("/download_csv/<kind>/<key>")
-@admin_required_for_route
 def download_results_csv(kind, key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
@@ -29,7 +28,6 @@ def download_results_csv(kind, key):
 
 
 @admin.route("/download_zip/<key>")
-@admin_required_for_route
 def download_zip(key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
@@ -42,24 +40,7 @@ def download_zip(key):
     return abort(404)
 
 
-@admin.route("/wipe_database/<key>")
-@super_required_for_route
-def wipe_database(key):
-    inst = current_app.config["INSTANCE"]
-    if key != inst:
-        msg = "Sorry -- the admin key is wrong. Try logging back in."
-        flash(msg)
-        return abort(404)
-    print("about to wipe database...")
-    wipe_db_clean()
-    msg = "The database was wiped clean. You have been logged out."
-    flash(msg)
-    logout_user()
-    return redirect(url_for("auth.login"))
-
-
 @admin.route("/zoom_conflictbot/<key>")
-@admin_required_for_route
 def zoom_conflictbot(key):
     inst = current_app.config["INSTANCE"]
     if key != inst:

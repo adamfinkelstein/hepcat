@@ -14,7 +14,7 @@ export default function UploadsPage() {
   let flash = flasher['flash'];
 
   const { controlledLog } = useControlledLog();
-  const { socketEmit } = useSocketIO();
+  const { socketEmit, socketLogout } = useSocketIO();
   const { user, adminKey } = useUser();
   const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
@@ -60,7 +60,8 @@ export default function UploadsPage() {
       'Are you really, Really, REALLY sure you want to wipe out the database?';
     if (window.confirm(text) === true) {
       controlledLog('Wipe DB button confirmed. Redirect.');
-      window.location.href = '/admin/wipe_database/' + adminKey;
+      socketEmit('admin_wipe_database');
+      socketLogout();
     } else {
       controlledLog('Wipe DB button canceled.');
     }

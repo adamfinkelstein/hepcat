@@ -16,7 +16,7 @@ export default function SocketIOContext({ children }) {
   const socketLogout = React.useCallback(() => {
     setAuth(null);
     setSocket(null);
-  });
+  }, []);
 
   const socketEmit = React.useCallback(
     (message, data) => {
@@ -42,10 +42,15 @@ export default function SocketIOContext({ children }) {
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
     const s = socketIOClient(endpt, { auth });
     setSocket(s);
+
+    s.on('disconnect', () => {
+      socketLogout();
+    });
+
     return () => {
       s.disconnect();
     };
-  }, [auth]);
+  }, [auth, socketLogout]);
 
   return (
     <socketIOContext.Provider
