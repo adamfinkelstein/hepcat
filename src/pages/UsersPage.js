@@ -51,14 +51,12 @@ export default function UsersPage() {
 
   const switchUserFunc = (user) => {
     const name = user.full_name;
-    const hrefPrefix = '/admin/switch_user/';
-    const switchURL = hrefPrefix + user.email + '/' + adminKey;
     return () => {
       let text =
         'Are you really sure you want to switch to become user ' + name + '?';
       if (window.confirm(text) === true) {
-        controlledLog('Switch user confirmed. Redirect.');
-        window.location.href = switchURL;
+        controlledLog('Switch user confirmed. Emit message.');
+        socketEmit('admin_become_user', user.email);
       } else {
         controlledLog('Switch user canceled.');
       }

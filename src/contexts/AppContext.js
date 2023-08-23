@@ -299,7 +299,8 @@ export default function AppContext({ children }) {
 
     const receiveLogout = () => {
       controlledLog('got request to logout');
-      window.location.href = '/auth/logout';
+      // AF??? should disconnect and flash message and go to login
+      // window.location.href = '/auth/logout';
       // maybe: flash(data.message, data.type, data.which)
     };
 

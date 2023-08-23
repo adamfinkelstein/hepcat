@@ -43,6 +43,7 @@ export default function LoginPage() {
             <input
               name="email"
               type="email"
+              autocomplete="username"
               value={email}
               className="form-control mt-1"
               placeholder="Enter email"
@@ -55,6 +56,7 @@ export default function LoginPage() {
             <input
               name="password"
               type="password"
+              autocomplete="current-password"
               value={password}
               className="form-control mt-1"
               placeholder="Enter password"

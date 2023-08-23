@@ -30,6 +30,7 @@ class HepcatTestCase(unittest.TestCase):
         self.app_ctx.pop()
 
     def login(self, email="screen@example.com", password="screen"):
+        # AF??? Need to change to socket login...?
         response = self.client.post(
             "/auth/login",
             data={

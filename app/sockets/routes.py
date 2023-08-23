@@ -685,32 +685,14 @@ def get_unconflicted_paper_keys(user):
     return unconficted
 
 
-###########
-#
-# Decorator (communication) functions mostly below here:
-#
-###########
-
-
 def broadcast_admin_alert(title, body):
     data = {"title": title, "body": body, "admin_only": True}
     emit("server_send_alert", data, broadcast=True)
 
 
-@socketio.on("connect")
-def io_connect(auth):
-    ensure_admin()  # Esure that special (chair) admin exists at login
-
-    print(f'Received connection request from {auth.get("email")}')
-    email_lower = auth.get("email", "").lower()
-    user = User.query.filter_by(email=email_lower).first()
-    if user is None or not user.verify_password(auth.get("password", "")):
-        # invalid user or password, reject the connection
-        return False
-
-    # valid user, accept the connection and remember it in the session
+def login_user_and_send_welcome(user):
+    # remember user in the session
     session["user_id"] = user.id
-
     print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
@@ -727,6 +709,37 @@ def io_connect(auth):
     if user.role_is_admin:
         emit_admin_uploads(False)
         emit_admin_queries(False)
+
+
+###########
+#
+# Decorator (communication) functions mostly below here:
+#
+###########
+
+
+@socketio.on("connect")
+def io_connect(auth):
+    ensure_admin()  # Ensure that special (chair) admin exists at login
+
+    print(f'Received connection request from {auth.get("email")}')
+    email_lower = auth.get("email", "").lower()
+    user = User.query.filter_by(email=email_lower).first()
+    if user is None or not user.verify_password(auth.get("password", "")):
+        # invalid user or password, reject the connection
+        return False
+    # valid user, accept the connection and send welcome
+    login_user_and_send_welcome(user)
+
+
+@socketio.on("admin_become_user")
+@admin_required_for_io
+def admin_switch_user(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        login_user_and_send_welcome(user)
+    else:
+        disconnect()  # should not happen. perhaps flash a message.
 
 
 @socketio.on("user_ping")

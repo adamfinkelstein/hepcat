@@ -44,9 +44,6 @@ export default function HeaderBar() {
                 <NavDropdown.Item as={NavLink} to="about">
                   About
                 </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="login">
-                  Login
-                </NavDropdown.Item>
                 <NavDropdown.Item as={NavLink} to="preferences">
                   Preferences
                 </NavDropdown.Item>
