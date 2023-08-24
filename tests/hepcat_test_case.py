@@ -1,6 +1,6 @@
 import os
 import unittest
-from app import create_app, db
+from app import create_app, db, socketio
 from app.uploads import read_csv
 
 
@@ -30,14 +30,10 @@ class HepcatTestCase(unittest.TestCase):
         self.app_ctx.pop()
 
     def login(self, email="screen@example.com", password="screen"):
-        # AF??? Need to change to socket login...?
-        response = self.client.post(
-            "/auth/login",
-            data={
-                "email": email,
-                "password": password,
-            },
-            follow_redirects=True,
+        client = socketio.test_client(
+            self.app,
+            auth={"email": email, "password": password},
+            flask_test_client=self.client,
         )
-        assert response.status_code == 200
-        assert b"<title>Hepcat - Login</title>" not in response.data
+        assert client.is_connected()
+        return client

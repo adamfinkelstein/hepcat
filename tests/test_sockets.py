@@ -1,14 +1,10 @@
-from app import socketio
 from tests.hepcat_test_case import HepcatTestCase
 
 
 class TestSockets(HepcatTestCase):
     def setUp(self):
         super().setUp()
-        self.login()
-        self.socket_client = socketio.test_client(
-            self.app, flask_test_client=self.client
-        )
+        self.socket_client = self.login()
 
     def tearDown(self):
         if self.socket_client.is_connected():
