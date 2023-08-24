@@ -21,7 +21,7 @@ export default function UsersPage() {
   // let flash = flasher["flash"]
 
   const { socketEmit } = useSocketIO();
-  const { allUsers, adminKey } = useUser();
+  const { allUsers } = useUser();
   const noSuper = allUsers.filter((user) => user.role_name !== 'Super');
   const { controlledLog } = useControlledLog();
   const pingEnv = process.env.REACT_APP_PING_TIMER_SECS;

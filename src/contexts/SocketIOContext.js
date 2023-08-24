@@ -16,8 +16,13 @@ export default function SocketIOContext({ children }) {
   }, []);
 
   const socketLogout = React.useCallback(() => {
+    window.sessionStorage.removeItem('token');
     setAuth(null);
     setSocket(null);
+  }, []);
+
+  const setToken = React.useCallback((token) => {
+    window.sessionStorage.setItem('token', token);
   }, []);
 
   const socketEmit = React.useCallback(
@@ -39,6 +44,11 @@ export default function SocketIOContext({ children }) {
   React.useEffect(() => {
     if (!auth) {
       // the user did not log in yet
+      // if we have stored a token, then try to use it
+      const token = window.sessionStorage.getItem('token');
+      if (token) {
+        setAuth({ token });
+      }
       return;
     }
     const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
@@ -49,6 +59,8 @@ export default function SocketIOContext({ children }) {
       if (errorCallback) {
         errorCallback('Invalid username or password');
       }
+      setSocket(null);
+      setAuth(null);
     });
 
     s.on('disconnect', () => {
@@ -62,7 +74,7 @@ export default function SocketIOContext({ children }) {
 
   return (
     <socketIOContext.Provider
-      value={{ socketLogin, socketLogout, socket, socketEmit }}
+      value={{ socketLogin, socketLogout, socket, socketEmit, setToken }}
     >
       {children}
     </socketIOContext.Provider>

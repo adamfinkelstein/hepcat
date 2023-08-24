@@ -25,6 +25,9 @@ flask-socketio
 simple-websocket
 eventlet
 
+# authentication
+pyjwt
+
 # web server
 gunicorn
 

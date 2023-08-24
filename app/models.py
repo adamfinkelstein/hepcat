@@ -1,4 +1,5 @@
 from enum import IntEnum
+from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -7,6 +8,7 @@ from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
+import jwt
 from . import db, ma
 
 
@@ -187,6 +189,23 @@ class User(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def generate_token(self, expiration=24 * 60 * 60):  # 24 hour default expiration
+        return jwt.encode(
+            {"user_id": self.id, "exp": int(time() + expiration)},
+            current_app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
+
+    @staticmethod
+    def user_from_token(token):
+        try:
+            data = jwt.decode(
+                token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
+            )
+            return db.session.get(User, data["user_id"])
+        except jwt.PyJWTError:
+            return None
 
     # appears to be unused! might be used for email confirmations.
     # def generate_confirmation_token(self, expiration=3600):

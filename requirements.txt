@@ -119,6 +119,8 @@ psycopg2-binary==2.9.7
     # via -r requirements.in
 pycryptodome==3.18.0
     # via -r requirements.in
+pyjwt==2.8.0
+    # via -r requirements.in
 pyproject-hooks==1.0.0
     # via build
 pytest==7.4.0

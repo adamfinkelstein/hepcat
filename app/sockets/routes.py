@@ -699,7 +699,12 @@ def login_user_and_send_welcome(user):
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
     paper_keys = get_unconflicted_paper_keys(user)
-    data = {"user": user_dump, "about": about_md, "paper_keys": paper_keys}
+    data = {
+        "user": user_dump,
+        "token": user.generate_token(),  # used to remember user after page refreshes
+        "about": about_md,
+        "paper_keys": paper_keys,
+    }
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
         data["all_users"] = all_users
@@ -721,12 +726,24 @@ def login_user_and_send_welcome(user):
 def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
 
-    print(f'Received connection request from {auth.get("email")}')
-    email_lower = auth.get("email", "").lower()
-    user = User.query.filter_by(email=email_lower).first()
-    if user is None or not user.verify_password(auth.get("password", "")):
-        # invalid user or password, reject the connection
+    if "password" in auth:
+        # this is a brand new login
+        print(f'Received connection request from {auth.get("email")}')
+        email_lower = auth.get("email", "").lower()
+        user = User.query.filter_by(email=email_lower).first()
+        if user is None or not user.verify_password(auth.get("password", "")):
+            # invalid user or password, reject the connection
+            return False
+    elif "token" in auth:
+        # this is a refresh login using a JWT token in place of a password
+        user = User.user_from_token(auth.get("token", ""))
+        if not user:
+            return False
+        print(f"Received refresh connection request from {user.email}")
+    else:
+        # this connection does not have sufficient credentials
         return False
+
     # valid user, accept the connection and send welcome
     login_user_and_send_welcome(user)
 

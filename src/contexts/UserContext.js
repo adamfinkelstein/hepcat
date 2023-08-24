@@ -7,7 +7,7 @@ import smartquotes from 'smartquotes';
 const userContext = React.createContext();
 
 export default function UserContext({ children }) {
-  const { socket, socketEmit } = useSocketIO();
+  const { socket, socketEmit, setToken } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
 
@@ -41,6 +41,7 @@ export default function UserContext({ children }) {
           setRoomChoice(data.user.room_name);
           setRoomCalledTo(data.user.room_name);
         }
+        setToken(data.token);
         socketEmit('user_request_grid');
         socketEmit('user_request_queue', roomChoice);
       };
@@ -92,7 +93,16 @@ export default function UserContext({ children }) {
       setAdminKey('');
       setPaperKeys(null);
     }
-  }, [socket, controlledLog, flash, isAdmin, roomChoice, socketEmit, user]);
+  }, [
+    socket,
+    controlledLog,
+    flash,
+    isAdmin,
+    roomChoice,
+    socketEmit,
+    setToken,
+    user,
+  ]);
 
   return (
     <userContext.Provider
