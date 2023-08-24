@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
-from flask_login import UserMixin
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.exc import SQLAlchemyError
@@ -126,7 +125,7 @@ class Role(db.Model):
         return "<Role %r>" % self.name
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)

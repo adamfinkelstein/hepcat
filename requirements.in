@@ -6,7 +6,6 @@ pre-commit
 
 # Flask & core extensions
 flask
-flask-login
 flask-mail
 flask-moment
 flask-cors
