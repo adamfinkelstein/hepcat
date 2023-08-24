@@ -280,11 +280,6 @@ def insert_paper_rows(rows):
             if label and paper:
                 paper.tag_labels.append(label)
                 db.session.add(paper)
-    if not try_sql_commit():
-        msg = "failed commit when insert paper rows (possible duplicate paper id?)"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -302,11 +297,6 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
-    if not try_sql_commit():
-        msg = "failed commit in insert conflict rows"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -323,11 +313,6 @@ def insert_summary_rows(rows):
             paper.summary = summary
             db.session.add(paper)
             count += 1
-    if not try_sql_commit():
-        msg = "failed commit when insert summaries"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -351,11 +336,6 @@ def insert_label_rows(rows, label_type):
             paper.tag_labels.append(label)
             db.session.add(paper)
             count += 1
-    if not try_sql_commit():
-        msg = f"failed commit when insert labels of type {label_type}"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -394,11 +374,6 @@ def insert_people_room_rows(rows):
             person.rooms = rooms
             db.session.add(person)
             count += 1
-    if not try_sql_commit():
-        msg = "failed commit when insert people rooms"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -450,11 +425,6 @@ def insert_chair_score_rows(rows):
         )
         db.session.add(history)
         count += 1
-    if not try_sql_commit():
-        msg = "failed commit in insert chair scores"
-        print(msg)
-        flash(msg)
-        return 0
     reset_all_gqs()
     return count
 
@@ -486,11 +456,6 @@ def insert_history_rows(rows):
         )
         db.session.add(history)
         count += 1
-    if not try_sql_commit():
-        msg = "failed commit in insert history"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -614,25 +579,14 @@ def read_csv(filename):
     header, rows = read_csv_rows(filename)
     header_type, ncols = get_csv_type(header)
     if not header_type or header_type not in csvInsertFunctions:
-        return False, False, ""
+        return None
     rows = omit_extra_cols(rows, ncols)
     func = csvInsertFunctions[header_type]
-    if not func:
-        return False, False, ""  # this should never happen because of test above
     count = func(rows)
-    if count < 0:
-        return "already_sent_flash_msg", False, ""
     delete_prev_file_uploads(header_type)
     upload = FileUpload(file=header_type, count=count)
     db.session.add(upload)
-    if not try_sql_commit():
-        msg = "failed commit in add file upload record"
-        print(msg)
-    msg = dump_users_papers_and_conflicts("After Upload")
-    if header_type == "users":
-        msg += " You have been logged out because users were updated."
-        return msg, True, header_type
-    return msg, False, header_type
+    return header_type
 
 
 def pending_uploads(uploads):
@@ -656,8 +610,8 @@ def save_and_read_csv(data, filename):
     # file.save(fullpath) # when it was a file upload
     write_data_to_file(data, fullpath)
     # flash('saved csv file here: '+fullpath)
-    msg, logout, header_type = read_csv(fullpath)
-    return msg, logout, header_type
+    header_type = read_csv(fullpath)
+    return header_type
 
 
 def get_paper_conflicts(paper):

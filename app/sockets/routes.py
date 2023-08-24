@@ -26,6 +26,7 @@ from ..models import (
     GlobQueue,
     GlobQueueSchema,
     all_queue_rooms,
+    dump_users_papers_and_conflicts,
     get_or_create_gq,
     status_str_to_enum,
     context_str_to_enum,
@@ -1222,22 +1223,25 @@ def emit_admin_uploads(broadcast):
 def admin_upload_file(file):
     print("admin_file_upload")
     filename = "upload.csv"
-    msg, logout, header_type = save_and_read_csv(file, filename)
-    if msg != "already_sent_flash_msg":
-        if msg:
-            msg = f"File upload ({header_type}) successful. {msg}"
-        else:
-            msg = "Unable to read the uploaded CSV. Perhaps the header is wrong?"
+    header_type = save_and_read_csv(file, filename)
+    if header_type and not try_sql_commit():
+        header_type = None
+    if not header_type:
+        msg = "Unable to read the uploaded CSV. Perhaps the header is wrong?"
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
-    if logout:
+    emit_admin_uploads(True)
+    emit_admin_queries(True)
+    if header_type == "users":
         emit("server_logout_user", broadcast=True)  # everyone
     elif header_type in ["chair_scores", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
     else:
-        emit_admin_uploads(True)
-        emit_admin_queries(True)
+        msg = dump_users_papers_and_conflicts("After Upload")
+        msg = f"File upload ({header_type}) successful. {msg}"
+        data = {"message": msg, "type": "success"}
+        emit("server_send_flasher", data)
 
 
 @socketio.on("admin_wipe_database")

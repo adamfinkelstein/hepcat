@@ -445,10 +445,6 @@ def reset_gq(room):
     gq.current = -1
     gq.current_show = False
     db.session.add(gq)
-    if try_sql_commit():
-        print(f"reset GQ in room {room}")
-    else:
-        print(f"failed to reset GQ in room {room}")
 
 
 ######################
