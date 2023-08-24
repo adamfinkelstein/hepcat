@@ -693,12 +693,10 @@ def broadcast_admin_alert(title, body):
 def login_user_and_send_welcome(user):
     # remember user in the session
     session["user_id"] = user.id
+
     print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
-    # print(about_md)
-    # config_vars = get_react_env_vars()
-    # later: 'config': config_vars }
     paper_keys = get_unconflicted_paper_keys(user)
     data = {"user": user_dump, "about": about_md, "paper_keys": paper_keys}
     if user.role_is_admin:
@@ -734,12 +732,15 @@ def io_connect(auth):
 
 @socketio.on("admin_become_user")
 @admin_required_for_io
-def admin_switch_user(email):
+def admin_become_user(email):
     user = User.query.filter_by(email=email).first()
     if user:
         login_user_and_send_welcome(user)
     else:
-        disconnect()  # should not happen. perhaps flash a message.
+        # should not happen. log user out.
+        # perhaps should also flash a message.
+        session["user_id"] = None
+        disconnect()
 
 
 @socketio.on("user_ping")

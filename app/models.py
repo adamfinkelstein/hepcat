@@ -630,6 +630,9 @@ def sql_drop_table(table):
 
 
 def drop_and_rebuild_tables(tables_to_drop=None):
+    """Drops given database tables and then rebuilds everything.
+    Table names are listed in string argument, comma separated.
+    If argument is None (or omitted or empty), all tables dropped."""
     all_tables = get_table_names()
     if tables_to_drop:
         drop_list = tables_to_drop.split(",")
@@ -644,31 +647,18 @@ def drop_and_rebuild_tables(tables_to_drop=None):
         else:
             print(f"no need to drop non-existant table {table}")
     print("having dropped tables, about to rebuild...")
-    if not try_sql_commit():
+    if not try_sql_commit():  # needed before create_all below
         print("try_sql_commit error")
     db.create_all()
     print("...rebuild done.")
-    title = f"\nAfter dropping tables {tables_to_drop}"
+    title = f"After dropping tables {tables_to_drop}"
     output += dump_users_papers_and_conflicts(title)
     return output
 
 
-def wipe_db_clean_1():
-    if db_is_sqlite():
-        print("wipe_db_clean: about to drop all db tables (sqlite)...")
-        db.drop_all()
-        print("wipe_db_clean: about to create all db tables (sqlite)...")
-        db.create_all()
-    else:
-        drop_and_rebuild_tables()
-
-
-# THIS FAILS ON POSTGRES!
 def wipe_db_clean():
-    db.close_all_sessions()
-
+    db.close_all_sessions()  # needed before drop_all below
     print("wipe_db_clean: about to drop all db tables...")
     db.drop_all()
-    # never reaches the following print statement on postgres:
     print("wipe_db_clean: about to create all db tables...")
     db.create_all()
