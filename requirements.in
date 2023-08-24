@@ -20,10 +20,6 @@ psycopg2-binary
 flask-marshmallow
 marshmallow-sqlalchemy
 
-# forms
-flask-wtf
-email-validator
-
 # Socket.IO
 flask-socketio
 simple-websocket
