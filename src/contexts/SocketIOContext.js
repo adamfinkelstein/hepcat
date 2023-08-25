@@ -57,7 +57,11 @@ export default function SocketIOContext({ children }) {
 
     s.on('connect_error', (err) => {
       if (errorCallback) {
-        errorCallback('Invalid username or password');
+        errorCallback(
+          err.message.indexOf('rejected') !== -1
+            ? 'Invalid username or password.'
+            : 'The server appears to be offline. Please try again later.',
+        );
       }
       setSocket(null);
       setAuth(null);
