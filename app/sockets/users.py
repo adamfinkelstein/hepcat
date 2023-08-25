@@ -1,4 +1,5 @@
 from flask import request, session
+from flask_socketio import call, disconnect
 from app import db
 from app.models import User
 
@@ -28,6 +29,22 @@ def user_connect(auth):
         return False
 
     # store the user_id and sid in the global dictionary
+    if user.id in users:
+        # another logged in instance of this user exists, so we send an error
+        # message and disconnect it
+        print(
+            f"User {user.email} is already connected, disconnecting previous instance"
+        )
+        call(
+            "server_send_flasher",
+            {
+                "message": "This account logged in from another location",
+                "type": "danger",
+            },
+            to=users[user.id],
+            timeout=1,
+        )
+        disconnect(sid=users[user.id], namespace="/")
     users[user.id] = request.sid
 
     # store the user_id in the session
