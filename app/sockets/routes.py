@@ -694,7 +694,7 @@ def get_unconflicted_paper_keys(user):
 
 def broadcast_admin_alert(title, body):
     data = {"title": title, "body": body, "admin_only": True}
-    emit("server_send_alert", data, broadcast=True)
+    emit("server_send_alert", data, room="admin")
 
 
 def login_user_and_send_welcome(user):
@@ -1136,7 +1136,7 @@ def emit_admin_queries(broadcast):
     queries = Query.query.all()
     names = [query.name for query in queries]
     names.sort()
-    emit("server_send_queries", names, broadcast=broadcast)
+    emit("server_send_queries", names, room="admin")
 
 
 #################################################
@@ -1229,7 +1229,7 @@ def emit_admin_uploads(broadcast):
     uploads_dump = uploads_schema.dump(uploads)
     pending = pending_uploads(uploads)
     data = {"uploads": uploads_dump, "pending": pending}
-    emit("server_file_uploads", data, broadcast=broadcast)
+    emit("server_file_uploads", data, room="admin")
 
 
 @socketio.on("admin_file_upload")
