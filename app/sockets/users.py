@@ -69,6 +69,13 @@ def user_disconnect():
     session.pop("user_id", None)
 
 
+def disconnect_all_users():
+    for user_id in users.copy():
+        if request.sid != users[user_id]:
+            disconnect(sid=users[user_id], namespace="/")
+    disconnect()  # disconnect the current user last
+
+
 def get_current_user_or_none():
     user_id = session.get("user_id")
     if not user_id:

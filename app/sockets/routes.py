@@ -12,6 +12,7 @@ from .users import (
     user_disconnect,
     get_current_user_or_none,
     user_is_connected,
+    disconnect_all_users,
 )
 from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio
@@ -1247,7 +1248,7 @@ def admin_upload_file(file):
     emit_admin_uploads(True)
     emit_admin_queries(True)
     if header_type == "users":
-        emit("server_logout_user", broadcast=True)  # everyone
+        disconnect_all_users()
     elif header_type in ["chair_scores", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
@@ -1264,6 +1265,5 @@ def admin_wipe_database():
     print("about to wipe database...")
     wipe_db_clean()
 
-    # log user out
-    session["user_id"] = None
-    disconnect()
+    # log all users out
+    disconnect_all_users()
