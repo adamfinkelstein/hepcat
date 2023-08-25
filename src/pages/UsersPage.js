@@ -1,6 +1,7 @@
 import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import Badge from 'react-bootstrap/Badge';
 // import {useState} from 'react'
 // import {useFlasher} from '../contexts/FlasherContext'
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
@@ -44,11 +45,6 @@ export default function UsersPage() {
     return user.role_is_admin ? 'admin-user' : '';
   };
 
-  const handleRefreshClick = () => {
-    socketEmit('user_request_refresh');
-    controlledLog('user_request_refresh');
-  };
-
   const switchUserFunc = (user) => {
     const name = user.full_name;
     return () => {
@@ -69,13 +65,6 @@ export default function UsersPage() {
         <p>&nbsp;</p>
         <Stack direction="horizontal">
           <span className="font-size-1">All Users&nbsp;&nbsp;</span>
-          <Button
-            className="refresh-users-button"
-            variant="primary"
-            onClick={() => handleRefreshClick()}
-          >
-            Refresh Data
-          </Button>
         </Stack>
         <Stack direction="vertical">
           {noSuper.map((user) => {
@@ -89,6 +78,12 @@ export default function UsersPage() {
                   Become
                 </Button>
                 <span className={userClasses(user)}>{userLine(user)}</span>
+                {user.is_online && (
+                  <>
+                    &nbsp;
+                    <Badge bg="success">Online</Badge>
+                  </>
+                )}
               </div>
             );
           })}

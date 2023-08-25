@@ -5,8 +5,14 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from flask import current_app, session
-from flask_socketio import Namespace, emit, disconnect
+from flask_socketio import Namespace, emit, disconnect, join_room
 from sqlalchemy.sql.expression import func
+from .users import (
+    user_connect,
+    user_disconnect,
+    get_current_user_or_none,
+    user_is_connected,
+)
 from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio
 from ..util import read_text_from_file
@@ -37,7 +43,6 @@ from ..models import (
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
-    get_current_user_or_none,
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
@@ -138,6 +143,7 @@ def get_user_list_dump(users, sort=True):
     list_dump = []
     for user in user_list:
         user_dump = user_schema.dump(user)
+        user_dump["is_online"] = user_is_connected(user.id)
         list_dump.append(user_dump)
     return list_dump
 
@@ -726,26 +732,18 @@ def login_user_and_send_welcome(user):
 def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
 
-    if "password" in auth:
-        # this is a brand new login
-        print(f'Received connection request from {auth.get("email")}')
-        email_lower = auth.get("email", "").lower()
-        user = User.query.filter_by(email=email_lower).first()
-        if user is None or not user.verify_password(auth.get("password", "")):
-            # invalid user or password, reject the connection
-            return False
-    elif "token" in auth:
-        # this is a refresh login using a JWT token in place of a password
-        user = User.user_from_token(auth.get("token", ""))
-        if not user:
-            return False
-        print(f"Received refresh connection request from {user.email}")
-    else:
-        # this connection does not have sufficient credentials
+    user = user_connect(auth)
+    if not user:
         return False
+
+    if user.role_is_admin:
+        join_room("admin")
 
     # valid user, accept the connection and send welcome
     login_user_and_send_welcome(user)
+
+    all_users = get_all_user_list_dump()
+    emit("server_refresh_users", all_users, room="admin")
 
 
 @socketio.on("admin_become_user")
@@ -807,11 +805,10 @@ def user_request_refresh():
 
 @socketio.on("disconnect")
 def io_disconnect():
-    user_name = "Unknown User"
-    user = get_current_user_or_none()
-    if user:
-        user_name = user.full_name
-    print(f"{user_name} - client disconnected")
+    user_disconnect()
+
+    all_users = get_all_user_list_dump()
+    emit("server_refresh_users", all_users, room="admin")
 
 
 @socketio.on("admin_bring_to_room")
