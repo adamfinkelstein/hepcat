@@ -722,6 +722,21 @@ def login_user_and_send_welcome(user):
 ###########
 
 
+@socketio.on_error()
+def socketio_error_handler(exc):
+    current_app.logger.exception("An error has occurred in a Socket.IO handler")
+    emit(
+        "server_send_flasher",
+        {
+            "message": (
+                "An unexpected server error has occurred. Please notify "
+                "an administrator."
+            ),
+            "type": "danger",
+        },
+    )
+
+
 @socketio.on("connect")
 def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
