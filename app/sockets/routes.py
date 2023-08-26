@@ -4,7 +4,7 @@ import json
 import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from flask import current_app
+from flask import current_app, request
 from flask_socketio import Namespace, emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io, super_required_for_io
@@ -1163,7 +1163,7 @@ def emit_admin_queries(broadcast):
     queries = Query.query.all()
     names = [query.name for query in queries]
     names.sort()
-    emit("server_send_queries", names, room="admin")
+    emit("server_send_queries", names, room="admin" if broadcast else request.sid)
 
 
 #################################################
