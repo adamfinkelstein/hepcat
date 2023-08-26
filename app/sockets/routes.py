@@ -4,7 +4,7 @@ import json
 import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from flask import current_app, request
+from flask import current_app
 from flask_socketio import Namespace, emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io, super_required_for_io
@@ -1163,7 +1163,10 @@ def emit_admin_queries(broadcast):
     queries = Query.query.all()
     names = [query.name for query in queries]
     names.sort()
-    emit("server_send_queries", names, room="admin" if broadcast else request.sid)
+    if broadcast:
+        emit("server_send_queries", names, room="admin")
+    else:  # otherwise just to the client of this request
+        emit("server_send_queries", names)
 
 
 #################################################
@@ -1256,7 +1259,10 @@ def emit_admin_uploads(broadcast):
     uploads_dump = uploads_schema.dump(uploads)
     pending = pending_uploads(uploads)
     data = {"uploads": uploads_dump, "pending": pending}
-    emit("server_file_uploads", data, room="admin")
+    if broadcast:
+        emit("server_file_uploads", data, room="admin")
+    else:  # otherwise just to the client of this request
+        emit("server_file_uploads", data)
 
 
 @socketio.on("admin_file_upload")
