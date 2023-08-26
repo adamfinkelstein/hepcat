@@ -4,19 +4,30 @@ import json
 import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from flask import current_app, session
-from flask_socketio import Namespace, emit, disconnect, join_room
+from flask import current_app
+from flask_socketio import Namespace, emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
+from .decorators import admin_required_for_io, super_required_for_io
+from .. import db, socketio
+from ..orderq import order_q, get_enter_leave_conf_sets
+from ..uploads import save_and_read_csv, pending_uploads
 from .users import (
     user_connect,
     user_disconnect,
-    get_current_user_or_none,
-    user_is_connected,
+    user_has_socket,
+    forget_user_socket,
     disconnect_all_users,
+    user_record_socket_and_session,
+    user_disconnect_if_already_connected,
 )
-from .decorators import admin_required_for_io, super_required_for_io
-from .. import db, socketio
-from ..util import read_text_from_file
+from ..util import (
+    read_text_from_file,
+    get_user_id_from_session,
+    get_current_user_or_none,
+    get_latest_history,
+    get_latest_history_status,
+    get_latest_room_history_status,
+)
 from ..models import (
     User,
     Paper,
@@ -42,13 +53,6 @@ from ..models import (
     ensure_admin,
     wipe_db_clean,
 )
-from ..orderq import order_q, get_enter_leave_conf_sets
-from ..util import (
-    get_latest_history,
-    get_latest_history_status,
-    get_latest_room_history_status,
-)
-from ..uploads import save_and_read_csv, pending_uploads
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -144,7 +148,7 @@ def get_user_list_dump(users, sort=True):
     list_dump = []
     for user in user_list:
         user_dump = user_schema.dump(user)
-        user_dump["is_online"] = user_is_connected(user.id)
+        user_dump["is_online"] = user_has_socket(user.id)
         list_dump.append(user_dump)
     return list_dump
 
@@ -699,9 +703,6 @@ def broadcast_admin_alert(title, body):
 
 
 def login_user_and_send_welcome(user):
-    # remember user in the session
-    session["user_id"] = user.id
-
     print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
@@ -720,6 +721,8 @@ def login_user_and_send_welcome(user):
     if user.role_is_admin:
         emit_admin_uploads(False)
         emit_admin_queries(False)
+    all_users = get_all_user_list_dump()
+    emit("server_refresh_users", all_users, room="admin")
 
 
 ###########
@@ -747,32 +750,40 @@ def socketio_error_handler(exc):
 @socketio.on("connect")
 def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
-
     user = user_connect(auth)
     if not user:
         return False
-
     if user.role_is_admin:
         join_room("admin")
-
     # valid user, accept the connection and send welcome
     login_user_and_send_welcome(user)
-
-    all_users = get_all_user_list_dump()
-    emit("server_refresh_users", all_users, room="admin")
 
 
 @socketio.on("admin_become_user")
 @admin_required_for_io
 def admin_become_user(email):
-    user = User.query.filter_by(email=email).first()
-    if user:
-        login_user_and_send_welcome(user)
-    else:
-        # should not happen. log user out.
-        # perhaps should also flash a message.
-        session["user_id"] = None
-        disconnect()
+    new_user = User.query.filter_by(email=email).first()
+    if not new_user:
+        # this should never happen.
+        # maybe rare race condition on old user list at client.
+        msg = f"Failed attempt to switch to unknown user ({email})."
+        print(msg)
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+        return
+    # forget socket under old user id
+    old_user_id = get_user_id_from_session()
+    forget_user_socket(old_user_id)
+    # new user may or may not be admin.
+    # if yes: already were in admin room - stay.
+    # if not: need to leave admin room.
+    if not new_user.role_is_admin:
+        leave_room("admin")
+    # ensure nobody else logged in elsewhere as this new user
+    user_disconnect_if_already_connected(new_user)
+    # record new user socket and session, then emit welcome
+    user_record_socket_and_session(new_user)
+    login_user_and_send_welcome(new_user)
 
 
 @socketio.on("user_ping")

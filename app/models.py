@@ -190,39 +190,32 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_token(self, expiration=24 * 60 * 60):  # 24 hour default expiration
-        return jwt.encode(
-            {"user_id": self.id, "exp": int(time() + expiration)},
-            current_app.config["SECRET_KEY"],
-            algorithm="HS256",
-        )
+    def generate_token(self, expire_in_secs=0):
+        if not expire_in_secs:
+            # expire_in_secs = 7 * 24 * 60 * 60  # default one week
+            expire_in_secs = 10
+        expire_in_secs += int(time())  # time from now
+        data = {"user_id": self.id, "exp": expire_in_secs}
+        key = current_app.config["SECRET_KEY"]
+        token = jwt.encode(data, key, algorithm="HS256")
+        return token
 
     @staticmethod
     def user_from_token(token):
+        if not token:
+            return None
         try:
-            data = jwt.decode(
-                token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
-            )
-            return db.session.get(User, data["user_id"])
+            key = current_app.config["SECRET_KEY"]
+            data = jwt.decode(token, key, algorithms=["HS256"])
+            user_id = data["user_id"]
+            expires = data["exp"]
+            time_now = int(time())
+            if time_now > expires:
+                return None
+            user = db.session.get(User, user_id)
+            return user
         except jwt.PyJWTError:
             return None
-
-    # appears to be unused! might be used for email confirmations.
-    # def generate_confirmation_token(self, expiration=3600):
-    #     s = Serializer(current_app.config['SECRET_KEY'], expiration)
-    #     return s.dumps({'confirm': self.id}).decode('utf-8')
-
-    # def confirm(self, token):
-    #     s = Serializer(current_app.config['SECRET_KEY'])
-    #     try:
-    #         data = s.loads(token.encode('utf-8'))
-    #     except:
-    #         return False
-    #     if data.get('confirm') != self.id:
-    #         return False
-    #     self.confirmed = True
-    #     db.session.add(self)
-    #     return True
 
     def __repr__(self):
         return "<User %r>" % self.full_name
@@ -655,6 +648,7 @@ def drop_and_rebuild_tables(tables_to_drop=None):
         drop_list = all_tables
     title = f"Before dropping tables {tables_to_drop}"
     output = dump_users_papers_and_conflicts(title)
+    # We should call db.close_all_sessions() here...
     for table in drop_list:
         if table in all_tables:
             sql_drop_table(table)

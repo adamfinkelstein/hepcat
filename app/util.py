@@ -7,6 +7,35 @@ from sqlalchemy.sql import func
 from app import db
 from .models import User, History, HistoryContext
 
+#######################
+#
+# User sessions
+#
+#######################
+
+debug_session = False
+
+
+def dprint(msg):
+    if debug_session:
+        print(msg)
+
+
+def put_user_id_in_session(user_id):
+    dprint(f"session: user is now: {user_id}")
+    session["user_id"] = user_id
+
+
+def get_user_id_from_session():
+    user_id = session.get("user_id")
+    dprint(f"session: got user id: {user_id}")
+    return user_id
+
+
+def clear_user_id_in_session():
+    dprint("session: clear user id")
+    session.pop("user_id", None)
+
 
 #######################
 #
@@ -94,7 +123,7 @@ def get_random_user():
 
 
 def get_current_user_or_none():
-    user_id = session.get("user_id")
+    user_id = get_user_id_from_session()
     if not user_id:
         return None
     return db.session.get(User, user_id)

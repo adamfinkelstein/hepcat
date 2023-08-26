@@ -1,55 +1,116 @@
-from flask import request, session
+from flask import request
 from flask_socketio import call, disconnect
-from app import db
 from app.models import User
+from ..util import (
+    get_current_user_or_none,
+    get_user_id_from_session,
+    put_user_id_in_session,
+    clear_user_id_in_session,
+)
+
+#####################
+#
+# USER SOCKET DICT
+#
+#####################
+
 
 # global dictionary of clients
 # key: user_id
 # value: socketio session id (sid)
-users = {}
+user_sockets = {}
+debug_user_sockets = False
+
+
+def dprint(msg):
+    if debug_user_sockets:
+        print(msg)
+
+
+def users_with_sockets():
+    user_ids = user_sockets.keys()
+    dprint(f"user_sockets: got {len(user_ids)} user ids")
+    return user_ids
+
+
+def user_has_socket(user_id):
+    has_socket = user_id in user_sockets
+    # this prints too often:
+    # dprint(f"user_sockets: user {user_id} has socket: {has_socket}")
+    return has_socket
+
+
+def record_user_socket(user_id, sid):
+    dprint(f"user_sockets: user {user_id} record socket: {sid}")
+    user_sockets[user_id] = sid
+
+
+def get_user_socket(user_id):
+    if user_id in user_sockets:
+        sid = user_sockets[user_id]
+        print(f"user_sockets: user {user_id} get socket: {sid}")
+        return sid
+    dprint(f"user_sockets: user {user_id} does not have socket")
+    return None
+
+
+def forget_user_socket(user_id):
+    dprint(f"user_sockets: forget socket for user {user_id}")
+    if user_id in user_sockets:
+        del user_sockets[user_id]
+
+
+#####################
+#
+# USER CONNECT and DISCONNECT
+#
+#####################
+
+
+def user_record_socket_and_session(user):
+    record_user_socket(user.id, request.sid)
+    put_user_id_in_session(user.id)
+
+
+def user_disconnect_if_already_connected(user):
+    if not user_has_socket(user.id):
+        return  # no action needed
+    # a logged in instance of this user is already connected.
+    # send error message and disconnect them.
+    print(f"User {user.email} already connected. Disconnect previous instance.")
+    user_socket = get_user_socket(user.id)
+    data = {
+        "message": "This account logged in from another location",
+        "type": "danger",
+    }
+    call("server_send_flasher", data, to=user_socket, timeout=1)
+    disconnect(sid=user_socket, namespace="/")
+    forget_user_socket(user.id)
 
 
 def user_connect(auth):
     if "password" in auth:
         # this is a brand new login
-        print(f'Received connection request from {auth.get("email")}')
-        email_lower = auth.get("email", "").lower()
+        email = auth.get("email", "")
+        password = auth.get("password", "")
+        print(f"Received connection request from {email}")
+        email_lower = email.lower()
         user = User.query.filter_by(email=email_lower).first()
-        if user is None or not user.verify_password(auth.get("password", "")):
+        if user is None or not user.verify_password(password):
             # invalid user or password, reject the connection
             return False
     elif "token" in auth:
         # this is a refresh login using a JWT token in place of a password
-        user = User.user_from_token(auth.get("token", ""))
+        token = auth.get("token", "")
+        user = User.user_from_token(token)
         if not user:
             return False
         print(f"Received refresh connection request from {user.email}")
     else:
         # this connection does not have sufficient credentials
         return False
-
-    # store the user_id and sid in the global dictionary
-    if user.id in users:
-        # another logged in instance of this user exists, so we send an error
-        # message and disconnect it
-        print(
-            f"User {user.email} is already connected, disconnecting previous instance"
-        )
-        call(
-            "server_send_flasher",
-            {
-                "message": "This account logged in from another location",
-                "type": "danger",
-            },
-            to=users[user.id],
-            timeout=1,
-        )
-        disconnect(sid=users[user.id], namespace="/")
-    users[user.id] = request.sid
-
-    # store the user_id in the session
-    session["user_id"] = user.id
-
+    user_disconnect_if_already_connected(user)
+    user_record_socket_and_session(user)
     return user
 
 
@@ -61,27 +122,16 @@ def user_disconnect():
     print(f"{user_name} - client disconnected")
 
     # remove the user_id and sid from the global dictionary
-    user_id = session.get("user_id")
-    if user_id in users:
-        del users[user_id]
+    user_id = get_user_id_from_session()
+    forget_user_socket(user_id)
 
     # remove the user_id from the session
-    session.pop("user_id", None)
+    clear_user_id_in_session()
 
 
 def disconnect_all_users():
-    for user_id in users.copy():
-        if request.sid != users[user_id]:
-            disconnect(sid=users[user_id], namespace="/")
+    for user_id in users_with_sockets():
+        user_sid = get_user_socket(user_id)
+        if request.sid != user_sid:  # not current user
+            disconnect(sid=user_sid, namespace="/")
     disconnect()  # disconnect the current user last
-
-
-def get_current_user_or_none():
-    user_id = session.get("user_id")
-    if not user_id:
-        return None
-    return db.session.get(User, user_id)
-
-
-def user_is_connected(user_id):
-    return user_id in users
