@@ -75,10 +75,16 @@ export default function FlashContext({ children }) {
 
   // Socket.IO handler for the server to push a flashed message */
   const receiveFlasher = useCallback(
-    (data) => {
+    (data, cb) => {
       controlledLog('got flasher:');
       controlledLog(data);
       flash(data.message, data.type);
+
+      // the server may request acknowledgement of this message, in that case
+      // invoke the callback
+      if (cb) {
+        cb();
+      }
     },
     [controlledLog, flash],
   );

@@ -5,8 +5,15 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from flask import current_app, session
-from flask_socketio import Namespace, emit, disconnect
+from flask_socketio import Namespace, emit, disconnect, join_room
 from sqlalchemy.sql.expression import func
+from .users import (
+    user_connect,
+    user_disconnect,
+    get_current_user_or_none,
+    user_is_connected,
+    disconnect_all_users,
+)
 from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio
 from ..util import read_text_from_file
@@ -37,7 +44,6 @@ from ..models import (
 )
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..util import (
-    get_current_user_or_none,
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
@@ -138,6 +144,7 @@ def get_user_list_dump(users, sort=True):
     list_dump = []
     for user in user_list:
         user_dump = user_schema.dump(user)
+        user_dump["is_online"] = user_is_connected(user.id)
         list_dump.append(user_dump)
     return list_dump
 
@@ -688,7 +695,7 @@ def get_unconflicted_paper_keys(user):
 
 def broadcast_admin_alert(title, body):
     data = {"title": title, "body": body, "admin_only": True}
-    emit("server_send_alert", data, broadcast=True)
+    emit("server_send_alert", data, room="admin")
 
 
 def login_user_and_send_welcome(user):
@@ -741,26 +748,18 @@ def socketio_error_handler(exc):
 def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
 
-    if "password" in auth:
-        # this is a brand new login
-        print(f'Received connection request from {auth.get("email")}')
-        email_lower = auth.get("email", "").lower()
-        user = User.query.filter_by(email=email_lower).first()
-        if user is None or not user.verify_password(auth.get("password", "")):
-            # invalid user or password, reject the connection
-            return False
-    elif "token" in auth:
-        # this is a refresh login using a JWT token in place of a password
-        user = User.user_from_token(auth.get("token", ""))
-        if not user:
-            return False
-        print(f"Received refresh connection request from {user.email}")
-    else:
-        # this connection does not have sufficient credentials
+    user = user_connect(auth)
+    if not user:
         return False
+
+    if user.role_is_admin:
+        join_room("admin")
 
     # valid user, accept the connection and send welcome
     login_user_and_send_welcome(user)
+
+    all_users = get_all_user_list_dump()
+    emit("server_refresh_users", all_users, room="admin")
 
 
 @socketio.on("admin_become_user")
@@ -822,11 +821,10 @@ def user_request_refresh():
 
 @socketio.on("disconnect")
 def io_disconnect():
-    user_name = "Unknown User"
-    user = get_current_user_or_none()
-    if user:
-        user_name = user.full_name
-    print(f"{user_name} - client disconnected")
+    user_disconnect()
+
+    all_users = get_all_user_list_dump()
+    emit("server_refresh_users", all_users, room="admin")
 
 
 @socketio.on("admin_bring_to_room")
@@ -1154,7 +1152,7 @@ def emit_admin_queries(broadcast):
     queries = Query.query.all()
     names = [query.name for query in queries]
     names.sort()
-    emit("server_send_queries", names, broadcast=broadcast)
+    emit("server_send_queries", names, room="admin")
 
 
 #################################################
@@ -1247,7 +1245,7 @@ def emit_admin_uploads(broadcast):
     uploads_dump = uploads_schema.dump(uploads)
     pending = pending_uploads(uploads)
     data = {"uploads": uploads_dump, "pending": pending}
-    emit("server_file_uploads", data, broadcast=broadcast)
+    emit("server_file_uploads", data, room="admin")
 
 
 @socketio.on("admin_file_upload")
@@ -1265,7 +1263,7 @@ def admin_upload_file(file):
     emit_admin_uploads(True)
     emit_admin_queries(True)
     if header_type == "users":
-        emit("server_logout_user", broadcast=True)  # everyone
+        disconnect_all_users()
     elif header_type in ["chair_scores", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
@@ -1282,6 +1280,5 @@ def admin_wipe_database():
     print("about to wipe database...")
     wipe_db_clean()
 
-    # log user out
-    session["user_id"] = None
-    disconnect()
+    # log all users out
+    disconnect_all_users()
