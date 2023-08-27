@@ -192,8 +192,8 @@ class User(db.Model):
 
     def generate_token(self, expire_in_secs=0):
         if not expire_in_secs:
-            # expire_in_secs = 7 * 24 * 60 * 60  # default one week
-            expire_in_secs = 10
+            # expire_in_secs = 10  # for debugging
+            expire_in_secs = 7 * 24 * 60 * 60  # default one week
         expire_in_secs += int(time())  # time from now
         data = {"user_id": self.id, "exp": expire_in_secs}
         key = current_app.config["SECRET_KEY"]
@@ -208,10 +208,6 @@ class User(db.Model):
             key = current_app.config["SECRET_KEY"]
             data = jwt.decode(token, key, algorithms=["HS256"])
             user_id = data["user_id"]
-            expires = data["exp"]
-            time_now = int(time())
-            if time_now > expires:
-                return None
             user = db.session.get(User, user_id)
             return user
         except jwt.PyJWTError:
