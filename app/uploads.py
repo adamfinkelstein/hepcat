@@ -31,7 +31,6 @@ from .models import (
 
 
 def delete_all_users():
-    dump_users_papers_and_conflicts("Before deleting users")
     users = User.query.all()
     count = len(users)
     # slightly lame optimization: prevents need to logout
@@ -39,24 +38,18 @@ def delete_all_users():
         return
     drop_and_rebuild_tables("conflicts,users,roles")
     # ensure_admin() causes warnings and not needed.
-    dump_users_papers_and_conflicts("After deleting users")
 
 
 def delete_all_papers():
-    dump_users_papers_and_conflicts("Before deleting papers")
     drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues")
     ensure_all_gqs()
-    dump_users_papers_and_conflicts("After deleting papers")
 
 
 def delete_all_conflicts():
-    dump_users_papers_and_conflicts("Before deleting conflicts")
     drop_and_rebuild_tables("conflicts")
-    dump_users_papers_and_conflicts("After deleting conflicts")
 
 
 def delete_all_clusters():
-    dump_users_papers_and_conflicts("Before deleting clusters")
     papers = Paper.query.all()
     for paper in papers:
         # first remove all cluster labels from paper
@@ -67,12 +60,18 @@ def delete_all_clusters():
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_cluster).delete()
     print(f"delete {num_deleted} cluster labels.")
-    dump_users_papers_and_conflicts("After deleting clusters")
+
+
+def delete_all_people_rooms():
+    users = User.query.all()
+    for person in users:
+        person.rooms = None
+        person.in_room = None
+        db.session.add(person)
 
 
 # this function mimics delete_all_clusters above
 def delete_all_paper_rooms():
-    dump_users_papers_and_conflicts("Before deleting paper rooms")
     papers = Paper.query.all()
     for paper in papers:
         # first remove all room labels from paper
@@ -82,13 +81,10 @@ def delete_all_paper_rooms():
             paper.tag_labels = new_labels
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_room).delete()
-    print(f"delete {num_deleted} cluster labels.")
-    dump_users_papers_and_conflicts("After deleting paper rooms")
+    print(f"Deleted {num_deleted} cluster labels for paper rooms.")
 
 
-# 2023?
 def delete_all_labels():
-    dump_users_papers_and_conflicts("Before label deletion")
     # first remove all labels from papers
     labels = Label.query.all()
     for label in labels:
@@ -97,29 +93,38 @@ def delete_all_labels():
     # next delete all labels
     num_deleted = Label.query.delete()
     print(f"Deleted {num_deleted} labels.")
-    dump_users_papers_and_conflicts("After label deletion")
 
 
 # needed when deleting reviews (above)
 def delete_all_history():
-    dump_users_papers_and_conflicts("Before History deletion")
     num_deleted = History.query.delete()
     print(f"Deleted {num_deleted} history entries.")
-    dump_users_papers_and_conflicts("After History deletion")
 
 
-# 2023?
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
-    dump_users_papers_and_conflicts("Before non-BBS History deletion")
     context_bbs = int(HistoryContext.BBS)
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
     print(f"Deleted {num_deleted} history entries.")
-    dump_users_papers_and_conflicts("After non-BBS History deletion")
 
 
-# 2023?
+def papers_clear_all_scores_and_queues():
+    papers = Paper.query.all()
+    for paper in papers:
+        paper.sort_score = 0
+        paper.all_scores = "This paper has no reviews."
+        paper.queue_id = None
+        paper.queue_order = 0
+        db.session.add(paper)
+
+
+def delete_all_chair_scores():
+    delete_all_history()  # clears both bbs status and stickies
+    papers_clear_all_scores_and_queues()
+    reset_all_gqs()
+
+
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
     print(f"Deleted {num_deleted} file upload entries.")
@@ -132,7 +137,6 @@ def delete_all_queries():
 
 # Name,Query
 def insert_query_rows(rows):
-    delete_all_queries()
     count = 0
     for row in rows:
         if len(row) < 2:
@@ -147,7 +151,6 @@ def insert_query_rows(rows):
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
-    delete_all_users()
     count = 0
     for row in rows:
         if len(row) < 5:
@@ -166,7 +169,6 @@ def insert_user_rows(rows):
             user.role = roleObj
         db.session.add(user)
         count += 1
-    dump_users_papers_and_conflicts("After insertion")
     return count
 
 
@@ -189,10 +191,8 @@ def gen_unique_keys(n, max_chars):
     return oids
 
 
-# 2022: Submission ID,Thumbnail URL,Title,Area,Abstract
-# 2023: Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
+# Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 def insert_paper_rows(rows):
-    delete_all_papers()
     area_type = int(LabelType.Area)
     n = len(rows)
     oids = gen_unique_keys(n, 8)
@@ -232,7 +232,6 @@ def insert_paper_rows(rows):
 
 # Submission ID,Email
 def insert_conflict_rows(rows):
-    delete_all_conflicts()
     count = 0
     for row in rows:
         if len(row) < 2:
@@ -272,7 +271,6 @@ def insert_label_rows(rows, label_type):
 
 # Submission ID,Cluster
 def insert_cluster_rows(rows):
-    delete_all_clusters()
     cluster_type = int(LabelType.Cluster)
     count = insert_label_rows(rows, cluster_type)
     return count
@@ -280,7 +278,6 @@ def insert_cluster_rows(rows):
 
 # Submission ID,Room
 def insert_paper_room_rows(rows):
-    delete_all_paper_rooms()
     room_type = int(LabelType.Room)
     count = insert_label_rows(rows, room_type)
     return count
@@ -288,12 +285,6 @@ def insert_paper_room_rows(rows):
 
 # Email,Rooms
 def insert_people_room_rows(rows):
-    # first delete any existing room assignments...
-    users = User.query.all()
-    for person in users:
-        person.rooms = None
-        person.in_room = None
-        db.session.add(person)
     count = 0
     for row in rows:
         if len(row) < 2:
@@ -321,19 +312,7 @@ def review_str_to_float(s):
     return 0
 
 
-def papers_clear_all_scores_and_queues():
-    papers = Paper.query.all()
-    for paper in papers:
-        paper.sort_score = 0
-        paper.all_scores = "This paper has no reviews."
-        paper.queue_id = None
-        paper.queue_order = 0
-        db.session.add(paper)
-
-
 def insert_chair_score_rows(rows):
-    delete_all_history()  # clears both bbs status and stickies
-    papers_clear_all_scores_and_queues()
     count = 0
     for row in rows:
         if len(row) < 4:
@@ -356,14 +335,11 @@ def insert_chair_score_rows(rows):
         )
         db.session.add(history)
         count += 1
-    reset_all_gqs()
     return count
 
 
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
-    delete_non_bbs_history()  # delete history since BBS
-    # now = datetime.now()
     count = 0
     for row in rows:
         if len(row) < 4:
@@ -415,6 +391,17 @@ csvInsertFunctions = {
     "users": insert_user_rows,
 }
 
+csvDeleteFunctions = {
+    "chair_scores": delete_all_chair_scores,
+    "clusters": delete_all_clusters,
+    "conflicts": delete_all_conflicts,
+    "history": delete_non_bbs_history,
+    "paper_rooms": delete_all_paper_rooms,
+    "papers": delete_all_papers,
+    "people_rooms": delete_all_people_rooms,
+    "queries": delete_all_queries,
+    "users": delete_all_users,
+}
 
 csvDependence = {
     "chair_scores": ["history"],
@@ -482,17 +469,23 @@ def omit_extra_cols(rows, ncols):
 
 
 def delete_prev_file_uploads(header_type):
-    if header_type not in csvDependence:
-        print("about to delete header_type: ", header_type)
-        FileUpload.query.filter_by(file=header_type).delete()
-        return
-    del_list = csvDependence[header_type]
-    del_list = list(del_list)
+    del_list = []
+    if header_type in csvDependence:
+        del_list = csvDependence[header_type]
+        del_list = del_list.copy()  # work on temp copy
     del_list.append(header_type)
     for name in del_list:
-        num_deleted = FileUpload.query.filter_by(file=name).delete()
-        if num_deleted:
-            print(f"delete {num_deleted} prev file upload of type {name}")
+        ndel = FileUpload.query.filter_by(file=name).delete()
+        if ndel:
+            print(f"Deleted {ndel} upload record(s) of type {name}")
+
+
+def update_file_upload_info(header_type, count):
+    # first delete any old upload records of this type
+    delete_prev_file_uploads(header_type)
+    # next make new upload record
+    upload = FileUpload(file=header_type, count=count)
+    db.session.add(upload)
 
 
 def read_csv(filename):
@@ -500,12 +493,17 @@ def read_csv(filename):
     header_type, ncols = get_csv_type(header)
     if not header_type or header_type not in csvInsertFunctions:
         return None
+    print(f"Reading csv of type {header_type}")
     rows = omit_extra_cols(rows, ncols)
-    func = csvInsertFunctions[header_type]
-    count = func(rows)
-    delete_prev_file_uploads(header_type)
-    upload = FileUpload(file=header_type, count=count)
-    db.session.add(upload)
+    # first delete old database info
+    dump_users_papers_and_conflicts(f"Before deleting {header_type}")
+    deletion_func = csvDeleteFunctions[header_type]
+    deletion_func()
+    dump_users_papers_and_conflicts(f"After deleting {header_type}")
+    # next insert new rows
+    insertion_func = csvInsertFunctions[header_type]
+    count = insertion_func(rows)
+    update_file_upload_info(header_type, count)
     return header_type
 
 

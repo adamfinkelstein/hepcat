@@ -584,7 +584,7 @@ def execute_sql_cmd(cmd):
 
 def get_table_names():
     tables = list(db.metadata.tables.keys())
-    print("all db tables: ", tables)
+    # print("all db tables: ", tables)
     return tables
 
 
@@ -605,23 +605,19 @@ def drop_and_rebuild_tables(tables_to_drop=None):
     else:
         tables_to_drop = "ALL"
         drop_list = all_tables
-    title = f"Before dropping tables {tables_to_drop}"
-    output = dump_users_papers_and_conflicts(title)
     # We should call db.close_all_sessions() here...
+    print(f"About to drop tables: {tables_to_drop}")
     for table in drop_list:
         if table in all_tables:
             sql_drop_table(table)
         else:
             print(f"no need to drop non-existant table {table}")
-    print("having dropped tables, about to rebuild...")
+    # print("having dropped tables, about to rebuild...")
     # AF??? Possibly better to use close_all_sessions...?
     if not try_sql_commit():  # needed before create_all below
         print("sql commit error droping tables")
     db.create_all()
-    print("...rebuild done.")
-    title = f"After dropping tables {tables_to_drop}"
-    output += dump_users_papers_and_conflicts(title)
-    return output
+    # print("...rebuild done.")
 
 
 def wipe_db_clean():

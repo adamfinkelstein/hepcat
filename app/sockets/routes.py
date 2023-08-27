@@ -1251,7 +1251,6 @@ def emit_admin_uploads(broadcast):
 @socketio.on("admin_file_upload")
 @admin_required_for_io
 def admin_upload_file(file):
-    print("admin_file_upload")
     filename = "upload.csv"
     header_type = save_and_read_csv(file, filename)
     if header_type and not try_sql_commit():
