@@ -1,8 +1,6 @@
 from enum import IntEnum
 from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
-
-# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -518,16 +516,6 @@ def insert_test_paper():
 
 
 def ensure_user(email, first_name, last_name, role_name, passwd):
-    if not (email and first_name and last_name and role_name and passwd):
-        print(
-            "cannot add user with incomplete info: ",
-            email,
-            first_name,
-            last_name,
-            role_name,
-            passwd,
-        )
-        return
     user = User.query.filter_by(email=email).first()
     if not user:
         role = get_or_insert_role(role_name)
@@ -595,19 +583,7 @@ def execute_sql_cmd(cmd):
 
 
 def get_table_names():
-    if db_is_sqlite():
-        cmd = """SELECT name FROM sqlite_schema
-WHERE type = 'table' AND name NOT LIKE 'sqlite_%';
-"""
-    else:
-        cmd = """SELECT table_name
-FROM information_schema.tables
-WHERE table_type = 'BASE TABLE'
-AND table_name NOT LIKE 'alembic_%'
-AND table_schema NOT IN ('pg_catalog', 'information_schema');
-"""
-    rows = execute_sql_cmd(cmd)
-    tables = [row[0] for row in rows]
+    tables = list(db.metadata.tables.keys())
     print("all db tables: ", tables)
     return tables
 

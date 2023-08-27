@@ -119,15 +119,6 @@ def delete_non_bbs_history():
     dump_users_papers_and_conflicts("After non-BBS History deletion")
 
 
-def delete_all_summaries():
-    papers = Paper.query.all()
-    count = len(papers)
-    for paper in papers:
-        paper.summary = ""
-        db.session.add(paper)
-    print(f"Deleted {count} summaries.")
-
-
 # 2023?
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
@@ -252,22 +243,6 @@ def insert_conflict_rows(rows):
         if user and paper:
             user.conf_papers.append(paper)
             db.session.add(user)
-            count += 1
-    return count
-
-
-# Submission ID,Summary
-def insert_summary_rows(rows):
-    delete_all_summaries()
-    count = 0
-    for row in rows:
-        if len(row) < 2:
-            continue
-        sid, summary = row
-        paper = Paper.query.filter_by(sid=sid).first()
-        if paper:
-            paper.summary = summary
-            db.session.add(paper)
             count += 1
     return count
 
@@ -415,53 +390,42 @@ def insert_history_rows(rows):
     return count
 
 
-csvLinklings = {
-    "users": "users.csv",
-    "papers": "abstracts.csv",
-    "conflicts": "conflicts.csv",
-    "clusters": "clusters.csv",
-    "paper_rooms": "paper_rooms.csv",
-    "people_rooms": "people_rooms.csv",
-    "chair_scores": "chair_scores.csv",
+csvTypes = {
+    "chair_scores": "Submission ID,Sort Score,Status,Reviews",
+    "clusters": "Submission ID,Cluster",
+    "conflicts": "Submission ID,Email",
+    "history": "Submission ID,When,Context,Status",
+    "paper_rooms": "Submission ID,Room",
+    "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
+    "people_rooms": "Email,Rooms",
+    "queries": "Name,Query",
+    "users": "Email,First Name,Last Name,Role,Password",
 }
 
-csvTypes = {
-    "users": "Email,First Name,Last Name,Role,Password",
-    "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
-    "conflicts": "Submission ID,Email",
-    "clusters": "Submission ID,Cluster",
-    "paper_rooms": "Submission ID,Room",
-    "people_rooms": "Email,Rooms",
-    "chair_scores": "Submission ID,Sort Score,Status,Reviews",
-    "summaries": "Submission ID,Committee Notes",
-    "queries": "Name,Query",
-    "history": "Submission ID,When,Context,Status",
-}
 
 csvInsertFunctions = {
-    "users": insert_user_rows,
-    "papers": insert_paper_rows,
-    "conflicts": insert_conflict_rows,
-    "clusters": insert_cluster_rows,
-    "paper_rooms": insert_paper_room_rows,
-    "people_rooms": insert_people_room_rows,
     "chair_scores": insert_chair_score_rows,
-    "summaries": insert_summary_rows,
-    "queries": insert_query_rows,
+    "clusters": insert_cluster_rows,
+    "conflicts": insert_conflict_rows,
     "history": insert_history_rows,
+    "paper_rooms": insert_paper_room_rows,
+    "papers": insert_paper_rows,
+    "people_rooms": insert_people_room_rows,
+    "queries": insert_query_rows,
+    "users": insert_user_rows,
 }
 
+
 csvDependence = {
-    "users": ["conflicts", "people_rooms"],
     "chair_scores": ["history"],
     "papers": [
         "conflicts",
         "history",
         "clusters",
         "paper_rooms",
-        "summaries",
         "chair_scores",
     ],
+    "users": ["conflicts", "people_rooms"],
 }
 
 
@@ -545,11 +509,13 @@ def read_csv(filename):
     return header_type
 
 
+csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
+csvLinklings = csvLinklings.split(",")
+
+
 def pending_uploads(uploads):
     already = [upload.file for upload in uploads]
-    keys = list(csvLinklings.keys())
-    pending = [key for key in keys if key not in already]
-    # print(already, keys, pending)
+    pending = [file for file in csvLinklings if file not in already]
     return pending
 
 
@@ -770,16 +736,17 @@ def write_csv_path(filename, rows):
 
 
 csvExtractFunctions = {
-    "results": get_results_as_rows,
-    "queries": get_queries_as_rows,
-    "history": get_history_as_rows,
-    "users": get_users_as_rows,
-    "people_rooms": get_people_rooms_as_rows,
-    "papers": get_papers_as_rows,
-    "paper_rooms": get_paper_rooms_as_rows,
     "chair_scores": get_chair_scores_as_rows,
-    "conflicts": get_conflicts_as_rows,
     "clusters": get_clusters_as_rows,
+    "conflicts": get_conflicts_as_rows,
+    "history": get_history_as_rows,
+    "paper_rooms": get_paper_rooms_as_rows,
+    "papers": get_papers_as_rows,
+    "people_rooms": get_people_rooms_as_rows,
+    "queries": get_queries_as_rows,
+    "users": get_users_as_rows,
+    # "results" downlaod is unlike any uploadable file above
+    "results": get_results_as_rows,
 }
 
 
