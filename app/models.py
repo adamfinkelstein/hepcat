@@ -481,40 +481,6 @@ def get_config_or_default(key, default):
     return default
 
 
-def insert_test_paper():
-    nid = 9999
-    paper = Paper.query.filter_by(nid=nid).first()
-    if paper:
-        return -1
-    sid = num_to_sid(nid)
-    oid = "test_9999"
-    key = "1234567890123456"  # must be 16 characters
-    thumbnail = "https://fakeimg.pl/600x450/685/f5c/?text=TEST&font_size=240&font=bebas"
-    title = "Testing Conflictbot"
-    abstract = "This paper should be conflicted with all users."
-    paper = Paper(
-        nid=nid,
-        sid=sid,
-        oid=oid,
-        key=key,
-        thumbnail=thumbnail,
-        title=title,
-        journal_only=False,
-        abstract=abstract,
-    )
-    db.session.add(paper)
-    users = User.query.all()
-    count = 0
-    for user in users:
-        if user.role_is_admin or user.role_is_screen:
-            continue
-        user.conf_papers.append(paper)
-        db.session.add(user)
-        count += 1
-        # print(f'9999 conflicted with {user.full_name} ({count})')
-    return count
-
-
 def ensure_user(email, first_name, last_name, role_name, passwd):
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -549,7 +515,10 @@ def ensure_admin():
     email = get_config_or_default("HEPCAT_CHAIR_LOGIN", "chair@example.com")
     passwd = get_config_or_default("HEPCAT_CHAIR_PASSWD", "chair")
     ensure_user(email, "Chair", "User", "Super", passwd)
-    # This code below should be moved to location of upload users...
+
+
+def ensure_screens():
+    # AF??? Future: check to see if *ANY* screen users exist already.
     passwd = get_config_or_default("HEPCAT_SCREEN_PASSWD", "screen")
     ensure_user("screen.ax@example.com", "Screen", "AX", "Screen", passwd)
     ensure_user("screen.by@example.com", "Screen", "BY", "Screen", passwd)

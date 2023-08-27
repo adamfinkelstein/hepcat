@@ -19,6 +19,7 @@ from .models import (
     Label,
     FileUpload,
     Query,
+    num_to_sid,
     sid_to_num,
     get_or_insert_role,
     dump_users_papers_and_conflicts,
@@ -26,6 +27,7 @@ from .models import (
     status_str_to_enum,
     reset_all_gqs,
     ensure_all_gqs,
+    ensure_screens,
     drop_and_rebuild_tables,
 )
 
@@ -169,6 +171,7 @@ def insert_user_rows(rows):
             user.role = roleObj
         db.session.add(user)
         count += 1
+    ensure_screens()
     return count
 
 
@@ -189,6 +192,50 @@ def gen_unique_keys(n, max_chars):
         if oid not in oids:
             oids.append(oid)
     return oids
+
+
+# Maybe later make this function check an environment variable
+def insert_test_paper():
+    nid = 9999
+    paper = Paper.query.filter_by(nid=nid).first()
+    if paper:
+        return
+    sid = num_to_sid(nid)
+    oid = "test_9999"
+    key = "1234567890123456"  # must be 16 characters
+    thumbnail = "https://fakeimg.pl/600x450/685/f5c/?text=TEST&font_size=240&font=bebas"
+    title = "Testing Conflictbot"
+    abstract = "This paper should be conflicted with all users."
+    paper = Paper(
+        nid=nid,
+        sid=sid,
+        oid=oid,
+        key=key,
+        thumbnail=thumbnail,
+        title=title,
+        journal_only=False,
+        abstract=abstract,
+    )
+    db.session.add(paper)
+
+
+# Maybe later make this function check an environment variable
+def insert_test_paper_conflicts():
+    nid = 9999
+    paper = Paper.query.filter_by(nid=nid).first()
+    if not paper:
+        return
+    users = User.query.all()
+    count = 0
+    for user in users:
+        if user.role_is_admin or user.role_is_screen:
+            # AF??? This test seems to fail for super?
+            continue
+        user.conf_papers.append(paper)
+        db.session.add(user)
+        count += 1
+        # print(f'9999 conflicted with {user.full_name} ({count})')
+    return count
 
 
 # Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
@@ -227,6 +274,7 @@ def insert_paper_rows(rows):
             if label and paper:
                 paper.tag_labels.append(label)
                 db.session.add(paper)
+    insert_test_paper()
     return count
 
 
@@ -243,6 +291,7 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
+    insert_test_paper_conflicts()
     return count
 
 

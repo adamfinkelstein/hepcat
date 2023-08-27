@@ -67,11 +67,6 @@ export default function UploadsPage() {
     }
   }
 
-  function handleAddTestPaper() {
-    controlledLog('admin_add_test_paper button pressed.');
-    socketEmit('admin_add_test_paper');
-  }
-
   function handleBringToAllRooms() {
     controlledLog('admin_bring_to_all_rooms button pressed.');
     socketEmit('admin_bring_to_all_rooms');
@@ -127,14 +122,6 @@ export default function UploadsPage() {
           <p>&nbsp;</p>
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
-
-        <Stack className="space-down-btn" direction="horizontal">
-          <Button variant="primary" onClick={handleAddTestPaper}>
-            Add Test Paper
-          </Button>
-          &nbsp;&nbsp;This adds Papers_9999, conflicted with all users for
-          testing conflictbot.
-        </Stack>
 
         <Stack className="space-down-btn" direction="horizontal">
           <Button variant="primary" onClick={handleBringToAllRooms}>

@@ -48,7 +48,6 @@ from ..models import (
     get_or_create_gq,
     status_str_to_enum,
     context_str_to_enum,
-    insert_test_paper,
     try_sql_commit,
     ensure_admin,
     wipe_db_clean,
@@ -1058,24 +1057,6 @@ def admin_clear_stickies():
         msg = "No stickies were cleared."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
-
-
-@socketio.on("admin_add_test_paper")
-def admin_add_test_paper():
-    print("admin_add_test_paper")
-    count = insert_test_paper()
-    try_sql_commit()
-    if count >= 0:
-        msg = f"Added test paper with {count} conflicts."
-        msgType = "success"
-    elif count == -1:
-        msg = "No need to add test paper 9999 - it already exists."
-        msgType = "warning"
-    else:  # -2
-        msg = "Failed to add test paper, for unknown reason."
-        msgType = "danger"
-    data = {"message": msg, "type": msgType}
-    emit("server_send_flasher", data)
 
 
 @socketio.on("user_set_stickie")
