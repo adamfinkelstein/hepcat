@@ -19,11 +19,11 @@ from .users import (
     disconnect_all_users,
     user_record_socket_and_session,
     user_disconnect_if_already_connected,
+    get_user_id_from_session,
+    get_current_user_or_none,
 )
 from ..util import (
     read_text_from_file,
-    get_user_id_from_session,
-    get_current_user_or_none,
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,

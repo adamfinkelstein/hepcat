@@ -1,12 +1,8 @@
-from flask import request
+from flask import request, session
 from flask_socketio import call, disconnect
+from app import db
 from app.models import User
-from ..util import (
-    get_current_user_or_none,
-    get_user_id_from_session,
-    put_user_id_in_session,
-    clear_user_id_in_session,
-)
+
 
 #####################
 #
@@ -19,11 +15,11 @@ from ..util import (
 # key: user_id
 # value: socketio session id (sid)
 user_sockets = {}
-debug_user_sockets = False
+debug_sockets_and_sessions = False
 
 
 def dprint(msg):
-    if debug_user_sockets:
+    if debug_sockets_and_sessions:
         print(msg)
 
 
@@ -58,6 +54,57 @@ def forget_user_socket(user_id):
     dprint(f"user_sockets: forget socket for user {user_id}")
     if user_id in user_sockets:
         del user_sockets[user_id]
+
+
+#######################
+#
+# USER SESSIONS
+#
+#######################
+
+
+def put_user_id_in_session(user_id):
+    dprint(f"session: user is now: {user_id}")
+    session["user_id"] = user_id
+
+
+def get_user_id_from_session():
+    user_id = session.get("user_id")
+    dprint(f"session: got user id: {user_id}")
+    return user_id
+
+
+def clear_user_id_in_session():
+    dprint("session: clear user id")
+    session.pop("user_id", None)
+
+
+#####################
+#
+# CURRENT USER
+#
+#####################
+
+
+def get_current_user_or_none():
+    user_id = get_user_id_from_session()
+    if not user_id:
+        return None
+    return db.session.get(User, user_id)
+
+
+def current_user_is_admin():
+    user = get_current_user_or_none()
+    if user and user.role_is_admin:
+        return True
+    return False
+
+
+def current_user_is_super():
+    user = get_current_user_or_none()
+    if user and user.role_is_super:
+        return True
+    return False
 
 
 #####################

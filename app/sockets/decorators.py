@@ -1,6 +1,6 @@
 from functools import wraps
 from flask_socketio import disconnect
-from app.util import current_user_is_admin, current_user_is_super
+from .users import current_user_is_admin, current_user_is_super
 
 
 def admin_required_for_io(f):
