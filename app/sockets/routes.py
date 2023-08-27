@@ -755,17 +755,6 @@ def admin_become_user(email):
     login_user_and_send_welcome(new_user)
 
 
-@socketio.on("user_ping")
-def user_ping(room):
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
-    update_last_seen(user, room)
-    print(f"ping from {user.full_name} in room {room}")
-    try_sql_commit()
-
-
 @socketio.on("user_request_grid")
 def user_request_grid():
     user = get_current_user_or_none()

@@ -167,7 +167,6 @@ Also set environment variables at Heroku, at least:
 - `ZOOM_CONFLICTBOT_CLIENT_ID`
 - `ZOOM_CONFLICTBOT_CLIENT_SECRET`
 - `HEPCAT_CONFLICTBOT_SOCKET`
-- `REACT_APP_PING_TIMER_SECS` (unset or 0 means no pings)
 
 ** AF should check this list at Heroku and see if more updates are needed. **
 

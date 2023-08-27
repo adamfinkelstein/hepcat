@@ -134,16 +134,6 @@ export default function AppContext({ children }) {
   useEffect(() => {
     controlledLog('roomChoice is now ' + roomChoice);
     socketEmit('user_request_queue', roomChoice);
-    const userPing = () => socketEmit('user_ping', roomChoice);
-    const pingEnv = process.env.REACT_APP_PING_TIMER_SECS;
-    const pingSec = pingEnv ? parseInt(pingEnv) : 0;
-    if (pingSec) {
-      const pingTimer = setInterval(userPing, pingSec * 1000);
-      controlledLog(
-        'set ping timer with secs ' + pingSec + ' and room ' + roomChoice,
-      );
-      return () => clearInterval(pingTimer);
-    }
   }, [roomChoice, controlledLog, socketEmit]);
 
   useEffect(() => {

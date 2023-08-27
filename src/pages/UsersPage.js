@@ -25,15 +25,14 @@ export default function UsersPage() {
   const { allUsers } = useUser();
   const noSuper = allUsers.filter((user) => user.role_name !== 'Super');
   const { controlledLog } = useControlledLog();
-  const pingEnv = process.env.REACT_APP_PING_TIMER_SECS;
-  const pingSec = pingEnv ? parseInt(pingEnv) : 0;
 
   const userLine = (user) => {
     const { full_name, email, rooms, room_name, last_seen, last_seen_in } =
       user;
     let line = full_name + ' <' + email + '> called to: ' + room_name;
     if (rooms) line += ' assigned: [' + rooms + ']';
-    if (pingSec && last_seen) {
+    if (0 && last_seen) {
+      // AF: need to update this
       line += ' (seen ' + timeDiff(last_seen);
       if (last_seen_in) line += ' in ' + last_seen_in;
       line += ')';
