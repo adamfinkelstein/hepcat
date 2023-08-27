@@ -63,6 +63,7 @@ export default function SocketIOContext({ children }) {
             : 'The server appears to be offline. Please try again later.',
         );
       }
+      window.sessionStorage.removeItem('token');
       setSocket(null);
       setAuth(null);
     });
