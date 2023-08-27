@@ -1,7 +1,7 @@
 import os
 import csv
 import uuid
-from flask import flash, current_app
+from flask import current_app
 from . import db
 from .util import (
     run_cmd,
@@ -25,7 +25,6 @@ from .models import (
     context_str_to_enum,
     status_str_to_enum,
     reset_all_gqs,
-    try_sql_commit,
     ensure_all_gqs,
     drop_and_rebuild_tables,
 )
@@ -68,10 +67,6 @@ def delete_all_clusters():
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_cluster).delete()
     print(f"delete {num_deleted} cluster labels.")
-    if not try_sql_commit():
-        msg = "failed in deleting clusters"
-        print(msg)
-        flash(msg)
     dump_users_papers_and_conflicts("After deleting clusters")
 
 
@@ -88,29 +83,20 @@ def delete_all_paper_rooms():
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_room).delete()
     print(f"delete {num_deleted} cluster labels.")
-    if not try_sql_commit():
-        msg = "failed in deleting paper rooms"
-        print(msg)
-        flash(msg)
     dump_users_papers_and_conflicts("After deleting paper rooms")
 
 
 # 2023?
 def delete_all_labels():
     dump_users_papers_and_conflicts("Before label deletion")
+    # first remove all labels from papers
     labels = Label.query.all()
     for label in labels:
         label.tag_papers = []  # empty list
         db.session.add(label)
-    ok = try_sql_commit()
-    if ok:
-        num_deleted = Label.query.delete()
-        print(f"deleted {num_deleted} labels")
-        ok = try_sql_commit()
-    if not ok:
-        msg = "failed commit in delete_all_labels"
-        print(msg)
-        flash(msg)
+    # next delete all labels
+    num_deleted = Label.query.delete()
+    print(f"Deleted {num_deleted} labels.")
     dump_users_papers_and_conflicts("After label deletion")
 
 
@@ -119,10 +105,6 @@ def delete_all_history():
     dump_users_papers_and_conflicts("Before History deletion")
     num_deleted = History.query.delete()
     print(f"Deleted {num_deleted} history entries.")
-    if not try_sql_commit():
-        msg = "failed commit in delete_all_history"
-        print(msg)
-        flash(msg)
     dump_users_papers_and_conflicts("After History deletion")
 
 
@@ -134,10 +116,6 @@ def delete_non_bbs_history():
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
     print(f"Deleted {num_deleted} history entries.")
-    if not try_sql_commit():
-        msg = "failed commit in delete_non_bbs_history"
-        print(msg)
-        flash(msg)
     dump_users_papers_and_conflicts("After non-BBS History deletion")
 
 
@@ -147,29 +125,17 @@ def delete_all_summaries():
     for paper in papers:
         paper.summary = ""
         db.session.add(paper)
-    if not try_sql_commit():
-        msg = "failed commit in delete_all_summaries"
-        print(msg)
-        flash(msg)
     print(f"Deleted {count} summaries.")
 
 
 # 2023?
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
-    if not try_sql_commit():
-        msg = "failed commit in delete_all_uploads"
-        print(msg)
-        flash(msg)
     print(f"Deleted {num_deleted} file upload entries.")
 
 
 def delete_all_queries():
     num_deleted = Query.query.delete()
-    if not try_sql_commit():
-        msg = "failed commit in delete_all_queries"
-        print(msg)
-        flash(msg)
     print(f"Deleted {num_deleted} queries.")
 
 
@@ -185,11 +151,6 @@ def insert_query_rows(rows):
         query = Query(name=name, json=json_quote)
         db.session.add(query)
         count += 1
-    if not try_sql_commit():
-        msg = "failed commit in insert query rows"
-        print(msg)
-        flash(msg)
-        return 0
     return count
 
 
@@ -214,11 +175,6 @@ def insert_user_rows(rows):
             user.role = roleObj
         db.session.add(user)
         count += 1
-    if not try_sql_commit():
-        msg = "failed commit when insert user rows (possible duplicate email?)"
-        print(msg)
-        flash(msg)
-        return 0
     dump_users_papers_and_conflicts("After insertion")
     return count
 

@@ -320,12 +320,6 @@ def bulk_reject_below_bar():
             paper=paper, context_enum=context_plenary, status_enum=status_enum
         )
         db.session.add(history)
-    if try_sql_commit():
-        return True
-    msg = "failed commit in bulk_reject_below_bar"
-    print(msg)
-    broadcast_admin_alert("Server Error", msg)
-    return False
 
 
 def zero_or_inc_current_index(room, zero_or_inc):
@@ -342,10 +336,6 @@ def zero_or_inc_current_index(room, zero_or_inc):
         gq.current_show_enter = 0
     gq.current_show = False
     db.session.add(gq)
-    if not try_sql_commit():
-        msg = f"failed to set queue index in room {room} (inc {zero_or_inc})"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
 
 
 def get_bar():
@@ -360,10 +350,6 @@ def set_bar(bar):
     for gq in queues:
         gq.bar = bar
         db.session.add(gq)
-    if not try_sql_commit():
-        msg = "failed to set bar"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
 
 
 def clear_queue(room):
@@ -505,9 +491,6 @@ def update_last_seen(user, room):
     user.last_seen = func.now()
     user.last_seen_in = room
     db.session.add(user)
-    if not try_sql_commit():
-        msg = f"failed to update user time last seen for {user.full_name}"
-        print(msg)
 
 
 def show_current_paper(room):
@@ -515,10 +498,6 @@ def show_current_paper(room):
     gq.current_show = True
     gq.current_start = func.now()
     db.session.add(gq)
-    if not try_sql_commit():
-        msg = "failed to show current paper"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
 
 
 def set_hide_queue(room, hide, message):
@@ -529,10 +508,6 @@ def set_hide_queue(room, hide, message):
         gq.current_show = False  # then hide the current paper.
         gq.current_show_enter = 0  # and do not show enter/leave.
     db.session.add(gq)
-    if not try_sql_commit():
-        msg = "failed to hide queue"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
 
 
 def get_globs_dump(room):
@@ -648,8 +623,6 @@ def clear_all_stickies():
     context_stickie = int(HistoryContext.Stickie)
     count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
     print(f"this should clear {count_deleted} stickies")
-    if not try_sql_commit():
-        return 0
     return count_deleted
 
 
@@ -679,10 +652,6 @@ def call_users_to_room(room):
         if gq:
             gq.called_users = False
             db.session.add(gq)
-    if not try_sql_commit():
-        msg = f"error in call users to room {room}"
-        print(msg)
-        broadcast_admin_alert("Server Error", msg)
 
 
 def get_unconflicted_paper_keys(user):
@@ -756,7 +725,8 @@ def io_connect(auth):
     if user.role_is_admin:
         join_room("admin")
     # valid user, accept the connection and send welcome
-    login_user_and_send_welcome(user)
+    if try_sql_commit():
+        login_user_and_send_welcome(user)
 
 
 @socketio.on("admin_become_user")
@@ -794,6 +764,7 @@ def user_ping(room):
         return
     update_last_seen(user, room)
     print(f"ping from {user.full_name} in room {room}")
+    try_sql_commit()
 
 
 @socketio.on("user_request_grid")
@@ -817,6 +788,7 @@ def user_request_queue(room):
     data, _ = get_queue(room)
     update_last_seen(user, room)
     emit("server_set_queue", data)
+    try_sql_commit()  # because of update_last_seen
 
 
 @socketio.on("user_request_refresh")
@@ -833,7 +805,6 @@ def user_request_refresh():
 @socketio.on("disconnect")
 def io_disconnect():
     user_disconnect()
-
     all_users = get_all_user_list_dump()
     emit("server_refresh_users", all_users, room="admin")
 
@@ -843,6 +814,7 @@ def io_disconnect():
 def admin_bring_to_room(room):
     print(f"admin request to bring to room {room}")
     call_users_to_room(room)
+    try_sql_commit()
     all_users = get_all_user_list_dump()
     data = {"room": room, "all_users": all_users}
     emit("server_call_to_room", data, broadcast=True)
@@ -863,6 +835,7 @@ def admin_bring_to_all_rooms():
 def admin_prev_paper(room):
     print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, -1)  # also "hides" current
+    try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -873,6 +846,7 @@ def admin_prev_paper(room):
 def admin_next_paper(room):
     print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current
+    try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -886,6 +860,7 @@ def admin_advance_queue(data):
     print(f"admin request to advance queue in {room} with status {status_update}")
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1)  # also "hides" current
+    try_sql_commit()
     update = {
         "queue_index": before_index,
         "grid_nid": paper.nid,
@@ -904,6 +879,7 @@ def admin_advance_queue(data):
 def admin_show_current(room):
     print(f"admin request for show paper in {room}")
     show_current_paper(room)
+    try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -917,6 +893,7 @@ def admin_hide_queue(data):
     message = data["message"]
     print(f"admin request for hide queue {room}: {hide} {message}")
     set_hide_queue(room, hide, message)
+    try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -934,6 +911,7 @@ def admin_set_queue(filters):
     room = filters["roomChoice"]
     print(f"admin request for set queue in {room}:", filters)
     msg = set_queue(room, filters)
+    try_sql_commit()
     queue, current_paper = get_queue(room)
     emit("server_set_queue", queue, broadcast=True)
     globs = queue["globs"]
@@ -959,11 +937,6 @@ def admin_save_query(filters):
         emit_admin_queries(True)
         msg = f"Saved query named: {name}."
         data = {"message": msg, "type": "success"}
-        emit("server_send_flasher", data)
-    else:
-        msg = f"Failed to add query {name} ({json_string})."
-        print(msg)
-        data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
@@ -1024,6 +997,7 @@ def admin_set_queue_explicit(data):
     explicit = data["explicit"]
     print(f"admin request for set explicit queue {room}: {explicit}")
     msg = set_queue_explicit(room, explicit)
+    try_sql_commit()
     queue, current_paper = get_queue(room)
     emit("server_set_queue", queue, broadcast=True)
     globs = queue["globs"]
@@ -1037,6 +1011,7 @@ def admin_set_queue_explicit(data):
 def admin_set_bar(bar):
     print(f"admin request set bar to {bar}")
     set_bar(bar)
+    try_sql_commit()
     globs, _ = get_globs_dump_with_status("Plenary")  # YYY ???
     emit("server_set_globs", globs, broadcast=True)
     grid_dump = get_grid_dump()
@@ -1051,12 +1026,17 @@ def admin_set_bar(bar):
 def admin_bulk_reject():
     msg = "got request admin_bulk_reject"
     print(msg)
-    success = bulk_reject_below_bar()
+    bulk_reject_below_bar()
+    success = try_sql_commit()
+    grid_dump = get_grid_dump()
+    emit("server_set_grid", grid_dump, broadcast=True)
     if success:
-        grid_dump = get_grid_dump()
-        emit("server_set_grid", grid_dump, broadcast=True)
         msg = "Mark unseen reject papers below bar as now seen."
         data = {"message": msg, "type": "success"}
+        emit("server_send_flasher", data)
+    else:
+        msg = "Error in bulk reject."
+        data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
@@ -1067,6 +1047,8 @@ def admin_clear_stickies():
     print(msg)
     count = clear_all_stickies()
     if count:
+        success = try_sql_commit()
+    if count and success:
         grid_dump = get_grid_dump()
         emit("server_set_grid", grid_dump, broadcast=True)
         msg = f"All {count} stickies are now cleared."
@@ -1082,6 +1064,7 @@ def admin_clear_stickies():
 def admin_add_test_paper():
     print("admin_add_test_paper")
     count = insert_test_paper()
+    try_sql_commit()
     if count >= 0:
         msg = f"Added test paper with {count} conflicts."
         msgType = "success"
@@ -1296,6 +1279,4 @@ def admin_upload_file(file):
 def admin_wipe_database():
     print("about to wipe database...")
     wipe_db_clean()
-
-    # log all users out
     disconnect_all_users()

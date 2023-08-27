@@ -435,11 +435,6 @@ def get_or_create_gq(room):
     called_users = room == "Plenary"
     gq = GlobQueue(room=room, called_users=called_users)
     db.session.add(gq)
-    if try_sql_commit():
-        print(f"created GC with room {room}")
-    else:
-        print("failed to create GC")
-        gq = None
     return gq
 
 
@@ -519,10 +514,6 @@ def insert_test_paper():
         db.session.add(user)
         count += 1
         # print(f'9999 conflicted with {user.full_name} ({count})')
-    if not try_sql_commit():
-        msg = "failed to insert test paper"
-        print(msg)
-        return -2
     return count
 
 
@@ -549,10 +540,6 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
             confirmed=True,
         )
         db.session.add(user)
-        if try_sql_commit():
-            print(f"created user with email {email}")
-        else:
-            print(f"failed to create user with email {email}")
 
 
 def ensure_all_gqs():
@@ -651,8 +638,9 @@ def drop_and_rebuild_tables(tables_to_drop=None):
         else:
             print(f"no need to drop non-existant table {table}")
     print("having dropped tables, about to rebuild...")
+    # AF??? Possibly better to use close_all_sessions...?
     if not try_sql_commit():  # needed before create_all below
-        print("try_sql_commit error")
+        print("sql commit error droping tables")
     db.create_all()
     print("...rebuild done.")
     title = f"After dropping tables {tables_to_drop}"
