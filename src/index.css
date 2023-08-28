@@ -1,18 +1,18 @@
 body {
-  margin: 0;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
 }
 
 .font-size-1 {
-  font-style: bold;
+  font-weight: bold;
 }
 
 .font-size-2 {
-  font-style: bold;
+  font-weight: bold;
 }
 
 .font-size-3 {
@@ -25,20 +25,20 @@ code {
 }
 
 .App {
-  padding: 50px 0 0 0;
   overflow: hidden;
+  padding: 50px 0 0 0;
 }
 
 .Body {
+  margin: 0;
+  padding: 0;
   position: fixed;
-  margin: 0px;
-  padding: 0px;
 }
 
 .left-panel {
   overflow-y: auto;
-  padding-top: 15px;
   padding-bottom: 100px;
+  padding-top: 15px;
 }
 .right-panel {
   overflow-y: auto;
@@ -46,12 +46,11 @@ code {
 }
 
 .tabs {
-  width: 100%;
-  padding-top: 30px;
+  background: white;
   padding-bottom: 15px;
+  padding-top: 30px;
   position: fixed;
   width: 100%;
-  background: white;
   z-index: 10;
 }
 
@@ -65,19 +64,20 @@ code {
 }
 
 .Flasher {
+  background-color: white; /* fallback color */
+  background-color: rgba(0, 0, 0, 0); /* fully transparent */
+  border: none;
   /* this is a transparent sidebar on which notifications are rendered */
   padding: 50px 0 0 30px;
-  border: none;
-  transition: none;
-  background-color: rgba(0, 0, 0, 0); /* fully transparent */
   pointer-events: none; /* allow clicks to pass through */
+  transition: none;
 }
 
 .Flasher .vstack {
   /* container for notifications */
   height: 100%;
-  padding: 10px;
   overflow-x: hidden;
+  padding: 10px;
 }
 
 .Flasher .vstack .filler {
@@ -90,13 +90,13 @@ code {
     left: 400px;
   }
   to {
-    left: 0px;
+    left: 0;
   }
 }
 
 @keyframes FlasherSlideOutAnimation {
   from {
-    left: 0px;
+    left: 0;
   }
   to {
     left: 400px;
@@ -104,23 +104,23 @@ code {
 }
 
 .FlasherAlert {
-  box-shadow: 0 0 15px #aaa;
-  pointer-events: all;
-  margin-bottom: 0;
-  animation-name: FlasherSlideInAnimation;
   animation-duration: 0.25s;
   animation-fill-mode: forwards;
+  animation-name: FlasherSlideInAnimation;
+  box-shadow: 0 0 15px #aaa;
+  margin-bottom: 0;
+  pointer-events: all;
 }
 
 .FlasherAlertClosed {
-  animation-name: FlasherSlideOutAnimation;
   animation-fill-mode: forwards;
+  animation-name: FlasherSlideOutAnimation;
 }
 
 .me-auto.my-2.my-lg-0.navbar-nav.navbar-nav-scroll {
-  position: fixed;
-  right: 0px;
   padding-right: 100px;
+  position: fixed;
+  right: 0;
 }
 
 a.nav-link {
@@ -165,14 +165,14 @@ a.nav-link {
 }
 
 #noPapersInQueue {
+  border: 1px dashed purple;
+  border-radius: 6px;
   color: purple;
+  font-size: 20px;
+  font-style: italic;
   margin: 30px;
   padding: 20px;
-  font-size: 20px;
-  border-radius: 6px;
-  border: 1px dashed purple;
   text-align: center;
-  font-style: italic;
 }
 
 /* Queue Item Styling */
@@ -185,22 +185,22 @@ a.nav-link {
 
 .queue-hidden-for-non {
   color: purple;
-  font-style: bold;
+  font-weight: bold;
   margin: 15px;
   margin-bottom: 20px;
 }
 
 .accordion_title {
+  display: inline-block;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   text-align: left;
-  display: inline-block;
 }
 
 .qSymbol {
   display: inline-block;
-  margin-left: auto;
   font-size: 20px;
+  margin-left: auto;
   padding-left: 15px;
 }
 
@@ -231,19 +231,19 @@ a.nav-link {
 }
 
 .queue_element {
-  /* margin-top:-1px; this avoids double-border between elements */
-  padding: 10px 5px;
-  cursor: pointer;
-  border-right: 1px solid #aaa;
   border-bottom: 1px solid #aaa;
   border-left: 1px solid #aaa;
+  border-right: 1px solid #aaa;
+  cursor: pointer;
+  /* margin-top:-1px; this avoids double-border between elements */
+  padding: 10px 5px;
 }
 
 .queue_element.Past {
-  border-top: 1px solid black;
-  border-right: 1px solid black;
-  border-left: 1px solid black;
   border-bottom: 0;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-top: 1px solid black;
 }
 
 .queue_element.Current {
@@ -271,15 +271,15 @@ a.nav-link {
 }
 
 .paper-change-button {
-  margin-right: 10px;
-  border-radius: 4px;
-  padding: 8px;
   border: 1px solid black;
+  border-radius: 4px;
+  margin-right: 10px;
+  padding: 8px;
 }
 
 .paper-change-button:hover {
-  border: 1px solid black;
   background: lightyellow;
+  border: 1px solid black;
 }
 
 .paper-change-button:disabled {
@@ -293,14 +293,14 @@ a.nav-link {
 /* Paper Styling (right panel) */
 
 .paper-timer {
+  background-color: #eee;
+  border-radius: 5px;
+  color: purple;
+  font-family: monospace;
+  padding: 8px;
   position: absolute;
   right: 16px;
   text-align: left;
-  color: purple;
-  background-color: #eee;
-  padding: 8px;
-  border-radius: 5px;
-  font-family: monospace;
 }
 
 .paper-title {
@@ -309,8 +309,8 @@ a.nav-link {
 }
 
 .paper-image {
-  width: 75%;
   margin-top: 20px;
+  width: 75%;
 }
 
 .paper-img-container {
@@ -336,8 +336,8 @@ a.nav-link {
 
 .gutter {
   background-color: #eee;
-  background-repeat: no-repeat;
   background-position: 50%;
+  background-repeat: no-repeat;
 }
 
 .gutter.gutter-horizontal {
@@ -386,13 +386,13 @@ a.nav-link {
 }
 
 .rectangle {
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
   border: 1px solid black;
-  margin-right: 10px;
-  margin-left: 5px;
+  border-radius: 4px;
   display: inline-block;
+  height: 15px;
+  margin-left: 5px;
+  margin-right: 10px;
+  width: 15px;
 }
 
 .has-stickie {
@@ -401,9 +401,9 @@ a.nav-link {
 }
 
 .stickie {
+  background-color: gray;
   border: 2px solid black;
   color: white;
-  background-color: gray;
 }
 
 .send-stickie-column > div {
@@ -415,8 +415,8 @@ a.nav-link {
 }
 
 .non-stickie {
-  color: white;
   background-color: gray;
+  color: white;
   opacity: 0.2;
 }
 
@@ -451,22 +451,22 @@ a.nav-link {
 }
 
 .legend-title {
-  padding-left: 24px;
   padding-bottom: 12px;
+  padding-left: 24px;
   text-decoration: underline;
 }
 
 /* this is the hstack for a legend that is not currently picked */
 .legend-stack {
-  padding: 3px;
   border: 1px solid white;
+  padding: 3px;
 }
 
 /* this is the hstack for a legend that is currently picked */
 .picking-for {
-  padding: 3px;
   border: 1px solid black;
   border-radius: 6px;
+  padding: 3px;
 }
 
 .favorite-preferences-container {
@@ -523,7 +523,7 @@ a.nav-link {
 }
 
 .password-switch {
-  margin: 20px 5px 20px 0px;
+  margin: 20px 5px 20px 0;
 }
 
 .password-fields {
@@ -535,7 +535,7 @@ a.nav-link {
 }
 
 .reset-password-row {
-  margin: 20px 5px 20px 0px;
+  margin: 20px 5px 20px 0;
 }
 
 /* Set GUI Styling */
@@ -552,16 +552,16 @@ a.nav-link {
 }
 
 .horizontal-divider {
-  border-top: 3px solid #000;
   border-radius: 2px;
+  border-top: 3px solid #000;
   margin: 20px 0;
 }
 
 .vertical-divider {
   border-left: 3px solid #000;
   border-radius: 2px;
-  margin: 0 0px 0 40px;
   height: 150px !important;
+  margin: 0 0 0 40px;
 }
 
 .hideQ-text {
@@ -608,12 +608,12 @@ a.nav-link {
 }
 
 .about-container img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
   /* width: 50%;*/
   border: 1px solid #ddd;
   border-radius: 4px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   padding: 5px;
 }
 
@@ -631,11 +631,11 @@ a.nav-link {
 }
 
 #waiting-for-server {
-  margin-top: 20px;
-  margin-left: 20px;
+  color: #888;
   font-size: 20px;
   font-style: italic;
-  color: #888;
+  margin-left: 20px;
+  margin-top: 20px;
 }
 
 .admin-filters {
@@ -644,10 +644,10 @@ a.nav-link {
 }
 
 #room-warning {
-  margin-left: 10px;
+  color: #f66;
   font-size: 20px;
   font-style: italic;
-  color: #f66;
+  margin-left: 10px;
 }
 
 .space-down-btn {
@@ -662,20 +662,20 @@ a.nav-link {
 /* see https://supertokens.com/blog/building-a-login-screen-with-react-and-bootstrap# */
 
 .LoginPage {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100vw;
+  display: flex;
   height: 100vh;
+  justify-content: center;
+  width: 100vw;
 }
 
 .Auth-form {
-  width: 420px;
-  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
-  padding-top: 30px;
-  padding-bottom: 20px;
-  border-radius: 8px;
   background-color: white;
+  border-radius: 8px;
+  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
+  padding-bottom: 20px;
+  padding-top: 30px;
+  width: 420px;
 }
 
 .Auth-form-content {
@@ -684,15 +684,15 @@ a.nav-link {
 }
 
 .Auth-form-title {
-  text-align: center;
-  margin-bottom: 1em;
-  font-size: 24px;
   color: rgb(34, 34, 34);
+  font-size: 24px;
   font-weight: 800;
+  margin-bottom: 1em;
+  text-align: center;
 }
 
 label {
+  color: rgb(34, 34, 34);
   font-size: 14px;
   font-weight: 600;
-  color: rgb(34, 34, 34);
 }
