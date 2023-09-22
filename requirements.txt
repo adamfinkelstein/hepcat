@@ -14,8 +14,12 @@ blinker==1.6.2
     #   flask-mail
 build==0.10.0
     # via pip-tools
+certifi==2023.7.22
+    # via requests
 cfgv==3.4.0
     # via pre-commit
+charset-normalizer==3.2.0
+    # via requests
 click==8.1.6
     # via
     #   flask
@@ -61,13 +65,17 @@ flask-socketio==5.3.5
 flask-sqlalchemy==3.0.5
     # via -r requirements.in
 greenlet==2.0.2
-    # via eventlet
+    # via
+    #   eventlet
+    #   sqlalchemy
 gunicorn==21.2.0
     # via -r requirements.in
 h11==0.14.0
     # via wsproto
 identify==2.5.26
     # via pre-commit
+idna==3.4
+    # via requests
 importlib-metadata==6.8.0
     # via flask
 iniconfig==2.0.0
@@ -139,6 +147,8 @@ python-socketio==5.8.0
     # via flask-socketio
 pyyaml==6.0.1
     # via pre-commit
+requests==2.31.0
+    # via -r requirements.in
 simple-websocket==0.10.1
     # via -r requirements.in
 six==1.16.0
@@ -158,10 +168,14 @@ tomli==2.0.1
     #   pytest
 typing-extensions==4.7.1
     # via sqlalchemy
+urllib3==2.0.5
+    # via requests
 virtualenv==20.24.3
     # via pre-commit
 visitor==0.1.3
     # via flask-bootstrap
+websocket-client==1.6.3
+    # via -r requirements.in
 werkzeug==2.3.6
     # via flask
 wheel==0.41.1
