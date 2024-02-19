@@ -53,3 +53,5 @@ faker
 # testing
 pytest
 pytest-cov
+requests
+websocket-client
