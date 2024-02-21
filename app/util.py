@@ -1,9 +1,6 @@
 import os
-import random
-from datetime import datetime
 from subprocess import run
-from sqlalchemy.sql import func
-from .models import User, History, HistoryContext
+from .models import History, HistoryContext
 
 
 #######################
@@ -38,22 +35,6 @@ def read_lines_from_file(filename):
         return f.readlines()
 
 
-# old, unused:
-# needs this:
-# from subprocess import check_output, CalledProcessError, STDOUT
-# def run_cmd_check_output(cmd):
-#     # note shell=True allows cmd as single string
-#     try:
-#         result = check_output(cmd, stderr=STDOUT, shell=True)
-#         return True, result.decode("utf-8")
-#     except CalledProcessError as e:
-#         return False, e.output.decode("utf-8")
-#     except Exception as err:
-#         out = err.output
-#         msg = f'Unexpected {err=}, {type(err)=}, {out}'
-#         return False, msg
-
-
 # https://docs.python.org/3/library/subprocess.html#subprocess.run
 # for unknown reasons, concorde returns code 255 (error) even when successful.
 def run_cmd(cmd, ignore_errors=False):
@@ -62,33 +43,6 @@ def run_cmd(cmd, ignore_errors=False):
     if result.returncode and not ignore_errors:
         return False, f"run command error: {result}"
     return True, ""
-
-
-#######################
-#
-# Relating to models/database
-#
-#######################
-
-
-def get_random_admin():
-    users = User.query.all()
-    users = list(users)
-    users = [user for user in users if user.role_is_admin]
-    return random.choice(users)
-
-
-def get_random_user():
-    now = datetime.now()
-    seconds_since_epoch = now.timestamp()
-    ten_seconds_since_epoch = int(seconds_since_epoch / 10.0)
-    if ten_seconds_since_epoch % 2:  # alternate every 10 seconds
-        user = get_random_admin()
-    else:
-        user = User.query.order_by(
-            func.random()
-        ).first()  # works for PostgreSQL, SQLite
-    return user
 
 
 ######################
