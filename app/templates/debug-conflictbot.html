@@ -11,9 +11,11 @@
               content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta http-equiv="origin-trial" content="" />
         <style>
-      /* Note: Zoom code includes Bootstrap v3.1.1 */
       h2 {
-        padding-top: 60px;
+        padding-top: 5px;
+        padding-left: 20px;
+      }
+      #debugging-output {
         padding-left: 20px;
       }
         </style>
@@ -26,14 +28,8 @@
                     referrerpolicy="no-referrer"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"
                     crossorigin="anonymous"></script>
-            <h2>Debug Conflictbut Socket:</h2>
+            <h2>Debug Conflictbut Socket</h2>
             <div id="debugging-output">
-                Hepcat Users without Unique Names:
-                <ul id="non-unique-user-list">
-                </ul>
-                Zoom Users with Unrecognized Names:
-                <ul id="unrecognized-user-list">
-                </ul>
                 Current Rooms (with conflicts):
                 <ul id="room-list">
                 </ul>
