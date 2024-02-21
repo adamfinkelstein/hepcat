@@ -35,21 +35,37 @@ def download_zip(key):
     return abort(404)
 
 
-@admin.route("/zoom_conflictbot/<key>")
-def zoom_conflictbot(key):
+@admin.route("/old_zoom_conflictbot/<key>")
+def old_zoom_conflictbot(key):
     inst = current_app.config["INSTANCE"]
     if key != inst:
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)
         return abort(404)
-    url = f"/admin/zoom_conflictbot/{inst}"
+    url = f"/admin/old_zoom_conflictbot/{inst}"
     client_id = current_app.config["ZOOM_CONFLICTBOT_CLIENT_ID"]
     client_secret = current_app.config["ZOOM_CONFLICTBOT_CLIENT_SECRET"]
     conflictbot_socket = current_app.config["HEPCAT_CONFLICTBOT_SOCKET"]
     return render_template(
-        "zoom-conflictbot.html",
+        "old-zoom-conflictbot.html",
         conflictbot_socket=conflictbot_socket,
         url=url,
         client_id=client_id,
         client_secret=client_secret,
+    )
+
+
+@admin.route("/debug_conflictbot/<key>")
+def debug_conflictbot(key):
+    inst = current_app.config["INSTANCE"]
+    if key != inst:
+        msg = "Sorry -- the admin key is wrong. Try logging back in."
+        flash(msg)
+        return abort(404)
+    url = f"/admin/debug_conflictbot/{inst}"
+    conflictbot_socket = current_app.config["HEPCAT_CONFLICTBOT_SOCKET"]
+    return render_template(
+        "debug-conflictbot.html",
+        conflictbot_socket=conflictbot_socket,
+        url=url,
     )

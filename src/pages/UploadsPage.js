@@ -123,24 +123,36 @@ export default function UploadsPage() {
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
 
-        <Stack className="space-down-btn" direction="horizontal">
+        {/* <Stack className="space-down-btn" direction="horizontal">
           <Button variant="primary" onClick={handleBringToAllRooms}>
             Bring to All Rooms
           </Button>
           &nbsp;&nbsp;This tells Conflictbot to bring everyone to the room they
           belong in.
+        </Stack> */}
+
+        <Stack className="space-down-btn" direction="horizontal">
+          <a
+            className="btn btn-primary"
+            href={'/admin/debug_conflictbot/' + adminKey}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Debug Conflictbot
+          </a>
+          &nbsp;&nbsp;Open Conflictbot Socket Debugger in new tab.
         </Stack>
 
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-primary"
-            href={'/admin/zoom_conflictbot/' + adminKey}
+            href={'/admin/old_zoom_conflictbot/' + adminKey}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Zoom Conflictbot
+            Old Zoom Conflictbot
           </a>
-          &nbsp;&nbsp;Open Zoom Conflictbot in new tab.
+          &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
         </Stack>
 
         <Stack className="space-down-btn" direction="horizontal">
