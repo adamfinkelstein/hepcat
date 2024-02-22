@@ -1135,9 +1135,8 @@ class Conflictbot(Namespace):
     def on_connect(self):
         print("conflictbot connected:", self)
         print("sending user list.")
-        users_dump = get_all_user_list_dump()
-        emit("user-list", users_dump)
-        # next we can broadcast status to all conflictbots, including this one
+        # broadcast user list and status to all conflictbots, including this one
+        conflictbots_broadcast_user_list()
         # need to send all rooms.
         for room in all_queue_rooms:
             globs, current_paper = get_globs_dump_with_status(room)
@@ -1161,7 +1160,8 @@ else:
 
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
-    emit("user-list", users_dump, namespace=conflictbot_namespace, broadcast=True)
+    msg_data = {"roomNames": all_queue_rooms, "userMappings": users_dump}
+    emit("user-list", msg_data, namespace=conflictbot_namespace, broadcast=True)
 
 
 def conflictbots_broadcast_call_to_room(room):

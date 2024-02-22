@@ -215,11 +215,11 @@
       }
 
       // Receive list of users
-      globHepcatSocket.on('user-list', function (users) {
-        console.log('Got users:');
-        console.log(users);
-        receiveHepcatUsers(users);
-        recordUniqueUserNames(users);
+      globHepcatSocket.on('user-list', function (data) {
+        console.log('Got user-list data:');
+        console.log(data);
+        receiveHepcatUsers(data.userMappings);
+        recordUniqueUserNames(data.userMappings);
       });
 
       // Receive list of conflicts and paper metadata
