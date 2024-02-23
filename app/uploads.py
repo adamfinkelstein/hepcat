@@ -29,6 +29,7 @@ from .models import (
     ensure_all_gqs,
     ensure_screens,
     drop_and_rebuild_tables,
+    set_all_users_to_be_in_plenary,
 )
 
 
@@ -62,14 +63,6 @@ def delete_all_clusters():
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_cluster).delete()
     print(f"delete {num_deleted} cluster labels.")
-
-
-def delete_all_people_rooms():
-    users = User.query.all()
-    for person in users:
-        person.rooms = None
-        person.in_room = None
-        db.session.add(person)
 
 
 # this function mimics delete_all_clusters above
@@ -447,7 +440,7 @@ csvDeleteFunctions = {
     "history": delete_non_bbs_history,
     "paper_rooms": delete_all_paper_rooms,
     "papers": delete_all_papers,
-    "people_rooms": delete_all_people_rooms,
+    "people_rooms": set_all_users_to_be_in_plenary,
     "queries": delete_all_queries,
     "users": delete_all_users,
 }

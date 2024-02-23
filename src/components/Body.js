@@ -67,7 +67,7 @@ export default function Body() {
                 variant="secondary"
                 className="a_grid-display-dropdown"
               >
-                {['Plenary', 'Room_A', 'Room_B', 'Room_X', 'Room_Y'].map(
+                {['Plenary', 'Room_1A', 'Room_1B', 'Room_2A', 'Room_2B'].map(
                   (room, index) => {
                     return (
                       <Dropdown.Item

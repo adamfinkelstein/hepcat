@@ -29,10 +29,10 @@ class HistoryContext(IntEnum):
     BBS = 0
     Stickie = 1
     Plenary = 2
-    Room_A = 3
-    Room_B = 4
-    Room_X = 5
-    Room_Y = 6
+    Room_1A = 3
+    Room_1B = 4
+    Room_2A = 5
+    Room_2B = 6
 
 
 class HistoryStatus(IntEnum):
@@ -135,13 +135,13 @@ class User(db.Model):
     full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)
+    confirmed = db.Column(db.Boolean, default=False)  # seems unused - remove?
     last_seen = db.Column(db.DateTime)
     # the three columns below should be made more consistent
     # (maybe could be achieved with column property like full_name)
-    last_seen_in = db.Column(db.String(8))  # like Room_A
-    rooms = db.Column(db.String(4))  # 2 char like: AX
-    in_room = db.Column(db.String(4))  # 1 char like: A
+    last_seen_in = db.Column(db.String(8))  # like: Room_1A
+    in_room = db.Column(db.String(8), default="Plenary")  # like: Room_1A
+    rooms = db.Column(db.String(64))  # coded like: 1B 2C 3A
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -154,10 +154,10 @@ class User(db.Model):
 
     @hybrid_property
     def room_name(self):
-        if not self.in_room or self.in_room == "P":
-            return "Plenary"
-        else:
-            return "Room_" + self.in_room
+        # if not self.in_room: # now defaults, so should not happen
+        #     return "Plenary"
+        # else:
+        return self.in_room
 
     @hybrid_property
     def role_is_super(self):
@@ -422,7 +422,7 @@ class QuerySchema(ma.Schema):
 # Global queue vars
 ######################
 
-all_queue_rooms = "Plenary,Room_A,Room_B,Room_X,Room_Y".split(",")
+all_queue_rooms = "Plenary,Room_1A,Room_1B,Room_2A,Room_2B".split(",")
 
 
 def get_or_create_gq(room):
@@ -538,6 +538,14 @@ def dump_users_papers_and_conflicts(title):
     result += f" Tags={num_tags}. "
     print(result)
     return result
+
+
+def set_all_users_to_be_in_plenary():
+    users = User.query.all()
+    for user in users:
+        user.rooms = None
+        user.in_room = "Plenary"
+        db.session.add(user)
 
 
 def db_is_sqlite():

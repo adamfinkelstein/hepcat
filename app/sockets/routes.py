@@ -51,6 +51,7 @@ from ..models import (
     try_sql_commit,
     ensure_admin,
     wipe_db_clean,
+    set_all_users_to_be_in_plenary,
 )
 
 user_schema = UserSchema()
@@ -190,11 +191,11 @@ def get_paper_tag_labels(paper):
     for label in labels:
         if label.is_cluster:  # do not show clusters
             continue
-        s = f"{label.label_type}_{label.name}"
         if label.is_room:
-            paper_room = s
+            paper_room = label.name
         else:
-            result.append(s)
+            fmt = f"{label.label_type}_{label.name}"
+            result.append(fmt)
     result.sort()
     if paper_room:  # put room at beginning of list
         result = [paper_room] + result
@@ -232,20 +233,23 @@ def has_chair_conflict(paper):
     return False
 
 
-def room_to_letter_code(room):
-    if room == "Plenary":
-        return "P"
-    if room.startswith("Room_"):
-        return room[-1]  # just the last letter
-    return None
+def room_to_code(room):
+    room_code = room[-2:]  # last two characters
+    return room_code
+
+
+def room_code_in_user_rooms(room_code, user):
+    if not user.rooms:
+        return False
+    is_in_rooms = room_code in user.rooms
+    return is_in_rooms
 
 
 def filter_only_contains_room(filter_only):
-    for filt in filter_only:
-        letter = room_to_letter_code(filt)
-        if letter:
-            return letter
-    return None
+    for filter in filter_only:
+        if filter.startswith("Room_"):
+            return True
+    return False
 
 
 def paper_in_room(paper, room):
@@ -628,20 +632,17 @@ def clear_all_stickies():
 def call_users_to_room(room):
     users = User.query.all()
     if room == "Plenary":
-        for user in users:
-            if user.in_room:
-                user.in_room = None
-                db.session.add(user)
+        set_all_users_to_be_in_plenary()
         gqs = GlobQueue.query.all()
         for gq in gqs:
             is_plenary = gq.room == room
             gq.called_users = is_plenary
             db.session.add(gq)
     else:  # not Plenary
-        letter = room_to_letter_code(room)
+        room_code = room_to_code(room)
         for user in users:
-            if user.rooms and letter in user.rooms:
-                user.in_room = letter
+            if room_code_in_user_rooms(room_code, user):
+                user.in_room = room
                 db.session.add(user)
         gq = GlobQueue.query.filter_by(room=room).first()
         if gq:
