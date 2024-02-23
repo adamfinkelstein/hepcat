@@ -548,7 +548,7 @@ def read_csv(filename):
     return header_type
 
 
-csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
+csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair_scores"
 csvLinklings = csvLinklings.split(",")
 
 
