@@ -642,7 +642,7 @@ def call_users_to_room(room):
         room_code = room_to_code(room)
         for user in users:
             if room_code_in_user_rooms(room_code, user):
-                user.in_room = room
+                user.room_name = room
                 db.session.add(user)
         gq = GlobQueue.query.filter_by(room=room).first()
         if gq:

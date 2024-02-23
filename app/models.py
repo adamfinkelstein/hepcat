@@ -135,12 +135,9 @@ class User(db.Model):
     full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)  # seems unused - remove?
     last_seen = db.Column(db.DateTime)
-    # the three columns below should be made more consistent
-    # (maybe could be achieved with column property like full_name)
     last_seen_in = db.Column(db.String(8))  # like: Room_1A
-    in_room = db.Column(db.String(8), default="Plenary")  # like: Room_1A
+    room_name = db.Column(db.String(8), default="Plenary")  # like: Room_1A
     rooms = db.Column(db.String(64))  # coded like: 1B 2C 3A
     # role is a backref from Role
     # conf_papers is a backref from papers
@@ -151,13 +148,6 @@ class User(db.Model):
             return self.role.name
         else:
             return ""
-
-    @hybrid_property
-    def room_name(self):
-        # if not self.in_room: # now defaults, so should not happen
-        #     return "Plenary"
-        # else:
-        return self.in_room
 
     @hybrid_property
     def role_is_super(self):
@@ -491,7 +481,6 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
             last_name=last_name,
             role=role,
             password=passwd,
-            confirmed=True,
         )
         db.session.add(user)
 
@@ -544,7 +533,7 @@ def set_all_users_to_be_in_plenary():
     users = User.query.all()
     for user in users:
         user.rooms = None
-        user.in_room = "Plenary"
+        user.room_name = "Plenary"
         db.session.add(user)
 
 

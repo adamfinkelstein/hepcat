@@ -157,7 +157,6 @@ def insert_user_rows(rows):
             first_name=first_name,
             last_name=last_name,
             password=password,
-            confirmed=True,
         )
         if len(role):
             roleObj = get_or_insert_role(role)

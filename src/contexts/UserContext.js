@@ -37,7 +37,6 @@ export default function UserContext({ children }) {
         setPaperKeys(data.paper_keys);
         setAboutMD(smartquotes(data.about));
         if (data.user.room_name) {
-          //const room = roomCodeToRoom(data.user.in_room)
           setRoomChoice(data.user.room_name);
           setRoomCalledTo(data.user.room_name);
         }
