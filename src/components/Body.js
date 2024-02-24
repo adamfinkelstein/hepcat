@@ -20,7 +20,8 @@ import {
 
 export default function Body() {
   const { socketEmit } = useSocketIO();
-  const { user, isAdmin, roomCalledTo, roomChoice, setRoomChoice } = useUser();
+  const { user, isAdmin, allRooms, roomCalledTo, roomChoice, setRoomChoice } =
+    useUser();
   const globals = useAppGlobals();
   const showRoomWarning = !isAdmin && roomCalledTo !== roomChoice;
   const isScreen = user && user.role_name === 'Screen';
@@ -67,19 +68,17 @@ export default function Body() {
                 variant="secondary"
                 className="a_grid-display-dropdown"
               >
-                {['Plenary', 'Room_1A', 'Room_1B', 'Room_2A', 'Room_2B'].map(
-                  (room, index) => {
-                    return (
-                      <Dropdown.Item
-                        key={index}
-                        as="button"
-                        onClick={() => setRoomChoice(room)}
-                      >
-                        {room}
-                      </Dropdown.Item>
-                    );
-                  },
-                )}
+                {allRooms.map((room, index) => {
+                  return (
+                    <Dropdown.Item
+                      key={index}
+                      as="button"
+                      onClick={() => setRoomChoice(room)}
+                    >
+                      {room}
+                    </Dropdown.Item>
+                  );
+                })}
               </DropdownButton>
               {isAdmin &&
                 (enableBringButton ? (

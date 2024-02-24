@@ -16,6 +16,7 @@ export default function UserContext({ children }) {
   const [adminKey, setAdminKey] = React.useState('');
   const [paperKeys, setPaperKeys] = React.useState(null);
   const [allUsers, setAllUsers] = React.useState([]);
+  const [allRooms, setAllRooms] = React.useState([]);
   const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
   const [aboutMD, setAboutMD] = React.useState('');
@@ -35,6 +36,7 @@ export default function UserContext({ children }) {
           setAdminKey(data.admin_key);
         }
         setPaperKeys(data.paper_keys);
+        setAllRooms(data.all_rooms);
         setAboutMD(smartquotes(data.about));
         if (data.user.room_name) {
           setRoomChoice(data.user.room_name);
@@ -111,6 +113,7 @@ export default function UserContext({ children }) {
         adminKey,
         paperKeys,
         allUsers,
+        allRooms,
         roomCalledTo,
         roomChoice,
         setRoomChoice,

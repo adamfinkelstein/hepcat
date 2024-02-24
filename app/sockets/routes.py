@@ -681,6 +681,7 @@ def login_user_and_send_welcome(user):
         "token": user.generate_token(),  # used to remember user after page refreshes
         "about": about_md,
         "paper_keys": paper_keys,
+        "all_rooms": all_queue_rooms,
     }
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
