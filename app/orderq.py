@@ -347,10 +347,10 @@ class Minipaper:
         self.conf_users = conf_users
 
 
-def paper_conflicts_culled(p, letter):
+def paper_conflicts_culled(p, room_code):
     conflicts_culled = []
     for user in p.conf_users:
-        if user.rooms and letter in user.rooms:
+        if user.rooms and room_code in user.rooms:
             conflicts_culled.append(user)
     # paper_copy = {'nid': p.nid, 'conf_users':conflicts_culled}
     paper_copy = Minipaper(p.nid, conflicts_culled)
@@ -360,9 +360,9 @@ def paper_conflicts_culled(p, letter):
 def papers_with_only_conflicts_in_room(papers, room):
     if not room or room == "Plenary":
         return papers
-    letter = room[-1]  # last character
-    print(f"culling paper conflicts for room {letter}...")
-    result = [paper_conflicts_culled(p, letter) for p in papers]
+    room_code = room[-2:]  # last 2 char, like 1A for Room_1A
+    print(f"culling paper conflicts for room {room_code}...")
+    result = [paper_conflicts_culled(p, room_code) for p in papers]
     return result
 
 

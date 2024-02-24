@@ -43,7 +43,7 @@ export default function Paper() {
     if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') {
       return conflicts; // no changes
     }
-    const roomCode = roomChoice.slice(-2); // get last two chars, like 1A
+    const roomCode = roomChoice.slice(-2); // last two chars, like 1A
     const inRoom = [];
     const outRoom = [];
     for (let i = 0; i < conflicts.length; i++) {

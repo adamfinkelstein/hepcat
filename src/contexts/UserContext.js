@@ -51,8 +51,8 @@ export default function UserContext({ children }) {
         if (room === 'Plenary') {
           return true;
         }
-        const roomLetter = room.slice(-1); // last letter of room string
-        if (user && user.rooms && user.rooms.includes(roomLetter)) {
+        const roomCode = room.slice(-2); // last two chars, like 1A
+        if (user && user.rooms && user.rooms.includes(roomCode)) {
           return true;
         }
         return false;
