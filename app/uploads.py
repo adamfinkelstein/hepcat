@@ -29,6 +29,7 @@ from .models import (
     ensure_screens,
     drop_and_rebuild_tables,
     set_all_users_to_be_in_plenary,
+    fill_history_context_tables_and_room_list,
 )
 
 
@@ -320,6 +321,11 @@ def insert_cluster_rows(rows):
 def insert_paper_room_rows(rows):
     room_type = int(LabelType.Room)
     count = insert_label_rows(rows, room_type)
+    # Since paper rooms changed, update the list of rooms available.
+    # Also ensure all GQs exist, and reset them.
+    fill_history_context_tables_and_room_list()
+    ensure_all_gqs()
+    reset_all_gqs()
     return count
 
 

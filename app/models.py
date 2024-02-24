@@ -30,23 +30,18 @@ history_context_int = {}
 all_queue_rooms = []
 
 
-def get_active_room_codes():
-    room_codes_set = set()
-    users = User.query.all()
-    for user in users:
-        if user.rooms:
-            user_codes_list = user.rooms.split(" ")
-            user_codes_set = set(user_codes_list)
-            room_codes_set.update(user_codes_set)  # union
-    room_codes_list = list(room_codes_set)
-    room_codes_list.sort()
-    return room_codes_list
+def get_active_room_names():
+    room_labels = Label.query.filter(Label.is_room).all()
+    room_names = [label.name for label in room_labels]
+    if "Plenary" not in room_names:
+        room_names.append("Plenary")  # insist on at least this room
+    room_names.sort()
+    return room_names
 
 
 def init_history_context_tables():
     history_context_name.clear()
     history_context_int.clear()
-    all_queue_rooms.clear()
 
 
 def append_history_context_tables(room_name, room_int):
@@ -58,17 +53,17 @@ def fill_history_context_tables_and_room_list():
     init_history_context_tables()
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
-    all_queue_rooms.append("Plenary")
-    room_codes_list = get_active_room_codes()
-    for code in room_codes_list:
-        if len(code) < 2:
+    all_queue_rooms.clear()  # global variable
+    all_queue_rooms.extend(get_active_room_names())
+    for room in all_queue_rooms:
+        if not room.startswith("Room_"):  # Plenary
             continue
-        session = int(code[0])
-        letter_index = ord(code[1]) - ord("A")
+        session = int(room[-2])  # Like 2 in Room_2A
+        letter_index = ord(room[-1]) - ord("A")  # Like 0 for A in Room_2A
         room_int = session * 100 + letter_index
-        room_name = f"Room_{code}"
-        all_queue_rooms.append(room_name)
-        append_history_context_tables(room_name, room_int)
+        append_history_context_tables(room, room_int)
+    print("all_queue_rooms", all_queue_rooms)
+    print("room table", history_context_int)
 
 
 def context_str_to_enum(str):
@@ -253,7 +248,6 @@ class Paper(db.Model):
     thumbnail = db.Column(db.String(256))
     title = db.Column(db.String())
     abstract = db.Column(db.String())
-    summary = db.Column(db.String())  # probably no longer used XXXX
     all_scores = db.Column(db.String(256))
     journal_only = db.Column(db.Boolean, default=False)
     conf_users = db.relationship(
