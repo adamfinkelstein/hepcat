@@ -15,7 +15,6 @@ from .models import (
     Paper,
     History,
     LabelType,
-    HistoryContext,
     Label,
     FileUpload,
     Query,
@@ -98,7 +97,7 @@ def delete_all_history():
 
 # this is before history upload, which is just for debugging
 def delete_non_bbs_history():
-    context_bbs = int(HistoryContext.BBS)
+    context_bbs = context_str_to_enum("BBS")
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
     print(f"Deleted {num_deleted} history entries.")
@@ -369,10 +368,10 @@ def insert_chair_score_rows(rows):
         paper.all_scores = reviews
         db.session.add(paper)
         # update paper history with new bbs entry
-        context_enum = int(HistoryContext.BBS)
+        context_bbs = context_str_to_enum("BBS")
         consensus_enum = status_str_to_enum(status)
         history = History(
-            paper=paper, context_enum=context_enum, status_enum=consensus_enum
+            paper=paper, context_enum=context_bbs, status_enum=consensus_enum
         )
         db.session.add(history)
         count += 1

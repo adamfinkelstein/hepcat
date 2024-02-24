@@ -37,13 +37,12 @@ from ..models import (
     UserSchema,
     PaperSchema,
     History,
-    HistoryContext,
     Query,
     HistorySchema,
     FileUploadSchema,
     GlobQueue,
     GlobQueueSchema,
-    all_queue_rooms,
+    get_all_rooms,
     dump_users_papers_and_conflicts,
     get_or_create_gq,
     status_str_to_enum,
@@ -95,8 +94,8 @@ def get_grid_paper_dump(paper):
     status = "Unseen"
     stickie = False
     history = list(paper.history)
-    context_stickie = int(HistoryContext.Stickie)
-    context_plenary = int(HistoryContext.Plenary)
+    context_stickie = context_str_to_enum("Stickie")
+    context_plenary = context_str_to_enum("Plenary")
     for h in history:
         if h.context_enum == context_stickie:
             stickie = True
@@ -174,7 +173,7 @@ def get_paper_conflicts_dump(paper):
 
 
 def get_paper_history_dump(paper):
-    context_plenary = int(HistoryContext.Plenary)
+    context_plenary = context_str_to_enum("Plenary")
     plenary_history = (
         History.query.filter_by(paper_id=paper.id)
         .filter(History.context_enum >= context_plenary)
@@ -211,7 +210,7 @@ def is_paper_unseen(paper):
 
 
 def is_paper_stickie(paper):
-    context_stickie = int(HistoryContext.Stickie)
+    context_stickie = context_str_to_enum("Stickie")
     latest = get_latest_history(paper)
     if not latest or latest.context_enum != context_stickie:
         return False
@@ -316,7 +315,7 @@ def get_all_unseen_reject_below_bar_papers():
 
 def bulk_reject_below_bar():
     papers = get_all_unseen_reject_below_bar_papers()
-    context_plenary = int(HistoryContext.Plenary)
+    context_plenary = context_str_to_enum("Plenary")
     status_enum = status_str_to_enum("Reject")
     for paper in papers:
         history = History(
@@ -526,7 +525,7 @@ def update_current_paper_status(room, new_status):
     status_enum = status_str_to_enum(new_status)
     room_context = context_str_to_enum(room)
     if not room_context:  # just for safety default to plenary
-        room_context = int(HistoryContext.Plenary)
+        room_context = context_str_to_enum("Plenary")
     history = History(paper=paper, context_enum=room_context, status_enum=status_enum)
     db.session.add(history)  # commit will follow on setting current index
     return current_index, paper
@@ -623,7 +622,7 @@ def get_about_md(append_git_info):
 
 
 def clear_all_stickies():
-    context_stickie = int(HistoryContext.Stickie)
+    context_stickie = context_str_to_enum("Stickie")
     count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
     print(f"this should clear {count_deleted} stickies")
     return count_deleted
@@ -676,12 +675,13 @@ def login_user_and_send_welcome(user):
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
     paper_keys = get_unconflicted_paper_keys(user)
+    all_rooms = get_all_rooms()
     data = {
         "user": user_dump,
         "token": user.generate_token(),  # used to remember user after page refreshes
         "about": about_md,
         "paper_keys": paper_keys,
-        "all_rooms": all_queue_rooms,
+        "all_rooms": all_rooms,
     }
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
@@ -1062,7 +1062,7 @@ def user_set_stickie(data):
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
         return  # should never happen because it is now checked at the client
-    context_stickie = int(HistoryContext.Stickie)
+    context_stickie = context_str_to_enum("Stickie")
     status_enum = status_str_to_enum(status)
     history = History(
         paper=paper, context_enum=context_stickie, status_enum=status_enum
@@ -1140,7 +1140,8 @@ class Conflictbot(Namespace):
         # broadcast user list and status to all conflictbots, including this one
         conflictbots_broadcast_user_list()
         # need to send all rooms.
-        for room in all_queue_rooms:
+        all_rooms = get_all_rooms()
+        for room in all_rooms:
             globs, current_paper = get_globs_dump_with_status(room)
             conflictbots_broadcast_conflicts(globs, current_paper)
 
@@ -1162,7 +1163,8 @@ else:
 
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
-    msg_data = {"roomNames": all_queue_rooms, "userMappings": users_dump}
+    all_rooms = get_all_rooms()
+    msg_data = {"roomNames": all_rooms, "userMappings": users_dump}
     emit("user-list", msg_data, namespace=conflictbot_namespace, broadcast=True)
 
 

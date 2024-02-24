@@ -1,6 +1,6 @@
 import os
 from subprocess import run
-from .models import History, HistoryContext
+from .models import History, context_str_to_enum
 
 
 #######################
@@ -63,7 +63,7 @@ def get_latest_history(paper):
 
 # only history set in a meeting room
 def get_latest_room_history(paper):
-    context_plenary = int(HistoryContext.Plenary)
+    context_plenary = context_str_to_enum("Plenary")
     latest_history = (
         History.query.filter_by(paper_id=paper.id)
         .filter(History.context_enum >= context_plenary)

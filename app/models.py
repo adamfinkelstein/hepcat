@@ -24,15 +24,63 @@ def try_sql_commit():
 # History Context / Status
 ######################
 
+history_context_basic = "Error,BBS,Stickie,Plenary".split(",")
+history_context_name = {}
+history_context_int = {}
+all_queue_rooms = []
 
-class HistoryContext(IntEnum):
-    BBS = 0
-    Stickie = 1
-    Plenary = 2
-    Room_1A = 3
-    Room_1B = 4
-    Room_2A = 5
-    Room_2B = 6
+
+def get_active_room_codes():
+    room_codes_set = set()
+    users = User.query.all()
+    for user in users:
+        if user.rooms:
+            user_codes_list = user.rooms.split(" ")
+            user_codes_set = set(user_codes_list)
+            room_codes_set.update(user_codes_set)  # union
+    room_codes_list = list(room_codes_set)
+    room_codes_list.sort()
+    return room_codes_list
+
+
+def init_history_context_tables():
+    history_context_name.clear()
+    history_context_int.clear()
+    all_queue_rooms.clear()
+
+
+def append_history_context_tables(room_name, room_int):
+    history_context_int[room_name] = room_int
+    history_context_name[room_int] = room_name
+
+
+def fill_history_context_tables_and_room_list():
+    init_history_context_tables()
+    for room_int, room_name in enumerate(history_context_basic):
+        append_history_context_tables(room_name, room_int)
+    all_queue_rooms.append("Plenary")
+    room_codes_list = get_active_room_codes()
+    for code in room_codes_list:
+        if len(code) < 2:
+            continue
+        session = int(code[0])
+        letter_index = ord(code[1]) - ord("A")
+        room_int = session * 100 + letter_index
+        room_name = f"Room_{code}"
+        all_queue_rooms.append(room_name)
+        append_history_context_tables(room_name, room_int)
+
+
+def context_str_to_enum(str):
+    if str in history_context_int:
+        return history_context_int[str]
+    return 0
+
+
+def context_enum_to_str(n):
+    if n in history_context_name:
+        return history_context_name[n]
+    return "Error"
 
 
 class HistoryStatus(IntEnum):
@@ -40,20 +88,6 @@ class HistoryStatus(IntEnum):
     Reject = 1
     Conference = 2
     Journal = 3
-
-
-def context_str_to_enum(str):
-    if hasattr(HistoryContext, str):
-        return int(HistoryContext[str])
-    return 0
-
-
-def context_enum_to_str(n):
-    for entry in HistoryContext:
-        # print(entry.name, entry.value)
-        if entry.value == n:
-            return entry.name
-    return "BBS"  # default
 
 
 def status_str_to_enum(str):
@@ -255,7 +289,7 @@ class History(db.Model):
 
     @hybrid_property
     def context(self):
-        return HistoryContext(self.context_enum).name
+        return context_enum_to_str(self.context_enum)
 
     @hybrid_property
     def status(self):
@@ -412,8 +446,6 @@ class QuerySchema(ma.Schema):
 # Global queue vars
 ######################
 
-all_queue_rooms = "Plenary,Room_1A,Room_1B,Room_2A,Room_2B".split(",")
-
 
 def get_or_create_gq(room):
     gq = GlobQueue.query.filter_by(room=room).first()
@@ -485,13 +517,21 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
         db.session.add(user)
 
 
+def get_all_rooms():
+    if not all_queue_rooms:
+        fill_history_context_tables_and_room_list()
+    return all_queue_rooms
+
+
 def ensure_all_gqs():
-    for room in all_queue_rooms:
+    rooms = get_all_rooms()
+    for room in rooms:
         get_or_create_gq(room)
 
 
 def reset_all_gqs():
-    for room in all_queue_rooms:
+    rooms = get_all_rooms()
+    for room in rooms:
         reset_gq(room)
 
 
