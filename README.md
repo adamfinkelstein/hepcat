@@ -154,6 +154,12 @@ heroku buildpacks:add heroku/python
 heroku buildpacks
 ```
 
+In an older version of Hepcat, we installed the concorde binary using this buildpack, which has since been replaced by checking a local directory in containing the executable for various architectures:
+
+```
+https://github.com/tonyta/heroku-buildpack-custom-binaries#v1.0.0
+```
+
 Also set environment variables at Heroku, at least:
 
 - `SECRET_KEY` (change resets all hepcat local store inc acts)
