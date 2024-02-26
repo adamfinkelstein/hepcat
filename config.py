@@ -14,7 +14,7 @@ class Config:
     HEPCAT_CHAIR_PASSWD = os.environ.get("HEPCAT_CHAIR_PASSWD")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, "tmp")
-    BIN_FOLDER = os.path.join(basedir, "custom_bin")
+    BIN_FOLDER = os.path.join(basedir, "local_bin")
     APP_FOLDER = os.path.join(basedir, "app")
     USE_EVENTLET = os.environ.get("USE_EVENTLET")
     ALLOW_CORS = os.getenv("ALLOW_CORS")

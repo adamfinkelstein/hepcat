@@ -1,4 +1,5 @@
 import os
+import platform
 import time
 import random
 import numpy as np
@@ -6,10 +7,7 @@ from flask import current_app
 from .util import run_cmd, make_path_if_needed, write_text_to_file, read_lines_from_file
 
 
-use_ortools = os.environ.get("HEPCAT_USE_ORTOOLS")
-
-
-def get_paper_conficts_set(p):
+def get_paper_conflicts_set(p):
     if not p or not p.conf_users:
         return set()
     conflict_set = set(list(p.conf_users))
@@ -17,8 +15,8 @@ def get_paper_conficts_set(p):
 
 
 def get_enter_leave_conf_sets(paper_prev, paper_curr):
-    conf_prev = get_paper_conficts_set(paper_prev)
-    conf_curr = get_paper_conficts_set(paper_curr)
+    conf_prev = get_paper_conflicts_set(paper_prev)
+    conf_curr = get_paper_conflicts_set(paper_curr)
     enter = conf_prev - conf_curr
     leave = conf_curr - conf_prev
     return conf_prev, conf_curr, enter, leave
@@ -68,7 +66,7 @@ def get_distance_matrix(papers):
 
 
 def get_node_costs(papers, nodes):
-    costs = [get_enter_leave_cost(get_paper_conficts_set(papers[n])) for n in nodes]
+    costs = [get_enter_leave_cost(get_paper_conflicts_set(papers[n])) for n in nodes]
     return costs
 
 
@@ -218,16 +216,22 @@ EDGE_WEIGHT_SECTION
     write_text_to_file(contents, fname)
 
 
-def run_concorde(bin_folder, input_file):
+def get_concorde_path_if_exists(bin_folder):
+    local_platform = platform.system() + "." + platform.machine()
+    print("local_platform:", local_platform)
+    executable = "concorde." + local_platform
+    concorde_path = os.path.join(bin_folder, executable)
+    if os.path.isfile(concorde_path):
+        return concorde_path
+    return None
+
+
+def run_concorde(concorde_path, input_file):
     # flags passed to concorde:
     # -s 0 : seed random number generator to 0 so answer is deterministic
     # -x   : delete files on completion (sav pul mas)
     # -V   : just run fast cuts
     # -o f : output solution to file f
-    concorde_path = os.path.join(bin_folder, "concorde")
-    if not os.path.isfile(concorde_path):
-        print(f"concorde path does not exist: {concorde_path}")
-        return
     cmd = f"{concorde_path} -s 0 -x -V {input_file}"
     run_cmd(cmd, True)
     # print(cmd)
@@ -271,12 +275,14 @@ def setup_and_run_tsp_opt(distance_matrix):
     current_directory = os.getcwd()  # remember where we were
     os.chdir(working_folder)
     write_tsp_input(distance_matrix, input_file)
-    if use_ortools:  # global set at top of file
+    use_ortools = os.environ.get("HEPCAT_USE_ORTOOLS")
+    concorde_path = get_concorde_path_if_exists(bin_folder)
+    if use_ortools or not concorde_path:  # global set at top of file
         solver = "ortools"
         run_ortools(app_folder, input_file)
     else:
         solver = "concorde"
-        run_concorde(bin_folder, input_file)
+        run_concorde(concorde_path, input_file)
     node_order = read_solution(output_file)
     os.chdir(current_directory)  # return to where we were
     return node_order, solver
