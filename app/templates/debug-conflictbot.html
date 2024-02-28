@@ -43,9 +43,6 @@
       const globHepcatSocket = io('{{ conflictbot_socket }}');
       console.log('opened socket to hepcat');
 
-      // globals passed from web server
-      const globURL = '{{ url }}';
-
       function addLItoUL(ul, html) {
         const li = document.createElement('li');
         li.innerHTML = html;

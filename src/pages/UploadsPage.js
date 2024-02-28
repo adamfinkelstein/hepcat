@@ -121,13 +121,13 @@ export default function UploadsPage() {
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-primary"
-            href={'/admin/debug_conflictbot/' + adminKey}
+            href={'/admin/conflictbot3/' + adminKey}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Debug Conflictbot
+            New Conflictbot3
           </a>
-          &nbsp;&nbsp;Open Conflictbot Socket Debugger in new tab.
+          &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
         </Stack>
 
         <Stack className="space-down-btn" direction="horizontal">

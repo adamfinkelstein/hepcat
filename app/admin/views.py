@@ -66,9 +66,20 @@ def debug_conflictbot(key):
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)
         return abort(404)
-    url = f"/admin/debug_conflictbot/{inst}"
     return render_template(
         "debug-conflictbot.html",
         conflictbot_socket=conflictbot_namespace,
-        url=url,
     )
+
+@admin.route("/conflictbot3/<key>")
+def conflictbot3(key):
+    inst = current_app.config["INSTANCE"]
+    if key != inst:
+        msg = "Sorry -- the admin key is wrong. Try logging back in."
+        flash(msg)
+        return abort(404)
+    return render_template(
+        "conflictbot3.html",
+        conflictbot_socket=conflictbot_namespace,
+    )
+
