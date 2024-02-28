@@ -1223,14 +1223,14 @@ def admin_upload_file(file):
     emit_admin_queries(True)
     if header_type == "users":
         disconnect_all_users()
-    elif header_type in ["chair_scores", "history"]:
+        return
+    if header_type in ["chair_scores", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
-    else:
-        msg = dump_users_papers_and_conflicts("After Upload")
-        msg = f"File upload ({header_type}) successful. {msg}"
-        data = {"message": msg, "type": "success"}
-        emit("server_send_flasher", data)
+    msg = dump_users_papers_and_conflicts("After Upload")
+    msg = f"File upload ({header_type}) successful. {msg}"
+    data = {"message": msg, "type": "success"}
+    emit("server_send_flasher", data)
 
 
 @socketio.on("admin_wipe_database")

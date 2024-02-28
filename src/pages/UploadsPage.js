@@ -46,6 +46,8 @@ export default function UploadsPage() {
     controlledLog(file);
     socketEmit('admin_file_upload', file);
     fileUp.value = null; // reset the upload
+    const msg = "Sent file '" + fileName + "' for upload...";
+    flash(msg, 'success');
   }
 
   function formatUpload(upload) {
