@@ -1,4 +1,3 @@
-import os
 from flask import (
     abort,
     flash,
@@ -8,10 +7,9 @@ from flask import (
 )
 from . import admin
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
+from ..util import get_conflictbot_namespace
 
-# would love to pull this variable from app.config but unfortunately not set yet.
-# this statement is duplicated in sockets/routes.py.
-conflictbot_namespace = "/conflictbot_" + os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
+conflictbot_namespace = get_conflictbot_namespace()
 
 
 @admin.route("/download_csv/<kind>/<key>")

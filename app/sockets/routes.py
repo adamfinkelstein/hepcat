@@ -22,8 +22,8 @@ from .users import (
     get_user_id_from_session,
     get_current_user_or_none,
 )
-from ..util import (
-    read_text_from_file,
+from ..util import get_conflictbot_namespace, read_text_from_file
+from ..util_history import (
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
@@ -1131,9 +1131,7 @@ def emit_admin_queries(broadcast):
 #################################################
 
 
-# would love to pull this variable from app.config but unfortunately not set yet.
-conflictbot_namespace = "/conflictbot_" + os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
-print("conflictbot_namespace: ", conflictbot_namespace)
+conflictbot_namespace = get_conflictbot_namespace()
 
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()

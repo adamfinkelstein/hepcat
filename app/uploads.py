@@ -5,10 +5,12 @@ from flask import current_app
 from . import db
 from .util import (
     run_cmd,
-    get_latest_room_history_status,
     make_path_if_needed,
     write_data_to_file,
     write_text_to_file,
+)
+from .util_history import (
+    get_latest_room_history_status,
 )
 from .models import (
     User,
