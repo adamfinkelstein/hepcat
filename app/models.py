@@ -541,11 +541,12 @@ def ensure_admin():
 
 
 def ensure_screens():
-    # AF??? Future: check to see if *ANY* screen users exist already.
     passwd = get_config_or_default("HEPCAT_SCREEN_PASSWD", "screen")
-    ensure_user("screen.ax@example.com", "Screen", "AX", "Screen", passwd)
-    ensure_user("screen.by@example.com", "Screen", "BY", "Screen", passwd)
-    ensure_user("screen@example.com", "Screen", "Plenary", "Screen", passwd)
+    rooms = get_all_rooms()
+    for room in rooms:
+        lower = room.lower()
+        email = f"screen.{lower}@example.com"
+        ensure_user(email, "Screen", room, "Screen", passwd)
 
 
 def dump_users_papers_and_conflicts(title):

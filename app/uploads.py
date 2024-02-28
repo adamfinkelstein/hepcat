@@ -326,6 +326,7 @@ def insert_paper_room_rows(rows):
     fill_history_context_tables_and_room_list()
     ensure_all_gqs()
     reset_all_gqs()
+    ensure_screens()
     return count
 
 
