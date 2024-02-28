@@ -1,3 +1,4 @@
+import os
 from flask import (
     abort,
     flash,
@@ -7,6 +8,10 @@ from flask import (
 )
 from . import admin
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
+
+# would love to pull this variable from app.config but unfortunately not set yet.
+# this statement is duplicated in sockets/routes.py.
+conflictbot_namespace = "/conflictbot_" + os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
 
 
 @admin.route("/download_csv/<kind>/<key>")
@@ -45,10 +50,9 @@ def old_zoom_conflictbot(key):
     url = f"/admin/old_zoom_conflictbot/{inst}"
     client_id = current_app.config["ZOOM_CONFLICTBOT_CLIENT_ID"]
     client_secret = current_app.config["ZOOM_CONFLICTBOT_CLIENT_SECRET"]
-    conflictbot_socket = current_app.config["HEPCAT_CONFLICTBOT_SOCKET"]
     return render_template(
         "old-zoom-conflictbot.html",
-        conflictbot_socket=conflictbot_socket,
+        conflictbot_socket=conflictbot_namespace,
         url=url,
         client_id=client_id,
         client_secret=client_secret,
@@ -63,9 +67,8 @@ def debug_conflictbot(key):
         flash(msg)
         return abort(404)
     url = f"/admin/debug_conflictbot/{inst}"
-    conflictbot_socket = current_app.config["HEPCAT_CONFLICTBOT_SOCKET"]
     return render_template(
         "debug-conflictbot.html",
-        conflictbot_socket=conflictbot_socket,
+        conflictbot_socket=conflictbot_namespace,
         url=url,
     )

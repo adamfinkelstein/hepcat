@@ -5,7 +5,7 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from flask import current_app
-from flask_socketio import Namespace, emit, disconnect, join_room, leave_room
+from flask_socketio import emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio
@@ -1131,35 +1131,9 @@ def emit_admin_queries(broadcast):
 #################################################
 
 
-# FUTURE: move these two functions below conflictbot_namespace declaration
-# and eliminate class.
-class Conflictbot(Namespace):
-    def on_connect(self):
-        print("conflictbot connected:", self)
-        print("sending user list.")
-        # broadcast user list and status to all conflictbots, including this one
-        conflictbots_broadcast_user_list()
-        # need to send all rooms.
-        all_rooms = get_all_rooms()
-        for room in all_rooms:
-            globs, current_paper = get_globs_dump_with_status(room)
-            conflictbots_broadcast_conflicts(globs, current_paper)
-
-    def on_disconnect(self):
-        print("conflictbot disconnected")
-
-
-# change this variable to pull from environment
-# conflictbot_namespace = '/lurk_NxtCmHS8aDj6'
-# unfortunately this is not set yet: current_app.config['HEPCAT_CONFLICTBOT_SOCKET']
-conflictbot_namespace = os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
-if conflictbot_namespace:
-    conflictbot_namespace = "/" + conflictbot_namespace
-    print("conflictbot_namespace: ", conflictbot_namespace)
-else:
-    conflictbot_namespace = "/lurk_NxtCmHS8aDj6"  # in case not set in environ
-    print("set conflictbot_namespace to default")
-
+# would love to pull this variable from app.config but unfortunately not set yet.
+conflictbot_namespace = "/conflictbot_" + os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
+print("conflictbot_namespace: ", conflictbot_namespace)
 
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
@@ -1200,8 +1174,22 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     }
     emit("conflicts", data, namespace=conflictbot_namespace, broadcast=True)
 
+@socketio.on("connect", namespace=conflictbot_namespace)
+def conflictbot_connect():
+    print("conflictbot connected")
+    print("sending user list.")
+    # broadcast user list and status to all conflictbots, including this one
+    conflictbots_broadcast_user_list()
+    # need to send all rooms.
+    all_rooms = get_all_rooms()
+    for room in all_rooms:
+        globs, current_paper = get_globs_dump_with_status(room)
+        conflictbots_broadcast_conflicts(globs, current_paper)
 
-socketio.on_namespace(Conflictbot(conflictbot_namespace))
+# This may not work, but is not really needed:
+# @socketio.on("disconnect", namespace=conflictbot_namespace)
+# def conflictbot_disconnect():
+#     print("conflictbot disconnected")
 
 
 ####################################

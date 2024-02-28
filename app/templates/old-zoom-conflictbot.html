@@ -122,7 +122,7 @@
         <script>
       // globals associated with hepcat
       let globUniqueNames = null;
-      const globHepcatSocket = io('/' + '{{ conflictbot_socket }}');
+      const globHepcatSocket = io('{{ conflictbot_socket }}');
       const globConflictsByRoom = {};
       console.log('opened socket to hepcat');
 
