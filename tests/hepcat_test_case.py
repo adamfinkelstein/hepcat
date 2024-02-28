@@ -29,7 +29,7 @@ class HepcatTestCase(unittest.TestCase):
         db.drop_all()
         self.app_ctx.pop()
 
-    def login(self, email="screen@example.com", password="screen"):
+    def login(self, email="bradley.williams@example.com", password="pass"):
         client = socketio.test_client(
             self.app,
             auth={"email": email, "password": password},
