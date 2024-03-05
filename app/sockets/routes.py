@@ -244,10 +244,10 @@ def room_code_in_user_rooms(room_code, user):
     return is_in_rooms
 
 
-def filter_only_contains_room(filter_only):
+def room_in_filter_only(filter_only):
     for filter in filter_only:
         if filter.startswith("Room_"):
-            return True
+            return filter
     return False
 
 
@@ -287,7 +287,7 @@ def include_paper_in_queue(paper, filters):
         return False
     if "Only Admin Conf" in filter_only and not has_chair_conflict(paper):
         return False
-    room_filter = filter_only_contains_room(filter_only)
+    room_filter = room_in_filter_only(filter_only)
     if room_filter and not paper_in_room(paper, room_filter):
         return False
     return True
