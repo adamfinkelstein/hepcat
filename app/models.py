@@ -30,11 +30,18 @@ history_context_int = {}
 all_queue_rooms = []
 
 
-def get_active_room_names():
+def is_room_name(str):
+    return str.startswith("Room_")
+
+
+def get_active_room_labels():
     room_labels = Label.query.filter(Label.is_room).all()
+    rooms_only = [label for label in room_labels if is_room_name(label.name)]
+    return rooms_only
+
+
+def room_labels_to_names(room_labels):
     room_names = [label.name for label in room_labels]
-    if "Plenary" not in room_names:
-        room_names.append("Plenary")  # insist on at least this room
     room_names.sort()
     return room_names
 
@@ -53,15 +60,15 @@ def fill_history_context_tables_and_room_list():
     init_history_context_tables()
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
+    room_labels = get_active_room_labels()
+    room_names = room_labels_to_names(room_labels)
     all_queue_rooms.clear()  # global variable
-    all_queue_rooms.extend(get_active_room_names())
-    for room in all_queue_rooms:
-        if not room.startswith("Room_"):  # Plenary
-            continue
-        session = int(room[-2])  # Like 2 in Room_2A
-        letter_index = ord(room[-1]) - ord("A")  # Like 0 for A in Room_2A
-        room_int = session * 100 + letter_index
-        append_history_context_tables(room, room_int)
+    all_queue_rooms.append("Plenary") # ensure at least this room
+    all_queue_rooms.extend(room_names)
+    for room_label in room_labels:
+        room_name = room_label.name
+        room_int = room_label.id + 1000  # prevent collision with history_context_basic
+        append_history_context_tables(room_name, room_int)
     print("all_queue_rooms", all_queue_rooms)
     print("room table", history_context_int)
 
@@ -158,16 +165,16 @@ class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
-    login_token = db.Column(db.String(64), unique=True, index=True)  # unused
+    # login_token = db.Column(db.String(64), unique=True, index=True)  # unused
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     password_hash = db.Column(db.String(128))
     last_seen = db.Column(db.DateTime)
-    last_seen_in = db.Column(db.String(8))  # like: Room_1A
-    room_name = db.Column(db.String(8), default="Plenary")  # like: Room_1A
-    rooms = db.Column(db.String(64))  # coded like: 1B 2C 3A
+    last_seen_in = db.Column(db.String(32))  # like: Room_1A
+    room_name = db.Column(db.String(32), default="Plenary")  # like: Room_1A
+    rooms = db.Column(db.String(256))  # coded like: 1B 2C 3A
     # role is a backref from Role
     # conf_papers is a backref from papers
 
