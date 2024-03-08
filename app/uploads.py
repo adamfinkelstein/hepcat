@@ -149,23 +149,29 @@ def insert_query_rows(rows):
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
     count = 0
+    uniq_emails = set()
     for row in rows:
         if len(row) < 5:
             continue
         email, first_name, last_name, role, password = row
         lower_email = email.lower()  # ensure emails are all lower case
+        if lower_email in uniq_emails:
+            print('skipping duplicate entry for email:', lower_email)
+            continue
+        uniq_emails.add(lower_email)
         user = User(
             email=lower_email,
             first_name=first_name,
             last_name=last_name,
             password=password,
         )
+        # print(f'added user {email}')
         if len(role):
             roleObj = get_or_insert_role(role)
             user.role = roleObj
         db.session.add(user)
         count += 1
-    ensure_screens()
+    ensure_screens()  # this will provide at least Plenary but later need to add rooms
     return count
 
 
@@ -290,12 +296,18 @@ def insert_conflict_rows(rows):
 
 
 # Used for both Clusters and Rooms
-def insert_label_rows(rows, label_type):
+def insert_label_rows(rows, label_type, require_prefix=None):
     count = 0
+    issued_prefix_warning = False
     for row in rows:
         if len(row) < 2:
             continue
         sid, label_name = row
+        if require_prefix and not label_name.startswith(require_prefix):
+            if not issued_prefix_warning:
+                print(f'Room prefix should be Room_ but got this instead:{label_name}')
+                issued_prefix_warning = True
+            continue
         paper = Paper.query.filter_by(sid=sid).first()
         label = (
             Label.query.filter_by(type_enum=label_type)
@@ -322,7 +334,7 @@ def insert_cluster_rows(rows):
 # Submission ID,Room
 def insert_paper_room_rows(rows):
     room_type = int(LabelType.Room)
-    count = insert_label_rows(rows, room_type)
+    count = insert_label_rows(rows, room_type, "Room_")
     # Since paper rooms changed, update the list of rooms available.
     # Also ensure all GQs exist, and reset them.
     fill_history_context_tables_and_room_list()
@@ -332,15 +344,36 @@ def insert_paper_room_rows(rows):
     return count
 
 
-# Email,Rooms
+def sanitize_room_code(room):
+    if room.startswith("Room_"):
+        return room[5:]
+    return room #  Maybe later change this to return empty string, requiring the prefix
+
+
+def encode_room_list(room_list):
+    rooms = [sanitize_room_code(room) for room in room_list]
+    rooms = [room for room in rooms if len(room)]  # omit empty strings
+    rooms.sort()
+    rooms = " ".join(rooms)
+    return rooms
+
+
+# Email,Room
 def insert_people_room_rows(rows):
-    count = 0
+    email_to_room_list = {}
     for row in rows:
         if len(row) < 2:
             continue
-        email, rooms = row
+        email, room = row
         email = email.lower()  # ensure emails are all lower case
+        if email not in email_to_room_list:
+            email_to_room_list[email] = []
+        email_to_room_list[email].append(room)
+    count = 0
+    for email in email_to_room_list:
         person = User.query.filter_by(email=email).first()
+        room_list = email_to_room_list[email]
+        rooms = encode_room_list(room_list)
         if person and rooms:
             person.rooms = rooms
             db.session.add(person)
@@ -416,20 +449,20 @@ def insert_history_rows(rows):
 
 
 csvTypes = {
-    "chair_scores": "Submission ID,Sort Score,Status,Reviews",
+    "chair": "Submission ID,Sort Score,Status,Reviews",
     "clusters": "Submission ID,Cluster",
     "conflicts": "Submission ID,Email",
     "history": "Submission ID,When,Context,Status",
     "paper_rooms": "Submission ID,Room",
     "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
-    "people_rooms": "Email,Rooms",
+    "people_rooms": "Email,Room",
     "queries": "Name,Query",
     "users": "Email,First Name,Last Name,Role,Password",
 }
 
 
 csvInsertFunctions = {
-    "chair_scores": insert_chair_score_rows,
+    "chair": insert_chair_score_rows,
     "clusters": insert_cluster_rows,
     "conflicts": insert_conflict_rows,
     "history": insert_history_rows,
@@ -441,7 +474,7 @@ csvInsertFunctions = {
 }
 
 csvDeleteFunctions = {
-    "chair_scores": delete_all_chair_scores,
+    "chair": delete_all_chair_scores,
     "clusters": delete_all_clusters,
     "conflicts": delete_all_conflicts,
     "history": delete_non_bbs_history,
@@ -453,13 +486,13 @@ csvDeleteFunctions = {
 }
 
 csvDependence = {
-    "chair_scores": ["history"],
+    "chair": ["history"],
     "papers": [
         "conflicts",
         "history",
         "clusters",
         "paper_rooms",
-        "chair_scores",
+        "chair",
     ],
     "users": ["conflicts", "people_rooms"],
 }
@@ -556,7 +589,7 @@ def read_csv(filename):
     return header_type
 
 
-csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair_scores"
+csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
 csvLinklings = csvLinklings.split(",")
 
 
@@ -687,12 +720,12 @@ def get_users_as_rows():
 
 def get_people_rooms_as_rows():
     users = User.query.order_by(User.email).all()
-    header = "Email,Rooms"
+    header = "Email,Room"
     rows = [header]
     for u in users:
         rooms = u.rooms
         if rooms:
-            row = f"{u.email},{rooms}"
+            row = f"{u.email},{rooms}" ### AF2024-03-08: this format should be updated!
             rows.append(row)
     return rows
 
@@ -783,7 +816,7 @@ def write_csv_path(filename, rows):
 
 
 csvExtractFunctions = {
-    "chair_scores": get_chair_scores_as_rows,
+    "chair": get_chair_scores_as_rows,
     "clusters": get_clusters_as_rows,
     "conflicts": get_conflicts_as_rows,
     "history": get_history_as_rows,

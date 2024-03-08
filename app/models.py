@@ -349,7 +349,7 @@ class Label(db.Model):
 class GlobQueue(db.Model):
     __tablename__ = "glob_queues"
     id = db.Column(db.Integer, primary_key=True)
-    room = db.Column(db.String(8), unique=True)
+    room = db.Column(db.String(32), unique=True)
     bar = db.Column(db.Float, default=0.0)
     hide_queue = db.Column(db.Boolean, default=False)
     message = db.Column(db.String(), default="")

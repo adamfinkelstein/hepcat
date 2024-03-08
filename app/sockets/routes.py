@@ -1224,7 +1224,7 @@ def admin_upload_file(file):
     if header_type == "users":
         disconnect_all_users()
         return
-    if header_type in ["chair_scores", "history"]:
+    if header_type in ["chair", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
     msg = dump_users_papers_and_conflicts("After Upload")

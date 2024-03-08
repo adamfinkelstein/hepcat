@@ -1,99 +1,148 @@
 Submission ID,When,Context,Status
-papers_105,-14672,Stickie,Reject
-papers_154,-14549,Stickie,Tabled
-papers_177,-14430,Stickie,Tabled
-papers_164,-14298,Plenary,Tabled
-papers_106,-14109,Stickie,Tabled
-papers_169,-14009,Room_B,Tabled
-papers_167,-13908,Stickie,Journal
-papers_112,-13765,Stickie,Reject
-papers_120,-13620,Stickie,Reject
-papers_139,-13520,Stickie,Conference
-papers_192,-13382,Plenary,Reject
-papers_138,-13251,Room_Y,Tabled
-papers_129,-13149,Stickie,Tabled
-papers_161,-13038,Stickie,Tabled
-papers_134,-12888,Plenary,Tabled
-papers_122,-12759,Plenary,Tabled
-papers_114,-12612,Plenary,Journal
-papers_130,-12430,Stickie,Tabled
-papers_183,-12276,Room_X,Tabled
-papers_174,-12166,Plenary,Journal
-papers_194,-11998,Stickie,Tabled
-papers_166,-11895,Room_X,Reject
-papers_113,-11762,Stickie,Tabled
-papers_127,-11586,Plenary,Tabled
-papers_125,-11445,Plenary,Reject
-papers_135,-11299,Room_X,Tabled
-papers_140,-11137,Room_Y,Journal
-papers_198,-10964,Stickie,Tabled
-papers_198,-10845,Stickie,Tabled
-papers_158,-10737,Stickie,Tabled
-papers_105,-10541,Room_B,Reject
-papers_162,-10395,Stickie,Tabled
-papers_128,-10277,Room_A,Tabled
-papers_170,-10081,Plenary,Conference
-papers_124,-9891,Room_A,Reject
-papers_177,-9717,Stickie,Tabled
-papers_143,-9529,Room_X,Tabled
-papers_166,-9349,Stickie,Reject
-papers_125,-9207,Plenary,Reject
-papers_113,-9044,Room_Y,Tabled
-papers_199,-8872,Plenary,Tabled
-papers_119,-8677,Plenary,Tabled
-papers_191,-8568,Stickie,Reject
-papers_115,-8438,Plenary,Tabled
-papers_179,-8318,Plenary,Tabled
-papers_169,-8188,Plenary,Tabled
-papers_117,-8033,Stickie,Reject
-papers_108,-7857,Plenary,Conference
-papers_112,-7663,Plenary,Reject
-papers_200,-7496,Plenary,Conference
-papers_174,-7335,Plenary,Journal
-papers_140,-7145,Plenary,Journal
-papers_114,-7007,Stickie,Journal
-papers_126,-6881,Stickie,Tabled
-papers_138,-6706,Room_Y,Tabled
-papers_144,-6552,Stickie,Tabled
-papers_130,-6380,Room_X,Tabled
-papers_103,-6190,Plenary,Tabled
-papers_192,-6029,Plenary,Reject
-papers_167,-5855,Room_A,Journal
-papers_132,-5676,Stickie,Reject
-papers_182,-5517,Stickie,Tabled
-papers_116,-5327,Plenary,Tabled
-papers_183,-5217,Stickie,Tabled
-papers_133,-5110,Room_B,Tabled
-papers_134,-4976,Stickie,Tabled
-papers_107,-4850,Stickie,Reject
-papers_194,-4706,Room_B,Tabled
-papers_180,-4572,Plenary,Journal
-papers_155,-4429,Room_Y,Tabled
-papers_106,-4259,Room_Y,Tabled
-papers_139,-4061,Stickie,Conference
-papers_109,-3888,Plenary,Tabled
-papers_110,-3725,Stickie,Tabled
-papers_168,-3547,Plenary,Tabled
-papers_135,-3361,Stickie,Tabled
-papers_178,-3258,Plenary,Tabled
-papers_111,-3150,Plenary,Reject
-papers_164,-2953,Room_B,Tabled
-papers_150,-2849,Room_B,Conference
-papers_129,-2707,Room_X,Tabled
-papers_160,-2591,Stickie,Tabled
-papers_173,-2396,Stickie,Tabled
-papers_153,-2263,Room_A,Tabled
-papers_193,-2148,Stickie,Tabled
-papers_185,-1978,Room_X,Reject
-papers_122,-1834,Stickie,Tabled
-papers_145,-1639,Stickie,Tabled
-papers_172,-1440,Plenary,Tabled
-papers_120,-1333,Room_B,Reject
-papers_141,-1138,Plenary,Tabled
-papers_161,-1010,Stickie,Tabled
-papers_190,-893,Stickie,Tabled
-papers_127,-769,Plenary,Tabled
-papers_149,-654,Room_B,Tabled
-papers_154,-527,Plenary,Tabled
-papers_197,-404,Plenary,Conference
-papers_181,-265,Stickie,Tabled
+papers_140,2024-03-01 11:35:33.919843,Plenary,Tabled
+papers_112,2024-03-01 11:38:12.919843,Plenary,Journal
+papers_148,2024-03-01 11:39:53.919843,Plenary,Conference
+papers_127,2024-03-01 11:43:06.919843,Room_2A,Reject
+papers_134,2024-03-01 11:46:13.919843,Plenary,Tabled
+papers_104,2024-03-01 11:48:27.919843,Plenary,Conference
+papers_102,2024-03-01 11:50:09.919843,Plenary,Conference
+papers_162,2024-03-01 11:53:25.919843,Room_1A,Reject
+papers_173,2024-03-01 11:56:24.919843,Room_1A,Journal
+papers_184,2024-03-01 11:59:17.919843,Plenary,Tabled
+papers_166,2024-03-01 12:02:03.919843,Stickie,Tabled
+papers_123,2024-03-01 12:04:37.919843,Plenary,Tabled
+papers_117,2024-03-01 12:07:09.919843,Room_1A,Reject
+papers_178,2024-03-01 12:08:52.919843,Room_1A,Tabled
+papers_151,2024-03-01 12:11:43.919843,Room_2A,Reject
+papers_141,2024-03-01 12:14:09.919843,Stickie,Journal
+papers_219,2024-03-01 12:17:22.919843,Stickie,Tabled
+papers_206,2024-03-01 12:19:45.919843,Stickie,Tabled
+papers_172,2024-03-01 12:22:21.919843,Stickie,Journal
+papers_120,2024-03-01 12:24:52.919843,Stickie,Reject
+papers_129,2024-03-01 12:27:41.919843,Plenary,Journal
+papers_228,2024-03-01 12:30:19.919843,Room_1A,Tabled
+papers_160,2024-03-01 12:33:11.919843,Plenary,Journal
+papers_154,2024-03-01 12:35:29.919843,Plenary,Journal
+papers_143,2024-03-01 12:37:50.919843,Room_1A,Conference
+papers_138,2024-03-01 12:40:22.919843,Stickie,Tabled
+papers_244,2024-03-01 12:42:03.919843,Plenary,Tabled
+papers_190,2024-03-01 12:45:07.919843,Plenary,Tabled
+papers_210,2024-03-01 12:48:11.919843,Stickie,Journal
+papers_204,2024-03-01 12:50:07.919843,Room_1A,Tabled
+papers_207,2024-03-01 12:52:50.919843,Room_2A,Journal
+papers_203,2024-03-01 12:55:26.919843,Stickie,Tabled
+papers_246,2024-03-01 12:57:47.919843,Stickie,Tabled
+papers_136,2024-03-01 13:01:03.919843,Stickie,Reject
+papers_250,2024-03-01 13:03:24.919843,Plenary,Tabled
+papers_125,2024-03-01 13:05:12.919843,Stickie,Tabled
+papers_124,2024-03-01 13:07:22.919843,Room_2B,Tabled
+papers_182,2024-03-01 13:10:18.919843,Stickie,Conference
+papers_197,2024-03-01 13:12:10.919843,Plenary,Tabled
+papers_245,2024-03-01 13:15:14.919843,Plenary,Conference
+papers_217,2024-03-01 13:18:06.919843,Stickie,Reject
+papers_231,2024-03-01 13:19:46.919843,Stickie,Tabled
+papers_221,2024-03-01 13:22:02.919843,Room_1B,Tabled
+papers_115,2024-03-01 13:25:03.919843,Plenary,Tabled
+papers_107,2024-03-01 13:26:44.919843,Stickie,Tabled
+papers_119,2024-03-01 13:28:27.919843,Plenary,Tabled
+papers_226,2024-03-01 13:31:02.919843,Plenary,Tabled
+papers_169,2024-03-01 13:33:29.919843,Room_2A,Tabled
+papers_150,2024-03-01 13:36:17.919843,Room_1A,Tabled
+papers_214,2024-03-01 13:38:46.919843,Room_2A,Reject
+papers_180,2024-03-01 13:41:27.919843,Stickie,Journal
+papers_249,2024-03-01 13:43:11.919843,Room_2B,Tabled
+papers_242,2024-03-01 13:44:55.919843,Stickie,Reject
+papers_235,2024-03-01 13:48:00.919843,Room_1B,Tabled
+papers_118,2024-03-01 13:51:16.919843,Room_1B,Tabled
+papers_174,2024-03-01 13:54:27.919843,Stickie,Journal
+papers_201,2024-03-01 13:57:00.919843,Room_1A,Journal
+papers_146,2024-03-01 13:59:46.919843,Plenary,Tabled
+papers_152,2024-03-01 14:02:17.919843,Room_2B,Tabled
+papers_181,2024-03-01 14:03:58.919843,Plenary,Journal
+papers_165,2024-03-01 14:07:15.919843,Stickie,Tabled
+papers_153,2024-03-01 14:09:53.919843,Room_2A,Reject
+papers_103,2024-03-01 14:13:08.919843,Room_2B,Tabled
+papers_200,2024-03-01 14:15:17.919843,Room_2B,Tabled
+papers_223,2024-03-01 14:17:56.919843,Stickie,Tabled
+papers_188,2024-03-01 14:20:18.919843,Plenary,Reject
+papers_159,2024-03-01 14:23:28.919843,Plenary,Tabled
+papers_113,2024-03-01 14:25:18.919843,Room_1A,Tabled
+papers_183,2024-03-01 14:28:30.919843,Stickie,Tabled
+papers_216,2024-03-01 14:31:33.919843,Plenary,Tabled
+papers_110,2024-03-01 14:34:50.919843,Plenary,Conference
+papers_161,2024-03-01 14:38:04.919843,Plenary,Journal
+papers_176,2024-03-01 14:40:25.919843,Stickie,Reject
+papers_193,2024-03-01 14:42:54.919843,Room_1B,Reject
+papers_186,2024-03-01 14:46:12.919843,Room_2B,Tabled
+papers_106,2024-03-01 14:47:54.919843,Room_1A,Tabled
+papers_199,2024-03-01 14:50:25.919843,Room_2A,Conference
+papers_156,2024-03-01 14:53:40.919843,Plenary,Reject
+papers_142,2024-03-01 14:56:51.919843,Stickie,Tabled
+papers_168,2024-03-01 15:00:07.919843,Room_1A,Reject
+papers_227,2024-03-01 15:02:25.919843,Plenary,Journal
+papers_137,2024-03-01 15:04:40.919843,Plenary,Tabled
+papers_239,2024-03-01 15:06:53.919843,Room_2B,Tabled
+papers_163,2024-03-01 15:08:49.919843,Stickie,Conference
+papers_189,2024-03-01 15:11:32.919843,Plenary,Reject
+papers_111,2024-03-01 15:13:26.919843,Stickie,Reject
+papers_208,2024-03-01 15:15:07.919843,Stickie,Conference
+papers_220,2024-03-01 15:17:44.919843,Stickie,Tabled
+papers_155,2024-03-01 15:20:23.919843,Room_1A,Reject
+papers_240,2024-03-01 15:22:14.919843,Room_2A,Conference
+papers_109,2024-03-01 15:24:27.919843,Room_2B,Tabled
+papers_135,2024-03-01 15:26:19.919843,Plenary,Tabled
+papers_108,2024-03-01 15:28:36.919843,Plenary,Conference
+papers_212,2024-03-01 15:31:03.919843,Room_2B,Journal
+papers_179,2024-03-01 15:34:03.919843,Plenary,Reject
+papers_247,2024-03-01 15:36:48.919843,Plenary,Reject
+papers_195,2024-03-01 15:39:28.919843,Stickie,Tabled
+papers_101,2024-03-01 15:41:28.919843,Plenary,Journal
+papers_224,2024-03-01 15:44:43.919843,Room_1B,Conference
+papers_122,2024-03-01 15:47:17.919843,Plenary,Tabled
+papers_116,2024-03-01 15:49:53.919843,Stickie,Conference
+papers_248,2024-03-01 15:52:57.919843,Room_1B,Journal
+papers_185,2024-03-01 15:55:00.919843,Room_1B,Tabled
+papers_222,2024-03-01 15:57:51.919843,Plenary,Tabled
+papers_237,2024-03-01 16:01:07.919843,Plenary,Tabled
+papers_174,2024-03-01 16:04:20.919843,Plenary,Journal
+papers_106,2024-03-01 16:06:22.919843,Plenary,Tabled
+papers_101,2024-03-01 16:09:21.919843,Room_1B,Journal
+papers_217,2024-03-01 16:12:13.919843,Room_1A,Reject
+papers_245,2024-03-01 16:14:08.919843,Room_1A,Conference
+papers_111,2024-03-01 16:16:59.919843,Stickie,Reject
+papers_216,2024-03-01 16:18:43.919843,Stickie,Tabled
+papers_231,2024-03-01 16:21:49.919843,Room_1B,Tabled
+papers_134,2024-03-01 16:24:49.919843,Room_2A,Tabled
+papers_108,2024-03-01 16:27:38.919843,Room_2B,Conference
+papers_138,2024-03-01 16:30:47.919843,Plenary,Tabled
+papers_214,2024-03-01 16:33:21.919843,Stickie,Reject
+papers_249,2024-03-01 16:35:34.919843,Stickie,Tabled
+papers_226,2024-03-01 16:37:20.919843,Stickie,Tabled
+papers_142,2024-03-01 16:39:49.919843,Stickie,Tabled
+papers_201,2024-03-01 16:42:19.919843,Room_1A,Journal
+papers_146,2024-03-01 16:45:33.919843,Plenary,Tabled
+papers_199,2024-03-01 16:47:13.919843,Room_2A,Conference
+papers_163,2024-03-01 16:50:09.919843,Plenary,Conference
+papers_179,2024-03-01 16:52:39.919843,Stickie,Reject
+papers_151,2024-03-01 16:54:56.919843,Stickie,Reject
+papers_115,2024-03-01 16:58:15.919843,Stickie,Tabled
+papers_129,2024-03-01 17:00:54.919843,Plenary,Journal
+papers_155,2024-03-01 17:03:36.919843,Room_1A,Reject
+papers_221,2024-03-01 17:06:24.919843,Room_1B,Tabled
+papers_118,2024-03-01 17:09:07.919843,Room_1B,Tabled
+papers_127,2024-03-01 17:11:21.919843,Room_2A,Reject
+papers_240,2024-03-01 17:14:02.919843,Plenary,Conference
+papers_208,2024-03-01 17:16:39.919843,Stickie,Conference
+papers_193,2024-03-01 17:19:47.919843,Plenary,Reject
+papers_122,2024-03-01 17:22:49.919843,Plenary,Tabled
+papers_239,2024-03-01 17:24:46.919843,Room_2B,Tabled
+papers_176,2024-03-01 17:27:14.919843,Stickie,Reject
+papers_124,2024-03-01 17:29:07.919843,Plenary,Tabled
+papers_109,2024-03-01 17:32:09.919843,Room_2B,Tabled
+papers_220,2024-03-01 17:35:12.919843,Plenary,Tabled
+papers_156,2024-03-01 17:37:18.919843,Plenary,Reject
+papers_119,2024-03-01 17:40:10.919843,Stickie,Tabled
+papers_210,2024-03-01 17:43:00.919843,Stickie,Journal
+papers_104,2024-03-01 17:45:44.919843,Stickie,Conference
+papers_189,2024-03-01 17:47:37.919843,Room_2B,Reject
+papers_180,2024-03-01 17:50:12.919843,Plenary,Journal
