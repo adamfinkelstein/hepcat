@@ -22,6 +22,7 @@ def simulate_client(url, user):
     def disconnect():
         print(f"[{name}] Unexpected disconnect")
 
+    sleep(random() * 120)  # staggered start
     while True:
         sleep(random() * 10)
         if token is None:
@@ -31,7 +32,7 @@ def simulate_client(url, user):
         try:
             sio.connect(url, auth=auth)
         except socketio.exceptions.ConnectionError:
-            print(f"[{name}] Connection failed =============================================")
+            print(f"[{name}] Connection failed =======================================")
             continue
         if "email" in auth:
             # connected with email and password
@@ -40,7 +41,7 @@ def simulate_client(url, user):
             # reconnected with the token
             print(f"[{name}] Reconnected")
         try:
-            sleep(random() * 60)
+            sleep(random() * 180)
         except KeyboardInterrupt:
             sio.disconnect()
             print(f"[{name}] Interrupted")
