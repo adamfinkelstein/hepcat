@@ -781,15 +781,16 @@ def user_request_queue(room):
     try_sql_commit()  # because of update_last_seen
 
 
-@socketio.on("user_request_refresh")
-def user_request_refresh():
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
-    print(f"{user.full_name} requested refresh")
-    all_users = get_all_user_list_dump()
-    emit("server_refresh_users", all_users)
+# Looks like this is never called:
+# @socketio.on("user_request_refresh")
+# def user_request_refresh():
+#     user = get_current_user_or_none()
+#     if not user:
+#         disconnect()
+#         return
+#     print(f"{user.full_name} requested refresh")
+#     all_users = get_all_user_list_dump()
+#     emit("server_refresh_users", all_users)
 
 
 @socketio.on("disconnect")

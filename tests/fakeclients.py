@@ -31,7 +31,7 @@ def simulate_client(url, user):
         try:
             sio.connect(url, auth=auth)
         except socketio.exceptions.ConnectionError:
-            print(f"[{name}] Connection failed")
+            print(f"[{name}] Connection failed =============================================")
             continue
         if "email" in auth:
             # connected with email and password
@@ -74,6 +74,9 @@ def main():
         default=1,
         help="Number of threads (clients) per worker",
     )
+    parser.add_argument(
+        "--slice", "-s", type=int, default=0, help="Slice number of the user pool"
+    )
     parser.add_argument("url", metavar="URL", help="URL of server to connect to")
     parser.add_argument("users", metavar="USERS", help="CSV file with user information")
     args = parser.parse_args()
@@ -85,6 +88,13 @@ def main():
         users = list(csv.DictReader(csvfile))
 
     needed_users = args.workers * args.threads
+
+    if args.slice:
+        slice_start = needed_users * (args.slice - 1)
+        slice_end = slice_start + needed_users
+        print(f"Slice {args.slice} -- pulling users[{slice_start}:{slice_end}]")
+        users = users[slice_start:slice_end]
+
     if len(users) < needed_users:
         raise RuntimeError(
             "Not enough users, need at least {} but got {}".format(
