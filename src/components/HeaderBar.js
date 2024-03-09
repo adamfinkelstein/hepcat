@@ -2,6 +2,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import Badge from 'react-bootstrap/Badge';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
@@ -9,7 +10,7 @@ import { useSocketIO } from '../contexts/SocketIOContext';
 
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
-  const { user, isAdmin } = useUser();
+  const { user, isAdmin, allUsers } = useUser();
   const { socketLogout } = useSocketIO();
 
   let userNamePlus = user && user.full_name ? user.full_name : 'User';
@@ -18,6 +19,11 @@ export default function HeaderBar() {
   }
   if (user && user.rooms) {
     userNamePlus += ' [' + user.rooms + ']';
+  }
+
+  let onlineCount = 0;
+  if (isAdmin) {
+    onlineCount = allUsers.filter((user) => user.is_online).length;
   }
 
   return (
@@ -34,39 +40,48 @@ export default function HeaderBar() {
             navbarScroll
           >
             {user && (
-              <NavDropdown title={userNamePlus} id="navbarScrollingDropdown">
-                <NavDropdown.Item as={NavLink} to="/">
-                  PC Meeting
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="about">
-                  About
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="preferences">
-                  Preferences
-                </NavDropdown.Item>
+              <>
                 {isAdmin && (
-                  <>
-                    <NavDropdown.Item as={NavLink} to="uploads">
-                      Upload Files
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={NavLink} to="users">
-                      Users
-                    </NavDropdown.Item>
-                  </>
+                  <Nav.Item>
+                    <Nav.Link as={NavLink} to="users">
+                      Online: <Badge bg="success">{onlineCount}</Badge>
+                    </Nav.Link>
+                  </Nav.Item>
                 )}
-                <NavDropdown.Item as={NavLink} to="change_password">
-                  Change Password
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item
-                  onClick={() => {
-                    controlledLog('clicked logout');
-                    socketLogout();
-                  }}
-                >
-                  Log Out
-                </NavDropdown.Item>
-              </NavDropdown>
+                <NavDropdown title={userNamePlus} id="navbarScrollingDropdown">
+                  <NavDropdown.Item as={NavLink} to="/">
+                    PC Meeting
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="about">
+                    About
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="preferences">
+                    Preferences
+                  </NavDropdown.Item>
+                  {isAdmin && (
+                    <>
+                      <NavDropdown.Item as={NavLink} to="uploads">
+                        Upload Files
+                      </NavDropdown.Item>
+                      <NavDropdown.Item as={NavLink} to="users">
+                        Users
+                      </NavDropdown.Item>
+                    </>
+                  )}
+                  <NavDropdown.Item as={NavLink} to="change_password">
+                    Change Password
+                  </NavDropdown.Item>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item
+                    onClick={() => {
+                      controlledLog('clicked logout');
+                      socketLogout();
+                    }}
+                  >
+                    Log Out
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
             )}
           </Nav>
         </Navbar.Collapse>
