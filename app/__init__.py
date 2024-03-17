@@ -1,4 +1,5 @@
 import sys
+import os
 import uuid
 import logging
 from flask import Flask
@@ -30,10 +31,17 @@ def create_app(config_name, build_path):
     if app.config["ALLOW_CORS"]:
         CORS(app)
         print("ALLOW_CORS - allowing cross origin requests on APP")
-    # config[config_name].init_app(app) # AF not needed (just pass)
-
+    
     # a random string associated with this instance
     app.config["INSTANCE"] = uuid.uuid4().hex
+
+    pool_size = os.getenv("SQLALCHEMY_POOL_SIZE")
+    if pool_size:
+        # set the connection pool size for sqlalchemy (default 5)
+        # https://stackoverflow.com/questions/33680429/whats-the-session-option-key-for-sqlalchemy-pool-size
+        pool_size = int(pool_size)
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = { 'pool_size': pool_size }
+        print(f'Using SQLALCHEMY_POOL_SIZE {pool_size}')
 
     # to help with this
     app.logger.addHandler(logging.StreamHandler(sys.stdout))

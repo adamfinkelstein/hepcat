@@ -20,7 +20,7 @@ def simulate_client(url, user):
 
     @sio.event
     def disconnect():
-        print(f"[{name}] Unexpected disconnect")
+        print(f"[{name}] disconnected")
 
     sleep(random() * 120)  # staggered start
     while True:
