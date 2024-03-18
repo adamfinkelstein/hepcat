@@ -15,7 +15,7 @@ class Config:
     UPLOAD_FOLDER = os.path.join(basedir, "tmp")
     BIN_FOLDER = os.path.join(basedir, "local_bin")
     APP_FOLDER = os.path.join(basedir, "app")
-    USE_EVENTLET = os.environ.get("USE_EVENTLET")
+    USE_EVENTLET = os.environ.get("USE_EVENTLET") # set in Procfile, if needed
     ALLOW_CORS = os.getenv("ALLOW_CORS")
     ALLOW_CORS_SOCKET = os.getenv("ALLOW_CORS_SOCKET")
 
