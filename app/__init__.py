@@ -17,11 +17,7 @@ db = SQLAlchemy()
 ma = Marshmallow()
 static_folder = ""  # this global is set in create_app below
 
-# Set this in SocketIO(): max_http_buffer_size
-# See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
-# Default is 1^6 for 1MB. Probably want larger for file uploads.
 socketio = SocketIO()
-
 
 def create_app(config_name, build_path):
     global static_folder
@@ -70,12 +66,21 @@ def create_app(config_name, build_path):
     mail.init_app(app)
     db.init_app(app)
     ma.init_app(app)
+    # Set this in SocketIO(): max_http_buffer_size
+    # See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
+    # Default is 1^6 for 1MB. Probably want larger for file uploads, so set to 10MB:
+    max_http_buffer_size = 10 * 1024 * 1024
+    cors_allowed_origins = None
+    if app.config["ALLOW_CORS"] or app.config["ALLOW_CORS_SOCKET"]:
+        cors_allowed_origins = "*"
+    async_mode = "threading"
+    if app.config["USE_EVENTLET"]:
+        async_mode="eventlet"
     socketio.init_app(
         app,
-        async_mode="eventlet" if app.config["USE_EVENTLET"] else "threading",
-        cors_allowed_origins="*"
-        if app.config["ALLOW_CORS"] or app.config["ALLOW_CORS_SOCKET"]
-        else None,
+        max_http_buffer_size=max_http_buffer_size,
+        async_mode=async_mode,
+        cors_allowed_origins=cors_allowed_origins,
     )
 
     with app.app_context():
