@@ -146,19 +146,29 @@ def insert_query_rows(rows):
     return count
 
 
+def get_all_existing_user_emails():
+    users = User.query.all()
+    emails = [user.email for user in users]
+    return emails
+
+
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows):
     count = 0
-    uniq_emails = set()
+    uniq_new_emails = set()
+    existing_emails = get_all_existing_user_emails()
     for row in rows:
         if len(row) < 5:
             continue
         email, first_name, last_name, role, password = row
         lower_email = email.lower()  # ensure emails are all lower case
-        if lower_email in uniq_emails:
+        if lower_email in uniq_new_emails:
             print('skipping duplicate entry for email:', lower_email)
             continue
-        uniq_emails.add(lower_email)
+        if lower_email in existing_emails:
+            print('skipping existing entry for email:', lower_email)
+            continue
+        uniq_new_emails.add(lower_email)
         user = User(
             email=lower_email,
             first_name=first_name,

@@ -37,9 +37,10 @@ def create_app(config_name, build_path):
         # https://stackoverflow.com/questions/33680429/whats-the-session-option-key-for-sqlalchemy-pool-size
         # https://stackoverflow.com/questions/71039080/how-to-control-the-connection-pool-size-in-flask-sqlalchemy
         # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size
-        # Note we could also consider adjusting 'max_overflow' (default 10) in addition to 'pool_size'.
+        # Note we automatically set 'max_overflow' (default 10) to double 'pool_size' (default 5).
         pool_size = int(pool_size)
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = { 'pool_size': pool_size }
+        max_overflow = 2 * pool_size
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = { 'pool_size': pool_size, 'max_overflow': max_overflow }
         print(f'Using SQLALCHEMY_POOL_SIZE {pool_size}')
 
     # to help with this

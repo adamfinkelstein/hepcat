@@ -15,7 +15,7 @@ export default function UploadsPage() {
 
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
-  const { user, adminKey } = useUser();
+  const { user, adminKey, roomChoice } = useUser();
   const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
@@ -54,6 +54,11 @@ export default function UploadsPage() {
     const when = moment.utc(upload.when).local().format('llll');
     const fmt = upload.file + ' (' + upload.count + ' uploaded ' + when + ')';
     return fmt;
+  }
+
+  function handleRefreshConflictbot() {
+    controlledLog('Refresh Conflictbot button pressed.');
+    socketEmit('admin_refresh_conflictbot', roomChoice);
   }
 
   function handleWipeDBButton() {
@@ -119,6 +124,13 @@ export default function UploadsPage() {
           <p>&nbsp;</p>
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
+
+        <Stack className="space-down-btn" direction="horizontal">
+            <Button variant="warning" onClick={handleRefreshConflictbot}>
+              Refresh Conflictbot
+            </Button>
+            &nbsp;&nbsp;Send a message to Conflictbot to update users in {roomChoice}.
+        </Stack>
 
         <Stack className="space-down-btn" direction="horizontal">
           <a

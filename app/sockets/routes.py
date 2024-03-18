@@ -1240,3 +1240,8 @@ def admin_wipe_database():
     print("about to wipe database...")
     wipe_db_clean()
     disconnect_all_users()
+
+@socketio.on("admin_refresh_conflictbot")
+@admin_required_for_io
+def admin_refresh_conflictbot(room):
+    print(f"admin_refresh_conflictbot for {room}...")
