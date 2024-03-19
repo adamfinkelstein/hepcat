@@ -262,6 +262,10 @@ a.nav-link {
   color: gray;
 }
 
+.bold-user {
+  font-weight: bold;
+}
+
 .current-admin-user {
   color: #8dcee6;
 }

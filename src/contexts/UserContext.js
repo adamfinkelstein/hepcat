@@ -51,7 +51,7 @@ export default function UserContext({ children }) {
         if (room === 'Plenary') {
           return true;
         }
-        const roomCode = room.slice(-2); // last two chars, like 1A
+        const roomCode = room.replace('Room_','');
         if (user && user.rooms && user.rooms.includes(roomCode)) {
           return true;
         }

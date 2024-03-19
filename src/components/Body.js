@@ -66,6 +66,7 @@ export default function Body() {
               <DropdownButton
                 title={roomChoice}
                 variant="secondary"
+                size="lg"
                 className="a_grid-display-dropdown"
               >
                 {allRooms.map((room, index) => {

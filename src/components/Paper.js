@@ -43,7 +43,7 @@ export default function Paper() {
     if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') {
       return conflicts; // no changes
     }
-    const roomCode = roomChoice.slice(-2); // last two chars, like 1A
+    const roomCode = roomChoice.replace('Room_','');
     const inRoom = [];
     const outRoom = [];
     for (let i = 0; i < conflicts.length; i++) {
@@ -156,6 +156,9 @@ export default function Paper() {
     }
     if (user.otherRoom) {
       className += ' other-room';
+    }
+    else {
+      className += ' bold-user';
     }
     return className;
   }
