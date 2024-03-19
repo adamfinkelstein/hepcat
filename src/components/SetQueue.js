@@ -203,6 +203,14 @@ export default function SetQueue() {
     controlledLog(data);
   }
 
+  function handleRefreshConflictbot() {
+    socketEmit('admin_refresh_conflictbot', roomChoice);
+    const msg = "Sent request to Conflictbot to refresh " + roomChoice;
+    controlledLog(msg);
+    // window.alert(msg) // ugly
+    flash(msg, 'success'); // nicer
+  }
+
   function handleSetBarButton() {
     controlledLog('bar set:', guiBarString);
     socketEmit('admin_set_bar', guiBarString);
@@ -462,11 +470,16 @@ export default function SetQueue() {
           </ul>
         </Stack>
       </div>
-      <hr className="horizontal-divider" />
       <div>
+        <hr className="horizontal-divider" />
+        <Button variant="warning" onClick={handleRefreshConflictbot}>
+        Refresh Conflictbot
+        </Button>
+        &nbsp;&nbsp;Send a message to Conflictbot to update users in {roomChoice}.
+        <hr className="horizontal-divider" />
         <Stack direction="horizontal">
           <Button
-            variant="primary"
+            variant="warning"
             onClick={handleSetBarButton}
             className="change-bar-btn"
           >
@@ -478,13 +491,13 @@ export default function SetQueue() {
         <Button variant="warning" onClick={handleClearStickiesButton}>
           Clear Stickies
         </Button>
-        &nbsp;&nbsp;(Clear all stickies.)
+        &nbsp;&nbsp;Clear all stickies.
         <hr className="horizontal-divider" />
         <Button variant="warning" onClick={handleBulkRejectButton}>
           Bulk Reject
         </Button>
-        &nbsp;&nbsp;(Mark status of all reject papers below bar as already
-        discussed.)
+        &nbsp;&nbsp;Mark status of all reject papers below bar as already
+        discussed.
       </div>
     </Container>
   );
