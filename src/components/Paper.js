@@ -193,11 +193,9 @@ export default function Paper() {
           </div>
         ) : (
           <div>
-            {!isScreen && (
               <div className="paper-timer font-size-3">
                 {formatTime(currentTime)}
               </div>
-            )}
             <p className="paper-title font-size-2">
               Q{cp.queue_order} ({cp.nid}): {cp.title}
             </p>

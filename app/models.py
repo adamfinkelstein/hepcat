@@ -574,7 +574,6 @@ def dump_users_papers_and_conflicts(title):
 def set_all_users_to_be_in_plenary():
     users = User.query.all()
     for user in users:
-        user.rooms = None
         user.room_name = "Plenary"
         db.session.add(user)
 
