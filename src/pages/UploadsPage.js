@@ -60,7 +60,8 @@ export default function UploadsPage() {
     socketEmit('admin_refresh_conflictbot', roomChoice);
     const msg = "Sent request to Conflictbot to refresh " + roomChoice;
     controlledLog(msg);
-    flash(msg, 'success');
+    // flash(msg, 'success'); // for some reason this works on localhost but not live on heroku
+    window.alert(msg)
   }
 
   function handleWipeDBButton() {
