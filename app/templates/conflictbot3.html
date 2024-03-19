@@ -39,6 +39,12 @@
             console.log('Got conflicts:');
             console.log(data);
           });
+
+          // Receive refresh request for room
+          globHepcatSocket.on('refresh', function (room) {
+            console.log('Got refresh for: ' + room);
+          });
+
         </script>
     </body>
 </html>

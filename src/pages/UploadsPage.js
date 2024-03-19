@@ -57,8 +57,10 @@ export default function UploadsPage() {
   }
 
   function handleRefreshConflictbot() {
-    controlledLog('Refresh Conflictbot button pressed.');
     socketEmit('admin_refresh_conflictbot', roomChoice);
+    const msg = "Sent request to Conflictbot to refresh " + roomChoice;
+    controlledLog(msg);
+    flash(msg, 'success');
   }
 
   function handleWipeDBButton() {

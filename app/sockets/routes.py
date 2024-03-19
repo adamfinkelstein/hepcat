@@ -1245,3 +1245,4 @@ def admin_wipe_database():
 @admin_required_for_io
 def admin_refresh_conflictbot(room):
     print(f"admin_refresh_conflictbot for {room}...")
+    emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)
