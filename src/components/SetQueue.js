@@ -203,9 +203,9 @@ export default function SetQueue() {
     controlledLog(data);
   }
 
-  function handleRefreshConflictbot() {
-    socketEmit('admin_refresh_conflictbot', roomChoice);
-    const msg = "Sent request to Conflictbot to refresh " + roomChoice;
+  function handleRefreshConflictbot(room) {
+    socketEmit('admin_refresh_conflictbot', room);
+    const msg = "Sent request to Conflictbot to refresh " + room;
     controlledLog(msg);
     // window.alert(msg) // ugly
     flash(msg, 'success'); // nicer
@@ -472,10 +472,14 @@ export default function SetQueue() {
       </div>
       <div>
         <hr className="horizontal-divider" />
-        <Button variant="warning" onClick={handleRefreshConflictbot}>
-        Refresh Conflictbot
+        Conflictbot move users in:&nbsp;&nbsp;
+        <Button variant="warning" onClick={()=>handleRefreshConflictbot(roomChoice)}>
+        {roomChoice}
         </Button>
-        &nbsp;&nbsp;Send a message to Conflictbot to update users in {roomChoice}.
+        &nbsp;&nbsp;or&nbsp;&nbsp;
+        <Button variant="warning" onClick={()=>handleRefreshConflictbot("all_rooms")}>
+        All Rooms
+        </Button>
         <hr className="horizontal-divider" />
         <Stack direction="horizontal">
           <Button
