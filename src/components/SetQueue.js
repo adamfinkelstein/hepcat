@@ -203,12 +203,21 @@ export default function SetQueue() {
     controlledLog(data);
   }
 
-  function handleRefreshConflictbot(room) {
-    socketEmit('admin_refresh_conflictbot', room);
-    const msg = "Sent request to Conflictbot to refresh " + room;
-    controlledLog(msg);
-    // window.alert(msg) // ugly
-    flash(msg, 'success'); // nicer
+  function handleRefreshConflictbot(allRooms) {
+    let confirmAllRooms = 'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
+    if (allRooms && window.confirm(confirmAllRooms) !== true) {
+      const msg = "This conflictbot refresh (all rooms) was canceled.";
+      controlledLog(msg);
+      flash(msg, 'warning');
+    }
+    else {
+      let room = allRooms ? "ALL_ROOMS" : roomChoice;
+      socketEmit('admin_refresh_conflictbot', room);
+      const msg = "Sent request to Conflictbot to refresh " + room;
+      controlledLog(msg);
+      // window.alert(msg) // ugly
+      flash(msg, 'success'); // nicer
+    }
   }
 
   function handleSetBarButton() {
@@ -473,11 +482,11 @@ export default function SetQueue() {
       <div>
         <hr className="horizontal-divider" />
         Conflictbot move users in:&nbsp;&nbsp;
-        <Button variant="warning" onClick={()=>handleRefreshConflictbot(roomChoice)}>
+        <Button variant="warning" onClick={()=>handleRefreshConflictbot(false)}>
         {roomChoice}
         </Button>
         &nbsp;&nbsp;or&nbsp;&nbsp;
-        <Button variant="warning" onClick={()=>handleRefreshConflictbot("all_rooms")}>
+        <Button variant="warning" onClick={()=>handleRefreshConflictbot(true)}>
         All Rooms
         </Button>
         <hr className="horizontal-divider" />

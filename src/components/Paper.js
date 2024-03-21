@@ -8,9 +8,8 @@ import CollapsibleParagraph from './CollapsibleParagraph.js';
 export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const { user, roomChoice } = useUser();
+  const { roomChoice } = useUser();
   const globals = useAppGlobals();
-  const isScreen = user && user.role_name === 'Screen';
   const queue = globals.queue;
   const isPaper =
     queue &&
