@@ -10,6 +10,7 @@ from flask_marshmallow import Marshmallow
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from config import config
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 bootstrap = Bootstrap()
 mail = Mail()
@@ -19,6 +20,7 @@ static_folder = ""  # this global is set in create_app below
 
 socketio = SocketIO()
 
+
 def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__, static_url_path="", static_folder=build_path)
@@ -27,7 +29,7 @@ def create_app(config_name, build_path):
     if app.config["ALLOW_CORS"]:
         CORS(app)
         print("ALLOW_CORS - allowing cross origin requests on APP")
-    
+
     # a random string associated with this instance
     app.config["INSTANCE"] = uuid.uuid4().hex
 
@@ -37,11 +39,15 @@ def create_app(config_name, build_path):
         # https://stackoverflow.com/questions/33680429/whats-the-session-option-key-for-sqlalchemy-pool-size
         # https://stackoverflow.com/questions/71039080/how-to-control-the-connection-pool-size-in-flask-sqlalchemy
         # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size
-        # Note we automatically set 'max_overflow' (default 10) to double 'pool_size' (default 5).
+        # Note we automatically set 'max_overflow' (default 10) to double
+        # 'pool_size' (default 5).
         pool_size = int(pool_size)
         max_overflow = 2 * pool_size
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = { 'pool_size': pool_size, 'max_overflow': max_overflow }
-        print(f'Using SQLALCHEMY_POOL_SIZE {pool_size}')
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_size": pool_size,
+            "max_overflow": max_overflow,
+        }
+        print(f"Using SQLALCHEMY_POOL_SIZE {pool_size}")
 
     # to help with this
     app.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -76,7 +82,7 @@ def create_app(config_name, build_path):
         cors_allowed_origins = "*"
     async_mode = "threading"
     if app.config["USE_EVENTLET"]:
-        async_mode="eventlet"
+        async_mode = "eventlet"
     socketio.init_app(
         app,
         max_http_buffer_size=max_http_buffer_size,
@@ -89,5 +95,8 @@ def create_app(config_name, build_path):
         # Follows this:
         # https://stackoverflow.com/questions/19437883/when-scattering-flask-models-runtimeerror-application-not-registered-on-db-w
         db.create_all()
+
+    # tell flask it is running behind a proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     return app
