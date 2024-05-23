@@ -1,6 +1,6 @@
 from flask import send_from_directory
 from . import main
-from .. import static_folder
+from .. import static_folder, log_print
 
 
 @main.route("/login/")
@@ -10,7 +10,7 @@ from .. import static_folder
 @main.route("/users/")
 @main.route("/")
 def send_static_index():
-    print("send index from static folder: " + static_folder)
+    log_print(f"send index from static folder: {static_folder}")
     return send_from_directory(static_folder, "index.html")
 
 

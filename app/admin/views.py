@@ -6,6 +6,7 @@ from flask import (
     current_app,
 )
 from . import admin
+from .. import log_print
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
 from ..util import get_conflictbot_namespace
 
@@ -16,7 +17,7 @@ conflictbot_namespace = get_conflictbot_namespace()
 def download_results_csv(kind, key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
-        print(f"getting {kind} csv...")
+        log_print(f"getting {kind} csv...")
         fullpath = write_kind_of_csv(kind)
         if fullpath:
             return send_file(fullpath, as_attachment=True)
@@ -29,7 +30,7 @@ def download_results_csv(kind, key):
 def download_zip(key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
-        print("getting zip...")
+        log_print("getting zip...")
         fullpath = write_zip_of_all_csvs()
         if fullpath:
             return send_file(fullpath, as_attachment=True)

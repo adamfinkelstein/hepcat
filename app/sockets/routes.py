@@ -8,7 +8,7 @@ from flask import current_app
 from flask_socketio import emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
 from .decorators import admin_required_for_io, super_required_for_io
-from .. import db, socketio
+from .. import db, socketio, log_print
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import save_and_read_csv, pending_uploads
 from .users import (
@@ -71,7 +71,7 @@ def encrypt_str(raw, key):
     cipher = AES.new(key.encode("utf-8"), AES.MODE_ECB)
     enc = base64.b64encode(cipher.encrypt(raw))
     enc = enc.decode("utf-8")
-    # print('encrypted: ' + enc)
+    # log_print('encrypted: ' + enc)
     return enc
 
 
@@ -359,7 +359,7 @@ def clear_queue(room):
     papers = Paper.query.filter_by(queue_id=gq.id).all()
     papers = list(papers)
     n = len(papers)
-    print(f"clearing queue for {room} -- {n} papers")
+    log_print(f"clearing queue for {room} -- {n} papers")
     for paper in papers:
         paper.queue_id = None
         paper.queue_order = 0
@@ -467,7 +467,7 @@ def clean_filter_list(p_list, nid_list):
 
 def set_queue_explicit(room, exp):
     label_type, label_name, nid_list = parse_explicit_queue(exp)
-    print("explicit queue:", label_type, label_name, nid_list)
+    log_print(f"explicit queue: {label_type}, {label_name}, {nid_list}")
     if label_type is not None:
         label = (
             Label.query.filter_by(type_enum=label_type)
@@ -476,7 +476,7 @@ def set_queue_explicit(room, exp):
         )
         if not label:
             msg = f"No matched label for explicit queue: ({label_name})"
-            print(msg)
+            log_print(msg)
             return msg
         filter_papers = list(label.tag_papers)
         solve_tsp = True
@@ -624,7 +624,7 @@ def get_about_md(append_git_info):
 def clear_all_stickies():
     context_stickie = context_str_to_enum("Stickie")
     count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
-    print(f"this should clear {count_deleted} stickies")
+    log_print(f"this should clear {count_deleted} stickies")
     return count_deleted
 
 
@@ -671,7 +671,7 @@ def broadcast_admin_alert(title, body):
 
 
 def login_user_and_send_welcome(user):
-    print(f"client connected - send welcome to {user.full_name}")
+    log_print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
     about_md = get_about_md(user.role_is_admin)
     paper_keys = get_unconflicted_paper_keys(user)
@@ -738,7 +738,7 @@ def admin_become_user(email):
         # this should never happen.
         # maybe rare race condition on old user list at client.
         msg = f"Failed attempt to switch to unknown user ({email})."
-        print(msg)
+        log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
         return
@@ -763,7 +763,7 @@ def user_request_grid():
     if not user:
         disconnect()
         return
-    print(f"{user.full_name} requested grid")
+    log_print(f"{user.full_name} requested grid")
     grid_dump = get_grid_dump()
     emit("server_set_grid", grid_dump)
 
@@ -774,7 +774,7 @@ def user_request_queue(room):
     if not user:
         disconnect()
         return
-    print(f"{user.full_name} requested queue for {room}")
+    log_print(f"{user.full_name} requested queue for {room}")
     data, _ = get_queue(room)
     update_last_seen(user, room)
     emit("server_set_queue", data)
@@ -788,7 +788,7 @@ def user_request_queue(room):
 #     if not user:
 #         disconnect()
 #         return
-#     print(f"{user.full_name} requested refresh")
+#     log_print(f"{user.full_name} requested refresh")
 #     all_users = get_all_user_list_dump()
 #     emit("server_refresh_users", all_users)
 
@@ -803,7 +803,7 @@ def io_disconnect():
 @socketio.on("admin_bring_to_room")
 @admin_required_for_io
 def admin_bring_to_room(room):
-    print(f"admin request to bring to room {room}")
+    log_print(f"admin request to bring to room {room}")
     call_users_to_room(room)
     try_sql_commit()
     all_users = get_all_user_list_dump()
@@ -824,7 +824,7 @@ def admin_bring_to_all_rooms():
 @socketio.on("admin_prev_paper")
 @admin_required_for_io
 def admin_prev_paper(room):
-    print(f"admin request for prev paper in {room}")
+    log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, -1)  # also "hides" current
     try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
@@ -835,7 +835,7 @@ def admin_prev_paper(room):
 @socketio.on("admin_next_paper")
 @admin_required_for_io
 def admin_next_paper(room):
-    print(f"admin request for prev paper in {room}")
+    log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
@@ -848,7 +848,7 @@ def admin_next_paper(room):
 def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["newStatus"]
-    print(f"admin request to advance queue in {room} with status {status_update}")
+    log_print(f"admin request to advance queue in {room} with status {status_update}")
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
@@ -868,7 +868,7 @@ def admin_advance_queue(data):
 @socketio.on("admin_show_current")
 @admin_required_for_io
 def admin_show_current(room):
-    print(f"admin request for show paper in {room}")
+    log_print(f"admin request for show paper in {room}")
     show_current_paper(room)
     try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
@@ -882,7 +882,7 @@ def admin_hide_queue(data):
     room = data["roomChoice"]
     hide = data["hide"]
     message = data["message"]
-    print(f"admin request for hide queue {room}: {hide} {message}")
+    log_print(f"admin request for hide queue {room}: {hide} {message}")
     set_hide_queue(room, hide, message)
     try_sql_commit()
     globs, current_paper = get_globs_dump_with_status(room)
@@ -900,7 +900,7 @@ def admin_hide_queue(data):
 @admin_required_for_io
 def admin_set_queue(filters):
     room = filters["roomChoice"]
-    print(f"admin request for set queue in {room}:", filters)
+    log_print(f"admin request for set queue in {room}: {filters}")
     msg = set_queue(room, filters)
     try_sql_commit()
     queue, current_paper = get_queue(room)
@@ -914,9 +914,9 @@ def admin_set_queue(filters):
 @socketio.on("admin_save_query")
 @admin_required_for_io
 def admin_save_query(filters):
-    print("admin save query:", filters)
+    log_print(f"admin save query: {filters}")
     json_string = json.dumps(filters)
-    # print('json: '+json_string)
+    # log_print('json: '+json_string)
     name = filters["queryName"]
     query = Query.query.filter_by(name=name).first()
     if query:  # if it exists... update:
@@ -934,15 +934,15 @@ def admin_save_query(filters):
 @socketio.on("admin_load_query")
 @admin_required_for_io
 def admin_load_query(name):
-    print("admin load query:", name)
+    log_print(f"admin load query: {name}")
     query = Query.query.filter_by(name=name).first()
     if query:
         filters = json.loads(query.json)
-        print("server_send_query", filters)
+        log_print(f"server_send_query {filters}")
         emit("server_send_query", filters)
     else:
         msg = f"Cannot find query with name: {name}"
-        print(msg)
+        log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
@@ -950,25 +950,25 @@ def admin_load_query(name):
 @socketio.on("admin_delete_query")
 @admin_required_for_io
 def admin_delete_query(name):
-    print("admin delete query:", name)
+    log_print(f"admin delete query: {name}")
     query = Query.query.filter_by(name=name).first()
     if not query:
         msg = f"Cannot find query with name: {name}"
-        print(msg)
+        log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
         return
     num_deleted = Query.query.filter_by(name=name).delete()
-    print(f"delete {num_deleted} queries (should be 1).")
+    log_print(f"delete {num_deleted} queries (should be 1).")
     if try_sql_commit():
         emit_admin_queries(True)
         msg = f"Deleted query with name: {name}"
-        print(msg)
+        log_print(msg)
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
         msg = f"Cannot delete query with name: {name}"
-        print(msg)
+        log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
@@ -976,7 +976,7 @@ def admin_delete_query(name):
 @socketio.on("admin_probe_queue")
 @admin_required_for_io
 def admin_probe_queue(filters):
-    print("admin probe queue:", filters)
+    log_print(f"admin probe queue: {filters}")
     count = get_filter_paper_count(filters)
     emit("server_probe_count", count)
 
@@ -986,7 +986,7 @@ def admin_probe_queue(filters):
 def admin_set_queue_explicit(data):
     room = data["roomChoice"]
     explicit = data["explicit"]
-    print(f"admin request for set explicit queue {room}: {explicit}")
+    log_print(f"admin request for set explicit queue {room}: {explicit}")
     msg = set_queue_explicit(room, explicit)
     try_sql_commit()
     queue, current_paper = get_queue(room)
@@ -1000,7 +1000,7 @@ def admin_set_queue_explicit(data):
 @socketio.on("admin_set_bar")
 @admin_required_for_io
 def admin_set_bar(bar):
-    print(f"admin request set bar to {bar}")
+    log_print(f"admin request set bar to {bar}")
     set_bar(bar)
     try_sql_commit()
     globs, _ = get_globs_dump_with_status("Plenary")  # YYY ???
@@ -1016,7 +1016,7 @@ def admin_set_bar(bar):
 @admin_required_for_io
 def admin_bulk_reject():
     msg = "got request admin_bulk_reject"
-    print(msg)
+    log_print(msg)
     bulk_reject_below_bar()
     success = try_sql_commit()
     grid_dump = get_grid_dump()
@@ -1035,7 +1035,7 @@ def admin_bulk_reject():
 @admin_required_for_io
 def admin_clear_stickies():
     msg = "got request admin_clear_stickies"
-    print(msg)
+    log_print(msg)
     count = clear_all_stickies()
     if count:
         success = try_sql_commit()
@@ -1057,7 +1057,7 @@ def user_set_stickie(data):
     if not user:
         disconnect()
         return
-    print("user request for set stickie:", data)
+    log_print(f"user request for set stickie: {data}")
     nid = data["nid"]
     status = data["status"]
     paper = Paper.query.filter_by(nid=nid).first()
@@ -1076,7 +1076,7 @@ def user_set_stickie(data):
         emit("server_send_flasher", data)
     else:
         msg = f"Failed attempt to file stickie for paper {nid} ({status})."
-        print(msg)
+        log_print(msg)
         broadcast_admin_alert("Server Error", msg)
 
 
@@ -1101,7 +1101,7 @@ def user_change_password(data):
         for_user = user  # self
         message = "You have successfully changed your password."
     if success:
-        print(f"change password for {for_user.full_name}")
+        log_print(f"change password for {for_user.full_name}")
         for_user.password = new_password
         db.session.add(for_user)
         if try_sql_commit():
@@ -1144,7 +1144,7 @@ def conflictbots_broadcast_user_list():
 def conflictbots_broadcast_call_to_room(room):
     if not room:
         room = "ALL"
-    print("call-to-room:", room)
+    log_print(f"call-to-room: {room}")
     emit("call-to-room", room, namespace=conflictbot_namespace, broadcast=True)
 
 
@@ -1175,8 +1175,8 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
 
 @socketio.on("connect", namespace=conflictbot_namespace)
 def conflictbot_connect():
-    print("conflictbot connected")
-    print("sending user list.")
+    log_print("conflictbot connected")
+    log_print("sending user list.")
     # broadcast user list and status to all conflictbots, including this one
     conflictbots_broadcast_user_list()
     # need to send all rooms.
@@ -1188,7 +1188,7 @@ def conflictbot_connect():
 # This may not work, but is not really needed:
 # @socketio.on("disconnect", namespace=conflictbot_namespace)
 # def conflictbot_disconnect():
-#     print("conflictbot disconnected")
+#     log_print("conflictbot disconnected")
 
 
 ####################################
@@ -1237,12 +1237,12 @@ def admin_upload_file(file):
 @socketio.on("admin_wipe_database")
 @super_required_for_io
 def admin_wipe_database():
-    print("about to wipe database...")
+    log_print("about to wipe database...")
     wipe_db_clean()
     disconnect_all_users()
 
 @socketio.on("admin_refresh_conflictbot")
 @admin_required_for_io
 def admin_refresh_conflictbot(room):
-    print(f"admin_refresh_conflictbot for {room}...")
+    log_print(f"admin_refresh_conflictbot for {room}...")
     emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)

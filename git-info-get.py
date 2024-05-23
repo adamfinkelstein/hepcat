@@ -25,4 +25,4 @@ if __name__ == "__main__":
     json_string = json.dumps(info)
     json_string = json_string.replace("'", "")  # remove single quotes
     json_string = json_string.replace('"', "'")  # replace double w single
-    print(json_string)
+    #print(json_string)

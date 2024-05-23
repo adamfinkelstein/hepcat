@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 import jwt
-from . import db, ma
+from . import db, ma, log_print
 
 
 def try_sql_commit():
@@ -15,7 +15,7 @@ def try_sql_commit():
         db.session.commit()
         return True
     except SQLAlchemyError:
-        print("SQLAlchemyError! Rolling back db...")
+        log_print("SQLAlchemyError! Rolling back db...")
         db.session.rollback()
         return False
 
@@ -69,8 +69,8 @@ def fill_history_context_tables_and_room_list():
         room_name = room_label.name
         room_int = room_label.id + 1000  # prevent collision with history_context_basic
         append_history_context_tables(room_name, room_int)
-    print("all_queue_rooms", all_queue_rooms)
-    print("room table", history_context_int)
+    log_print(f"all_queue_rooms: {all_queue_rooms}")
+    log_print(f"room table: {history_context_int}")
 
 
 def context_str_to_enum(str):
@@ -100,7 +100,7 @@ def status_str_to_enum(str):
 
 def status_enum_to_str(n):
     for entry in HistoryStatus:
-        # print(entry.name, entry.value)
+        # log_print(entry.name, entry.value)
         if entry.value == n:
             return entry.name
     return "Tabled"  # default
@@ -312,7 +312,7 @@ def label_str_to_enum(str):
 
 def label_enum_to_str(n):
     for entry in LabelType:
-        # print(entry.name, entry.value)
+        # log_print(entry.name, entry.value)
         if entry.value == n:
             return entry.name
     return "Area"  # default
@@ -451,7 +451,7 @@ class QuerySchema(ma.Schema):
 def get_or_create_gq(room):
     gq = GlobQueue.query.filter_by(room=room).first()
     if gq:
-        # print(f'retrieved GC with room {room}')
+        # log_print(f'retrieved GC with room {room}')
         return gq
     called_users = room == "Plenary"
     gq = GlobQueue(room=room, called_users=called_users)
@@ -567,7 +567,7 @@ def dump_users_papers_and_conflicts(title):
     result = f"{title}: Users={num_users}. Papers={num_papers}. Conflicts={num_conf}."
     result += f" History={num_history}. Labels={num_labels}."
     result += f" Tags={num_tags}. "
-    print(result)
+    log_print(result)
     return result
 
 
@@ -591,7 +591,7 @@ def execute_sql_cmd(cmd):
 
 def get_table_names():
     tables = list(db.metadata.tables.keys())
-    # print("all db tables: ", tables)
+    # log_print("all db tables: ", tables)
     return tables
 
 
@@ -613,23 +613,23 @@ def drop_and_rebuild_tables(tables_to_drop=None):
         tables_to_drop = "ALL"
         drop_list = all_tables
     # We should call db.close_all_sessions() here...
-    print(f"About to drop tables: {tables_to_drop}")
+    log_print(f"About to drop tables: {tables_to_drop}")
     for table in drop_list:
         if table in all_tables:
             sql_drop_table(table)
         else:
-            print(f"no need to drop non-existant table {table}")
-    # print("having dropped tables, about to rebuild...")
+            log_print(f"no need to drop non-existant table {table}")
+    # log_print("having dropped tables, about to rebuild...")
     # AF??? Possibly better to use close_all_sessions...?
     if not try_sql_commit():  # needed before create_all below
-        print("sql commit error droping tables")
+        log_print("sql commit error droping tables")
     db.create_all()
-    # print("...rebuild done.")
+    # log_print("...rebuild done.")
 
 
 def wipe_db_clean():
     db.close_all_sessions()  # needed before drop_all below
-    print("wipe_db_clean: about to drop all db tables...")
+    log_print("wipe_db_clean: about to drop all db tables...")
     db.drop_all()
-    print("wipe_db_clean: about to create all db tables...")
+    log_print("wipe_db_clean: about to create all db tables...")
     db.create_all()

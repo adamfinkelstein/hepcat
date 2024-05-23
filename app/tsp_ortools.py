@@ -1,6 +1,7 @@
 import numpy as np
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
+from . import log_print
 
 
 # Next 2 funcs duplicated from util to make this app standalone
@@ -39,22 +40,22 @@ EOF
 def read_distance_matrix(fname):
     lines = read_lines_from_file(fname)
     dim_line = lines[3]
-    print(dim_line)
+    log_print(dim_line)
     parts = dim_line.split()
     n = int(parts[1])
-    print("n =", n)
+    log_print(f"n = {n}")
     distance_matrix = np.zeros((n, n))
     lines = lines[7:-1]  # just retain lower triangle data
     for row in range(n):
         line = lines[row]
         parts = line.split()
         parts = [int(p) for p in parts]
-        print(parts)
+        log_print(parts)
         for col in range(row):  # up to just before diag
             dist = parts[col]
             distance_matrix[row][col] = dist
             distance_matrix[col][row] = dist
-    print(distance_matrix)
+    log_print(distance_matrix)
     return distance_matrix
 
 
@@ -131,7 +132,7 @@ def main():
     if nodes:
         write_solution(nodes, outfile)
     else:
-        print("TSP solver (ortools) failed.")
+        log_print("TSP solver (ortools) failed.")
 
 
 if __name__ == "__main__":

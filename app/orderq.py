@@ -5,6 +5,7 @@ import random
 import numpy as np
 from flask import current_app
 from .util import run_cmd, make_path_if_needed, write_text_to_file, read_lines_from_file
+from . import log_print
 
 
 def get_paper_conflicts_set(p):
@@ -25,7 +26,7 @@ def get_enter_leave_conf_sets(paper_prev, paper_curr):
 # old version counted admin more
 # def get_user_cost(user):
 #     if user.role_is_admin:
-#         # print('big cost for admin user with name ', user.full_name)
+#         # log_print('big cost for admin user with name ', user.full_name)
 #         return 100
 #     return 1
 
@@ -45,10 +46,10 @@ def get_paper_distance(paper_prev, paper_curr, verbose=False):
     total = get_enter_leave_cost(enter) + get_enter_leave_cost(leave)
     if verbose:
         stay = conf_curr.intersection(conf_prev)
-        print("stay out: ", stay)
-        print("enter: ", enter)
-        print("leave: ", leave)
-        print("total: ", total)
+        log_print(f"stay out: {stay}")
+        log_print(f"enter: {enter}")
+        log_print(f"leave: {leave}")
+        log_print(f"total: {total}")
     return total
 
 
@@ -78,8 +79,8 @@ def permute_papers(papers, permutation):
 
 
 def debug_order(distance_matrix, permutation, distance, ordered_papers):
-    print("distances:\n", distance_matrix)
-    print("solution:", permutation, distance)
+    log_print(f"distances:\n{distance_matrix}")
+    log_print(f"solution: {permutation}\n{distance}")
     hops = len(ordered_papers) - 1
     for i in range(hops):
         pi = ordered_papers[i]
@@ -98,7 +99,7 @@ def tour_cost(distance_matrix, permutation):
         nodej = permutation[j]
         d = distance_matrix[nodei][nodej]
         cost += d
-        # print(f'cost from {nodei} to {nodej} is {d} (total {cost})')
+        # log_print(f'cost from {nodei} to {nodej} is {d} (total {cost})')
     return cost
 
 
@@ -122,7 +123,7 @@ def split_tour_at_max_cost(nodes, trans_costs):
     cost = trans_costs[maxindex]
     msg = f"splitting tour at location {maxindex}"
     msg += f" (leftshift {leftshift}) with max cost {cost}"
-    print(msg)
+    log_print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
     return nodes, trans_costs
@@ -140,7 +141,7 @@ def split_tour_at_last_high_cost(nodes, trans_costs):
     leftshift = high_index + 1
     msg = f"splitting tour at location {high_index}"
     msg += f" (leftshift {leftshift}) with high cost {cost}"
-    print(msg)
+    log_print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     trans_costs = rotate_list_left(trans_costs, leftshift)
     return nodes, trans_costs
@@ -158,7 +159,7 @@ def split_tour_at_min_pair_node_cost(nodes, node_costs):
     cost = pair_costs[min_i]
     msg = f"splitting tour at location {min_i}"
     msg += f" (leftshift {leftshift}) with low pair cost {cost}"
-    print(msg)
+    log_print(msg)
     nodes = rotate_list_left(nodes, leftshift)
     node_costs = rotate_list_left(node_costs, leftshift)
     return nodes, node_costs
@@ -173,15 +174,15 @@ def split_tour_at_min_pair_node_cost(nodes, node_costs):
 def improve_tour(papers, distance_matrix, nodes):
     trans_costs = tsp_transition_costs(nodes, distance_matrix)
     node_costs = get_node_costs(papers, nodes)
-    print("after split... trans_costs and node_costs:")
-    print(trans_costs)
-    print(node_costs)
+    log_print("after split... trans_costs and node_costs:")
+    log_print(trans_costs)
+    log_print(node_costs)
     # nodes, trans_costs = split_tour_at_last_high_cost(nodes, trans_costs)
     # nodes, trans_costs = split_tour_at_max_cost(nodes, trans_costs)
     nodes, node_costs = split_tour_at_min_pair_node_cost(nodes, node_costs)
-    print("after split... trans_costs and node_costs:")
-    print(trans_costs)
-    print(node_costs)
+    log_print("after split... trans_costs and node_costs:")
+    log_print(trans_costs)
+    log_print(node_costs)
     costs_minus_last = trans_costs[:-1]
     distance = sum(costs_minus_last)
     return nodes, distance
@@ -218,7 +219,7 @@ EDGE_WEIGHT_SECTION
 
 def get_concorde_path_if_exists(bin_folder):
     local_platform = platform.system() + "." + platform.machine()
-    print("local_platform:", local_platform)
+    log_print(f"local_platform: {local_platform}")
     executable = "concorde." + local_platform
     concorde_path = os.path.join(bin_folder, executable)
     if os.path.isfile(concorde_path):
@@ -234,23 +235,23 @@ def run_concorde(concorde_path, input_file):
     # -o f : output solution to file f
     cmd = f"{concorde_path} -s 0 -x -V {input_file}"
     run_cmd(cmd, True)
-    # print(cmd)
+    # log_print(cmd)
     # ok, output = run_cmd(cmd, True)
     # if ok:
-    #     print(f"concorde claimed ok -- output:\n{output}")
+    #     log_print(f"concorde claimed ok -- output:\n{output}")
     # else:
-    #     print(f"concorde claimed error -- output:\n{output}")
+    #     log_print(f"concorde claimed error -- output:\n{output}")
 
 
 def run_ortools(app_folder, input_file):
     script_path = os.path.join(app_folder, "tsp_ortools.py")
     cmd = f"python {script_path} {input_file}"
-    # print(cmd)
+    # log_print(cmd)
     ok, output = run_cmd(cmd, False)
     if ok:
-        print("tsp_ortools claimed ok")
+        log_print("tsp_ortools claimed ok")
     else:
-        print(f"tsp_ortools claimed error -- output:\n{output}")
+        log_print(f"tsp_ortools claimed error -- output:\n{output}")
 
 
 def read_solution(solution_file):
@@ -326,12 +327,12 @@ def elapsed_time():
 def order_q_select_alg(distance_matrix):
     nodes = list(range(len(distance_matrix[0])))
     cost = tour_cost(distance_matrix, nodes)
-    print(f"cost of linear path: {cost}")
+    log_print(f"cost of linear path: {cost}")
     start_timer()
     nodes, solver = setup_and_run_tsp_opt(distance_matrix)
     diff = elapsed_time()
     cost = tour_cost(distance_matrix, nodes)
-    print(f"cost of {solver} path: {cost} (time {diff})")
+    log_print(f"cost of {solver} path: {cost} (time {diff})")
     if not nodes:
         return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
@@ -367,7 +368,7 @@ def papers_with_only_conflicts_in_room(papers, room):
     if not room or room == "Plenary":
         return papers
     room_code = room[-2:]  # last 2 char, like 1A for Room_1A
-    print(f"culling paper conflicts for room {room_code}...")
+    log_print(f"culling paper conflicts for room {room_code}...")
     result = [paper_conflicts_culled(p, room_code) for p in papers]
     return result
 
@@ -378,7 +379,7 @@ def order_q(papers, room, verbose=False):
     over_max = False
     # remainder = None
     if n < 3:
-        print(f"skip ordering {n} papers because it is too few.")
+        log_print(f"skip ordering {n} papers because it is too few.")
         return papers, over_max
     if n > maxn:
         n = maxn
@@ -395,8 +396,8 @@ def order_q(papers, room, verbose=False):
         ordered_papers = papers
     if verbose:
         debug_order(distance_matrix, permutation, 0, ordered_papers)
-    print(f"ordered {n} papers")  # with total cost {distance}')
+    log_print(f"ordered {n} papers")  # with total cost {distance}')
     # if remainder:
-    #     print('(The other papers were not ordered and just appended.)')
+    #     log_print('(The other papers were not ordered and just appended.)')
     #     ordered_papers += remainder
     return ordered_papers, over_max

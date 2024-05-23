@@ -14,14 +14,14 @@ if os.getenv("USE_EVENTLET"):
 import sys
 import click
 from flask.cli import FlaskGroup
-from app import create_app, socketio
+from app import create_app, log_print, socketio
 
 
 def create_configured_app():
     config_name = os.getenv("FLASK_CONFIG") or "default"
     build_path = os.getcwd() + "/build"
-    print("creating app with config: " + config_name)
-    print("build path: " + build_path)
+    log_print("creating app with config: " + config_name)
+    log_print("build path: " + build_path)
     return create_app(config_name, build_path)
 
 
@@ -36,7 +36,7 @@ app = create_configured_app()
 if __name__ == "__main__":
     if len(sys.argv) <= 1:
         # no arguments provided, run the web app as usual
-        print("running from main using socketio...")
+        log_print("running from main using socketio...")
         socketio.run(app)
     else:
         # arguments were provided, run the Flask CLI

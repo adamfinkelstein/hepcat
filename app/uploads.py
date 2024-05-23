@@ -2,7 +2,8 @@ import os
 import csv
 import uuid
 from flask import current_app
-from . import db
+from . import db, log_print
+
 from .util import (
     run_cmd,
     make_path_if_needed,
@@ -64,7 +65,7 @@ def delete_all_clusters():
             paper.tag_labels = new_labels
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_cluster).delete()
-    print(f"delete {num_deleted} cluster labels.")
+    log_print(f"delete {num_deleted} cluster labels.")
 
 
 # this function mimics delete_all_clusters above
@@ -78,7 +79,7 @@ def delete_all_paper_rooms():
             paper.tag_labels = new_labels
             db.session.add(paper)
     num_deleted = Label.query.filter(Label.is_room).delete()
-    print(f"Deleted {num_deleted} cluster labels for paper rooms.")
+    log_print(f"Deleted {num_deleted} cluster labels for paper rooms.")
 
 
 def delete_all_labels():
@@ -89,13 +90,13 @@ def delete_all_labels():
         db.session.add(label)
     # next delete all labels
     num_deleted = Label.query.delete()
-    print(f"Deleted {num_deleted} labels.")
+    log_print(f"Deleted {num_deleted} labels.")
 
 
 # needed when deleting reviews (above)
 def delete_all_history():
     num_deleted = History.query.delete()
-    print(f"Deleted {num_deleted} history entries.")
+    log_print(f"Deleted {num_deleted} history entries.")
 
 
 # this is before history upload, which is just for debugging
@@ -103,7 +104,7 @@ def delete_non_bbs_history():
     context_bbs = context_str_to_enum("BBS")
     # Note that filter() allows for != (but filter_by does not allow it)
     num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
-    print(f"Deleted {num_deleted} history entries.")
+    log_print(f"Deleted {num_deleted} history entries.")
 
 
 def papers_clear_all_scores_and_queues():
@@ -124,12 +125,12 @@ def delete_all_chair_scores():
 
 def delete_all_uploads():
     num_deleted = FileUpload.query.delete()
-    print(f"Deleted {num_deleted} file upload entries.")
+    log_print(f"Deleted {num_deleted} file upload entries.")
 
 
 def delete_all_queries():
     num_deleted = Query.query.delete()
-    print(f"Deleted {num_deleted} queries.")
+    log_print(f"Deleted {num_deleted} queries.")
 
 
 # Name,Query
@@ -163,10 +164,10 @@ def insert_user_rows(rows):
         email, first_name, last_name, role, password = row
         lower_email = email.lower()  # ensure emails are all lower case
         if lower_email in uniq_new_emails:
-            print('skipping duplicate entry for email:', lower_email)
+            log_print(f'skipping duplicate entry for email: {lower_email}')
             continue
         if lower_email in existing_emails:
-            print('skipping existing entry for email:', lower_email)
+            log_print(f'skipping existing entry for email: {lower_email}')
             continue
         uniq_new_emails.add(lower_email)
         user = User(
@@ -175,7 +176,7 @@ def insert_user_rows(rows):
             last_name=last_name,
             password=password,
         )
-        # print(f'added user {email}')
+        # log_print(f'added user {email}')
         if len(role):
             roleObj = get_or_insert_role(role)
             user.role = roleObj
@@ -244,7 +245,7 @@ def insert_test_paper_conflicts():
         user.conf_papers.append(paper)
         db.session.add(user)
         count += 1
-        # print(f'9999 conflicted with {user.full_name} ({count})')
+        # log_print(f'9999 conflicted with {user.full_name} ({count})')
     return count
 
 
@@ -315,7 +316,7 @@ def insert_label_rows(rows, label_type, require_prefix=None):
         sid, label_name = row
         if require_prefix and not label_name.startswith(require_prefix):
             if not issued_prefix_warning:
-                print(f'Room prefix should be Room_ but got this instead:{label_name}')
+                log_print(f'Room prefix should be Room_ but got this instead:{label_name}')
                 issued_prefix_warning = True
             continue
         paper = Paper.query.filter_by(sid=sid).first()
@@ -569,7 +570,7 @@ def delete_prev_file_uploads(header_type):
     for name in del_list:
         ndel = FileUpload.query.filter_by(file=name).delete()
         if ndel:
-            print(f"Deleted {ndel} upload record(s) of type {name}")
+            log_print(f"Deleted {ndel} upload record(s) of type {name}")
 
 
 def update_file_upload_info(header_type, count):
@@ -585,7 +586,7 @@ def read_csv(filename):
     header_type, ncols = get_csv_type(header)
     if not header_type or header_type not in csvInsertFunctions:
         return None
-    print(f"Reading csv of type {header_type}")
+    log_print(f"Reading csv of type {header_type}")
     rows = omit_extra_cols(rows, ncols)
     # first delete old database info
     dump_users_papers_and_conflicts(f"Before deleting {header_type}")
@@ -871,11 +872,11 @@ def write_zip_of_all_csvs():
         os.remove(zipfile_path)
     # The -j option avoids writing full paths into the zip file.
     cmd = f"/usr/bin/zip -j {zipfile_path} {csv_paths}"
-    print(cmd)
+    log_print(cmd)
     ok, output = run_cmd(cmd, False)
     if ok:
-        print("zip claimed ok")
+        log_print("zip claimed ok")
         return zipfile_path
     else:
-        print(f"zip claimed error -- output:\n{output}")
+        log_print(f"zip claimed error -- output:\n{output}")
         return None
