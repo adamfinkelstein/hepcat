@@ -1,8 +1,6 @@
-import sys
 import os
 import uuid
-# import logging
-from flask import Flask
+from flask import Flask, current_app
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
@@ -21,18 +19,21 @@ static_folder = ""  # this global is set in create_app below
 
 socketio = SocketIO()
 
-created_app = None
+log_initialized = False
 
 # following https://flask.palletsprojects.com/en/2.3.x/logging/
 # need to initialize logging as done here before calling it...
 # ... to avoid getting default handler.
-def log_init(app):
-    global created_app
-    created_app = app
+def log_init():
+    global log_initialized
+    if log_initialized:
+        return
+    log_initialized = True
+    log_level = os.getenv("HEPCAT_LOG_LEVEL") or "INFO"
     dictConfig({
         'version': 1,
         'formatters': {'default': {
-            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            'format': '[%(asctime)s] %(levelname)s: %(message)s',
         }},
         'handlers': {'wsgi': {
             'class': 'logging.StreamHandler',
@@ -40,26 +41,35 @@ def log_init(app):
             'formatter': 'default'
         }},
         'root': {
-            'level': 'INFO',
+            'level': log_level,
             'handlers': ['wsgi']
         }
     })
 
-def log_print(msg):
-    global created_app
-    if created_app:
-        msg = str(msg) # cast to string in case it is something else
-        created_app.logger.info(msg)
+def log_print(msg, level="info", app=None):
+    log_init()
+    msg = str(msg) # cast to string in case it is something else
+    if not app:
+        app = current_app
+    failed = True
+    try:
+        if app and hasattr(app, "logger") and hasattr(app.logger, level):
+            log = getattr(app.logger, level)
+            log(msg)
+            failed = False
+    except:
+        pass
+    if failed: # due to missing: app, or logger, or log level
+        print(f"warning: failed to log message, so fall back on print: {msg}")
 
 def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__, static_url_path="", static_folder=build_path)
     app.config.from_object(config[config_name])
-    log_init(app)
     static_folder = build_path  # save this for use in app/main
     if app.config["ALLOW_CORS"]:
         CORS(app)
-        log_print("ALLOW_CORS - allowing cross origin requests on APP")
+        log_print("ALLOW_CORS - allowing cross origin requests on APP", "info", app)
 
     # a random string associated with this instance
     app.config["INSTANCE"] = uuid.uuid4().hex
@@ -78,7 +88,7 @@ def create_app(config_name, build_path):
             "pool_size": pool_size,
             "max_overflow": max_overflow,
         }
-        log_print(f"Using SQLALCHEMY_POOL_SIZE {pool_size}")
+        log_print(f"Using SQLALCHEMY_POOL_SIZE {pool_size}", "info", app)
 
     # to help with this (old version, to catch print at Heroku?)
     # app.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -111,7 +121,7 @@ def create_app(config_name, build_path):
     cors_allowed_origins = None
     if app.config["ALLOW_CORS"] or app.config["ALLOW_CORS_SOCKET"]:
         cors_allowed_origins = "*"
-        log_print("ALLOW_CORS_SOCKET - allowing cross origin requests on socket")
+        log_print("ALLOW_CORS_SOCKET - allowing cross origin requests on socket", "info", app)
     async_mode = "threading"
     if app.config["USE_EVENTLET"]:
         async_mode = "eventlet"
