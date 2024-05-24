@@ -1,0 +1,6 @@
+FLASK_CONFIG=production
+# SECRET_KEY=missing
+# HEPCAT_SENDGRID_KEY=missing
+# HEPCAT_ADMIN_PASSWD=missing
+# HEPCAT_CHAIR_PASSWD=missing
+# HEPCAT_SCREEN_PASSWD=missing

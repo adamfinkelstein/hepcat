@@ -1,0 +1,15 @@
+[program:hepcat]
+command=/home/ubuntu/hepcat/venv/bin/gunicorn -b localhost:8000 --workers 1 --threads 180 hepcat:app
+environment=ALLOW_CORS=True
+directory=/home/ubuntu/hepcat
+user=ubuntu
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+stderr_logfile=/var/log/hepcat/stderr.log
+stderr_logfile_maxbytes=10000000
+stderr_logfile_backups=10
+stdout_logfile=/var/log/hepcat/stdout.log
+stdout_logfile_maxbytes=10000000
+stdout_logfile_backups=10

@@ -1,0 +1,53 @@
+server {
+    # listen on port 80 (http)
+    listen 80;
+    server_name _;
+    location / {
+        # redirect any requests to the same URL but on https
+        return 301 https://$host$request_uri;
+    }
+}
+server {
+    # listen on port 443 (https)
+    listen 443 ssl;
+    root /home/ubuntu/hepcat/build;
+    server_name _;
+    index index.html;
+
+    # location of the self-signed SSL certificate
+    ssl_certificate /home/ubuntu/hepcat/certs/domain.cert.pem;
+    ssl_certificate_key /home/ubuntu/hepcat/certs/private.key.pem;
+
+    # write access and error logs to /var/log
+    access_log /var/log/hepcat_access.log;
+    error_log /var/log/hepcat_error.log;
+
+    location / {
+        # serve top-level react files
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+
+    location /static {
+        # serve static files
+        expires 1y;
+        add_header Cache-Control "public";
+    }
+
+    location /admin {
+        # forward application requests to the gunicorn server
+        include proxy_params;
+        proxy_pass http://localhost:8000/admin;
+        proxy_redirect off;
+    }
+
+    location /socket.io {
+        # forward socket.io requests to the gunicorn server
+        include proxy_params;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_pass http://localhost:8000/socket.io;
+    }
+}
