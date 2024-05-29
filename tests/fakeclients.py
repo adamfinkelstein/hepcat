@@ -8,19 +8,23 @@ import socketio
 
 def simulate_client(url, user):
     name = f'{user["First Name"]} {user["Last Name"]}'
-    sio = socketio.Client()
     token = None
 
-    @sio.on("*")
-    def catch_all(event, data):
-        nonlocal token
-        if event == "server_welcome":
-            token = data["token"]
-        print(f'[{name}] Received event "{event}"')
+    def create_socketio_client():
+        sio = socketio.Client()
 
-    @sio.event
-    def disconnect():
-        print(f"[{name}] disconnected")
+        @sio.on("*")
+        def catch_all(event, data):
+            nonlocal token
+            if event == "server_welcome":
+                token = data["token"]
+            print(f'[{name}] Received event "{event}"')
+
+        @sio.event
+        def disconnect():
+            print(f"[{name}] disconnected")
+
+        return sio
 
     sleep(random() * 120)  # staggered start
     while True:
@@ -29,10 +33,11 @@ def simulate_client(url, user):
             auth = {"email": user["Email"], "password": user["Password"]}
         else:
             auth = {"token": token}
+        sio = create_socketio_client()
         try:
             sio.connect(url, auth=auth)
-        except socketio.exceptions.ConnectionError:
-            print(f"[{name}] Connection failed =======================================")
+        except socketio.exceptions.ConnectionError as e:
+            print(f"[{name}] Connection failed: {e}==============================")
             continue
         if "email" in auth:
             # connected with email and password
