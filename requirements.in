@@ -55,3 +55,6 @@ pytest
 pytest-cov
 requests
 websocket-client
+
+# parsing
+lark

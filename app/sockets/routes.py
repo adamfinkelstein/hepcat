@@ -11,6 +11,7 @@ from .decorators import admin_required_for_io, super_required_for_io
 from .. import db, socketio, log_print
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import save_and_read_csv, pending_uploads
+from .set_op import set_op_make_parser, set_op_parse_expr
 from .users import (
     user_connect,
     user_disconnect,
@@ -51,6 +52,7 @@ from ..models import (
     ensure_admin,
     wipe_db_clean,
     set_all_users_to_be_in_plenary,
+    label_str_to_enum,
 )
 
 user_schema = UserSchema()
@@ -258,7 +260,7 @@ def paper_in_room(paper, room):
     return False
 
 
-def include_paper_in_queue(paper, filters):
+def filters_allow_paper(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters["lowRange"])
     highRange = float(filters["highRange"])
@@ -405,86 +407,121 @@ def set_queue_to_paper_list(room, paper_list, solve_tsp):
     return msg
 
 
-def get_all_and_filter_papers(filters):
+def get_filtered_papers(filters):
     papers = Paper.query.all()
-    list_papers = list(papers)
-    filter_papers = [p for p in list_papers if include_paper_in_queue(p, filters)]
-    return list_papers, filter_papers
+    p_list = list(papers)
+    filter_papers = [p for p in p_list if filters_allow_paper(p, filters)]
+    return filter_papers
 
 
 def set_queue(room, filters):
-    _, filter_papers = get_all_and_filter_papers(filters)
+    filter_papers = get_filtered_papers(filters)
     solve_tsp = True
     return set_queue_to_paper_list(room, filter_papers, solve_tsp)
 
 
 def get_filter_paper_count(filters):
-    _, filter_papers = get_all_and_filter_papers(filters)
+    filter_papers = get_filtered_papers(filters)
     return len(filter_papers)
 
 
-area_prefix = "Area-"
-cluster_prefix = "Cluster-"
+def get_papers_with_ids(ids):
+    papers = Paper.query.all()
+    p_list = list(papers)
+    p_list = [p for p in p_list if p.nid in ids]
+    return p_list
+
+
+def get_query_parts(name):
+    if ":" in name:
+        label_type, label_name, *_ = name.split(":")
+        return label_type, label_name
+    return "Query", name
+
+
+def get_ids_matching_query(name):
+    query = Query.query.filter_by(name=name).first()
+    if not query:
+        msg = f"Cannot find query with name: {name}"
+        log_print(msg)
+        empty_list = []
+        return empty_list
+    filters = json.loads(query.json)
+    log_print(f"get_ids_matching_query filters: {filters}")
+    p_list = get_filtered_papers(filters)
+    ids = [p.nid for p in p_list]
+    return ids
+
+
+def set_op_query(name):
+    log_print(f"set operation query: {name}")
+    label_type, label_name = get_query_parts(name)
+    if label_type == "Query" or not hasattr(LabelType, label_type):
+        ids = get_ids_matching_query(label_name)
+        return set(ids)
+    label_enum = label_str_to_enum(label_type)
+    label = (
+        Label.query.filter_by(type_enum=label_enum).filter_by(name=label_name).first()
+    )
+    if not label:
+        msg = f"No label with type '{label_type}' and name '{label_name}'."
+        log_print(msg)
+        return set()
+    p_list = list(label.tag_papers)
+    ids = [p.nid for p in p_list]
+    return set(ids)
+
+
+def get_set_of_all_paper_ids():
+    papers = Paper.query.all()
+    ids = [p.nid for p in papers]
+    ids = set(ids)
+    return ids
+
+
+def get_ids_by_set_op(expr):
+    all_ids = get_set_of_all_paper_ids()
+    parser = set_op_make_parser(all_ids, set_op_query)
+    ids = set_op_parse_expr(parser, expr)
+    return ids
+
+
+def remove_all_whitespace(exp):
+    exp = re.sub(r"\s+", "", exp)
+    return exp
+
+
+def exp_is_only_nid_list(exp):
+    no_comma = exp.replace(",", "")
+    return no_comma.isdigit()
+
+
+def get_nid_list(exp):
+    nids = exp.split(",")
+    nids = [int(nid) for nid in nids if nid]  # ignore blanks
+    return nids
 
 
 def parse_explicit_queue(exp):
-    exp = exp.strip()
-    if not exp or exp == "_CLEAR_":
-        return None, None, []
-    if exp.startswith(area_prefix):
-        label_type = int(LabelType.Area)
-        label_name = exp.replace(area_prefix, "")
-        return label_type, label_name, None
-    if exp.startswith(cluster_prefix):
-        label_type = int(LabelType.Cluster)
-        label_name = exp.replace(cluster_prefix, "")
-        return label_type, label_name, None
-    # now assume numeric csv
-    nums = re.sub("[^0-9]+", ",", exp)  # replace all non-digits with comma
-    nums = re.sub(",+", ",", nums)  # eliminate repeated commas
-    nums = nums.split(",")
-    nums = [int(n) for n in nums if n]  # the if clause requires non empty str
-    return None, None, nums
-
-
-def get_paper_from_list_by_nid(p_list, nid):
-    filter_papers = [p for p in p_list if p.nid == nid]
-    if len(filter_papers) == 1:
-        return filter_papers[0]
-    # possibly zero papers match (ok), but would be weird if more than 1
-    return None
-
-
-def clean_filter_list(p_list, nid_list):
-    select_papers = [p for p in p_list if p.nid in nid_list]
-    filter_papers = [get_paper_from_list_by_nid(select_papers, nid) for nid in nid_list]
-    clean_list = []
-    for p in filter_papers:
-        if p is not None and p not in clean_list:
-            clean_list.append(p)
-    return clean_list
+    exp = remove_all_whitespace(exp)
+    if not exp:
+        return [], False, ""
+    if exp_is_only_nid_list(exp):
+        solve_tsp = False
+        nids = get_nid_list(exp)
+    else:
+        solve_tsp = True
+        nids = get_ids_by_set_op(exp)
+        if nids is None:
+            return None, solve_tsp, "Failed to parse expression for explicit queue."
+    p_list = get_papers_with_ids(nids)
+    return p_list, solve_tsp, ""
 
 
 def set_queue_explicit(room, exp):
-    label_type, label_name, nid_list = parse_explicit_queue(exp)
-    log_print(f"explicit queue: {label_type}, {label_name}, {nid_list}")
-    if label_type is not None:
-        label = (
-            Label.query.filter_by(type_enum=label_type)
-            .filter_by(name=label_name)
-            .first()
-        )
-        if not label:
-            msg = f"No matched label for explicit queue: ({label_name})"
-            log_print(msg)
-            return msg
-        filter_papers = list(label.tag_papers)
-        solve_tsp = True
-    else:
-        papers = Paper.query.all()
-        p_list = list(papers)
-        filter_papers = clean_filter_list(p_list, nid_list)
-        solve_tsp = False  # do not reorder papers on explicit numeric list
+    filter_papers, solve_tsp, msg = parse_explicit_queue(exp)
+    if filter_papers is None:
+        return msg
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     return msg
 
@@ -1134,6 +1171,7 @@ def emit_admin_queries(broadcast):
 
 conflictbot_namespace = get_conflictbot_namespace()
 
+
 def conflictbots_broadcast_user_list():
     users_dump = get_all_user_list_dump()
     all_rooms = get_all_rooms()
@@ -1173,6 +1211,7 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     }
     emit("conflicts", data, namespace=conflictbot_namespace, broadcast=True)
 
+
 @socketio.on("connect", namespace=conflictbot_namespace)
 def conflictbot_connect():
     log_print("conflictbot connected")
@@ -1184,6 +1223,7 @@ def conflictbot_connect():
     for room in all_rooms:
         globs, current_paper = get_globs_dump_with_status(room)
         conflictbots_broadcast_conflicts(globs, current_paper)
+
 
 # This may not work, but is not really needed:
 # @socketio.on("disconnect", namespace=conflictbot_namespace)
@@ -1240,6 +1280,7 @@ def admin_wipe_database():
     log_print("about to wipe database...")
     wipe_db_clean()
     disconnect_all_users()
+
 
 @socketio.on("admin_refresh_conflictbot")
 @admin_required_for_io

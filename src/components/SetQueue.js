@@ -126,7 +126,22 @@ export default function SetQueue() {
     handleGetFilterEvent(event, 'admin_probe_queue');
   }
 
+  function queryNameProblem() {
+    const firstLetter = /^[a-zA-Z]/;
+    const firstIsLetter = queryName.match(firstLetter);
+    if (!firstIsLetter) return 'must start with a letter.';
+    const nonAlphaNum = /\W/;
+    const hasNonAlphaNum = queryName.match(nonAlphaNum);
+    if (hasNonAlphaNum) return 'only letters, digits or underscore allowed.';
+    return false;
+  }
+
   function handleSaveQuery(event) {
+    const problem = queryNameProblem();
+    if (problem) {
+      alert('Bad query name -- ' + problem);
+      return;
+    }
     handleGetFilterEvent(event, 'admin_save_query');
   }
 
@@ -152,11 +167,11 @@ export default function SetQueue() {
   }
 
   function handleSetQueueExplicitButton(event) {
-    event.preventDefault(); // do not send the form! (Is this in form?!?)
+    event.preventDefault(); // XXX Needed?!? (and in other places?)
     // get value from text field
     // save using: setQueueExplicitList(field)
     controlledLog('sending explicit queue request: ' + queueExplicitList);
-    const explicit = queueExplicitList.length ? queueExplicitList : '_CLEAR_';
+    const explicit = queueExplicitList;
     const data = { roomChoice, explicit };
     socketEmit('admin_set_queue_explicit', data);
     flash('Sent explicit queue request.', 'success');
@@ -204,16 +219,16 @@ export default function SetQueue() {
   }
 
   function handleRefreshConflictbot(allRooms) {
-    let confirmAllRooms = 'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
+    let confirmAllRooms =
+      'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
     if (allRooms && window.confirm(confirmAllRooms) !== true) {
-      const msg = "This conflictbot refresh (all rooms) was canceled.";
+      const msg = 'This conflictbot refresh (all rooms) was canceled.';
       controlledLog(msg);
       flash(msg, 'warning');
-    }
-    else {
-      let room = allRooms ? "ALL_ROOMS" : roomChoice;
+    } else {
+      let room = allRooms ? 'ALL_ROOMS' : roomChoice;
       socketEmit('admin_refresh_conflictbot', room);
-      const msg = "Sent request to Conflictbot to refresh " + room;
+      const msg = 'Sent request to Conflictbot to refresh ' + room;
       controlledLog(msg);
       // window.alert(msg) // ugly
       flash(msg, 'success'); // nicer
@@ -482,12 +497,18 @@ export default function SetQueue() {
       <div>
         <hr className="horizontal-divider" />
         Conflictbot move users in:&nbsp;&nbsp;
-        <Button variant="warning" onClick={()=>handleRefreshConflictbot(false)}>
-        {roomChoice}
+        <Button
+          variant="warning"
+          onClick={() => handleRefreshConflictbot(false)}
+        >
+          {roomChoice}
         </Button>
         &nbsp;&nbsp;or&nbsp;&nbsp;
-        <Button variant="warning" onClick={()=>handleRefreshConflictbot(true)}>
-        All Rooms
+        <Button
+          variant="warning"
+          onClick={() => handleRefreshConflictbot(true)}
+        >
+          All Rooms
         </Button>
         <hr className="horizontal-divider" />
         <Stack direction="horizontal">

@@ -25,7 +25,9 @@ click==8.1.6
     #   flask
     #   pip-tools
 coverage[toml]==7.3.0
-    # via pytest-cov
+    # via
+    #   coverage
+    #   pytest-cov
 distlib==0.3.7
     # via virtualenv
 dnspython==2.4.2
@@ -65,9 +67,7 @@ flask-socketio==5.3.5
 flask-sqlalchemy==3.0.5
     # via -r requirements.in
 greenlet==2.0.2
-    # via
-    #   eventlet
-    #   sqlalchemy
+    # via eventlet
 gunicorn==21.2.0
     # via -r requirements.in
 h11==0.14.0
@@ -84,6 +84,8 @@ itsdangerous==2.1.2
     # via flask
 jinja2==3.1.2
     # via flask
+lark==1.1.9
+    # via -r requirements.in
 markupsafe==2.1.3
     # via
     #   jinja2

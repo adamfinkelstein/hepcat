@@ -63,7 +63,7 @@ def fill_history_context_tables_and_room_list():
     room_labels = get_active_room_labels()
     room_names = room_labels_to_names(room_labels)
     all_queue_rooms.clear()  # global variable
-    all_queue_rooms.append("Plenary") # ensure at least this room
+    all_queue_rooms.append("Plenary")  # ensure at least this room
     all_queue_rooms.extend(room_names)
     for room_label in room_labels:
         room_name = room_label.name
