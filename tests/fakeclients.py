@@ -52,6 +52,7 @@ def simulate_client(url, user):
             print(f"[{name}] Interrupted")
             break
         sio.disconnect()
+        sio.wait()
         print(f"[{name}] Disconnected")
 
 
