@@ -42,6 +42,10 @@ def download_zip(key):
 @admin.route("/old_zoom_conflictbot/<key>")
 def old_zoom_conflictbot(key):
     inst = current_app.config["INSTANCE"]
+    if not conflictbot_namespace:
+        msg = "Sorry -- conflictbot is not enabled at server."
+        flash(msg)
+        return abort(404)
     if key != inst:
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)
@@ -61,6 +65,10 @@ def old_zoom_conflictbot(key):
 @admin.route("/debug_conflictbot/<key>")
 def debug_conflictbot(key):
     inst = current_app.config["INSTANCE"]
+    if not conflictbot_namespace:
+        msg = "Sorry -- conflictbot is not enabled at server."
+        flash(msg)
+        return abort(404)
     if key != inst:
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)
@@ -69,6 +77,7 @@ def debug_conflictbot(key):
         "debug-conflictbot.html",
         conflictbot_socket=conflictbot_namespace,
     )
+
 
 @admin.route("/conflictbot3/<key>")
 def conflictbot3(key):
@@ -81,4 +90,3 @@ def conflictbot3(key):
         "conflictbot3.html",
         conflictbot_socket=conflictbot_namespace,
     )
-

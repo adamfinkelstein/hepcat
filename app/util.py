@@ -9,7 +9,10 @@ from subprocess import run
 
 
 def get_conflictbot_namespace():
-    namespace = "/conflictbot" # default
+    enabled = os.environ.get("HEPCAT_CONFLICTBOT_ENABLED")
+    if not enabled:
+        return None
+    namespace = "/conflictbot"  # default
     from_env = os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
     if from_env:
         namespace = "/conflictbot_" + from_env
@@ -56,4 +59,3 @@ def run_cmd(cmd, ignore_errors=False):
     if result.returncode and not ignore_errors:
         return False, f"run command error: {result}"
     return True, ""
-

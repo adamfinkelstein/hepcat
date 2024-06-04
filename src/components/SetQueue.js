@@ -28,7 +28,7 @@ export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
-  const { roomChoice } = useUser();
+  const { roomChoice, conflictbot } = useUser();
   const globals = useAppGlobals();
   const hideQ = globals.hideQ;
   const setHideQ = globals.setHideQ;
@@ -219,6 +219,7 @@ export default function SetQueue() {
   }
 
   function handleRefreshConflictbot(allRooms) {
+    if (!conflictbot) return;
     let confirmAllRooms =
       'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
     if (allRooms && window.confirm(confirmAllRooms) !== true) {
@@ -495,21 +496,25 @@ export default function SetQueue() {
         </Stack>
       </div>
       <div>
-        <hr className="horizontal-divider" />
-        Conflictbot move users in:&nbsp;&nbsp;
-        <Button
-          variant="warning"
-          onClick={() => handleRefreshConflictbot(false)}
-        >
-          {roomChoice}
-        </Button>
-        &nbsp;&nbsp;or&nbsp;&nbsp;
-        <Button
-          variant="warning"
-          onClick={() => handleRefreshConflictbot(true)}
-        >
-          All Rooms
-        </Button>
+        {conflictbot && (
+          <div>
+            <hr className="horizontal-divider" />
+            Conflictbot move users in:&nbsp;&nbsp;
+            <Button
+              variant="warning"
+              onClick={() => handleRefreshConflictbot(false)}
+            >
+              {roomChoice}
+            </Button>
+            &nbsp;&nbsp;or&nbsp;&nbsp;
+            <Button
+              variant="warning"
+              onClick={() => handleRefreshConflictbot(true)}
+            >
+              All Rooms
+            </Button>
+          </div>
+        )}
         <hr className="horizontal-divider" />
         <Stack direction="horizontal">
           <Button

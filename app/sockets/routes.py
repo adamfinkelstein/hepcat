@@ -721,8 +721,11 @@ def login_user_and_send_welcome(user):
     }
     if user.role_is_admin:
         all_users = get_all_user_list_dump()
+        conflictbot_enabled = conflictbot_namespace is not None
         data["all_users"] = all_users
         data["admin_key"] = current_app.config["INSTANCE"]
+        data["conflictbot_enabled"] = conflictbot_enabled
+
     emit("server_welcome", data)
     if user.role_is_admin:
         emit_admin_uploads(False)
@@ -1170,6 +1173,8 @@ conflictbot_namespace = get_conflictbot_namespace()
 
 
 def conflictbots_broadcast_user_list():
+    if not conflictbot_namespace:
+        return
     users_dump = get_all_user_list_dump()
     all_rooms = get_all_rooms()
     msg_data = {"roomNames": all_rooms, "userMappings": users_dump}
@@ -1177,6 +1182,8 @@ def conflictbots_broadcast_user_list():
 
 
 def conflictbots_broadcast_call_to_room(room):
+    if not conflictbot_namespace:
+        return
     if not room:
         room = "ALL"
     log_print(f"call-to-room: {room}")
@@ -1184,6 +1191,8 @@ def conflictbots_broadcast_call_to_room(room):
 
 
 def conflictbots_broadcast_conflicts(globs, current_paper):
+    if not conflictbot_namespace:
+        return
     room = globs["room"]
     hide = globs["hide_queue"]
     show = globs["current_show"]
@@ -1209,8 +1218,10 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     emit("conflicts", data, namespace=conflictbot_namespace, broadcast=True)
 
 
-@socketio.on("connect", namespace=conflictbot_namespace)
+@socketio.on("connect", namespace=(conflictbot_namespace or "disabled"))
 def conflictbot_connect():
+    if not conflictbot_namespace:
+        return
     log_print("conflictbot connected")
     log_print("sending user list.")
     # broadcast user list and status to all conflictbots, including this one
@@ -1220,12 +1231,6 @@ def conflictbot_connect():
     for room in all_rooms:
         globs, current_paper = get_globs_dump_with_status(room)
         conflictbots_broadcast_conflicts(globs, current_paper)
-
-
-# This may not work, but is not really needed:
-# @socketio.on("disconnect", namespace=conflictbot_namespace)
-# def conflictbot_disconnect():
-#     log_print("conflictbot disconnected")
 
 
 ####################################
@@ -1283,4 +1288,5 @@ def admin_wipe_database():
 @admin_required_for_io
 def admin_refresh_conflictbot(room):
     log_print(f"admin_refresh_conflictbot for {room}...")
-    emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)
+    if conflictbot_namespace:
+        emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)

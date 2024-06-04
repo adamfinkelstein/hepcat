@@ -15,7 +15,7 @@ export default function UploadsPage() {
 
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
-  const { user, adminKey } = useUser();
+  const { user, adminKey, conflictbot } = useUser();
   const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
@@ -79,7 +79,6 @@ export default function UploadsPage() {
             <Form.Control type="file" />
           </Form.Group>
         </Form>
-
         <Stack direction="horizontal">
           <div>
             <button
@@ -112,38 +111,38 @@ export default function UploadsPage() {
             );
           })}
         </ul>
-
         <div>
           <p>&nbsp;</p>
           <hr />
           <p>&nbsp;</p>
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
-
-        <Stack className="space-down-btn" direction="horizontal">
-          <a
-            className="btn btn-primary"
-            href={'/admin/conflictbot3/' + adminKey}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            New Conflictbot3
-          </a>
-          &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
-        </Stack>
-
-        <Stack className="space-down-btn" direction="horizontal">
-          <a
-            className="btn btn-primary"
-            href={'/admin/old_zoom_conflictbot/' + adminKey}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Old Zoom Conflictbot
-          </a>
-          &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
-        </Stack>
-
+        {conflictbot && (
+          <Stack className="space-down-btn" direction="horizontal">
+            <a
+              className="btn btn-primary"
+              href={'/admin/conflictbot3/' + adminKey}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              New Conflictbot3
+            </a>
+            &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
+          </Stack>
+        )}
+        {conflictbot && (
+          <Stack className="space-down-btn" direction="horizontal">
+            <a
+              className="btn btn-primary"
+              href={'/admin/old_zoom_conflictbot/' + adminKey}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Old Zoom Conflictbot
+            </a>
+            &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
+          </Stack>
+        )}
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-primary"
@@ -155,7 +154,6 @@ export default function UploadsPage() {
           </a>
           &nbsp;&nbsp;Download a CSV with current queries.
         </Stack>
-
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-warning"
@@ -167,7 +165,6 @@ export default function UploadsPage() {
           </a>
           &nbsp;&nbsp;Download a CSV with the final status of all papers.
         </Stack>
-
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-warning"
@@ -179,7 +176,6 @@ export default function UploadsPage() {
           </a>
           &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
         </Stack>
-
         {isSuper && (
           <Stack className="space-down-btn" direction="horizontal">
             <Button variant="danger" onClick={handleWipeDBButton}>

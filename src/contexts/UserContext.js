@@ -14,6 +14,7 @@ export default function UserContext({ children }) {
   const [user, setUser] = React.useState(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [adminKey, setAdminKey] = React.useState('');
+  const [conflictbot, setConflictbot] = React.useState(false);
   const [paperKeys, setPaperKeys] = React.useState(null);
   const [allUsers, setAllUsers] = React.useState([]);
   const [allRooms, setAllRooms] = React.useState([]);
@@ -35,6 +36,9 @@ export default function UserContext({ children }) {
         if (isAdmin && data.admin_key && data.admin_key.length) {
           setAdminKey(data.admin_key);
         }
+        if (isAdmin && data.conflictbot_enabled) {
+          setConflictbot(data.conflictbot_enabled);
+        }
         setPaperKeys(data.paper_keys);
         setAllRooms(data.all_rooms);
         setAboutMD(smartquotes(data.about));
@@ -51,7 +55,7 @@ export default function UserContext({ children }) {
         if (room === 'Plenary') {
           return true;
         }
-        const roomCode = room.replace('Room_','');
+        const roomCode = room.replace('Room_', '');
         if (user && user.rooms && user.rooms.includes(roomCode)) {
           return true;
         }
@@ -111,6 +115,7 @@ export default function UserContext({ children }) {
         user,
         isAdmin,
         adminKey,
+        conflictbot,
         paperKeys,
         allUsers,
         allRooms,
