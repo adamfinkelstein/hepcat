@@ -1,6 +1,5 @@
-from threading import Lock
 from flask import request, session
-from flask_socketio import call, disconnect
+from flask_socketio import disconnect
 from app import db, log_print
 from app.models import User
 
@@ -17,7 +16,6 @@ from app.models import User
 # value: socketio session id (sid)
 user_sockets = {}
 debug_sockets_and_sessions = False
-connection_lock = Lock()  # see comments in user_connect() function
 
 
 def dprint(msg):
@@ -117,24 +115,14 @@ def current_user_is_super():
 
 
 def user_record_socket_and_session(user):
+    prev_socket = get_user_socket(user.id)
+    if prev_socket:
+        # a logged in instance of this user was already connected.
+        # disconnect it now.
+        log_print(f"User {user.email} already connected. Disconnect previous instance.")
+        disconnect(sid=prev_socket, namespace="/")
     record_user_socket(user.id, request.sid)
     put_user_id_in_session(user.id)
-
-
-def user_disconnect_if_already_connected(user):
-    if not user_has_socket(user.id):
-        return  # no action needed
-    # a logged in instance of this user is already connected.
-    # send error message and disconnect them.
-    log_print(f"User {user.email} already connected. Disconnect previous instance.")
-    user_socket = get_user_socket(user.id)
-    data = {
-        "message": "This account logged in from another location",
-        "type": "danger",
-    }
-    call("server_send_flasher", data, to=user_socket, timeout=1)
-    disconnect(sid=user_socket, namespace="/")
-    forget_user_socket(user.id)
 
 
 def user_connect(auth):
@@ -158,22 +146,7 @@ def user_connect(auth):
     else:
         # this connection does not have sufficient credentials
         return False
-
-    # The next two function calls make sure that there is only one instance of
-    # a logged in user. If the user is already logged in, the previous instance
-    # is disconnected. A process-wide connection lock is used to implement a
-    # critical section that prevents race conditions, but note that this
-    # solution is only effective for servers that implement concurrency with
-    # threads or with gevent greenlets. This method of locking is insufficient
-    # when multiple server processes exist. Unfortunately a lock across
-    # multiple processes which can be potentially running on different hosts
-    # or even data centers (as it would be the case on Heroku) is much harder
-    # to implement and would require the use of a helper locking service to
-    # which all the servers have access. One possibility is to use table or
-    # row-level locks in Postgres for this purpose.
-    with connection_lock:
-        user_disconnect_if_already_connected(user)
-        user_record_socket_and_session(user)
+    user_record_socket_and_session(user)
     return user
 
 

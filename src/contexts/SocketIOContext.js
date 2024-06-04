@@ -68,14 +68,21 @@ export default function SocketIOContext({ children }) {
       setAuth(null);
     });
 
-    s.on('disconnect', () => {
+    s.on('disconnect', (reason, _details) => {
       socketLogout();
+      controlledLog('socket disconnect for reason: ' + reason);
+      if (reason === 'io server disconnect') {
+        const msg =
+          'The Hepcat server disconnected here.' +
+          ' It may be due to a login under the same account in a different location.';
+        alert(msg);
+      }
     });
 
     return () => {
       s.disconnect();
     };
-  }, [auth, socketLogout]);
+  }, [auth, controlledLog, socketLogout]);
 
   return (
     <socketIOContext.Provider

@@ -19,7 +19,6 @@ from .users import (
     forget_user_socket,
     disconnect_all_users,
     user_record_socket_and_session,
-    user_disconnect_if_already_connected,
     get_user_id_from_session,
     get_current_user_or_none,
 )
@@ -759,7 +758,7 @@ def io_connect(auth):
     ensure_admin()  # Ensure that special (chair) admin exists at login
     user = user_connect(auth)
     if not user:
-        return False
+        return False  # reject the connection
     if user.role_is_admin:
         join_room("admin")
     # valid user, accept the connection and send welcome
@@ -787,8 +786,6 @@ def admin_become_user(email):
     # if not: need to leave admin room.
     if not new_user.role_is_admin:
         leave_room("admin")
-    # ensure nobody else logged in elsewhere as this new user
-    user_disconnect_if_already_connected(new_user)
     # record new user socket and session, then emit welcome
     user_record_socket_and_session(new_user)
     login_user_and_send_welcome(new_user)
