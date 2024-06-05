@@ -24,6 +24,9 @@ export default function ChangePasswordPage() {
   const { socketEmit } = useSocketIO();
   const { isAdmin, allUsers } = useUser();
 
+  const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
+  usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
+
   function handleSubmit() {
     // Verify that the passwords match
     if (password !== passwordAgain) {
@@ -95,7 +98,7 @@ export default function ChangePasswordPage() {
                     variant="secondary"
                     className="select-user-dropdown"
                   >
-                    {allUsers.map((user, index) => {
+                    {usersArr.map((user, index) => {
                       return (
                         <Dropdown.Item
                           key={index}

@@ -156,13 +156,12 @@ def user_disconnect():
     if user:
         user_name = user.full_name
     log_print(f"{user_name} - client disconnected")
-
     # remove the user_id and sid from the global dictionary
     user_id = get_user_id_from_session()
     forget_user_socket(user_id)
-
     # remove the user_id from the session
     clear_user_id_in_session()
+    return user
 
 
 def disconnect_all_users():

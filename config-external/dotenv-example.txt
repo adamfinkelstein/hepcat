@@ -1,5 +1,6 @@
 FLASK_CONFIG=production
 # SECRET_KEY=missing
+# REACT_APP_SHOW_LOGS=True
 # HEPCAT_SENDGRID_KEY=missing
 # HEPCAT_ADMIN_PASSWD=missing
 # HEPCAT_CHAIR_PASSWD=missing

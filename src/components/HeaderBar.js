@@ -21,10 +21,16 @@ export default function HeaderBar() {
     userNamePlus += ' [' + user.rooms + ']';
   }
 
-  let onlineCount = 0;
-  if (isAdmin) {
-    onlineCount = allUsers.filter((user) => user.is_online).length;
+  function countOnlineUsers() {
+    if (!isAdmin) return 0;
+    let count = 0;
+    for (const [email, user] of Object.entries(allUsers)) {
+      if (email && user.is_online) count++;
+    }
+    return count;
   }
+
+  let onlineCount = countOnlineUsers();
 
   return (
     <Navbar bg="dark" variant="dark" fixed="top">

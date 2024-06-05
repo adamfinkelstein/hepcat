@@ -139,18 +139,33 @@ def get_grid_dump():
     return grid_dump
 
 
+def get_one_user_dump(user):
+    user_dump = user_schema.dump(user)
+    user_dump["is_online"] = user_has_socket(user.id)
+    return user_dump
+
+
 def get_user_list_dump(users, sort=True):
-    user_list = list(users)  # in case it was a set
+    user_list = list(users)  # in case it was a set or something
     if sort:
-        # currently sorts on full name. later: last name???
+        # currently sorts on full name
         user_list = sorted(user_list, key=lambda u: u.full_name)
-    # later see if we can use users schema for this...???
     list_dump = []
     for user in user_list:
-        user_dump = user_schema.dump(user)
-        user_dump["is_online"] = user_has_socket(user.id)
+        user_dump = get_one_user_dump(user)
         list_dump.append(user_dump)
     return list_dump
+
+
+def get_user_dict_dump(users):
+    user_list = list(users)  # in case it was a set or something
+    dict_dump = {}
+    for user in user_list:
+        if not user.role_is_super:
+            email = user.email
+            user_dump = get_one_user_dump(user)
+            dict_dump[email] = user_dump
+    return dict_dump
 
 
 def get_user_list_emails(users):
@@ -161,16 +176,18 @@ def get_user_list_emails(users):
     return emails
 
 
+# send users as dictionary by email
+def get_all_user_dict_dump():
+    users = User.query.all()
+    dump = get_user_dict_dump(users)
+    return dump
+
+
+# this is still used by conflictbot to maintain old interface
 def get_all_user_list_dump():
     users = User.query.all()
     dump = get_user_list_dump(users)
     return dump
-
-
-def get_paper_conflicts_dump(paper):
-    user_list = paper.conf_users
-    conflict_dump = get_user_list_dump(user_list)
-    return conflict_dump
 
 
 def get_paper_history_dump(paper):
@@ -720,18 +737,19 @@ def login_user_and_send_welcome(user):
         "all_rooms": all_rooms,
     }
     if user.role_is_admin:
-        all_users = get_all_user_list_dump()
+        all_users = get_all_user_dict_dump()
         conflictbot_enabled = conflictbot_namespace is not None
         data["all_users"] = all_users
         data["admin_key"] = current_app.config["INSTANCE"]
         data["conflictbot_enabled"] = conflictbot_enabled
-
     emit("server_welcome", data)
     if user.role_is_admin:
         emit_admin_uploads(False)
         emit_admin_queries(False)
-    all_users = get_all_user_list_dump()
-    emit("server_refresh_users", all_users, room="admin")
+    if not user.role_is_super:
+        # tell all admins about this login...
+        user_dump = get_one_user_dump(user)
+        emit("server_refresh_user", user_dump, room="admin")
 
 
 ###########
@@ -818,23 +836,13 @@ def user_request_queue(room):
     try_sql_commit()  # because of update_last_seen
 
 
-# Looks like this is never called:
-# @socketio.on("user_request_refresh")
-# def user_request_refresh():
-#     user = get_current_user_or_none()
-#     if not user:
-#         disconnect()
-#         return
-#     log_print(f"{user.full_name} requested refresh")
-#     all_users = get_all_user_list_dump()
-#     emit("server_refresh_users", all_users)
-
-
 @socketio.on("disconnect")
 def io_disconnect():
-    user_disconnect()
-    all_users = get_all_user_list_dump()
-    emit("server_refresh_users", all_users, room="admin")
+    user = user_disconnect()
+    if user and not user.role_is_super:
+        # tell all admins about this disconnect...
+        user_dump = get_one_user_dump(user)
+        emit("server_refresh_user", user_dump, room="admin")
 
 
 @socketio.on("admin_bring_to_room")
@@ -843,7 +851,7 @@ def admin_bring_to_room(room):
     log_print(f"admin request to bring to room {room}")
     call_users_to_room(room)
     try_sql_commit()
-    all_users = get_all_user_list_dump()
+    all_users = get_all_user_dict_dump()
     data = {"room": room, "all_users": all_users}
     emit("server_call_to_room", data, broadcast=True)
     globs, _ = get_globs_dump_with_status(room)

@@ -16,7 +16,7 @@ export default function UserContext({ children }) {
   const [adminKey, setAdminKey] = React.useState('');
   const [conflictbot, setConflictbot] = React.useState(false);
   const [paperKeys, setPaperKeys] = React.useState(null);
-  const [allUsers, setAllUsers] = React.useState([]);
+  const [allUsers, setAllUsers] = React.useState({});
   const [allRooms, setAllRooms] = React.useState([]);
   const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
@@ -30,7 +30,7 @@ export default function UserContext({ children }) {
         setUser(data.user);
         const isAdmin = data.user && data.user.role_is_admin;
         setIsAdmin(isAdmin);
-        if (isAdmin && data.all_users && data.all_users.length) {
+        if (isAdmin && data.all_users) {
           setAllUsers(data.all_users);
         }
         if (isAdmin && data.admin_key && data.admin_key.length) {
@@ -77,20 +77,23 @@ export default function UserContext({ children }) {
         }
       };
 
-      const receiveRefresh = (all_users) => {
-        controlledLog('received refresh with all users:');
-        controlledLog(all_users);
-        setAllUsers(all_users);
+      const receiveRefreshUser = (oneUser) => {
+        controlledLog('received refresh for one user:');
+        controlledLog(oneUser);
+        const allUsersCopy = { ...allUsers };
+        const email = oneUser.email;
+        allUsersCopy[email] = oneUser;
+        setAllUsers(allUsersCopy);
       };
 
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_call_to_room', receiveCallToRoom);
-      socket.on('server_refresh_users', receiveRefresh);
+      socket.on('server_refresh_user', receiveRefreshUser);
 
       return () => {
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_call_to_room', receiveCallToRoom);
-        socket.off('server_refresh_users', receiveRefresh);
+        socket.off('server_refresh_user', receiveRefreshUser);
       };
     } else {
       setUser(null);
@@ -107,6 +110,7 @@ export default function UserContext({ children }) {
     socketEmit,
     setToken,
     user,
+    allUsers,
   ]);
 
   return (

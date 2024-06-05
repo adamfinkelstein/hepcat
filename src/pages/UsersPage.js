@@ -17,14 +17,11 @@ function timeDiff(since) {
 }
 
 export default function UsersPage() {
-  // let [lastPing, setLastPing] = useState(null)
-  // let flasher = useFlasher()
-  // let flash = flasher["flash"]
-
   const { socketEmit } = useSocketIO();
   const { allUsers } = useUser();
-  const noSuper = allUsers.filter((user) => user.role_name !== 'Super');
   const { controlledLog } = useControlledLog();
+  const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
+  usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
   const userLine = (user) => {
     const { full_name, email, rooms, room_name, last_seen, last_seen_in } =
@@ -66,7 +63,7 @@ export default function UsersPage() {
           <span className="font-size-1">All Users&nbsp;&nbsp;</span>
         </Stack>
         <Stack direction="vertical">
-          {noSuper.map((user) => {
+          {usersArr.map((user) => {
             return (
               <div key={user.email}>
                 <Button
