@@ -25,20 +25,20 @@ export default function Grid({ isAbove, gridDisplay }) {
     let className = 'grid-item';
     let paperStatus = gridElem.status;
 
-    if (gridDisplay === 'Stickie') {
-      if (gridElem.stickie) {
-        className += ' stickie';
+    if (gridDisplay === 'Sticky') {
+      if (gridElem.sticky) {
+        className += ' sticky';
       } else {
-        className += ' non-stickie';
+        className += ' non-sticky';
       }
     } else if (gridDisplay === 'Favorites') {
       if (favorites.includes(gridElem.nid)) {
         className += ' ' + paperStatus;
       } else {
-        className += ' non-stickie';
+        className += ' non-sticky';
       }
-      if (gridElem.stickie) {
-        className += ' has-stickie';
+      if (gridElem.sticky) {
+        className += ' has-sticky';
       }
     } else {
       if (gridElem.nid === queueCurrentID) {
@@ -46,8 +46,8 @@ export default function Grid({ isAbove, gridDisplay }) {
       } else {
         className += ' ' + paperStatus;
       }
-      if (gridElem.stickie) {
-        className += ' has-stickie';
+      if (gridElem.sticky) {
+        className += ' has-sticky';
       }
     }
     return className;

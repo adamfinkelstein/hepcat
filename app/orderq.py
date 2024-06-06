@@ -354,22 +354,24 @@ class Minipaper:
         self.conf_users = conf_users
 
 
-def paper_conflicts_culled(p, room_code):
+# make a copy of the paper that only includes conflicts assigned to room
+def paper_conflicts_culled(p, room):
     conflicts_culled = []
     for user in p.conf_users:
-        if user.rooms and room_code in user.rooms:
+        if user.rooms and room in user.rooms:
             conflicts_culled.append(user)
     # paper_copy = {'nid': p.nid, 'conf_users':conflicts_culled}
     paper_copy = Minipaper(p.nid, conflicts_culled)
     return paper_copy
 
 
+# when optimizing TSP, only consider conflicts assigned to room.
+# so make copies of papers with only those conflicts.
 def papers_with_only_conflicts_in_room(papers, room):
     if not room or room == "Plenary":
         return papers
-    room_code = room[-2:]  # last 2 char, like 1A for Room_1A
-    log_print(f"culling paper conflicts for room {room_code}...")
-    result = [paper_conflicts_culled(p, room_code) for p in papers]
+    log_print(f"culling paper conflicts for room {room}...")
+    result = [paper_conflicts_culled(p, room) for p in papers]
     return result
 
 

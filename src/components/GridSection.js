@@ -27,12 +27,12 @@ export default function GridSection() {
   const setModalTitle = globals.setModalTitle;
   const setModalBody = globals.setModalBody;
   const setShowModal = globals.setShowModal;
-  const [stickie, setStickie] = useState('Tabled');
+  const [sticky, setSticky] = useState('Tabled');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
 
-  function sendStickie() {
-    const words = stickie.split(' ');
+  function sendSticky() {
+    const words = sticky.split(' ');
     const status = words[0];
     const nid = parseInt(ID);
     if (!checkValidNID(nid)) {
@@ -41,11 +41,11 @@ export default function GridSection() {
       setShowModal(true);
       return;
     }
-    controlledLog('Send stickie ' + status + ' to paper with id: ' + nid);
+    controlledLog('Send sticky ' + status + ' to paper with id: ' + nid);
     const data = { status, nid };
-    socketEmit('user_set_stickie', data);
-    // now stickie confirmation sent from server
-    // flash("Stickie sent for " + nid + " with " + status + ".", "success", "stickie")
+    socketEmit('user_set_sticky', data);
+    // now sticky confirmation sent from server
+    // flash("Sticky sent for " + nid + " with " + status + ".", "success", "sticky")
   }
 
   return (
@@ -63,7 +63,7 @@ export default function GridSection() {
           variant="secondary"
           className="grid-display-dropdown"
         >
-          {['Normal', 'Stickie', 'Favorites'].map((gridDisplay, index) => {
+          {['Normal', 'Sticky', 'Favorites'].map((gridDisplay, index) => {
             return (
               <Dropdown.Item
                 key={index}
@@ -85,12 +85,12 @@ export default function GridSection() {
       <Stack direction="horizontal">
         <ColorsDisplay />
         <hr className="vertical-divider"></hr>
-        <Container className="set-stickie">
-          <p className="stickie-step font-size-3">
-            Step 1 &mdash; choose a stickie type:
+        <Container className="set-sticky">
+          <p className="sticky-step font-size-3">
+            Step 1 &mdash; choose a sticky type:
           </p>
-          <ChooseStatusDropdown currentStatus={stickie} setValue={setStickie} />
-          <p className="stickie-step font-size-3">
+          <ChooseStatusDropdown currentStatus={sticky} setValue={setSticky} />
+          <p className="sticky-step font-size-3">
             Step 2 &mdash; type the numeric paper ID:
           </p>
           <div>
@@ -102,11 +102,11 @@ export default function GridSection() {
               }}
             />
           </div>
-          <p className="stickie-step font-size-3">
-            Step 3 &mdash; click to send stickie:
+          <p className="sticky-step font-size-3">
+            Step 3 &mdash; click to send sticky:
           </p>
-          <Button variant="primary" onClick={sendStickie}>
-            Send Stickie
+          <Button variant="primary" onClick={sendSticky}>
+            Send Sticky
           </Button>
         </Container>
       </Stack>

@@ -30,10 +30,10 @@ export default function Paper() {
   const hideThisPaper = !isPaper || isConflict;
   const hideMessage = isConflict ? 'CONFLICTED!' : 'No current paper.';
 
-  function userBelongsInRoom(user, roomCode) {
+  function userBelongsInRoom(user, room) {
     const rooms = user.rooms;
     if (!rooms || !rooms.length) return false;
-    return rooms.indexOf(roomCode) !== -1;
+    return rooms.includes(room);
   }
 
   // sort through conflicts.
@@ -42,12 +42,11 @@ export default function Paper() {
     if (!roomChoice || !roomChoice.length || roomChoice === 'Plenary') {
       return conflicts; // no changes
     }
-    const roomCode = roomChoice.replace('Room_','');
     const inRoom = [];
     const outRoom = [];
     for (let i = 0; i < conflicts.length; i++) {
       let ci = conflicts[i];
-      if (userBelongsInRoom(ci, roomCode)) {
+      if (userBelongsInRoom(ci, roomChoice)) {
         inRoom.push(ci);
       } else {
         ci.otherRoom = true;
@@ -155,8 +154,7 @@ export default function Paper() {
     }
     if (user.otherRoom) {
       className += ' other-room';
-    }
-    else {
+    } else {
       className += ' bold-user';
     }
     return className;
@@ -192,9 +190,9 @@ export default function Paper() {
           </div>
         ) : (
           <div>
-              <div className="paper-timer font-size-3">
-                {formatTime(currentTime)}
-              </div>
+            <div className="paper-timer font-size-3">
+              {formatTime(currentTime)}
+            </div>
             <p className="paper-title font-size-2">
               Q{cp.queue_order} ({cp.nid}): {cp.title}
             </p>

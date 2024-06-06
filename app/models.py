@@ -24,26 +24,21 @@ def try_sql_commit():
 # History Context / Status
 ######################
 
-history_context_basic = "Error,BBS,Stickie,Plenary".split(",")
+history_context_basic = ["Error", "BBS", "Sticky", "Plenary"]
 history_context_name = {}
 history_context_int = {}
 all_queue_rooms = []
 
 
-def is_room_name(str):
-    return str.startswith("Room_")
+def is_context_basic(name):
+    is_basic = name in history_context_basic
+    return is_basic
 
 
 def get_active_room_labels():
     room_labels = Label.query.filter(Label.is_room).all()
-    rooms_only = [label for label in room_labels if is_room_name(label.name)]
+    rooms_only = [label for label in room_labels if not is_context_basic(label.name)]
     return rooms_only
-
-
-def room_labels_to_names(room_labels):
-    room_names = [label.name for label in room_labels]
-    room_names.sort()
-    return room_names
 
 
 def init_history_context_tables():
@@ -61,13 +56,12 @@ def fill_history_context_tables_and_room_list():
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
     room_labels = get_active_room_labels()
-    room_names = room_labels_to_names(room_labels)
     all_queue_rooms.clear()  # global variable
     all_queue_rooms.append("Plenary")  # ensure at least this room
-    all_queue_rooms.extend(room_names)
     for room_label in room_labels:
         room_name = room_label.name
         room_int = room_label.id + 1000  # prevent collision with history_context_basic
+        all_queue_rooms.append(room_name)
         append_history_context_tables(room_name, room_int)
     log_print(f"all_queue_rooms: {all_queue_rooms}")
     log_print(f"room table: {history_context_int}")
@@ -76,13 +70,22 @@ def fill_history_context_tables_and_room_list():
 def context_str_to_enum(str):
     if str in history_context_int:
         return history_context_int[str]
-    return 0
+    return 0  # Error
 
 
 def context_enum_to_str(n):
     if n in history_context_name:
         return history_context_name[n]
     return "Error"
+
+
+def is_name_of_room(name):
+    if name == "Plenary":
+        return True
+    enum = context_str_to_enum(name)
+    # see fill_history_context_tables_and_room_list above re: 1000
+    is_room = enum >= 1000
+    return is_room
 
 
 class HistoryStatus(IntEnum):
@@ -165,16 +168,13 @@ class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
-    # login_token = db.Column(db.String(64), unique=True, index=True)  # unused
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     full_name = column_property(first_name + " " + last_name)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     password_hash = db.Column(db.String(128))
-    last_seen = db.Column(db.DateTime)
-    last_seen_in = db.Column(db.String(32))  # like: Room_1A
     room_name = db.Column(db.String(32), default="Plenary")  # like: Room_1A
-    rooms = db.Column(db.String(256))  # coded like: 1B 2C 3A
+    rooms = db.Column(db.String(256))  # string of assigned rooms sep by spaces
     # role is a backref from Role
     # conf_papers is a backref from papers
 
@@ -391,8 +391,6 @@ class UserSchema(ma.Schema):
             "role_is_admin",
             "rooms",
             "room_name",
-            "last_seen",
-            "last_seen_in",
         )
 
 

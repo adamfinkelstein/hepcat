@@ -56,7 +56,7 @@ export default function SetQueue() {
   const setScoreSelection = globals.setScoreSelection;
 
   const filterListMain = [
-    'Stickie Only',
+    'Sticky Only',
     'Unseen Only',
     'Dual Only',
     'Journal Only',
@@ -218,16 +218,16 @@ export default function SetQueue() {
     controlledLog(data);
   }
 
-  function handleRefreshConflictbot(allRooms) {
+  function handleRefreshConflictbot(inAllRooms) {
     if (!conflictbot) return;
     let confirmAllRooms =
       'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
-    if (allRooms && window.confirm(confirmAllRooms) !== true) {
+    if (inAllRooms && window.confirm(confirmAllRooms) !== true) {
       const msg = 'This conflictbot refresh (all rooms) was canceled.';
       controlledLog(msg);
       flash(msg, 'warning');
     } else {
-      let room = allRooms ? 'ALL_ROOMS' : roomChoice;
+      let room = inAllRooms ? 'ALL_ROOMS' : roomChoice;
       socketEmit('admin_refresh_conflictbot', room);
       const msg = 'Sent request to Conflictbot to refresh ' + room;
       controlledLog(msg);

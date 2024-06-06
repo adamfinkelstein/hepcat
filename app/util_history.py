@@ -29,7 +29,7 @@ def get_latest_room_history(paper):
     return latest_history
 
 
-# status from any event (bbs, stickie, room)
+# status from any event (bbs, sticky, room)
 def get_latest_history_status(paper):
     latest = get_latest_history(paper)
     if latest:

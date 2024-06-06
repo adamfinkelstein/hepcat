@@ -58,7 +58,7 @@ export default function AppContext({ children }) {
   const [queryName, setQueryName] = useState('');
   const [queryStateHandler, setQueryStateHandler] = useState(null);
 
-  const { user, isAdmin, paperKeys, roomChoice } = useUser();
+  const { user, isAdmin, paperKeys, roomChoice, allRooms } = useUser();
 
   // for modal dialog
   const [showModal, setShowModal] = useState(false);
@@ -146,9 +146,9 @@ export default function AppContext({ children }) {
       // controlledLog('*** about to update grid entry:', grid_entry)
       if (status) {
         grid_entry.status = status;
-        grid_entry.stickie = false;
+        grid_entry.sticky = false;
       } else {
-        grid_entry.stickie = true;
+        grid_entry.sticky = true;
       }
       //controlledLog('just updated grid entry:', grid_entry)
       const newGrid = { ...grid };
@@ -165,9 +165,9 @@ export default function AppContext({ children }) {
       setQueue(newQueue); // force update
     }
 
-    const receiveStickie = (grid_nid) => {
-      controlledLog('received stickie: ' + grid_nid);
-      updateGridEntry(grid_nid, null); // null status -> set stickie
+    const receiveSticky = (grid_nid) => {
+      controlledLog('received sticky: ' + grid_nid);
+      updateGridEntry(grid_nid, null); // null status -> set sticky
     };
 
     const receiveGlobs = (data) => {
@@ -299,9 +299,10 @@ export default function AppContext({ children }) {
       window.location.reload();
     };
 
-    const isRoomName = (item) => item.startsWith('Room_');
+    const isRoomName = (item) => allRooms.includes(item);
 
     const modifyOnlyFiltersInRoom = (onlyList) => {
+      // AF XXX maybe change this to not remove Plenary
       if (roomChoice === 'Plenary') {
         return onlyList.filter((item) => !isRoomName(item));
       }
@@ -329,7 +330,7 @@ export default function AppContext({ children }) {
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
-      socket.on('server_set_stickie', receiveStickie);
+      socket.on('server_set_sticky', receiveSticky);
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_probe_count', receiveProbe);
       socket.on('server_file_uploads', receiveFileUploads);
@@ -346,7 +347,7 @@ export default function AppContext({ children }) {
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
-        socket.off('server_set_stickie', receiveStickie);
+        socket.off('server_set_sticky', receiveSticky);
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_file_uploads', receiveFileUploads);
@@ -362,6 +363,7 @@ export default function AppContext({ children }) {
     socket,
     isAdmin,
     roomChoice,
+    allRooms,
     user,
     paperKeys,
     controlledLog,

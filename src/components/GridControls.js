@@ -4,8 +4,8 @@ import { faBorderAll } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '../contexts/UserContext';
 
 export default function GridControls({
-  showingStickie,
-  setShowingStickie,
+  showingSticky,
+  setShowingSticky,
   showGrid,
   setShowGrid,
   showingQueueGUI,
@@ -33,12 +33,12 @@ export default function GridControls({
         <button
           style={{ marginLeft: '20px' }}
           onClick={() => {
-            setShowingStickie(showingStickie === true ? false : true);
+            setShowingSticky(showingSticky === true ? false : true);
           }}
           type="button"
           className="btn btn-primary"
         >
-          <span>{showingStickie ? 'Hide' : 'Show'} Stickies</span>
+          <span>{showingSticky ? 'Hide' : 'Show'} Stickies</span>
         </button>
       )}
       {user && isAdmin && (

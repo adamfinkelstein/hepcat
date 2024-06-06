@@ -133,12 +133,16 @@ def delete_all_queries():
     log_print(f"Deleted {num_deleted} queries.")
 
 
+def keep_rows_with_n_cols(rows, n):
+    rows = [row[:n] for row in rows if len(row) >= n]
+    return rows
+
+
 # Name,Query
 def insert_query_rows(rows):
     count = 0
+    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
-        if len(row) < 2:
-            continue
         name, json = row
         json_quote = json.replace("'", '"')  # replace single w double
         query = Query(name=name, json=json_quote)
@@ -158,16 +162,15 @@ def insert_user_rows(rows):
     count = 0
     uniq_new_emails = set()
     existing_emails = get_all_existing_user_emails()
+    rows = keep_rows_with_n_cols(rows, 5)
     for row in rows:
-        if len(row) < 5:
-            continue
         email, first_name, last_name, role, password = row
         lower_email = email.lower()  # ensure emails are all lower case
         if lower_email in uniq_new_emails:
-            log_print(f'skipping duplicate entry for email: {lower_email}')
+            log_print(f"skipping duplicate entry for email: {lower_email}")
             continue
         if lower_email in existing_emails:
-            log_print(f'skipping existing entry for email: {lower_email}')
+            log_print(f"skipping existing entry for email: {lower_email}")
             continue
         uniq_new_emails.add(lower_email)
         user = User(
@@ -256,9 +259,8 @@ def insert_paper_rows(rows):
     oids = gen_unique_keys(n, 8)
     keys = gen_unique_keys(n, 16)
     count = 0
+    rows = keep_rows_with_n_cols(rows, 6)
     for row in rows:
-        if len(row) < 5:
-            continue
         sid, thumbnail, title, areas, dual, abstract = row
         journal_only = journal_only_from_dual(dual)
         nid = sid_to_num(sid)
@@ -292,9 +294,8 @@ def insert_paper_rows(rows):
 # Submission ID,Email
 def insert_conflict_rows(rows):
     count = 0
+    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
-        if len(row) < 2:
-            continue
         sid, email = row
         user = User.query.filter_by(email=email).first()
         paper = Paper.query.filter_by(sid=sid).first()
@@ -307,45 +308,57 @@ def insert_conflict_rows(rows):
 
 
 # Used for both Clusters and Rooms
-def insert_label_rows(rows, label_type, require_prefix=None):
+def insert_label_rows(rows, label_dict):
     count = 0
-    issued_prefix_warning = False
+    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
-        if len(row) < 2:
-            continue
         sid, label_name = row
-        if require_prefix and not label_name.startswith(require_prefix):
-            if not issued_prefix_warning:
-                log_print(f'Room prefix should be Room_ but got this instead:{label_name}')
-                issued_prefix_warning = True
-            continue
         paper = Paper.query.filter_by(sid=sid).first()
-        label = (
-            Label.query.filter_by(type_enum=label_type)
-            .filter_by(name=label_name)
-            .first()
-        )
-        if not label:
-            label = Label(type_enum=label_type, name=label_name)
-            db.session.add(label)
-        if label and paper:
+        if paper and label_name in label_dict:
+            label = label_dict[label_name]
             paper.tag_labels.append(label)
             db.session.add(paper)
             count += 1
     return count
 
 
+def rows_to_unique_labels(rows):
+    labels = [row[1] for row in rows]
+    labels = list(set(labels))
+    return labels
+
+
+def ensure_label(label_type, name):
+    label = Label.query.filter_by(type_enum=label_type).filter_by(name=name).first()
+    if not label:
+        label = Label(type_enum=label_type, name=name)
+        db.session.add(label)
+    return label
+
+
+def ensure_labels_exist_dict(label_type, label_names):
+    label_dict = {}
+    for name in label_names:
+        label = ensure_label(label_type, name)
+        label_dict[name] = label
+    return label_dict
+
+
 # Submission ID,Cluster
 def insert_cluster_rows(rows):
     cluster_type = int(LabelType.Cluster)
-    count = insert_label_rows(rows, cluster_type)
+    label_names = rows_to_unique_labels(rows)
+    label_dict = ensure_labels_exist_dict(cluster_type, label_names)
+    count = insert_label_rows(rows, label_dict)
     return count
 
 
 # Submission ID,Room
 def insert_paper_room_rows(rows):
     room_type = int(LabelType.Room)
-    count = insert_label_rows(rows, room_type, "Room_")
+    label_names = rows_to_unique_labels(rows)
+    label_dict = ensure_labels_exist_dict(room_type, label_names)
+    count = insert_label_rows(rows, label_dict)
     # Since paper rooms changed, update the list of rooms available.
     # Also ensure all GQs exist, and reset them.
     fill_history_context_tables_and_room_list()
@@ -355,15 +368,15 @@ def insert_paper_room_rows(rows):
     return count
 
 
-def sanitize_room_code(room):
-    if room.startswith("Room_"):
-        return room[5:]
-    return room #  Maybe later change this to return empty string, requiring the prefix
+# def sanitize_room_code(room):
+#     if room.startswith("Room_"):
+#         return room[5:]
+#     return room
 
 
 def encode_room_list(room_list):
-    rooms = [sanitize_room_code(room) for room in room_list]
-    rooms = [room for room in rooms if len(room)]  # omit empty strings
+    # rooms = [sanitize_room_code(room) for room in room_list]
+    rooms = [room for room in room_list if len(room)]  # omit empty
     rooms.sort()
     rooms = " ".join(rooms)
     return rooms
@@ -372,15 +385,16 @@ def encode_room_list(room_list):
 # Email,Room
 def insert_people_room_rows(rows):
     email_to_room_list = {}
+    rows = keep_rows_with_n_cols(rows, 2)
+    # gather rooms by person
     for row in rows:
-        if len(row) < 2:
-            continue
         email, room = row
         email = email.lower()  # ensure emails are all lower case
         if email not in email_to_room_list:
             email_to_room_list[email] = []
         email_to_room_list[email].append(room)
     count = 0
+    # loop over people adding rooms
     for email in email_to_room_list:
         person = User.query.filter_by(email=email).first()
         room_list = email_to_room_list[email]
@@ -407,11 +421,10 @@ def review_str_to_float(s):
 
 def insert_chair_score_rows(rows):
     count = 0
+    rows = keep_rows_with_n_cols(rows, 4)
     for row in rows:
-        if len(row) < 4:
-            continue
         # Submission ID,Sort Score,Status,Reviews
-        sid, chair_score, status, reviews = row[:4]
+        sid, chair_score, status, reviews = row
         paper = Paper.query.filter_by(sid=sid).first()
         if not paper:
             continue
@@ -434,9 +447,8 @@ def insert_chair_score_rows(rows):
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
     count = 0
+    rows = keep_rows_with_n_cols(rows, 4)
     for row in rows:
-        if len(row) < 4:
-            continue
         sid, _, context, status = row
         if context == "BBS":  # these get set by status file
             continue
@@ -505,6 +517,7 @@ csvDependence = {
         "paper_rooms",
         "chair",
     ],
+    "paper_rooms": ["people_rooms"],
     "users": ["conflicts", "people_rooms"],
 }
 
@@ -735,9 +748,11 @@ def get_people_rooms_as_rows():
     rows = [header]
     for u in users:
         rooms = u.rooms
-        if rooms:
-            row = f"{u.email},{rooms}" ### AF2024-03-08: this format should be updated!
-            rows.append(row)
+        rooms = rooms.split()
+        for room in rooms:
+            if room:
+                row = f"{u.email},{room}"
+                rows.append(row)
     return rows
 
 

@@ -399,32 +399,32 @@ a.nav-link {
   width: 15px;
 }
 
-.has-stickie {
+.has-sticky {
   border: 2.5px solid black;
   border-radius: 8px;
 }
 
-.stickie {
+.sticky {
   background-color: gray;
   border: 2px solid black;
   color: white;
 }
 
-.send-stickie-column > div {
+.send-sticky-column > div {
   padding-bottom: 12px;
 }
 
-.stickie-step {
+.sticky-step {
   margin-top: 20px;
 }
 
-.non-stickie {
+.non-sticky {
   background-color: gray;
   color: white;
   opacity: 0.2;
 }
 
-.set-stickie {
+.set-sticky {
   margin-left: 40px;
 }
 

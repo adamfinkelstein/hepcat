@@ -52,6 +52,7 @@ from ..models import (
     wipe_db_clean,
     set_all_users_to_be_in_plenary,
     label_str_to_enum,
+    is_name_of_room,
 )
 
 user_schema = UserSchema()
@@ -93,17 +94,17 @@ def get_react_env_vars():
 
 def get_grid_paper_dump(paper):
     status = "Unseen"
-    stickie = False
+    sticky = False
     history = list(paper.history)
-    context_stickie = context_str_to_enum("Stickie")
+    context_sticky = context_str_to_enum("Sticky")
     context_plenary = context_str_to_enum("Plenary")
     for h in history:
-        if h.context_enum == context_stickie:
-            stickie = True
+        if h.context_enum == context_sticky:
+            sticky = True
         elif h.context_enum >= context_plenary:  # any room
-            stickie = False
+            sticky = False
             status = h.status
-    paper_dump = {"nid": paper.nid, "status": status, "stickie": stickie}
+    paper_dump = {"nid": paper.nid, "status": status, "sticky": sticky}
     return paper_dump
 
 
@@ -227,10 +228,10 @@ def is_paper_unseen(paper):
     return True
 
 
-def is_paper_stickie(paper):
-    context_stickie = context_str_to_enum("Stickie")
+def is_paper_sticky(paper):
+    context_sticky = context_str_to_enum("Sticky")
     latest = get_latest_history(paper)
-    if not latest or latest.context_enum != context_stickie:
+    if not latest or latest.context_enum != context_sticky:
         return False
     return True
 
@@ -255,18 +256,18 @@ def room_to_code(room):
     return room_code
 
 
-def room_code_in_user_rooms(room_code, user):
+def room_in_user_rooms(room, user):
     if not user.rooms:
         return False
-    is_in_rooms = room_code in user.rooms
+    is_in_rooms = room in user.rooms
     return is_in_rooms
 
 
 def room_in_filter_only(filter_only):
-    for filter in filter_only:
-        if filter.startswith("Room_"):
-            return filter
-    return False
+    for filter_name in filter_only:
+        if is_name_of_room(filter_name):
+            return filter_name
+    return None
 
 
 def paper_in_room(paper, room):
@@ -291,7 +292,7 @@ def filters_allow_paper(paper, filters):
     status = get_latest_history_status(paper)
     if status not in filter_statuses:
         return False
-    if "Stickie Only" in filter_only and not is_paper_stickie(paper):
+    if "Sticky Only" in filter_only and not is_paper_sticky(paper):
         return False
     if "Unseen Only" in filter_only and not is_paper_unseen(paper):
         return False
@@ -542,12 +543,6 @@ def set_queue_explicit(room, exp):
     return msg
 
 
-def update_last_seen(user, room):
-    user.last_seen = func.now()
-    user.last_seen_in = room
-    db.session.add(user)
-
-
 def show_current_paper(room):
     gq = get_or_create_gq(room)
     gq.current_show = True
@@ -675,12 +670,13 @@ def get_about_md(append_git_info):
 
 
 def clear_all_stickies():
-    context_stickie = context_str_to_enum("Stickie")
-    count_deleted = History.query.filter_by(context_enum=context_stickie).delete()
+    context_sticky = context_str_to_enum("Sticky")
+    count_deleted = History.query.filter_by(context_enum=context_sticky).delete()
     log_print(f"this should clear {count_deleted} stickies")
     return count_deleted
 
 
+# AF XXX maybe change this behavior later to be more symmetric in rooms
 def call_users_to_room(room):
     users = User.query.all()
     if room == "Plenary":
@@ -691,9 +687,8 @@ def call_users_to_room(room):
             gq.called_users = is_plenary
             db.session.add(gq)
     else:  # not Plenary
-        room_code = room_to_code(room)
         for user in users:
-            if room_code_in_user_rooms(room_code, user):
+            if room_in_user_rooms(room, user):
                 user.room_name = room
                 db.session.add(user)
         gq = GlobQueue.query.filter_by(room=room).first()
@@ -831,9 +826,7 @@ def user_request_queue(room):
         return
     log_print(f"{user.full_name} requested queue for {room}")
     data, _ = get_queue(room)
-    update_last_seen(user, room)
     emit("server_set_queue", data)
-    try_sql_commit()  # because of update_last_seen
 
 
 @socketio.on("disconnect")
@@ -1096,31 +1089,29 @@ def admin_clear_stickies():
         emit("server_send_flasher", data)
 
 
-@socketio.on("user_set_stickie")
-def user_set_stickie(data):
+@socketio.on("user_set_sticky")
+def user_set_sticky(data):
     user = get_current_user_or_none()
     if not user:
         disconnect()
         return
-    log_print(f"user request for set stickie: {data}")
+    log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
     status = data["status"]
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
         return  # should never happen because it is now checked at the client
-    context_stickie = context_str_to_enum("Stickie")
+    context_sticky = context_str_to_enum("Sticky")
     status_enum = status_str_to_enum(status)
-    history = History(
-        paper=paper, context_enum=context_stickie, status_enum=status_enum
-    )
+    history = History(paper=paper, context_enum=context_sticky, status_enum=status_enum)
     db.session.add(history)
     if try_sql_commit():
-        emit("server_set_stickie", nid, broadcast=True)
-        message = f"Stickie filed for paper {nid} ({status})."
+        emit("server_set_sticky", nid, broadcast=True)
+        message = f"Sticky filed for paper {nid} ({status})."
         data = {"message": message, "type": "success"}
         emit("server_send_flasher", data)
     else:
-        msg = f"Failed attempt to file stickie for paper {nid} ({status})."
+        msg = f"Failed attempt to file sticky for paper {nid} ({status})."
         log_print(msg)
         broadcast_admin_alert("Server Error", msg)
 

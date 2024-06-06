@@ -51,12 +51,11 @@ export default function UserContext({ children }) {
         socketEmit('user_request_queue', roomChoice);
       };
 
-      const belongInRoom = (room) => {
+      const userBelongsInRoom = (room) => {
         if (room === 'Plenary') {
           return true;
         }
-        const roomCode = room.replace('Room_', '');
-        if (user && user.rooms && user.rooms.includes(roomCode)) {
+        if (user && user.rooms && user.rooms.includes(room)) {
           return true;
         }
         return false;
@@ -68,7 +67,7 @@ export default function UserContext({ children }) {
         if (isAdmin && data.all_users && data.all_users.length) {
           setAllUsers(data.all_users);
         }
-        if (belongInRoom(room)) {
+        if (userBelongsInRoom(room)) {
           setRoomChoice(room);
           setRoomCalledTo(room);
           if (!alreadyThere) {

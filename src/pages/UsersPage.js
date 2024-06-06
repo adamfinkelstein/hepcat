@@ -1,20 +1,20 @@
-import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Badge from 'react-bootstrap/Badge';
-// import {useState} from 'react'
-// import {useFlasher} from '../contexts/FlasherContext'
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import Button from 'react-bootstrap/Button';
 
+/*
+import moment from 'moment';
 function timeDiff(since) {
   const localTime = Boolean(process.env.REACT_APP_USER_LOCAL_TIME);
   const then = localTime ? moment(since) : moment.utc(since);
   const diff = then.fromNow();
   return diff;
 }
+*/
 
 export default function UsersPage() {
   const { socketEmit } = useSocketIO();
@@ -24,16 +24,9 @@ export default function UsersPage() {
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
   const userLine = (user) => {
-    const { full_name, email, rooms, room_name, last_seen, last_seen_in } =
-      user;
-    let line = full_name + ' <' + email + '> called to: ' + room_name;
-    if (rooms) line += ' assigned: [' + rooms + ']';
-    if (0 && last_seen) {
-      // AF: need to update this
-      line += ' (seen ' + timeDiff(last_seen);
-      if (last_seen_in) line += ' in ' + last_seen_in;
-      line += ')';
-    }
+    const { full_name, email, rooms, room_name } = user;
+    let line = full_name + ' <' + email + '> Now called to: ' + room_name;
+    if (rooms) line += ' All assigned rooms: [' + rooms + ']';
     return line;
   };
 
