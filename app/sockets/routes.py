@@ -656,19 +656,6 @@ def get_git_info_from_env():
     return md
 
 
-def get_about_md(append_git_info):
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    about_file = os.path.join(basedir, "../../public/about/about.md")
-    md = read_text_from_file(about_file)
-    if append_git_info:
-        info = get_git_info_from_env()
-        # if not info:
-        #     info = get_git_info_from_file()
-        if info:
-            md += info
-    return md
-
-
 def clear_all_stickies():
     context_sticky = context_str_to_enum("Sticky")
     count_deleted = History.query.filter_by(context_enum=context_sticky).delete()
@@ -721,13 +708,11 @@ def broadcast_admin_alert(title, body):
 def login_user_and_send_welcome(user):
     log_print(f"client connected - send welcome to {user.full_name}")
     user_dump = user_schema.dump(user)
-    about_md = get_about_md(user.role_is_admin)
     paper_keys = get_unconflicted_paper_keys(user)
     all_rooms = get_all_rooms()
     data = {
         "user": user_dump,
         "token": user.generate_token(),  # used to remember user after page refreshes
-        "about": about_md,
         "paper_keys": paper_keys,
         "all_rooms": all_rooms,
     }

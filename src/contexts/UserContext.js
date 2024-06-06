@@ -2,7 +2,6 @@ import React from 'react';
 import { useSocketIO } from './SocketIOContext.js';
 import { useControlledLog } from './ControlledLogContext.js';
 import { useFlasher } from './FlasherContext';
-import smartquotes from 'smartquotes';
 
 const userContext = React.createContext();
 
@@ -20,7 +19,6 @@ export default function UserContext({ children }) {
   const [allRooms, setAllRooms] = React.useState([]);
   const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
-  const [aboutMD, setAboutMD] = React.useState('');
 
   React.useEffect(() => {
     if (socket) {
@@ -41,7 +39,6 @@ export default function UserContext({ children }) {
         }
         setPaperKeys(data.paper_keys);
         setAllRooms(data.all_rooms);
-        setAboutMD(smartquotes(data.about));
         if (data.user.room_name) {
           setRoomChoice(data.user.room_name);
           setRoomCalledTo(data.user.room_name);
@@ -125,7 +122,6 @@ export default function UserContext({ children }) {
         roomCalledTo,
         roomChoice,
         setRoomChoice,
-        aboutMD,
       }}
     >
       {children}
