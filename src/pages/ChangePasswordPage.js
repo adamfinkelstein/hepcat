@@ -1,7 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
@@ -14,7 +14,7 @@ export default function ChangePasswordPage() {
   const navigate = useNavigate();
   const { controlledLog } = useControlledLog();
   const { socketEmit, isPasswordReset, setIsPasswordReset } = useSocketIO();
-  const { isAdmin, allUsers } = useUser();
+  const { user, isAdmin, allUsers } = useUser();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
@@ -31,6 +31,12 @@ export default function ChangePasswordPage() {
 
   const allowSetOthers = isAdmin && !isPasswordReset;
   const oldPassNeeded = !isForOther && !isPasswordReset;
+
+  if (!user && !isPasswordReset) {
+    // if we are not logged in and not resetting the password then we shouldn't
+    // be here
+    return <Navigate to="/" />;
+  }
 
   // default password validation rules
   let minLen = 8;

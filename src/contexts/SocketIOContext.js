@@ -6,8 +6,8 @@ const socketIOContext = React.createContext();
 let errorCallback = null;
 
 export default function SocketIOContext({ children }) {
-  const [socket, setSocket] = React.useState(null);
-  const [auth, setAuth] = React.useState(null);
+  const [socket, setSocket] = React.useState(undefined);
+  const [auth, setAuth] = React.useState(undefined);
   const [isPasswordReset, setIsPasswordReset] = React.useState(false);
   const { controlledLog } = useControlledLog();
 
@@ -57,6 +57,14 @@ export default function SocketIOContext({ children }) {
         if (token) {
           setAuth({ token });
           setIsPasswordReset(true);
+        } else {
+          // setting auth and user to null indicates that the user is not
+          // logged in, which is different than the initial values of undefined
+          // which mean that the app is still starting and trying to figure out
+          // if the user can be authenticated or not.
+          setAuth(null);
+          setSocket(null);
+          setIsPasswordReset(false);
         }
       }
       return;
@@ -76,6 +84,7 @@ export default function SocketIOContext({ children }) {
       window.sessionStorage.removeItem('token');
       setSocket(null);
       setAuth(null);
+      setIsPasswordReset(false);
     });
 
     s.on('disconnect', (reason, _details) => {

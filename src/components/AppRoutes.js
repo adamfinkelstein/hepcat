@@ -10,17 +10,26 @@ import UsersPage from '../pages/UsersPage.js';
 import ChangePasswordPage from '../pages/ChangePasswordPage.js';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useUser } from '../contexts/UserContext';
+import { useSocketIO } from '../contexts/SocketIOContext';
 
 export default function AppRoutes() {
+  const { socket } = useSocketIO();
   const { user, isAdmin } = useUser();
   const { controlledLog } = useControlledLog();
   controlledLog(user);
+
+  if (socket === undefined) {
+    // too early to render, wait for the socket to be either
+    // null (not logged in) or a Socket.IO instance
+    return null;
+  }
 
   return (
     <>
       {!user ? (
         <Routes>
           <Route path="/forgot_password" element={<ForgotPasswordPage />} />
+          <Route path="/change_password" element={<ChangePasswordPage />} />
           <Route path="*" element={<LoginPage />} />
         </Routes>
       ) : (
