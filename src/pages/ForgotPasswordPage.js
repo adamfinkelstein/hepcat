@@ -1,33 +1,43 @@
 import Button from 'react-bootstrap/Button';
-import { useNavigate } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { useSocketIO } from '../contexts/SocketIOContext';
 import { useFlasher } from '../contexts/FlasherContext';
 
-export default function LoginPage() {
-  const navigate = useNavigate();
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const emailField = useRef();
-  const { socketLogin } = useSocketIO();
   const { flash } = useFlasher();
+  const navigate = useNavigate();
 
-  const handleLoginButton = (ev) => {
+  const handleLoginButton = async (ev) => {
     ev.preventDefault();
-    socketLogin(email, password, (error) => {
-      if (error) {
-        flash(error, 'danger');
-      }
+    const response = await fetch('/api/reset_password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     });
-    navigate('/');
+    if (!response.ok) {
+      const data = await response.json();
+      flash(
+        `There was a problem with the request (${data.error}). Please try again.`,
+        'danger',
+      );
+      return;
+    } else {
+      flash(
+        'An email was just sent to ' +
+          email +
+          ' with a link to reset your password.',
+        'success',
+      );
+    }
+    navigate('/login');
   };
 
   const handleInputChange = (event) => {
     event.preventDefault();
     const target = event.target;
     if (target.name === 'email') setEmail(target.value);
-    else if (target.name === 'password') setPassword(target.value);
   };
 
   useEffect(() => {
@@ -41,7 +51,7 @@ export default function LoginPage() {
     <div className="LoginPage">
       <form className="Auth-form">
         <div className="Auth-form-content">
-          <h3 className="Auth-form-title">Sign In</h3>
+          <h3 className="Auth-form-title">Forgot Password</h3>
           <div className="form-group mt-3">
             <label>Email address</label>
             <input
@@ -55,28 +65,16 @@ export default function LoginPage() {
               ref={emailField}
             />
           </div>
-          <div className="form-group mt-3">
-            <label>Password</label>
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              className="form-control mt-1"
-              placeholder="Enter password"
-              onChange={handleInputChange}
-            />
-          </div>
           <div className="d-grid gap-2 mt-3">
             <Button
               type="submit"
               className="btn btn-primary"
               onClick={handleLoginButton}
             >
-              Login
+              Request Password Reset
             </Button>
-            <p className="forgot-password text-right mt-2">
-              <NavLink to="/forgot_password">Forgot password?</NavLink>
+            <p className="text-right mt-2">
+              <NavLink to="/login">Back to Login</NavLink>
             </p>
           </div>
         </div>

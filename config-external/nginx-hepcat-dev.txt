@@ -41,6 +41,13 @@ server {
         proxy_redirect off;
     }
 
+    location /api {
+        # forward application requests to the gunicorn server
+        include proxy_params;
+        proxy_pass http://localhost:8001/api;
+        proxy_redirect off;
+    }
+
     location /socket.io {
         # forward socket.io requests to the gunicorn server
         include proxy_params;

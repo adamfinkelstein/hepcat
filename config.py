@@ -15,9 +15,15 @@ class Config:
     UPLOAD_FOLDER = os.path.join(basedir, "tmp")
     BIN_FOLDER = os.path.join(basedir, "local_bin")
     APP_FOLDER = os.path.join(basedir, "app")
-    USE_EVENTLET = os.environ.get("USE_EVENTLET") # set in Procfile, if needed
+    USE_EVENTLET = os.environ.get("USE_EVENTLET")  # set in Procfile, if needed
     ALLOW_CORS = os.getenv("ALLOW_CORS")
     ALLOW_CORS_SOCKET = os.getenv("ALLOW_CORS_SOCKET")
+    MAIL_SERVER = os.getenv("MAIL_SERVER")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", "25"))
+    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS") is not None
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = "noreply@hepcat.app"
 
 
 class DevelopmentConfig(Config):

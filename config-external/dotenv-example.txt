@@ -1,7 +1,37 @@
-FLASK_CONFIG=production
-# SECRET_KEY=missing
+# example .env file
+# copy this file to ../.env and fill out the values as needed
+
+# the configuration to use, either production or development
+FLASK_CONFIG=development
+
+# set to True if the server should allow cross-origin requests
+ALLOW_CORS=
+
+# set to True if you want app to show logs on console
 # REACT_APP_SHOW_LOGS=True
-# HEPCAT_SENDGRID_KEY=missing
-# HEPCAT_ADMIN_PASSWD=missing
-# HEPCAT_CHAIR_PASSWD=missing
-# HEPCAT_SCREEN_PASSWD=missing
+
+# email server configuration
+MAIL_SERVER=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USE_TLS=1
+MAIL_USERNAME=apikey
+MAIL_PASSWORD=<sendgrid-api-key-here>
+
+# secret key used for signing tokens
+SECRET_KEY=<set-secret-key-here>
+
+# set to true only when using eventlet
+USE_EVENTLET=
+
+# conflictbot configuration
+# ?? something to enable conflictbot here?
+ZOOM_CONFLICTBOT_CLIENT_ID=
+ZOOM_CONFLICTBOT_CLIENT_SECRET=
+
+# account defaults (mainly to bootstrap login process)
+HEPCAT_ADMIN_LOGIN=admin@example.com
+HEPCAT_ADMIN_PASSWD=<set-password-here>
+HEPCAT_CHAIR_LOGIN=chair@example.com
+HEPCAT_CHAIR_PASSWD=<set-password-here>
+HEPCAT_SCREEN_LOGIN=screen@example.com
+HEPCAT_SCREEN_PASSWD=<set-password-here>

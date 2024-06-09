@@ -1107,8 +1107,10 @@ def user_change_password(data):
     if not user:
         disconnect()
         return
+    old_password = data["oldPassword"]
     new_password = data["password"]
     for_email = data["forEmail"]
+    message = None
     if for_email:
         for_user = User.query.filter_by(email=for_email).first()
         if not user.role_is_admin or not for_user:
@@ -1118,9 +1120,13 @@ def user_change_password(data):
             for_name = for_user.full_name
             message = f"You have changed the password for {for_name}."
     else:
-        success = True
-        for_user = user  # self
-        message = "You have successfully changed your password."
+        if old_password and not user.verify_password(old_password):
+            success = False
+            message = "Current password incorrect. Password was NOT updated."
+        else:
+            success = True
+            for_user = user  # self
+            message = "You have successfully changed your password."
     if success:
         log_print(f"change password for {for_user.full_name}")
         for_user.password = new_password
@@ -1130,7 +1136,8 @@ def user_change_password(data):
         else:
             success = False
     if not success:
-        message = "Error setting password."
+        if not message:
+            message = "Error setting password."
         message_type = "warning"
     reply = {"message": message, "type": message_type}
     emit("server_send_flasher", reply)

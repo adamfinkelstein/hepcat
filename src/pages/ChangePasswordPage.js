@@ -1,78 +1,93 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useState } from 'react';
-import { useFlasher } from '../contexts/FlasherContext';
+import { useNavigate } from 'react-router-dom';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
+import PasswordChecklist from 'react-password-checklist';
 
 export default function ChangePasswordPage() {
+  const navigate = useNavigate();
+  const { controlledLog } = useControlledLog();
+  const { socketEmit, isPasswordReset, setIsPasswordReset } = useSocketIO();
+  const { isAdmin, allUsers } = useUser();
+  const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
+  usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  let [oldPassword, setOldPassword] = useState('');
   let [password, setPassword] = useState('');
   let [passwordAgain, setPasswordAgain] = useState('');
-  let flasher = useFlasher();
-  let flash = flasher['flash'];
+  let [checklistOk, setChecklistOk] = useState(false);
+  let [enableSubmit, setEnableSubmit] = useState(false);
 
   const defaultForWho = 'Select a user';
   let [forWho, setForWho] = useState(defaultForWho);
   let [forEmail, setForEmail] = useState('');
   let [isForOther, setIsForOther] = useState(false);
 
-  const { controlledLog } = useControlledLog();
-  const { socketEmit } = useSocketIO();
-  const { isAdmin, allUsers } = useUser();
+  const allowSetOthers = isAdmin && !isPasswordReset;
+  const oldPassNeeded = !isForOther && !isPasswordReset;
 
-  const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
-  usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
+  // default password validation rules
+  let minLen = 8;
+  let rules = ['minLength', 'number', 'capital', 'match'];
+  if (isForOther) {
+    // allow simpler rules if setting password for another user
+    minLen = 4;
+    rules = ['minLength', 'match'];
+  }
 
-  function handleSubmit() {
-    // Verify that the passwords match
-    if (password !== passwordAgain) {
-      flash("Passwords don't match.", 'warning');
-      return;
-    }
+  function updateSubmitButton() {
+    const otherOk = !isForOther || forEmail.length > 0;
+    const oldOk = !oldPassNeeded || oldPassword.length > 0;
+    const submitOk = otherOk && oldOk && checklistOk;
+    setEnableSubmit(submitOk);
+  }
 
-    if (!isForOther || !isAdmin) {
-      var regularExpression = new RegExp(
-        '^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$',
-      );
-      if (!regularExpression.test(password)) {
-        flash(
-          'Passwords needs to contain 6-16 valid characters, contain a number and a special character.',
-          'warning',
-        );
-        return;
-      }
-    }
-
-    if (isForOther && forEmail === '') {
-      flash('Please pick a user.', 'warning');
-      return;
-    }
-
-    const data = { password, forEmail };
-
-    controlledLog('changing password data:');
-    controlledLog(data);
-    socketEmit('user_change_password', data);
-    setPassword('');
-    setPasswordAgain('');
-    setForEmail('');
-    setForWho(defaultForWho);
+  function handleChecklist(isValid) {
+    setChecklistOk(isValid);
+    updateSubmitButton();
   }
 
   function handleSetFor(user) {
     setForWho(user.full_name);
     setForEmail(user.email);
+    updateSubmitButton();
   }
 
-  function handleInputChange(event) {
+  function handlePasswordChange(event) {
     event.preventDefault();
-    const target = event.target;
-    if (target.name === 'password') setPassword(target.value);
-    else if (target.name === 'passwordAgain') setPasswordAgain(target.value);
+    const { name, value } = event.target;
+    if (name === 'oldPassword') setOldPassword(value);
+    else if (name === 'password') setPassword(value);
+    else if (name === 'passwordAgain') setPasswordAgain(value);
+    updateSubmitButton();
+  }
+
+  /*
+  function resetGUI() {
+    setOldPassword('');
+    setPassword('');
+    setPasswordAgain('');
+    setForEmail('');
+    setForWho(defaultForWho);
+    setIsForOther(false);
+    setEnableSubmit(false);
+  }
+  */
+
+  function handleSubmit() {
+    const data = { oldPassword, password, forEmail };
+    controlledLog('changing password data:');
+    controlledLog(data);
+    socketEmit('user_change_password', data);
+    // resetGUI(); // do we need this if we navigate away next?
+    setIsPasswordReset(false);
+    navigate('/');
   }
 
   return (
@@ -80,7 +95,7 @@ export default function ChangePasswordPage() {
       <Container className="change-password-main-container">
         <span className="font-size-1">Change Password</span>
         <div className="password-fields">
-          {isAdmin && (
+          {allowSetOthers && (
             <Stack direction="horizontal" className="password-switch-stack">
               <Form.Check
                 type="switch"
@@ -115,33 +130,67 @@ export default function ChangePasswordPage() {
             </Stack>
           )}
 
+          {oldPassNeeded && (
+            <div>
+              <div className="reset-password-row">
+                <label>Current Password:</label>
+                <input
+                  name="oldPassword"
+                  value={oldPassword}
+                  type="password"
+                  disabled={isForOther}
+                  onChange={handlePasswordChange}
+                  style={{ marginLeft: '15px' }}
+                />
+              </div>
+              <PasswordChecklist
+                rules={['minLength']}
+                minLength={1}
+                value={oldPassword}
+                messages={{
+                  minLength:
+                    'Current password is required to set new password.',
+                }}
+              />
+            </div>
+          )}
           <div className="reset-password-row">
-            <label>Enter Password:</label>
+            <label>New Password:</label>
             <input
               name="password"
               value={password}
               type="password"
-              onChange={handleInputChange}
+              onChange={handlePasswordChange}
               style={{ marginLeft: '15px' }}
             />
           </div>
           <div className="reset-password-row">
-            <label>Repeat Password:</label>
+            <label>Repeat New Password:</label>
             <input
               name="passwordAgain"
               value={passwordAgain}
               type="password"
-              onChange={handleInputChange}
+              onChange={handlePasswordChange}
               style={{ marginLeft: '15px' }}
             />
           </div>
-
+          <div>
+            <PasswordChecklist
+              rules={rules}
+              minLength={minLen}
+              value={password}
+              valueAgain={passwordAgain}
+              onChange={handleChecklist}
+            />
+          </div>
           <Stack direction="horizontal">
             <div>
               <button
                 type="submit"
+                disabled={!enableSubmit}
                 className="btn btn-primary reset-password-button"
                 onClick={() => handleSubmit()}
+                style={{ marginTop: '15px' }}
               >
                 Reset Password
               </button>

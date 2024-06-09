@@ -8,6 +8,7 @@ let errorCallback = null;
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = React.useState(null);
   const [auth, setAuth] = React.useState(null);
+  const [isPasswordReset, setIsPasswordReset] = React.useState(false);
   const { controlledLog } = useControlledLog();
 
   const socketLogin = React.useCallback((email, password, cb) => {
@@ -48,6 +49,15 @@ export default function SocketIOContext({ children }) {
       const token = window.sessionStorage.getItem('token');
       if (token) {
         setAuth({ token });
+      } else {
+        // check if there is a token in the URL
+        // these are included in password reset links sent by email
+        const url = new URL(window.location.href);
+        const token = url.searchParams.get('token');
+        if (token) {
+          setAuth({ token });
+          setIsPasswordReset(true);
+        }
       }
       return;
     }
@@ -86,7 +96,15 @@ export default function SocketIOContext({ children }) {
 
   return (
     <socketIOContext.Provider
-      value={{ socketLogin, socketLogout, socket, socketEmit, setToken }}
+      value={{
+        socketLogin,
+        socketLogout,
+        socket,
+        socketEmit,
+        setToken,
+        isPasswordReset: isPasswordReset,
+        setIsPasswordReset: setIsPasswordReset,
+      }}
     >
       {children}
     </socketIOContext.Provider>

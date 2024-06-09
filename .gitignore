@@ -31,7 +31,6 @@ __pycache__
 *.sqlite
 venv*
 .env
-.flaskenv
 tmp
 fake/data*
 fake/fake-*
