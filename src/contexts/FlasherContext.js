@@ -1,15 +1,8 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import Alert from 'react-bootstrap/Alert';
 import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useSocketIO } from './SocketIOContext.js';
 
 const FlasherContext = createContext();
 let flashId = 0; // use incrementing number to assign a unique ID to each alert
@@ -28,7 +21,6 @@ export default function FlashContext({ children }) {
   //   false when the alert needs to slide out
   const [messages, setMessages] = useState([]);
   const { controlledLog } = useControlledLog();
-  const { socket } = useSocketIO();
 
   const hideFlash = useCallback(
     (id) => {
@@ -52,9 +44,11 @@ export default function FlashContext({ children }) {
   );
 
   const flash = useCallback(
-    (message, type) => {
-      const duration = 4;
+    (message, type, duration) => {
       const id = ++flashId;
+      if (duration === undefined) {
+        duration = 4;
+      }
 
       controlledLog(
         'flash',
@@ -72,31 +66,6 @@ export default function FlashContext({ children }) {
     },
     [messages, controlledLog, hideFlash],
   );
-
-  // Socket.IO handler for the server to push a flashed message */
-  const receiveFlasher = useCallback(
-    (data, cb) => {
-      controlledLog('got flasher:');
-      controlledLog(data);
-      flash(data.message, data.type);
-
-      // the server may request acknowledgement of this message, in that case
-      // invoke the callback
-      if (cb) {
-        cb();
-      }
-    },
-    [controlledLog, flash],
-  );
-
-  useEffect(() => {
-    if (socket) {
-      socket.on('server_send_flasher', receiveFlasher);
-      return () => {
-        socket.off('server_send_flasher', receiveFlasher);
-      };
-    }
-  }, [socket, receiveFlasher]);
 
   return (
     <FlasherContext.Provider
