@@ -55,7 +55,7 @@ export default function GridSection() {
           Bar:&nbsp;{guiBar}
           &nbsp; Above:&nbsp;{gridNidsAbove}
           &nbsp; Below:&nbsp;{gridNidsBelow}
-          &nbsp; Conf:&nbsp;{papersConflicted}
+          &nbsp; Conflicts:&nbsp;{papersConflicted}
           &nbsp; Total:&nbsp;{papersTotal}
         </div>
         <DropdownButton

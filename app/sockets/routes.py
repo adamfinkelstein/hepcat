@@ -22,7 +22,15 @@ from .users import (
     get_user_id_from_session,
     get_current_user_or_none,
 )
-from ..util import get_conflictbot_namespace, read_text_from_file
+from ..util import (
+    get_conflictbot_namespace,
+    read_text_from_file,
+    timer_start,
+    timer_end,
+    get_cache_var_dump,
+    invalidate_cache_var,
+    invalidate_cache_all,
+)
 from ..util_history import (
     get_latest_history,
     get_latest_history_status,
@@ -108,7 +116,7 @@ def get_grid_paper_dump(paper):
     return paper_dump
 
 
-def get_grid_dump_by_ids():
+def get_grid_dump():
     bar = get_bar()
     papers = Paper.query.order_by(Paper.sort_score.desc(), Paper.nid).all()
     papers_encrypted = []
@@ -127,17 +135,37 @@ def get_grid_dump_by_ids():
         paper_dump = get_grid_paper_dump(paper)
         paper_enc = encrypt_obj_with_oid(paper_dump, oid, key)
         papers_encrypted.append(paper_enc)
-    return papers_encrypted, above_oids, below_oids
-
-
-def get_grid_dump():
-    papers_encrypted, above_oids, below_oids = get_grid_dump_by_ids()
     grid_dump = {
         "papers_encrypted": papers_encrypted,
         "above_oids": above_oids,
         "below_oids": below_oids,
     }
     return grid_dump
+
+
+def get_cache_grid_dump(refresh_cache):
+    grid_dump = get_cache_var_dump("grid", get_grid_dump, None, refresh_cache)
+    return grid_dump
+
+
+def queue_cache_name(room):
+    name = f"queue-{room}"
+    return name
+
+
+def get_cache_queue_dump(room, refresh_cache):
+    name = queue_cache_name(room)
+    queue_dump = get_cache_var_dump(name, get_queue, room, refresh_cache)
+    return queue_dump
+
+
+def invalidate_grid_cache():
+    invalidate_cache_var("grid")
+
+
+def invalidate_queue_cache(room):
+    name = queue_cache_name(room)
+    invalidate_cache_var(name)
 
 
 def get_one_user_dump(user):
@@ -179,8 +207,10 @@ def get_user_list_emails(users):
 
 # send users as dictionary by email
 def get_all_user_dict_dump():
+    timer_start()
     users = User.query.all()
     dump = get_user_dict_dump(users)
+    timer_end("get_all_user_dict_dump")
     return dump
 
 
@@ -627,7 +657,8 @@ def get_queue(room):
         paper_prev = paper
     globs, current_paper = get_globs_dump_with_status(room)
     queue = {"paper_list_encrypted": paper_list, "globs": globs}
-    return queue, current_paper  # cur paper needed by conflictbot
+    result = (queue, current_paper)  # current paper needed by conflictbot
+    return result
 
 
 def get_git_info_from_file():
@@ -689,6 +720,7 @@ def call_users_to_room(room):
 
 
 def get_unconflicted_paper_keys(user):
+    timer_start()
     conflict_papers = list(user.conf_papers)
     conflict_ids = [p.nid for p in conflict_papers]
     all_papers = Paper.query.all()
@@ -697,6 +729,7 @@ def get_unconflicted_paper_keys(user):
         if p.nid not in conflict_ids:
             entry = {"nid": p.nid, "key": p.key}
             unconficted[p.oid] = entry
+    timer_end("get_unconflicted_paper_keys")
     return unconficted
 
 
@@ -707,7 +740,7 @@ def broadcast_admin_alert(title, body):
 
 def login_user_and_send_welcome(user):
     log_print(f"client connected - send welcome to {user.full_name}")
-    user_dump = user_schema.dump(user)
+    user_dump = get_one_user_dump(user)
     paper_keys = get_unconflicted_paper_keys(user)
     all_rooms = get_all_rooms()
     data = {
@@ -728,7 +761,6 @@ def login_user_and_send_welcome(user):
         emit_admin_queries(False)
     if not user.role_is_super:
         # tell all admins about this login...
-        user_dump = get_one_user_dump(user)
         emit("server_refresh_user", user_dump, room="admin")
 
 
@@ -799,7 +831,7 @@ def user_request_grid():
         disconnect()
         return
     log_print(f"{user.full_name} requested grid")
-    grid_dump = get_grid_dump()
+    grid_dump = get_cache_grid_dump(False)
     emit("server_set_grid", grid_dump)
 
 
@@ -810,7 +842,7 @@ def user_request_queue(room):
         disconnect()
         return
     log_print(f"{user.full_name} requested queue for {room}")
-    data, _ = get_queue(room)
+    data, _ = get_cache_queue_dump(room, False)
     emit("server_set_queue", data)
 
 
@@ -850,6 +882,7 @@ def admin_prev_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, -1)  # also "hides" current
     try_sql_commit()
+    invalidate_queue_cache(room)
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -861,6 +894,7 @@ def admin_next_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
+    invalidate_queue_cache(room)
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -875,6 +909,8 @@ def admin_advance_queue(data):
     before_index, paper = update_current_paper_status(room, status_update)
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
+    invalidate_grid_cache()
+    invalidate_queue_cache(room)
     update = {
         "queue_index": before_index,
         "grid_nid": paper.nid,
@@ -894,6 +930,7 @@ def admin_show_current(room):
     log_print(f"admin request for show paper in {room}")
     show_current_paper(room)
     try_sql_commit()
+    invalidate_queue_cache(room)
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -908,6 +945,7 @@ def admin_hide_queue(data):
     log_print(f"admin request for hide queue {room}: {hide} {message}")
     set_hide_queue(room, hide, message)
     try_sql_commit()
+    invalidate_queue_cache(room)
     globs, current_paper = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -926,7 +964,7 @@ def admin_set_queue(filters):
     log_print(f"admin request for set queue in {room}: {filters}")
     msg = set_queue(room, filters)
     try_sql_commit()
-    queue, current_paper = get_queue(room)
+    queue, current_paper = get_cache_queue_dump(room, True)
     emit("server_set_queue", queue, broadcast=True)
     globs = queue["globs"]
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -1012,7 +1050,7 @@ def admin_set_queue_explicit(data):
     log_print(f"admin request for set explicit queue {room}: {explicit}")
     msg = set_queue_explicit(room, explicit)
     try_sql_commit()
-    queue, current_paper = get_queue(room)
+    queue, current_paper = get_cache_queue_dump(room, True)
     emit("server_set_queue", queue, broadcast=True)
     globs = queue["globs"]
     conflictbots_broadcast_conflicts(globs, current_paper)
@@ -1026,9 +1064,9 @@ def admin_set_bar(bar):
     log_print(f"admin request set bar to {bar}")
     set_bar(bar)
     try_sql_commit()
-    globs, _ = get_globs_dump_with_status("Plenary")  # YYY ???
-    emit("server_set_globs", globs, broadcast=True)
-    grid_dump = get_grid_dump()
+    globs, _ = get_globs_dump_with_status("Plenary")
+    emit("server_set_globs", globs, broadcast=True)  # bar is in globs
+    grid_dump = get_cache_grid_dump(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     message = f"Bar is now updated ({bar})."
     data = {"message": message, "type": "success"}
@@ -1042,7 +1080,7 @@ def admin_bulk_reject():
     log_print(msg)
     bulk_reject_below_bar()
     success = try_sql_commit()
-    grid_dump = get_grid_dump()
+    grid_dump = get_cache_grid_dump(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     if success:
         msg = "Mark unseen reject papers below bar as now seen."
@@ -1063,7 +1101,7 @@ def admin_clear_stickies():
     if count:
         success = try_sql_commit()
     if count and success:
-        grid_dump = get_grid_dump()
+        grid_dump = get_cache_grid_dump(True)
         emit("server_set_grid", grid_dump, broadcast=True)
         msg = f"All {count} stickies are now cleared."
         data = {"message": msg, "type": "success"}
@@ -1091,6 +1129,7 @@ def user_set_sticky(data):
     history = History(paper=paper, context_enum=context_sticky, status_enum=status_enum)
     db.session.add(history)
     if try_sql_commit():
+        invalidate_grid_cache()
         emit("server_set_sticky", nid, broadcast=True)
         message = f"Sticky filed for paper {nid} ({status})."
         data = {"message": message, "type": "success"}
@@ -1265,6 +1304,7 @@ def admin_upload_file(file):
     msg = f"File upload ({header_type}) successful. {msg}"
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
+    invalidate_cache_all()  # just in case this changes some state
 
 
 @socketio.on("admin_wipe_database")
@@ -1273,6 +1313,7 @@ def admin_wipe_database():
     log_print("about to wipe database...")
     wipe_db_clean()
     disconnect_all_users()
+    invalidate_cache_all()
 
 
 @socketio.on("admin_refresh_conflictbot")
