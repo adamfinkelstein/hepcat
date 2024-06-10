@@ -17,13 +17,15 @@
     "react-color": "^2.19.3",
     "react-dom": "^18.1.0",
     "react-fontawesome": "^1.7.1",
-    "react-markdown": "^8.0.3",
     "react-password-checklist": "^1.6.0",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-split": "^2.0.14",
     "socket.io-client": "^4.5.1",
     "web-vitals": "^2.1.4"
+  },
+  "overrides": {
+    "autoprefixer": "10.4.5"
   },
   "engines": {
     "npm": "8.11.0",
