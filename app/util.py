@@ -30,17 +30,25 @@ def get_conflictbot_namespace():
 #
 #######################
 
+show_timers = os.environ.get("HEPCAT_SHOW_TIMERS")
+
 
 def timer_start():
     global time_start
+    if not show_timers:
+        return
     time_start = timer()
 
 
-def timer_end(msg=""):
+def timer_end(msg="", reset=False):
     global time_start
+    if not show_timers:
+        return
     time_end = timer()
     time_ms = round(1000 * (time_end - time_start))
-    log_print(f"{msg} time in ms: {time_ms}")
+    log_print(f"::: {msg} time: {time_ms}ms")
+    if reset:
+        timer_start()
 
 
 #######################
@@ -52,7 +60,7 @@ def timer_end(msg=""):
 
 def make_path_if_needed(path):
     if not os.path.exists(path):
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
 
 
 def remove_dir_recursive(dir):
@@ -119,7 +127,7 @@ def write_cache_file(name, var):
     fname = name_to_pickle_fname(cache_dir, name)
     with open(fname, "wb") as handle:
         pickle.dump(var, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    log_print(f"wrote cache file: {name}")
+    # log_print(f"wrote cache file: {name}")
 
 
 def read_cache_file(name):
@@ -128,7 +136,7 @@ def read_cache_file(name):
         return None
     with open(fname, "rb") as handle:
         var = pickle.load(handle)
-    log_print(f"did read cache file: {name}")
+    # log_print(f"did read cache file: {name}")
     return var
 
 
@@ -151,5 +159,6 @@ def get_cache_var_dump(name, dump_func, func_arg, refresh_cache):
         var_dump = dump_func(func_arg) if func_arg else dump_func()
     if cache_dir and read_failed:
         write_cache_file(name, var_dump)
-    timer_end("cache var")
+    in_cache_str = "not cached" if read_failed else "in cache"
+    timer_end(f"cache var {name} {in_cache_str}")
     return var_dump

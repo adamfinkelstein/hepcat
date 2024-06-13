@@ -9,6 +9,8 @@ from .util import (
     make_path_if_needed,
     write_data_to_file,
     write_text_to_file,
+    timer_start,
+    timer_end,
 )
 from .util_history import (
     get_latest_room_history_status,
@@ -37,13 +39,7 @@ from .models import (
 
 
 def delete_all_users():
-    users = User.query.all()
-    count = len(users)
-    # slightly lame optimization: prevents need to logout
-    if count < 3:  # account for admin and chair
-        return
     drop_and_rebuild_tables("conflicts,users,roles")
-    # ensure_admin() causes warnings and not needed.
 
 
 def delete_all_papers():
@@ -151,40 +147,53 @@ def insert_query_rows(rows):
     return count
 
 
-def get_all_existing_user_emails():
-    users = User.query.all()
-    emails = [user.email for user in users]
-    return emails
+def keep_rows_with_unique_lowercase_emails(rows):
+    uniq_emails = set()
+    result = []
+    for row in rows:
+        email = row[0]
+        email = email.lower()  # ensure emails are all lower case
+        row[0] = email
+        if email in uniq_emails:
+            log_print(f"skipping duplicate entry for email: {email}")
+            continue
+        uniq_emails.add(email)
+        result.append(row)
+    return result
 
 
 # Email,First Name,Last Name,Role,Password
-def insert_user_rows(rows):
+def insert_user_rows(rows, hash_cache):
     count = 0
-    uniq_new_emails = set()
-    existing_emails = get_all_existing_user_emails()
+    hash_count = 0
     rows = keep_rows_with_n_cols(rows, 5)
+    rows = keep_rows_with_unique_lowercase_emails(rows)
     for row in rows:
-        email, first_name, last_name, role, password = row
-        lower_email = email.lower()  # ensure emails are all lower case
-        if lower_email in uniq_new_emails:
-            log_print(f"skipping duplicate entry for email: {lower_email}")
-            continue
-        if lower_email in existing_emails:
-            log_print(f"skipping existing entry for email: {lower_email}")
-            continue
-        uniq_new_emails.add(lower_email)
+        email, first_name, last_name, role_name, password = row
         user = User(
-            email=lower_email,
+            email=email,
             first_name=first_name,
             last_name=last_name,
-            password=password,
         )
+        if password:
+            user.password = password
+        else:
+            if email in hash_cache:
+                # restore password cached from before
+                hash = hash_cache[email]
+                hash_count += 1
+            else:
+                # set to something random (to be reset later)
+                hash = gen_random_key(32)
+            user.password_hash = hash
         # log_print(f'added user {email}')
-        if len(role):
-            roleObj = get_or_insert_role(role)
-            user.role = roleObj
+        if len(role_name):
+            role = get_or_insert_role(role_name)
+            user.role = role
+            # could potentially cache these but relatively rare
         db.session.add(user)
         count += 1
+    log_print(f"added {count} users (restored {hash_count} old passwords)")
     ensure_screens()  # this will provide at least Plenary but later need to add rooms
     return count
 
@@ -594,21 +603,42 @@ def update_file_upload_info(header_type, count):
     db.session.add(upload)
 
 
+def cache_user_password_hashes():
+    hashes = {}
+    users = User.query.all()
+    for user in users:
+        email = user.email
+        hash = user.password_hash
+        hashes[email] = hash
+    return hashes
+
+
 def read_csv(filename):
+    timer_start()
     header, rows = read_csv_rows(filename)
     header_type, ncols = get_csv_type(header)
     if not header_type or header_type not in csvInsertFunctions:
         return None
     log_print(f"Reading csv of type {header_type}")
     rows = omit_extra_cols(rows, ncols)
+    is_users = header_type == "users"
+    if is_users:
+        hash_cache = cache_user_password_hashes()
     # first delete old database info
+    timer_end(f"finished reading {header_type} csv", True)
     dump_users_papers_and_conflicts(f"Before deleting {header_type}")
     deletion_func = csvDeleteFunctions[header_type]
     deletion_func()
     dump_users_papers_and_conflicts(f"After deleting {header_type}")
+    timer_end(f"finished delete {header_type} data", True)
     # next insert new rows
-    insertion_func = csvInsertFunctions[header_type]
-    count = insertion_func(rows)
+    if is_users:
+        count = insert_user_rows(rows, hash_cache)
+    else:
+        insertion_func = csvInsertFunctions[header_type]
+        count = insertion_func(rows)
+    dump_users_papers_and_conflicts(f"After inserting {header_type}")
+    timer_end(f"finished inserting {header_type} data")
     update_file_upload_info(header_type, count)
     return header_type
 

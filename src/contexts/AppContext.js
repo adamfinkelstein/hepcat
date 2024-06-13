@@ -287,13 +287,6 @@ export default function AppContext({ children }) {
       }
     };
 
-    const receiveLogout = () => {
-      controlledLog('got request to logout');
-      // AF??? should disconnect and flash message and go to login
-      // window.location.href = '/auth/logout';
-      // maybe: flash(data.message, data.type, data.which)
-    };
-
     const receiveReload = () => {
       controlledLog('got request to reload');
       window.location.reload();
@@ -326,7 +319,7 @@ export default function AppContext({ children }) {
     };
 
     if (socket && 'on' in socket) {
-      controlledLog('register welcome etc');
+      controlledLog('register socket handlers');
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
@@ -334,7 +327,6 @@ export default function AppContext({ children }) {
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_probe_count', receiveProbe);
       socket.on('server_file_uploads', receiveFileUploads);
-      socket.on('server_logout_user', receiveLogout);
       socket.on('server_reload_user', receiveReload);
       socket.on('server_send_query', receiveQuery);
       socket.on('server_send_queries', receiveQueries);
@@ -343,7 +335,7 @@ export default function AppContext({ children }) {
     // return from useEffect is function that does cleanup
     return () => {
       if (socket && 'off' in socket) {
-        controlledLog('socket cleanup');
+        controlledLog('cleanup socket handlers');
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
@@ -351,7 +343,6 @@ export default function AppContext({ children }) {
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_file_uploads', receiveFileUploads);
-        socket.off('server_logout_user', receiveLogout);
         socket.off('server_reload_user', receiveReload);
         socket.off('server_send_query', receiveQuery);
         socket.off('server_send_queries', receiveQueries);

@@ -209,7 +209,9 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(
+            password, method="pbkdf2:sha256:1000"
+        )
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -485,12 +487,12 @@ def num_to_sid(n):
     return sid
 
 
-def get_or_insert_role(role):
-    roleObj = Role.query.filter_by(name=role).first()
-    if not roleObj:
-        roleObj = Role(name=role)
-        db.session.add(roleObj)
-    return roleObj
+def get_or_insert_role(role_name):
+    role = Role.query.filter_by(name=role_name).first()
+    if not role:
+        role = Role(name=role_name)
+        db.session.add(role)
+    return role
 
 
 def get_config_or_default(key, default):
@@ -616,11 +618,11 @@ def drop_and_rebuild_tables(tables_to_drop=None):
         if table in all_tables:
             sql_drop_table(table)
         else:
-            log_print(f"no need to drop non-existant table {table}")
+            log_print(f"no need to drop non-existent table {table}")
     # log_print("having dropped tables, about to rebuild...")
     # AF??? Possibly better to use close_all_sessions...?
     if not try_sql_commit():  # needed before create_all below
-        log_print("sql commit error droping tables")
+        log_print("sql commit error dropping tables")
     db.create_all()
     # log_print("...rebuild done.")
 
