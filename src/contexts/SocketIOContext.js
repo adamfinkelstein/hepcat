@@ -1,6 +1,7 @@
 import React from 'react';
 import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
+import { useFlasher } from '../contexts/FlasherContext';
 
 const socketIOContext = React.createContext();
 let errorCallback = null;
@@ -10,6 +11,7 @@ export default function SocketIOContext({ children }) {
   const [auth, setAuth] = React.useState(undefined);
   const [isPasswordReset, setIsPasswordReset] = React.useState(false);
   const { controlledLog } = useControlledLog();
+  const { flash } = useFlasher();
 
   const socketLogin = React.useCallback((email, password, cb) => {
     errorCallback = cb;
@@ -94,14 +96,27 @@ export default function SocketIOContext({ children }) {
         const msg =
           'The Hepcat server disconnected here.' +
           ' It may be due to a login under the same account in a different location.';
-        alert(msg);
+        flash(msg, 'warning', 0);
+      }
+    });
+
+    // Socket.IO handler for the server to push a flashed message */
+    s.on('server_send_flasher', (data, cb) => {
+      controlledLog('got flasher:');
+      controlledLog(data);
+      flash(data.message, data.type);
+
+      // the server may request acknowledgement of this message, in that case
+      // invoke the callback
+      if (cb) {
+        cb();
       }
     });
 
     return () => {
       s.disconnect();
     };
-  }, [auth, controlledLog, socketLogout]);
+  }, [auth, controlledLog, socketLogout, flash]);
 
   return (
     <socketIOContext.Provider

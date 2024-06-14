@@ -16,8 +16,8 @@ export default function App() {
     <Container fluid className="App">
       <BrowserRouter>
         <ControlledLogContext>
-          <SocketIOContext>
-            <FlasherContext>
+          <FlasherContext>
+            <SocketIOContext>
               <UserContext>
                 <AppContext>
                   <PreferencesContext>
@@ -29,8 +29,8 @@ export default function App() {
                   </PreferencesContext>
                 </AppContext>
               </UserContext>
-            </FlasherContext>
-          </SocketIOContext>
+            </SocketIOContext>
+          </FlasherContext>
         </ControlledLogContext>
       </BrowserRouter>
     </Container>
