@@ -52,6 +52,7 @@ def append_history_context_tables(room_name, room_int):
 
 
 def fill_history_context_tables_and_room_list():
+    global all_queue_rooms
     init_history_context_tables()
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
