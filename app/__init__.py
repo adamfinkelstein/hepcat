@@ -21,6 +21,7 @@ socketio = SocketIO()
 
 log_initialized = False
 
+
 # following https://flask.palletsprojects.com/en/2.3.x/logging/
 # need to initialize logging as done here before calling it...
 # ... to avoid getting default handler.
@@ -30,25 +31,29 @@ def log_init():
         return
     log_initialized = True
     log_level = os.getenv("HEPCAT_LOG_LEVEL") or "INFO"
-    dictConfig({
-        'version': 1,
-        'formatters': {'default': {
-            'format': '[%(asctime)s] %(levelname)s: %(message)s',
-        }},
-        'handlers': {'wsgi': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
-            'formatter': 'default'
-        }},
-        'root': {
-            'level': log_level,
-            'handlers': ['wsgi']
+    dictConfig(
+        {
+            "version": 1,
+            "formatters": {
+                "default": {
+                    "format": "[%(asctime)s] %(levelname)s: %(message)s",
+                }
+            },
+            "handlers": {
+                "wsgi": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://flask.logging.wsgi_errors_stream",
+                    "formatter": "default",
+                }
+            },
+            "root": {"level": log_level, "handlers": ["wsgi"]},
         }
-    })
+    )
+
 
 def log_print(msg, level="info", app=None):
     log_init()
-    msg = str(msg) # cast to string in case it is something else
+    msg = str(msg)  # cast to string in case it is something else
     if not app:
         app = current_app
     failed = True
@@ -57,10 +62,11 @@ def log_print(msg, level="info", app=None):
             log = getattr(app.logger, level)
             log(msg)
             failed = False
-    except:
+    except Exception:
         pass
-    if failed: # due to missing: app, or logger, or log level
-        print(f"warning: failed to log message, so fall back on print: {msg}")
+    if failed:  # due to missing: app, or logger, or log level
+        print(f"no log so print: {msg}")
+
 
 def create_app(config_name, build_path):
     global static_folder
@@ -121,7 +127,9 @@ def create_app(config_name, build_path):
     cors_allowed_origins = None
     if app.config["ALLOW_CORS"] or app.config["ALLOW_CORS_SOCKET"]:
         cors_allowed_origins = "*"
-        log_print("ALLOW_CORS_SOCKET - allowing cross origin requests on socket", "info", app)
+        log_print(
+            "ALLOW_CORS_SOCKET - allowing cross origin requests on socket", "info", app
+        )
     async_mode = "threading"
     if app.config["USE_EVENTLET"]:
         async_mode = "eventlet"

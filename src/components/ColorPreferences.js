@@ -58,7 +58,7 @@ export default function ColorPreferences() {
         <Button
           variant="secondary"
           onClick={() => {
-            flash('Changed to default colors.', 'success', 'colors');
+            flash('Changed to default colors.', 'success');
             changeToDefaultColors();
           }}
         >

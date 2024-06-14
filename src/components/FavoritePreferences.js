@@ -59,7 +59,7 @@ export default function FavoritePreferences() {
     let input = document.getElementsByClassName('favorites-input')[0];
 
     input.value = '';
-    flash('Favorites are updated.', 'success', 'favorites');
+    flash('Favorites are updated.', 'success');
   }
 
   return (
@@ -85,7 +85,7 @@ export default function FavoritePreferences() {
           variant="danger"
           onClick={() => {
             changeFavorites([]);
-            flash('Favorites deleted.', 'success', 'favorites');
+            flash('Favorites deleted.', 'success');
           }}
           className="delete-all-btn"
         >

@@ -76,7 +76,8 @@ export default function UserContext({ children }) {
         if (target) {
           setRoomChoice(target);
           setRoomCalledTo(target);
-          flash('Admin sent you to ' + target, 'success', 'room_change');
+          const msg = 'Admin sent you to ' + target;
+          flash(msg, 'success', 'room_change');
         }
       };
 
