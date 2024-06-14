@@ -57,7 +57,6 @@ from ..models import (
     ensure_admin,
     wipe_db_clean,
     label_str_to_enum,
-    is_name_of_room,
 )
 
 user_schema = UserSchema()
@@ -299,13 +298,6 @@ def room_in_user_rooms(room, user):
     return is_in_rooms
 
 
-def room_in_filter_only(filter_only):
-    for filter_name in filter_only:
-        if is_name_of_room(filter_name):
-            return filter_name
-    return None
-
-
 def paper_in_room(paper, room):
     for label in paper.tag_labels:
         if label.is_room and label.name == room:
@@ -319,6 +311,7 @@ def filters_allow_paper(paper, filters):
     highRange = float(filters["highRange"])
     filter_statuses = filters["statuses"]
     filter_only = filters["only"]
+    current_room = filters["roomChoice"]
     # interface: true(low <= score)  <==>  test here: false(score < low)
     # interface: true(score < high)  <==>  test here: false(score >= high)
     if sort_score < lowRange:
@@ -327,6 +320,8 @@ def filters_allow_paper(paper, filters):
         return False
     status = get_latest_history_status(paper)
     if status not in filter_statuses:
+        return False
+    if "This Room Only" in filter_only and not paper_in_room(paper, current_room):
         return False
     if "Sticky Only" in filter_only and not is_paper_sticky(paper):
         return False
@@ -341,9 +336,6 @@ def filters_allow_paper(paper, filters):
     if "No Admin Conf" in filter_only and has_chair_conflict(paper):
         return False
     if "Only Admin Conf" in filter_only and not has_chair_conflict(paper):
-        return False
-    room_filter = room_in_filter_only(filter_only)
-    if room_filter and not paper_in_room(paper, room_filter):
         return False
     return True
 
@@ -495,7 +487,7 @@ def get_query_parts(name):
     return "Query", name
 
 
-def get_ids_matching_query(name):
+def get_ids_matching_query(name, room):
     query = Query.query.filter_by(name=name).first()
     if not query:
         msg = f"Cannot find query with name: {name}"
@@ -503,18 +495,24 @@ def get_ids_matching_query(name):
         empty_list = []
         return empty_list
     filters = json.loads(query.json)
+    filters["roomChoice"] = room
     log_print(f"get_ids_matching_query filters: {filters}")
     p_list = get_filtered_papers(filters)
     ids = [p.nid for p in p_list]
     return ids
 
 
-def set_op_query(name):
-    log_print(f"set operation query: {name}")
+def set_op_leaf_query(name, room):
+    log_print(f"set operation leaf query: {name} (room {room})")
+    # Two possible types:
+    # 1) Query (like 'BelowBarQuery')
+    # 2) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
     label_type, label_name = get_query_parts(name)
     if label_type == "Query" or not hasattr(LabelType, label_type):
-        ids = get_ids_matching_query(label_name)
+        ids = get_ids_matching_query(label_name, room)
         return set(ids)
+    if label_type == "Room" and label_name == "This":
+        label_name = room
     label_enum = label_str_to_enum(label_type)
     label = (
         Label.query.filter_by(type_enum=label_enum).filter_by(name=label_name).first()
@@ -535,9 +533,9 @@ def get_set_of_all_paper_ids():
     return ids
 
 
-def get_ids_by_set_op(expr):
+def get_ids_by_set_op(room, expr):
     all_ids = get_set_of_all_paper_ids()
-    parser = set_op_make_parser(all_ids, set_op_query)
+    parser = set_op_make_parser(all_ids, set_op_leaf_query, room)
     ids = set_op_parse_expr(parser, expr)
     return ids
 
@@ -558,7 +556,7 @@ def get_nid_list(exp):
     return nids
 
 
-def parse_explicit_queue(exp):
+def parse_explicit_queue(room, exp):
     exp = remove_all_whitespace(exp)
     if not exp:
         return [], False, ""
@@ -567,7 +565,7 @@ def parse_explicit_queue(exp):
         nids = get_nid_list(exp)
     else:
         solve_tsp = True
-        nids = get_ids_by_set_op(exp)
+        nids = get_ids_by_set_op(room, exp)
         if nids is None:
             return None, solve_tsp, "Failed to parse expression for explicit queue."
     p_list = get_papers_with_ids(nids)
@@ -575,7 +573,7 @@ def parse_explicit_queue(exp):
 
 
 def set_queue_explicit(room, exp):
-    filter_papers, solve_tsp, msg = parse_explicit_queue(exp)
+    filter_papers, solve_tsp, msg = parse_explicit_queue(room, exp)
     if filter_papers is None:
         return msg
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)

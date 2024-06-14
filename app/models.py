@@ -82,15 +82,6 @@ def context_enum_to_str(n):
     return "Error"
 
 
-def is_name_of_room(name):
-    if name == "Plenary":
-        return True
-    enum = context_str_to_enum(name)
-    # see fill_history_context_tables_and_room_list above re: 1000
-    is_room = enum >= 1000
-    return is_room
-
-
 class HistoryStatus(IntEnum):
     Tabled = 0
     Reject = 1

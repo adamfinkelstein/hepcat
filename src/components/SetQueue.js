@@ -29,6 +29,7 @@ export default function SetQueue() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { roomChoice, conflictbot } = useUser();
+  const { queueExplicitList, setQueueExplicitList } = useGUI();
   const globals = useAppGlobals();
   const hideQ = globals.hideQ;
   const setHideQ = globals.setHideQ;
@@ -55,7 +56,11 @@ export default function SetQueue() {
   const scoreSelection = globals.scoreSelection;
   const setScoreSelection = globals.setScoreSelection;
 
-  const filterListMain = [
+  let flasher = useFlasher(); // XXX should be const? single line?
+  let flash = flasher['flash'];
+
+  const filterList = [
+    'This Room Only',
     'Sticky Only',
     'Unseen Only',
     'Dual Only',
@@ -64,14 +69,7 @@ export default function SetQueue() {
     'No Admin Conf',
     'Only Admin Conf',
   ];
-  const filterList =
-    roomChoice === 'Plenary' ? filterListMain : [roomChoice, ...filterListMain];
   const statusList = globals['statusList'];
-
-  const { queueExplicitList, setQueueExplicitList } = useGUI();
-
-  let flasher = useFlasher();
-  let flash = flasher['flash'];
 
   /* This function handles the values of the range inputs
          scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange:
@@ -103,13 +101,25 @@ export default function SetQueue() {
     setHighRange(highInput);
   }
 
+  function getCheckedBoxes(boxList, namePrefix) {
+    return boxList.filter(
+      (_item, index) => document.getElementById(namePrefix + index).checked,
+    );
+  }
+
+  function handleStatusCheckClick() {
+    const checked = getCheckedBoxes(statusList, 'status-checkbox-');
+    setStatusCheckbox(checked);
+  }
+
+  function handleOnlyCheckClick() {
+    const checked = getCheckedBoxes(filterList, 'only-checkbox-');
+    setOnlyCheckbox(checked);
+  }
+
   function getQueueFilterInfo() {
-    const statuses = statusList.filter(
-      (s, index) => document.getElementById('status-checkbox-' + index).checked,
-    );
-    const only = filterList.filter(
-      (f, index) => document.getElementById('only-checkbox-' + index).checked,
-    );
+    const statuses = statusCheckbox;
+    const only = onlyCheckbox;
     const data = { roomChoice, statuses, only, lowRange, highRange, queryName };
     return data;
   }
@@ -346,20 +356,7 @@ export default function SetQueue() {
                       type="checkbox"
                       id={`status-checkbox-` + index}
                       checked={statusCheckbox.includes(label)}
-                      onChange={() => {
-                        if (statusCheckbox.includes(label)) {
-                          controlledLog('includes');
-                          setStatusCheckbox((oldStatusCheckbox) => {
-                            return oldStatusCheckbox.filter(
-                              (oldStatus, i) => oldStatus !== label,
-                            );
-                          });
-                        } else {
-                          setStatusCheckbox((oldStatusCheckbox) => {
-                            return [...oldStatusCheckbox, label];
-                          });
-                        }
-                      }}
+                      onChange={handleStatusCheckClick}
                     />
                   </div>
                 );
@@ -381,19 +378,7 @@ export default function SetQueue() {
                       type="checkbox"
                       id={`only-checkbox-` + index}
                       checked={onlyCheckbox.includes(label)}
-                      onChange={() => {
-                        if (onlyCheckbox.includes(label)) {
-                          setOnlyCheckbox((oldOnlyCheckbox) => {
-                            return oldOnlyCheckbox.filter(
-                              (oldOnly, i) => oldOnly !== label,
-                            );
-                          });
-                        } else {
-                          setOnlyCheckbox((oldOnlyCheckbox) => {
-                            return [...oldOnlyCheckbox, label];
-                          });
-                        }
-                      }}
+                      onChange={handleOnlyCheckClick}
                     />
                   </div>
                 );

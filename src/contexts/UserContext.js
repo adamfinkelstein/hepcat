@@ -111,6 +111,7 @@ export default function UserContext({ children }) {
     flash,
     isAdmin,
     roomChoice,
+    roomCalledTo,
     socketEmit,
     setToken,
     user,

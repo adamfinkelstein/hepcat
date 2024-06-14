@@ -58,7 +58,7 @@ export default function AppContext({ children }) {
   const [queryName, setQueryName] = useState('');
   const [queryStateHandler, setQueryStateHandler] = useState(null);
 
-  const { user, isAdmin, paperKeys, roomChoice, allRooms } = useUser();
+  const { user, isAdmin, paperKeys, roomChoice } = useUser();
 
   // for modal dialog
   const [showModal, setShowModal] = useState(false);
@@ -292,22 +292,10 @@ export default function AppContext({ children }) {
       window.location.reload();
     };
 
-    const isRoomName = (item) => allRooms.includes(item);
-
-    const modifyOnlyFiltersInRoom = (onlyList) => {
-      // AF XXX maybe change this to not remove Plenary
-      if (roomChoice === 'Plenary') {
-        return onlyList.filter((item) => !isRoomName(item));
-      }
-      return onlyList.map((item) => (isRoomName(item) ? roomChoice : item));
-    };
-
     const receiveQuery = (filters) => {
-      const modOnly = modifyOnlyFiltersInRoom(filters.only);
       controlledLog('received query, only:');
       controlledLog(filters);
-      controlledLog(modOnly);
-      setOnlyCheckbox(modOnly);
+      setOnlyCheckbox(filters.only);
       setStatusCheckbox(filters.statuses);
       setScoreSelection('In Range');
       setLowRange(filters.lowRange);
@@ -354,7 +342,6 @@ export default function AppContext({ children }) {
     socket,
     isAdmin,
     roomChoice,
-    allRooms,
     user,
     paperKeys,
     controlledLog,
