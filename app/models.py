@@ -56,13 +56,15 @@ def fill_history_context_tables_and_room_list():
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
     room_labels = get_active_room_labels()
-    all_queue_rooms.clear()  # global variable
-    all_queue_rooms.append("Plenary")  # ensure at least this room
+    all_queue_rooms = []  # empty array (global)
     for room_label in room_labels:
         room_name = room_label.name
         room_int = room_label.id + 1000  # prevent collision with history_context_basic
         all_queue_rooms.append(room_name)
         append_history_context_tables(room_name, room_int)
+    all_queue_rooms.sort()  # alphabetical
+    # put Plenary at start of the list, even if that all there is:
+    all_queue_rooms = ["Plenary"] + all_queue_rooms
     log_print(f"all_queue_rooms: {all_queue_rooms}")
     log_print(f"room table: {history_context_int}")
 
@@ -463,10 +465,12 @@ def reset_gq(room):
     gq = GlobQueue.query.filter_by(room=room).first()
     if not gq:
         gq = get_or_create_gq(room)
+    gq.bar = 0
     gq.hide_queue = False
     gq.message = ""
     gq.current = -1
     gq.current_show = False
+    gq.called_users = False
     db.session.add(gq)
 
 

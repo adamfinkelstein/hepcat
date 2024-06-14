@@ -56,7 +56,6 @@ from ..models import (
     try_sql_commit,
     ensure_admin,
     wipe_db_clean,
-    set_all_users_to_be_in_plenary,
     label_str_to_enum,
     is_name_of_room,
 )
@@ -398,7 +397,10 @@ def zero_or_inc_current_index(room, zero_or_inc):
 
 def get_bar():
     gq = get_or_create_gq("Plenary")  # global->Plenary
-    bar = gq.bar
+    if gq and gq.bar is not None:
+        bar = gq.bar
+    else:
+        bar = 0
     return bar
 
 
@@ -701,29 +703,22 @@ def clear_all_stickies():
     return count_deleted
 
 
-# AF XXX maybe change this behavior later to be more symmetric in rooms
-def call_users_to_room(room):
+# call users to room (bring==True) or release from (bring==False)
+def call_users_to_room(room, bring):
+    log_print(f"call users to room {room} ({bring})")
+    gq = GlobQueue.query.filter_by(room=room).first()
+    if gq:
+        gq.called_users = bring
+        db.session.add(gq)
     users = User.query.all()
-    if room == "Plenary":
-        set_all_users_to_be_in_plenary()
-        gqs = GlobQueue.query.all()
-        for gq in gqs:
-            is_plenary = gq.room == room
-            gq.called_users = is_plenary
-            db.session.add(gq)
-    else:  # not Plenary
-        for user in users:
-            if room_in_user_rooms(room, user):
+    for user in users:
+        if room_in_user_rooms(room, user):
+            if bring:
                 user.room_name = room
                 db.session.add(user)
-        gq = GlobQueue.query.filter_by(room=room).first()
-        if gq:
-            gq.called_users = True
-            db.session.add(gq)
-        gq = GlobQueue.query.filter_by(room="Plenary").first()
-        if gq:
-            gq.called_users = False
-            db.session.add(gq)
+            elif user.room_name == room:
+                user.room_name = "Plenary"
+                db.session.add(user)
 
 
 def get_unconflicted_paper_keys(user):
@@ -875,12 +870,14 @@ def io_disconnect():
 
 @socketio.on("admin_bring_to_room")
 @admin_required_for_io
-def admin_bring_to_room(room):
-    log_print(f"admin request to bring to room {room}")
-    call_users_to_room(room)
+def admin_bring_to_room(gui_data):
+    bring = gui_data["bring"]
+    room = gui_data["room"]
+    log_print(f"admin request to bring ({bring}) to room {room}")
+    call_users_to_room(room, bring)
     try_sql_commit()
     all_users = get_all_user_dict_dump_cached(True)
-    data = {"room": room, "all_users": all_users}
+    data = {"room": room, "bring": bring, "all_users": all_users}
     emit("server_call_to_room", data, broadcast=True)
     globs, _ = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)

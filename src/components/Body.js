@@ -23,6 +23,9 @@ export default function Body() {
   const { user, isAdmin, allRooms, roomCalledTo, roomChoice, setRoomChoice } =
     useUser();
   const globals = useAppGlobals();
+  const splitWidth = useSplitWidth();
+  const changeSplitWidth = useChangeSplitWidth();
+
   const showRoomWarning = !isAdmin && roomCalledTo !== roomChoice;
   const isScreen = user && user.role_name === 'Screen';
   const queue = globals.queue;
@@ -36,17 +39,17 @@ export default function Body() {
       : 'The queue is hidden.';
   const message = hideQueue ? hideMessage : 'No papers in queue.';
 
-  const splitWidth = useSplitWidth();
-  const changeSplitWidth = useChangeSplitWidth();
+  const isPlenary = roomChoice === 'Plenary';
+  const showBringButton = isAdmin && !isPlenary;
+  const calledUsers = globals.serverGlobs && globals.serverGlobs.called_users;
+  const bringButtonLabel = calledUsers
+    ? 'Release to Plenary'
+    : 'Bring Reviewers';
 
-  const enableBringButton =
-    isAdmin && globals.serverGlobs && !globals.serverGlobs.called_users;
-  const bringVerb = enableBringButton ? 'Bring ' : 'Brought ';
-  const bringButtonLabel =
-    bringVerb +
-    (roomChoice === 'Plenary'
-      ? 'Everyone to Plenary'
-      : roomChoice + ' Reviewers');
+  const handleBringButton = () => {
+    const data = { bring: !calledUsers, room: roomChoice };
+    socketEmit('admin_bring_to_room', data);
+  };
 
   return (
     <Container fluid className="Body">
@@ -81,21 +84,11 @@ export default function Body() {
                   );
                 })}
               </DropdownButton>
-              {isAdmin &&
-                (enableBringButton ? (
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      socketEmit('admin_bring_to_room', roomChoice);
-                    }}
-                  >
-                    {bringButtonLabel}
-                  </Button>
-                ) : (
-                  <Button variant="secondary" disabled>
-                    {bringButtonLabel}
-                  </Button>
-                ))}
+              {showBringButton && (
+                <Button variant="primary" onClick={handleBringButton}>
+                  {bringButtonLabel}
+                </Button>
+              )}
               {showRoomWarning && (
                 <span id="room-warning">
                   You were last called to {roomCalledTo}.

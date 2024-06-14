@@ -59,17 +59,24 @@ export default function UserContext({ children }) {
       };
 
       const receiveCallToRoom = (data) => {
+        controlledLog('called to room:');
+        controlledLog(data);
         const room = data.room;
-        const alreadyThere = room === roomChoice;
+        const bring = data.bring;
+        const wereAssigned = room === roomCalledTo;
         if (isAdmin && data.all_users && data.all_users.length) {
           setAllUsers(data.all_users);
         }
-        if (userBelongsInRoom(room)) {
-          setRoomChoice(room);
-          setRoomCalledTo(room);
-          if (!alreadyThere) {
-            flash('Admin brought you to ' + room, 'success', 'room_change');
-          }
+        let target = null;
+        if (bring && userBelongsInRoom(room)) {
+          target = room;
+        } else if (!bring && wereAssigned) {
+          target = 'Plenary';
+        }
+        if (target) {
+          setRoomChoice(target);
+          setRoomCalledTo(target);
+          flash('Admin sent you to ' + target, 'success', 'room_change');
         }
       };
 

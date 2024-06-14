@@ -652,6 +652,10 @@ a.nav-link {
   margin: 6px;
 }
 
+.queue-explicit-input {
+  width: 500px;
+}
+
 /************* LOGIN PAGE **************/
 /* see https://supertokens.com/blog/building-a-login-screen-with-react-and-bootstrap# */
 

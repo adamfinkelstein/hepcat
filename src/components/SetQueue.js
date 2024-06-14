@@ -469,28 +469,34 @@ export default function SetQueue() {
       </div>
       <hr className="horizontal-divider" />
       <div>
+        Explicit query:
+        <br />
+        <input
+          name="queueExplicit"
+          value={queueExplicitList}
+          className="queue-explicit-input"
+          onChange={handleInputChange}
+        />
+        <br />
+        &nbsp;
+        <br />
         <Stack direction="horizontal">
           <div>
-            <input
-              name="queueExplicit"
-              value={queueExplicitList}
-              className="queue-explicit-input"
-              onChange={handleInputChange}
-            />
-            <br />
             <Button
               onClick={handleSetQueueExplicitButton}
               className="queue-explicit-btn"
             >
-              Set Explicit Queue
+              Set&nbsp;Explicit&nbsp;Queue
             </Button>
           </div>
           <ul className="queue-explicit-instructions">
-            <li className="font-size-4">Empty string ('') to clear queue.</li>
-            <li className="font-size-4">Cluster name like 'Cluster-A'.</li>
-            <li className="font-size-4">Area name like 'Area-Rendering'.</li>
+            <li className="font-size-4">Empty clears queue.</li>
             <li className="font-size-4">
-              Paper number(s) like '101' or '101,103,105,107'.
+              Room:Plenary or Area:Geometry or Cluster:A
+            </li>
+            <li className="font-size-4">101 or 101,103,105,107</li>
+            <li className="font-size-4">
+              AND( OR(Room:Plenary, Area:Geometry), NOT(BelowBarQuery))
             </li>
           </ul>
         </Stack>

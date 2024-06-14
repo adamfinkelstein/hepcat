@@ -137,7 +137,6 @@ def keep_rows_with_n_cols(rows, n):
 # Name,Query
 def insert_query_rows(rows):
     count = 0
-    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
         name, json = row
         json_quote = json.replace("'", '"')  # replace single w double
@@ -166,7 +165,6 @@ def keep_rows_with_unique_lowercase_emails(rows):
 def insert_user_rows(rows, hash_cache):
     count = 0
     hash_count = 0
-    rows = keep_rows_with_n_cols(rows, 5)
     rows = keep_rows_with_unique_lowercase_emails(rows)
     for row in rows:
         email, first_name, last_name, role_name, password = row
@@ -186,7 +184,6 @@ def insert_user_rows(rows, hash_cache):
                 # set to something random (to be reset later)
                 hash = gen_random_key(32)
             user.password_hash = hash
-        # log_print(f'added user {email}')
         if len(role_name):
             role = get_or_insert_role(role_name)
             user.role = role
@@ -268,7 +265,6 @@ def insert_paper_rows(rows):
     oids = gen_unique_keys(n, 8)
     keys = gen_unique_keys(n, 16)
     count = 0
-    rows = keep_rows_with_n_cols(rows, 6)
     for row in rows:
         sid, thumbnail, title, areas, dual, abstract = row
         journal_only = journal_only_from_dual(dual)
@@ -303,7 +299,6 @@ def insert_paper_rows(rows):
 # Submission ID,Email
 def insert_conflict_rows(rows):
     count = 0
-    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
         sid, email = row
         user = User.query.filter_by(email=email).first()
@@ -319,7 +314,6 @@ def insert_conflict_rows(rows):
 # Used for both Clusters and Rooms
 def insert_label_rows(rows, label_dict):
     count = 0
-    rows = keep_rows_with_n_cols(rows, 2)
     for row in rows:
         sid, label_name = row
         paper = Paper.query.filter_by(sid=sid).first()
@@ -394,7 +388,6 @@ def encode_room_list(room_list):
 # Email,Room
 def insert_people_room_rows(rows):
     email_to_room_list = {}
-    rows = keep_rows_with_n_cols(rows, 2)
     # gather rooms by person
     for row in rows:
         email, room = row
@@ -430,7 +423,6 @@ def review_str_to_float(s):
 
 def insert_chair_score_rows(rows):
     count = 0
-    rows = keep_rows_with_n_cols(rows, 4)
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews
         sid, chair_score, status, reviews = row
@@ -456,7 +448,6 @@ def insert_chair_score_rows(rows):
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
     count = 0
-    rows = keep_rows_with_n_cols(rows, 4)
     for row in rows:
         sid, _, context, status = row
         if context == "BBS":  # these get set by status file
@@ -573,14 +564,9 @@ def get_csv_type(header):
         knownHeader = csvTypes[typ].lower()  # lower case
         if header.startswith(knownHeader):
             cols = knownHeader.split(",")
-            ncols = len(cols)
-            return typ, ncols
+            n_cols = len(cols)
+            return typ, n_cols
     return None, 0
-
-
-def omit_extra_cols(rows, ncols):
-    rows = [cols[:ncols] for cols in rows]
-    return rows
 
 
 def delete_prev_file_uploads(header_type):
@@ -590,9 +576,9 @@ def delete_prev_file_uploads(header_type):
         del_list = del_list.copy()  # work on temp copy
     del_list.append(header_type)
     for name in del_list:
-        ndel = FileUpload.query.filter_by(file=name).delete()
-        if ndel:
-            log_print(f"Deleted {ndel} upload record(s) of type {name}")
+        n_del = FileUpload.query.filter_by(file=name).delete()
+        if n_del:
+            log_print(f"Deleted {n_del} upload record(s) of type {name}")
 
 
 def update_file_upload_info(header_type, count):
@@ -616,11 +602,11 @@ def cache_user_password_hashes():
 def read_csv(filename):
     timer_start()
     header, rows = read_csv_rows(filename)
-    header_type, ncols = get_csv_type(header)
+    header_type, n_cols = get_csv_type(header)
     if not header_type or header_type not in csvInsertFunctions:
         return None
     log_print(f"Reading csv of type {header_type}")
-    rows = omit_extra_cols(rows, ncols)
+    rows = keep_rows_with_n_cols(rows, n_cols)
     is_users = header_type == "users"
     if is_users:
         hash_cache = cache_user_password_hashes()
