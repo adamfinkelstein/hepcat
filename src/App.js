@@ -10,27 +10,30 @@ import AppContext from './contexts/AppContext.js';
 import PreferencesContext from './contexts/PreferencesContext';
 import FlasherContext from './contexts/FlasherContext.js';
 import GUIContext from './contexts/GUIContext.js';
+import ModalDialogContext from './contexts/ModalDialogContext.js';
 
 export default function App() {
   return (
     <Container fluid className="App">
       <BrowserRouter>
         <ControlledLogContext>
-          <FlasherContext>
-            <SocketIOContext>
-              <UserContext>
-                <AppContext>
-                  <PreferencesContext>
-                    <GUIContext>
-                      <ModalDialog />
-                      <HeaderBar />
-                      <AppRoutes />
-                    </GUIContext>
-                  </PreferencesContext>
-                </AppContext>
-              </UserContext>
-            </SocketIOContext>
-          </FlasherContext>
+          <ModalDialogContext>
+            <FlasherContext>
+              <SocketIOContext>
+                <UserContext>
+                  <AppContext>
+                    <PreferencesContext>
+                      <GUIContext>
+                        <ModalDialog />
+                        <HeaderBar />
+                        <AppRoutes />
+                      </GUIContext>
+                    </PreferencesContext>
+                  </AppContext>
+                </UserContext>
+              </SocketIOContext>
+            </FlasherContext>
+          </ModalDialogContext>
         </ControlledLogContext>
       </BrowserRouter>
     </Container>

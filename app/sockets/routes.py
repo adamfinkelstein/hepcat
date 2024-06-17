@@ -1081,7 +1081,7 @@ def admin_set_bar(bar):
     emit("server_set_globs", globs, broadcast=True)  # bar is in globs
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
-    message = f"Bar is now updated ({bar})."
+    message = f"Bar is now updated to: {bar}"
     data = {"message": message, "type": "success"}
     emit("server_send_flasher", data)
 

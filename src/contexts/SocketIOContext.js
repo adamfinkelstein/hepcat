@@ -2,6 +2,7 @@ import React from 'react';
 import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 
 const socketIOContext = React.createContext();
 let errorCallback = null;
@@ -12,6 +13,7 @@ export default function SocketIOContext({ children }) {
   const [isPasswordReset, setIsPasswordReset] = React.useState(false);
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
+  const { revealModalDialog } = useModalDialog();
 
   const socketLogin = React.useCallback((email, password, cb) => {
     errorCallback = cb;
@@ -96,7 +98,8 @@ export default function SocketIOContext({ children }) {
         const msg =
           'The Hepcat server disconnected here.' +
           ' It may be due to a login under the same account in a different location.';
-        flash(msg, 'warning', 0);
+        // flash(msg, 'warning', 0);
+        revealModalDialog('Disconnected', msg);
       }
     });
 
@@ -116,7 +119,7 @@ export default function SocketIOContext({ children }) {
     return () => {
       s.disconnect();
     };
-  }, [auth, controlledLog, socketLogout, flash]);
+  }, [auth, controlledLog, flash, revealModalDialog, socketLogout]);
 
   return (
     <socketIOContext.Provider

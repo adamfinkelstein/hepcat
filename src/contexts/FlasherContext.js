@@ -12,6 +12,7 @@ export function useFlasher() {
 }
 
 export default function FlashContext({ children }) {
+  // for flash messages:
   // the messages state variable below holds a list of notifications
   // each entry has four elements:
   // - message: the message text
@@ -54,7 +55,7 @@ export default function FlashContext({ children }) {
         ...messages,
         { message, type, flashId: id, visible: true },
       ]);
-      if (duration) {
+      if (duration > 0) {
         setTimeout(hideFlash.bind(null, id), duration * 1000);
       }
     },

@@ -2,14 +2,16 @@ import Button from 'react-bootstrap/Button';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const emailField = useRef();
   const { flash } = useFlasher();
+  const { revealModalDialog } = useModalDialog();
   const navigate = useNavigate();
 
-  const handleLoginButton = async (ev) => {
+  const handleResetButton = async (ev) => {
     ev.preventDefault();
     const response = await fetch('/api/reset_password', {
       method: 'POST',
@@ -18,18 +20,15 @@ export default function ForgotPasswordPage() {
     });
     if (!response.ok) {
       const data = await response.json();
-      flash(
-        `There was a problem with the request (${data.error}). Please try again.`,
-        'danger',
-      );
+      const msg =
+        'Error in password reset request (' + email + '):' + data.error;
+      // flash(msg, 'danger');
+      revealModalDialog('Error', msg);
       return;
     } else {
-      flash(
-        'An email was just sent to ' +
-          email +
-          ' with a link to reset your password.',
-        'success',
-      );
+      const msg =
+        'Email just sent to ' + email + ' with a link to reset password.';
+      flash(msg, 'success');
     }
     navigate('/login');
   };
@@ -69,7 +68,7 @@ export default function ForgotPasswordPage() {
             <Button
               type="submit"
               className="btn btn-primary"
-              onClick={handleLoginButton}
+              onClick={handleResetButton}
             >
               Request Password Reset
             </Button>

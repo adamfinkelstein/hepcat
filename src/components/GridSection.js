@@ -10,10 +10,12 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 
 export default function GridSection() {
   const [gridDisplay, setGridDisplay] = useState('Normal');
   const { socketEmit } = useSocketIO();
+  const { revealModalDialog } = useModalDialog();
   const globals = useAppGlobals();
   const guiBar = globals.guiBar;
   const grid = globals.grid;
@@ -24,9 +26,6 @@ export default function GridSection() {
   const papersTotal = gridCountAbove + gridCountBelow;
   const papersConflicted = papersTotal - gridNidsAbove - gridNidsBelow;
   const checkValidNID = globals.checkValidNID;
-  const setModalTitle = globals.setModalTitle;
-  const setModalBody = globals.setModalBody;
-  const setShowModal = globals.setShowModal;
   const [sticky, setSticky] = useState('Tabled');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
@@ -36,16 +35,12 @@ export default function GridSection() {
     const status = words[0];
     const nid = parseInt(ID);
     if (!checkValidNID(nid)) {
-      setModalTitle('ERROR');
-      setModalBody('Please choose a valid paper id.');
-      setShowModal(true);
+      revealModalDialog('ERROR', 'Please choose a valid paper id.');
       return;
     }
     controlledLog('Send sticky ' + status + ' to paper with id: ' + nid);
     const data = { status, nid };
     socketEmit('user_set_sticky', data);
-    // now sticky confirmation sent from server
-    // flash("Sticky sent for " + nid + " with " + status + ".", "success", "sticky")
   }
 
   return (

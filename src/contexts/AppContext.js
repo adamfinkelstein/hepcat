@@ -1,8 +1,9 @@
+import moment from 'moment';
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 import { useUser } from './UserContext';
-import moment from 'moment';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 
 var CryptoJS = require('crypto-js');
 
@@ -38,6 +39,7 @@ export function useAppGlobals() {
 export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
   const { socket, socketEmit } = useSocketIO();
+  const { revealModalDialog } = useModalDialog();
   const [queue, setQueue] = useState([]);
   const [grid, setGrid] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
@@ -59,11 +61,6 @@ export default function AppContext({ children }) {
   const [queryStateHandler, setQueryStateHandler] = useState(null);
 
   const { user, isAdmin, paperKeys, roomChoice } = useUser();
-
-  // for modal dialog
-  const [showModal, setShowModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalBody, setModalBody] = useState('');
 
   const oidIsConflict = useCallback(
     (oid) => {
@@ -281,9 +278,7 @@ export default function AppContext({ children }) {
 
     const receiveAlert = (data) => {
       if (isAdmin || !data.admin_only) {
-        setModalTitle(data.title);
-        setModalBody(data.body);
-        setShowModal(true);
+        revealModalDialog(data.title, data.body);
       }
     };
 
@@ -346,6 +341,7 @@ export default function AppContext({ children }) {
     paperKeys,
     controlledLog,
     socketEmit,
+    revealModalDialog,
     recordGlobsForThisRoom,
     oidToNid,
     oidIsConflict,
@@ -367,12 +363,6 @@ export default function AppContext({ children }) {
         newStatus: newStatus,
         setNewStatus: setNewStatus,
         serverGlobs: serverGlobs,
-        showModal: showModal,
-        setShowModal: setShowModal,
-        modalTitle: modalTitle,
-        setModalTitle: setModalTitle,
-        setModalBody: setModalBody,
-        modalBody: modalBody,
         probeCount: probeCount,
         probeWhen: probeWhen,
         fileUploads: fileUploads,

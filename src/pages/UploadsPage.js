@@ -3,6 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
@@ -10,8 +11,8 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 export default function UploadsPage() {
-  let flasher = useFlasher();
-  let flash = flasher['flash'];
+  const { flash } = useFlasher();
+  const { revealModalDialog } = useModalDialog();
 
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
@@ -38,7 +39,8 @@ export default function UploadsPage() {
     if (ext !== 'csv') {
       const msg =
         "The file '" + fileName + "' does not appear to be a CSV file.";
-      flash(msg, 'warning');
+      // flash(msg, 'warning');
+      revealModalDialog('Upload Error', msg);
       fileUp.value = null; // reset the upload
       return;
     }

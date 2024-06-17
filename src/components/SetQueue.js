@@ -56,8 +56,7 @@ export default function SetQueue() {
   const scoreSelection = globals.scoreSelection;
   const setScoreSelection = globals.setScoreSelection;
 
-  let flasher = useFlasher(); // XXX should be const? single line?
-  let flash = flasher['flash'];
+  const { flash } = useFlasher();
 
   const filterList = [
     'This Room Only',
@@ -233,7 +232,7 @@ export default function SetQueue() {
     let confirmAllRooms =
       'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
     if (inAllRooms && window.confirm(confirmAllRooms) !== true) {
-      const msg = 'This conflictbot refresh (all rooms) was canceled.';
+      const msg = 'This Conflictbot refresh (all rooms) was canceled.';
       controlledLog(msg);
       flash(msg, 'warning');
     } else {
@@ -241,15 +240,13 @@ export default function SetQueue() {
       socketEmit('admin_refresh_conflictbot', room);
       const msg = 'Sent request to Conflictbot to refresh ' + room;
       controlledLog(msg);
-      // window.alert(msg) // ugly
-      flash(msg, 'success'); // nicer
+      flash(msg, 'success');
     }
   }
 
   function handleSetBarButton() {
     controlledLog('bar set:', guiBarString);
     socketEmit('admin_set_bar', guiBarString);
-    flash('Bar set to ' + guiBarString + '.', 'success');
   }
 
   function handleBulkRejectButton() {

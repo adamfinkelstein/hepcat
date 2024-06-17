@@ -1,15 +1,12 @@
-//import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 
 export default function ModalDialog() {
-  const globals = useAppGlobals();
-  const showModal = globals.showModal;
-  const setShowModal = globals.setShowModal;
-  const modalTitle = globals.modalTitle;
-  const modalBody = globals.modalBody;
-  const hideModalDialog = () => setShowModal(false);
+  const { showModal, modalTitle, modalBody, revealModalDialog } =
+    useModalDialog();
+
+  const hideModalDialog = () => revealModalDialog(false);
 
   return (
     <Modal show={showModal} onHide={hideModalDialog}>

@@ -25,8 +25,7 @@ export default function ColorPreferences() {
   let changeTextColors = useChangeTextColors();
   let [pickingFor, setPickingFor] = useState('Unseen');
 
-  let flasher = useFlasher();
-  let flash = flasher['flash'];
+  const { flash } = useFlasher();
 
   let handleChangeComplete = (type, color) => {
     controlledLog(color);

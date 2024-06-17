@@ -1,64 +1,51 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import { useControlledLog } from '../contexts/ControlledLogContext';
+import Button from 'react-bootstrap/Button';
+import { useAppGlobals } from '../contexts/AppContext';
+import { useFlasher } from '../contexts/FlasherContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 import {
   useChangeFavorites,
   useFavorites,
 } from '../contexts/PreferencesContext';
-import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useFlasher } from '../contexts/FlasherContext';
-import Button from 'react-bootstrap/Button';
-import { useAppGlobals } from '../contexts/AppContext';
 
 export default function FavoritePreferences() {
   const { controlledLog } = useControlledLog();
   let favorites = useFavorites();
   let changeFavorites = useChangeFavorites();
 
-  let flasher = useFlasher();
-  let flash = flasher['flash'];
+  const { flash } = useFlasher();
+  const { revealModalDialog } = useModalDialog();
 
   let globals = useAppGlobals();
   let checkValidNID = globals['checkValidNID'];
 
   function handleSubmit(event) {
     event.preventDefault();
-
-    let newValues = [];
-    let values = event.target[0].value;
-    values = values.replace("'", '').replace(' ', ''); // remove quotes and spaces
-    values = values.split(',');
-    for (let i = 0; i < values.length; i++) {
-      const num = Number(values[i]);
-      controlledLog(num);
-      if (!Number.isInteger(num)) {
-        flash(
-          'Favorites could not be updated. You supplied an invalid value.',
-          'warning',
-          'favorites',
-        );
-        return;
-      } else if (!checkValidNID(num)) {
-        flash(
-          "Favorites could not be updated. You supplied a paper ID that doesn't exist.",
-          'warning',
-          'favorites',
-        );
-        return;
-      }
-      newValues.push(num);
+    const idBox = event.target[0];
+    let ids = idBox.value;
+    // replace non-digits with whitespace then split on whitespace
+    ids = ids.replace(/[^\d]/g, ' ').trim().split(/\s+/);
+    ids = ids.map((i) => parseInt(i));
+    // check for valid IDs
+    const badIDs = ids.filter((v) => !checkValidNID(v));
+    if (badIDs.length) {
+      const bad = badIDs.join(',');
+      const msg =
+        'Favorites not updated. One or more ID(s) does not exist: ' + bad;
+      revealModalDialog('Error', msg);
+      return;
     }
     changeFavorites((oldFav) => {
-      let newSet = [...oldFav, ...newValues]; // put them all together
+      let newSet = [...oldFav, ...ids]; // put them all together
       newSet = [...new Set(newSet)]; // use set to remove duplicates
       newSet.sort();
       controlledLog('update favorites set to:');
       controlledLog(newSet);
       return newSet;
     });
-
-    let input = document.getElementsByClassName('favorites-input')[0];
-
-    input.value = '';
+    idBox.value = ''; // clear out the box
     flash('Favorites are updated.', 'success');
   }
 

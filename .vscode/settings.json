@@ -1,0 +1,24 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none",
+  "prettier.singleQuote": true,
+  "editor.formatOnSave": true,
+  "postcssSorting.config": {
+    "properties-order": "alphabetical"
+  },
+  "cSpell.words": [
+    "backref",
+    "buildpack",
+    "buildpacks",
+    "conflictbot",
+    "EVENTLET",
+    "Minipaper",
+    "ortools",
+    "SQLALCHEMY",
+    "stickie",
+    "unconficted",
+    "unconflicted"
+  ]
+}
