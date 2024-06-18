@@ -51,8 +51,8 @@ def old_zoom_conflictbot(key):
         flash(msg)
         return abort(404)
     url = f"/admin/old_zoom_conflictbot/{inst}"
-    client_id = current_app.config["ZOOM_CONFLICTBOT_CLIENT_ID"]
-    client_secret = current_app.config["ZOOM_CONFLICTBOT_CLIENT_SECRET"]
+    client_id = current_app.config["CONFLICTBOT_ZOOM_CLIENT_ID"]
+    client_secret = current_app.config["CONFLICTBOT_ZOOM_CLIENT_SECRET"]
     return render_template(
         "old-zoom-conflictbot.html",
         conflictbot_socket=conflictbot_namespace,

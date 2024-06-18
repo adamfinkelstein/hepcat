@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import os
 from dotenv import load_dotenv
+from app.basics import subdir_path, env_get_str, env_get_bool
 
 load_dotenv()
 
-if os.getenv("USE_EVENTLET"):
+if env_get_bool("USE_EVENTLET"):
     # monkey patch the standard library to make it non-blocking under eventlet
     # this also includes a patch for psycopg2
     import eventlet
@@ -18,8 +18,8 @@ from app import create_app, log_print, socketio
 
 
 def create_configured_app():
-    config_name = os.getenv("FLASK_CONFIG") or "default"
-    build_path = os.getcwd() + "/build"
+    config_name = env_get_str("FLASK_CONFIG", "default")
+    build_path = subdir_path("build")
     log_print("creating app with config: " + config_name)
     log_print("build path: " + build_path)
     return create_app(config_name, build_path)

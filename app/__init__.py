@@ -1,4 +1,3 @@
-import os
 import uuid
 from flask import Flask, current_app
 from flask_bootstrap import Bootstrap
@@ -25,12 +24,11 @@ log_initialized = False
 # following https://flask.palletsprojects.com/en/2.3.x/logging/
 # need to initialize logging as done here before calling it...
 # ... to avoid getting default handler.
-def log_init():
+def log_init(log_level):
     global log_initialized
     if log_initialized:
         return
     log_initialized = True
-    log_level = os.getenv("HEPCAT_LOG_LEVEL") or "INFO"
     dictConfig(
         {
             "version": 1,
@@ -51,9 +49,16 @@ def log_init():
     )
 
 
+def log_print_uninitialized(msg):
+    print(f"no log so print: {msg}")
+
+
 def log_print(msg, level="info", app=None):
-    log_init()
+    global log_initialized
     msg = str(msg)  # cast to string in case it is something else
+    if not log_initialized:
+        log_print_uninitialized(msg)
+        return
     if not app:
         app = current_app
     failed = True
@@ -65,13 +70,15 @@ def log_print(msg, level="info", app=None):
     except Exception:
         pass
     if failed:  # due to missing: app, or logger, or log level
-        print(f"no log so print: {msg}")
+        log_print_uninitialized(msg)
 
 
 def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__, static_url_path="", static_folder=build_path)
     app.config.from_object(config[config_name])
+    log_init(app.config["HEPCAT_LOG_LEVEL"])
+
     static_folder = build_path  # save this for use in app/main
     if app.config["ALLOW_CORS"]:
         CORS(app)
@@ -80,7 +87,7 @@ def create_app(config_name, build_path):
     # a random string associated with this instance
     app.config["INSTANCE"] = uuid.uuid4().hex
 
-    pool_size = os.getenv("SQLALCHEMY_POOL_SIZE")
+    pool_size = app.config["SQLALCHEMY_POOL_SIZE"]
     if pool_size:
         # set the connection pool size for sqlalchemy (default 5, 0=no limit)
         # https://stackoverflow.com/questions/33680429/whats-the-session-option-key-for-sqlalchemy-pool-size

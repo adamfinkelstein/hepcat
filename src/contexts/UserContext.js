@@ -19,6 +19,7 @@ export default function UserContext({ children }) {
   const [allRooms, setAllRooms] = React.useState([]);
   const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
+  const [gitInfo, setGitInfo] = React.useState('');
 
   React.useEffect(() => {
     if (socket) {
@@ -36,6 +37,9 @@ export default function UserContext({ children }) {
         }
         if (isAdmin && data.conflictbot_enabled) {
           setConflictbot(data.conflictbot_enabled);
+        }
+        if (isAdmin && data.git_info) {
+          setGitInfo(data.git_info);
         }
         setPaperKeys(data.paper_keys);
         setAllRooms(data.all_rooms);
@@ -116,6 +120,7 @@ export default function UserContext({ children }) {
     setToken,
     user,
     allUsers,
+    gitInfo,
   ]);
 
   return (
@@ -124,6 +129,7 @@ export default function UserContext({ children }) {
         user,
         isAdmin,
         adminKey,
+        gitInfo,
         conflictbot,
         paperKeys,
         allUsers,

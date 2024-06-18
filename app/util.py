@@ -4,7 +4,7 @@ import pickle
 from subprocess import run
 from timeit import default_timer as timer
 from . import log_print
-
+from .basics import env_get_str, env_get_bool
 
 #######################
 #
@@ -14,14 +14,11 @@ from . import log_print
 
 
 def get_conflictbot_namespace():
-    enabled = os.environ.get("HEPCAT_CONFLICTBOT_ENABLED")
-    if not enabled:
+    namespace = env_get_str("CONFLICTBOT_NAMESPACE")
+    if not namespace:
         return None
-    namespace = "/conflictbot"  # default
-    from_env = os.environ.get("HEPCAT_CONFLICTBOT_SOCKET")
-    if from_env:
-        namespace = "/conflictbot_" + from_env
-    return namespace
+    cb_namespace = "/conflictbot_" + namespace
+    return cb_namespace
 
 
 #######################
@@ -30,7 +27,7 @@ def get_conflictbot_namespace():
 #
 #######################
 
-show_timers = os.environ.get("HEPCAT_SHOW_TIMERS")
+show_timers = env_get_bool("HEPCAT_SHOW_TIMERS")
 
 
 def timer_start():
@@ -104,7 +101,7 @@ def run_cmd(cmd, ignore_errors=False):
 #
 #######################
 
-cache_dir = os.getenv("HEPCAT_CACHE_DIR") or None
+cache_dir = env_get_str("HEPCAT_CACHE_DIR")
 
 
 def invalidate_cache_all():

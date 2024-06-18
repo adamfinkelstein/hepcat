@@ -276,7 +276,7 @@ def setup_and_run_tsp_opt(distance_matrix):
     current_directory = os.getcwd()  # remember where we were
     os.chdir(working_folder)
     write_tsp_input(distance_matrix, input_file)
-    use_ortools = os.environ.get("HEPCAT_USE_ORTOOLS")
+    use_ortools = app.config["HEPCAT_USE_ORTOOLS"]
     concorde_path = get_concorde_path_if_exists(bin_folder)
     if use_ortools or not concorde_path:  # global set at top of file
         solver = "ortools"

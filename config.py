@@ -1,48 +1,62 @@
-import os
+from app.basics import subdir_path, env_get_str, env_get_bool, env_get_int
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+default_db = "sqlite:///" + subdir_path("data.sqlite")
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "UeVbP7PG4RmtNhz"
-    ZOOM_CONFLICTBOT_CLIENT_ID = os.environ.get("ZOOM_CONFLICTBOT_CLIENT_ID")
-    ZOOM_CONFLICTBOT_CLIENT_SECRET = os.environ.get("ZOOM_CONFLICTBOT_CLIENT_SECRET")
-    HEPCAT_ADMIN_LOGIN = os.environ.get("HEPCAT_ADMIN_LOGIN")
-    HEPCAT_ADMIN_PASSWD = os.environ.get("HEPCAT_ADMIN_PASSWD")
-    HEPCAT_CHAIR_LOGIN = os.environ.get("HEPCAT_CHAIR_LOGIN")
-    HEPCAT_CHAIR_PASSWD = os.environ.get("HEPCAT_CHAIR_PASSWD")
+    SECRET_KEY = env_get_str("SECRET_KEY", "UeVbP7PG4RmtNhz")
+    HEPCAT_LOG_LEVEL = env_get_str("HEPCAT_LOG_LEVEL", "INFO")
+    REACT_APP_SHOW_LOGS = env_get_bool("REACT_APP_SHOW_LOGS", False)
+    HEPCAT_SHOW_TIMERS = env_get_bool("HEPCAT_SHOW_TIMERS", False)
+    HEPCAT_USE_ORTOOLS = env_get_bool("HEPCAT_USE_ORTOOLS", False)
+
+    CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
+    CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")
+    CONFLICTBOT_ZOOM_CLIENT_SECRET = env_get_str("CONFLICTBOT_ZOOM_CLIENT_SECRET")
+
+    HEPCAT_ADMIN_LOGIN = env_get_str("HEPCAT_ADMIN_LOGIN", "admin@example.com")
+    HEPCAT_ADMIN_PASSWD = env_get_str("HEPCAT_ADMIN_PASSWD", "pass")
+    HEPCAT_CHAIR_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "chair@example.com")
+    HEPCAT_CHAIR_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
+    HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "screen@example.com")
+    HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = os.path.join(basedir, "tmp")
-    BIN_FOLDER = os.path.join(basedir, "local_bin")
-    APP_FOLDER = os.path.join(basedir, "app")
-    USE_EVENTLET = os.environ.get("USE_EVENTLET")  # set in Procfile, if needed
-    ALLOW_CORS = os.getenv("ALLOW_CORS")
-    ALLOW_CORS_SOCKET = os.getenv("ALLOW_CORS_SOCKET")
-    MAIL_SERVER = os.getenv("MAIL_SERVER")
-    MAIL_PORT = int(os.getenv("MAIL_PORT", "25"))
-    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS") is not None
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+    SQLALCHEMY_DATABASE_URI = env_get_str("DEV_DATABASE_URL", default_db)
+    SQLALCHEMY_POOL_SIZE = env_get_int("SQLALCHEMY_POOL_SIZE", 0)  # 0=use default
+
+    USE_EVENTLET = env_get_bool("USE_EVENTLET")
+    ALLOW_CORS = env_get_bool("ALLOW_CORS")
+    ALLOW_CORS_SOCKET = env_get_bool("ALLOW_CORS_SOCKET")
+
+    MAIL_SERVER = env_get_str("MAIL_SERVER", "smtp.sendgrid.net")
+    MAIL_PORT = env_get_int("MAIL_PORT", 587)
+    MAIL_USE_TLS = env_get_bool("MAIL_USE_TLS", True)
+    MAIL_USERNAME = env_get_str("MAIL_USERNAME", "apikey")
+    MAIL_PASSWORD = env_get_str("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = "noreply@hepcat.app"
+
+    UPLOAD_FOLDER = subdir_path("tmp")
+    BIN_FOLDER = subdir_path("local_bin")
+    APP_FOLDER = subdir_path("app")
+    CACHE_FOLDER = subdir_path("cache")  # NOT USED! (change to None for no cache)
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DEV_DATABASE_URL"
-    ) or "sqlite:///" + os.path.join(basedir, "data-dev.sqlite")
+    ALLOW_CORS = True
+    HEPCAT_SHOW_TIMERS = True
+    REACT_APP_SHOW_LOGS = True
+    HEPCAT_SHOW_TIMERS = True
 
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL") or "sqlite://"
     WTF_CSRF_ENABLED = False
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL_HEROKU"
-    ) or "sqlite:///" + os.path.join(basedir, "data.sqlite")
+    PRODUCTION = True
 
 
 config = {

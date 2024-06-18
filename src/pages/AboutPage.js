@@ -1,6 +1,13 @@
 import Container from 'react-bootstrap/Container';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useUser } from '../contexts/UserContext';
 
 export default function AboutPage() {
+  const { controlledLog } = useControlledLog();
+  const { isAdmin, gitInfo } = useUser();
+  const gitMsg = isAdmin ? gitInfo : false;
+  controlledLog('git info:' + gitInfo);
+
   return (
     <Container className="about-container">
       <p>
@@ -17,6 +24,7 @@ export default function AboutPage() {
         </a>
         .
       </p>
+      {gitMsg && <p>{gitMsg}</p>}
     </Container>
   );
 }

@@ -12,6 +12,7 @@ from .. import db, socketio, log_print
 from ..orderq import order_q, get_enter_leave_conf_sets
 from ..uploads import save_and_read_csv, pending_uploads
 from .set_op import set_op_make_parser, set_op_parse_expr
+from .git_info import get_git_info_from_repo
 from .users import (
     user_connect,
     user_disconnect,
@@ -24,7 +25,6 @@ from .users import (
 )
 from ..util import (
     get_conflictbot_namespace,
-    read_text_from_file,
     get_cache_var_dump,
     invalidate_cache_var,
     invalidate_cache_all,
@@ -628,9 +628,9 @@ def get_paper_at_queue_index(room, index):
 # def shows status and history for current paper when revealed
 def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
-    show_logs = os.getenv("REACT_APP_SHOW_LOGS")
+    show_logs = current_app.config["REACT_APP_SHOW_LOGS"]
     if show_logs is not None:
-        globs["showAppLogs"] = show_logs == "True"
+        globs["showAppLogs"] = show_logs
     current_index = globs["current"]
     paper = get_paper_at_queue_index(room, current_index)
     if paper:
@@ -666,32 +666,6 @@ def get_queue(room):
     queue = {"paper_list_encrypted": paper_list, "globs": globs}
     result = (queue, current_paper)  # current paper needed by conflictbot
     return result
-
-
-def get_git_info_from_file():
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    md = "\n\n### (no git info available)\n"
-    info_file = os.path.join(basedir, "../../git-info.md")
-    if os.path.exists(info_file):
-        md = read_text_from_file(info_file)
-    return md
-
-
-def info_to_md(info):
-    result = "\n\n### Git Version (only shown to Admins)\n\n"
-    for key in info:
-        result += f"* {key}: {info[key]}\n\n"
-    return result
-
-
-def get_git_info_from_env():
-    env_info = os.environ.get("HEPCAT_GIT_INFO")
-    if not env_info:
-        return None
-    json_info = env_info.replace("'", '"')  # replace single w double
-    info = json.loads(json_info)
-    md = info_to_md(info)
-    return md
 
 
 def clear_all_stickies():
@@ -761,10 +735,12 @@ def login_user_and_send_welcome(user):
     }
     if user.role_is_admin:
         all_users = get_all_user_dict_dump_cached(False)
+        git_info = get_git_info_from_repo()
         conflictbot_enabled = conflictbot_namespace is not None
         data["all_users"] = all_users
         data["admin_key"] = current_app.config["INSTANCE"]
         data["conflictbot_enabled"] = conflictbot_enabled
+        data["git_info"] = git_info
     emit("server_welcome", data)
     if user.role_is_admin:
         emit_admin_uploads(False)

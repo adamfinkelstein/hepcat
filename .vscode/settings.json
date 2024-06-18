@@ -13,12 +13,18 @@
     "buildpack",
     "buildpacks",
     "conflictbot",
+    "dotenv",
     "EVENTLET",
+    "gitinfo",
+    "levelname",
     "Minipaper",
+    "orderq",
     "ortools",
+    "psycopg",
     "SQLALCHEMY",
     "stickie",
     "unconficted",
-    "unconflicted"
+    "unconflicted",
+    "werkzeug"
   ]
 }
