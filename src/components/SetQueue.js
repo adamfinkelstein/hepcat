@@ -7,6 +7,7 @@ import { useUser } from '../contexts/UserContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useGUI } from '../contexts/GUIContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useModalDialog } from '../contexts/ModalDialogContext';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -29,17 +30,14 @@ export default function SetQueue() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { roomChoice, conflictbot } = useUser();
-  const { queueExplicitList, setQueueExplicitList } = useGUI();
+  const { textFilterBox, setTextFilterBox } = useGUI();
   const globals = useAppGlobals();
+  const { revealModalDialog } = useModalDialog();
   const hideQ = globals.hideQ;
+  const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
   const setHideQ = globals.setHideQ;
   const hiddenMsg = globals.hiddenMsg;
   const setHiddenMsg = globals.setHiddenMsg;
-  const probeCount = globals.probeCount;
-  const probeWhen = globals.probeWhen;
-  const probeMessage = probeWhen
-    ? probeCount + ' (' + probeWhen + ')'
-    : '(not set)';
   const guiBarString = globals.guiBar + '';
   const setGuiBar = globals.setGuiBar;
   const queryName = globals.queryName;
@@ -55,6 +53,11 @@ export default function SetQueue() {
   const setHighRange = globals.setHighRange;
   const scoreSelection = globals.scoreSelection;
   const setScoreSelection = globals.setScoreSelection;
+  const probeGUIMsg = globals.probeGUIMsg;
+  const probeTextMsg = globals.probeTextMsg;
+
+  const exampleQuery = adminQueries.length ? adminQueries[0] : 'MyQuery';
+  const showQMessageTime = false;
 
   const { flash } = useFlasher();
 
@@ -123,19 +126,7 @@ export default function SetQueue() {
     return data;
   }
 
-  function handleGetFilterEvent(event, emit) {
-    event.preventDefault(); // do not send the form!
-    const data = getQueueFilterInfo();
-    controlledLog('sending filter info for ' + emit);
-    controlledLog(data);
-    socketEmit(emit, data);
-  }
-
-  function handleGetFilteredCount(event) {
-    handleGetFilterEvent(event, 'admin_probe_queue');
-  }
-
-  function queryNameProblem() {
+  function queryNameNotOK() {
     const firstLetter = /^[a-zA-Z]/;
     const firstIsLetter = queryName.match(firstLetter);
     if (!firstIsLetter) return 'must start with a letter.';
@@ -145,29 +136,47 @@ export default function SetQueue() {
     return false;
   }
 
-  function handleSaveQuery(event) {
-    const problem = queryNameProblem();
-    if (problem) {
-      alert('Bad query name -- ' + problem);
-      return;
-    }
-    handleGetFilterEvent(event, 'admin_save_query');
+  function emitFilterRequest(emit) {
+    const data = getQueueFilterInfo();
+    controlledLog('sending filter info for ' + emit);
+    controlledLog(data);
+    socketEmit(emit, data);
   }
 
-  function handleDeleteQuery(event) {
-    event.preventDefault(); // do not send the form!
-    controlledLog('delete query named: ' + queryName);
+  function handleSaveQuery() {
+    const problem = queryNameNotOK();
+    if (problem) {
+      const msg = 'Bad query name (' + queryName + ') -- ' + problem;
+      revealModalDialog('Error', msg);
+      return;
+    }
+    emitFilterRequest('admin_save_query');
+  }
+
+  function handleGetFilteredCount() {
+    emitFilterRequest('admin_probe_queue');
+  }
+
+  function handleGetFilteredCountText() {
+    controlledLog('sending probe queue request: ' + textFilterBox);
+    const explicit = textFilterBox;
+    const data = { roomChoice, explicit };
+    socketEmit('admin_probe_text', data);
+    flash('Sent request for paper count.', 'success');
+  }
+
+  function handleDeleteQuery() {
+    controlledLog('delete named filter: ' + queryName);
     socketEmit('admin_delete_query', queryName);
   }
 
   function handleLoadQuery(name) {
-    controlledLog('load query named: ' + name);
+    controlledLog('load named filter: ' + name);
     setQueryName(name);
     socketEmit('admin_load_query', name);
   }
 
-  function handleSetQueueButton(event) {
-    event.preventDefault(); // do not send the form!
+  function handleSetQueueButton() {
     const data = getQueueFilterInfo();
     controlledLog('sending queue request:');
     controlledLog(data);
@@ -175,26 +184,30 @@ export default function SetQueue() {
     flash('Sent queue request.', 'success');
   }
 
-  function handleSetQueueExplicitButton(event) {
-    event.preventDefault(); // XXX Needed?!? (and in other places?)
-    // get value from text field
-    // save using: setQueueExplicitList(field)
-    controlledLog('sending explicit queue request: ' + queueExplicitList);
-    const explicit = queueExplicitList;
+  function handleClearQueueButton() {
+    controlledLog('sending clear queue request');
+    const explicit = '';
+    const data = { roomChoice, explicit };
+    socketEmit('admin_set_queue_explicit', data);
+    flash('Sent clear queue request.', 'success');
+  }
+
+  function handleSetQueueExplicitButton() {
+    controlledLog('sending explicit queue request: ' + textFilterBox);
+    const explicit = textFilterBox;
     const data = { roomChoice, explicit };
     socketEmit('admin_set_queue_explicit', data);
     flash('Sent explicit queue request.', 'success');
   }
 
   function handleInputChange(event) {
-    event.preventDefault(); // do not send the form!
     const target = event.target;
     const name = target.name;
     const value = target.value;
     if (name === 'lowRange') setLowRange(value);
     else if (name === 'highRange') setHighRange(value);
     else if (name === 'message') setHiddenMsg(value);
-    else if (name === 'queueExplicit') setQueueExplicitList(value);
+    else if (name === 'queueExplicit') setTextFilterBox(value);
     else if (name === 'bar') setGuiBar(value);
     else if (name === 'queryName') setQueryName(value);
   }
@@ -274,36 +287,40 @@ export default function SetQueue() {
   return (
     <Container>
       <div>
+        <Stack direction="horizontal" className="set-message-row">
+          <span className="font-size-4">{qMsgLabel}</span>
+          <input
+            name="message"
+            value={hiddenMsg}
+            onChange={handleInputChange}
+            className="message-input"
+            disabled={hideQ}
+          />
+          {showQMessageTime && (
+            <>
+              <span className="font-size-4">Can use time:&nbsp;</span>
+              <span className="font-size-4 text-tty">_T+hh:mm_</span>
+            </>
+          )}
+        </Stack>
         <Stack direction="horizontal">
           <Form.Check
             type="checkbox"
             checked={hideQ}
             onChange={handleHideQueueCheckbox}
           />
-          <span className="hideQ-text font-size-4">
-            Hide queue from everyone except admin, showing...
-          </span>
-        </Stack>
-        <Stack direction="horizontal" className="set-message-row">
-          <span className="font-size-4">... this message:</span>
-          <input
-            name="message"
-            value={hiddenMsg}
-            onChange={handleInputChange}
-            className="message-input"
-          />
-          <span className="font-size-4">Can use time:&nbsp;</span>
-          <span className="font-size-4 text-tty">_T+hh:mm_</span>
+          <span className="hideQ-text font-size-4">Hide queue now.</span>
         </Stack>
       </div>
       <hr className="horizontal-divider" />
       <div>
+        <h2>GUI Filters</h2>
         <Stack direction="horizontal" gap={4} className="named-filters">
           <DropdownButton
-            title="Queries"
+            title="Saved GUI Filters"
             type="button"
-            variant="primary"
-            className="select-query-name"
+            variant="secondary"
+            drop="end"
           >
             {adminQueries.map((name, index) => {
               return (
@@ -431,11 +448,11 @@ export default function SetQueue() {
         </Stack>
         <div>
           <Stack direction="horizontal" className="get-filtered-count">
-            <Button variant="primary" onClick={handleGetFilteredCount}>
-              Get Filtered Count
+            <Button variant="secondary" onClick={handleGetFilteredCount}>
+              Get Count
             </Button>
-            <span className="font-size-3 get-filtered-count-text">
-              Count:&nbsp;{probeMessage}
+            <span className="font-size-4 get-filtered-count-text">
+              Count:&nbsp;{probeGUIMsg}
             </span>
           </Stack>
           <Stack direction="horizontal" className="set-filtered-queue-stack">
@@ -444,19 +461,25 @@ export default function SetQueue() {
               className="set-filtered-queue-button"
               onClick={handleSetQueueButton}
             >
-              Set Filtered Queue
+              Set Queue
+            </Button>
+            <Button
+              variant="warning"
+              className="set-filtered-queue-button"
+              onClick={handleClearQueueButton}
+            >
+              Clear Queue
             </Button>
           </Stack>
         </div>
       </div>
       <hr className="horizontal-divider" />
       <div>
-        Explicit query:
-        <br />
+        <h2>Text Filters</h2>
         <input
           name="queueExplicit"
-          value={queueExplicitList}
-          className="queue-explicit-input"
+          value={textFilterBox}
+          className="text-filter-input"
           onChange={handleInputChange}
         />
         <br />
@@ -464,23 +487,29 @@ export default function SetQueue() {
         <br />
         <Stack direction="horizontal">
           <div>
+            <Button variant="secondary" onClick={handleGetFilteredCountText}>
+              Get Count
+            </Button>
+            <br />
             <Button
               onClick={handleSetQueueExplicitButton}
-              className="queue-explicit-btn"
+              className="text-filter-btn"
             >
-              Set&nbsp;Explicit&nbsp;Queue
+              Set Queue
             </Button>
           </div>
-          <ul className="queue-explicit-instructions">
-            <li className="font-size-4">Empty clears queue.</li>
-            <li className="font-size-4">
-              Room:Plenary or Area:Geometry or Cluster:A
-            </li>
-            <li className="font-size-4">101 or 101,103,105,107</li>
-            <li className="font-size-4">
-              AND( OR(Room:Plenary, Area:Geometry), NOT(BelowBarQuery))
-            </li>
-          </ul>
+          <div>
+            <ul className="text-filter-instructions">
+              <li className="font-size-4">Count: {probeTextMsg}</li>
+              <li className="font-size-4">
+                Room:Plenary / Area:Geometry / Cluster:A / Query:{exampleQuery}
+              </li>
+              <li className="font-size-4">101 / 101,103,105,107</li>
+              <li className="font-size-4">
+                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleQuery})
+              </li>
+            </ul>
+          </div>
         </Stack>
       </div>
       <div>

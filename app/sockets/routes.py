@@ -59,6 +59,8 @@ from ..models import (
     label_str_to_enum,
 )
 
+conflictbot_namespace = get_conflictbot_namespace()
+
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 paper_schema = PaperSchema()
@@ -245,9 +247,9 @@ def get_paper_tag_labels(paper):
         if label.is_cluster:  # do not show clusters
             continue
         if label.is_room:
-            paper_room = label.name
+            paper_room = "Room:" + label.name
         else:
-            fmt = f"{label.label_type}_{label.name}"
+            fmt = f"{label.label_type}:{label.name}"
             result.append(fmt)
     result.sort()
     if paper_room:  # put room at beginning of list
@@ -437,7 +439,8 @@ def set_queue_to_paper_list(room, paper_list, solve_tsp):
         else:
             keepers.append(paper)
     over_max = False
-    if solve_tsp:
+    tsp_disabled = current_app.config["HEPCAT_TSP_DISABLED"]
+    if solve_tsp and not tsp_disabled:
         order_papers, over_max = order_q(keepers, room)
     else:
         order_papers = keepers
@@ -575,9 +578,16 @@ def parse_explicit_queue(room, exp):
 def set_queue_explicit(room, exp):
     filter_papers, solve_tsp, msg = parse_explicit_queue(room, exp)
     if filter_papers is None:
-        return msg
+        return msg  # XXX this is actually ignored!
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     return msg
+
+
+def probe_queue_explicit(room, exp):
+    filter_papers, _, _ = parse_explicit_queue(room, exp)
+    if not filter_papers:
+        return 0
+    return len(filter_papers)
 
 
 def show_current_paper(room):
@@ -727,19 +737,21 @@ def login_user_and_send_welcome(user):
     user_dump = get_one_user_dump(user)
     paper_keys = get_unconflicted_paper_keys_cached(user)
     all_rooms = get_all_rooms()
+    conflictbot_enabled = conflictbot_namespace is not None
     data = {
         "user": user_dump,
         "token": user.generate_token(),  # used to remember user after page refreshes
         "paper_keys": paper_keys,
         "all_rooms": all_rooms,
+        "conflictbot_enabled": conflictbot_enabled,
     }
     if user.role_is_admin:
         all_users = get_all_user_dict_dump_cached(False)
-        git_info = get_git_info_from_repo()
-        conflictbot_enabled = conflictbot_namespace is not None
+        config_name = current_app.config["CONFIG_NAME"]
+        git_info = f"Running in {config_name} mode. "
+        git_info += get_git_info_from_repo()
         data["all_users"] = all_users
         data["admin_key"] = current_app.config["INSTANCE"]
-        data["conflictbot_enabled"] = conflictbot_enabled
         data["git_info"] = git_info
     emit("server_welcome", data)
     if user.role_is_admin:
@@ -845,6 +857,8 @@ def io_disconnect():
 @socketio.on("admin_bring_to_room")
 @admin_required_for_io
 def admin_bring_to_room(gui_data):
+    if not conflictbot_namespace:
+        return  # only useful in online setting
     bring = gui_data["bring"]
     room = gui_data["room"]
     log_print(f"admin request to bring ({bring}) to room {room}")
@@ -862,6 +876,8 @@ def admin_bring_to_room(gui_data):
 @socketio.on("admin_bring_to_all_rooms")
 @admin_required_for_io
 def admin_bring_to_all_rooms():
+    if not conflictbot_namespace:
+        return  # only useful in online setting
     conflictbots_broadcast_call_to_room(False)
 
 
@@ -1031,6 +1047,19 @@ def admin_probe_queue(filters):
     emit("server_probe_count", count)
 
 
+@socketio.on("admin_probe_text")
+@admin_required_for_io
+def admin_probe_queue_explicit(data):
+    room = data["roomChoice"]
+    explicit = data["explicit"].strip()
+    log_print(f"admin request for probe explicit queue {room}: {explicit}")
+    if explicit:
+        count = probe_queue_explicit(room, explicit)
+    else:
+        count = -1
+    emit("server_probe_text_count", count)
+
+
 @socketio.on("admin_set_queue_explicit")
 @admin_required_for_io
 def admin_set_queue_explicit(data):
@@ -1186,9 +1215,6 @@ def emit_admin_queries(broadcast):
 # Conflictbot below here:
 #
 #################################################
-
-
-conflictbot_namespace = get_conflictbot_namespace()
 
 
 def conflictbots_broadcast_user_list():

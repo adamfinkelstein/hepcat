@@ -7,6 +7,24 @@ import { useModalDialog } from '../contexts/ModalDialogContext';
 const socketIOContext = React.createContext();
 let errorCallback = null;
 
+const tokenName = 'token';
+
+const tokenStorageSet = (token) => {
+  console.log('set token ' + token);
+  window.sessionStorage.setItem(tokenName, token);
+};
+
+const tokenStorageGet = () => {
+  const token = window.sessionStorage.getItem(tokenName);
+  console.log('get token ' + token);
+  return token;
+};
+
+const tokenStorageClear = () => {
+  console.log('clear token');
+  window.sessionStorage.removeItem(tokenName);
+};
+
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = React.useState(undefined);
   const [auth, setAuth] = React.useState(undefined);
@@ -20,14 +38,14 @@ export default function SocketIOContext({ children }) {
     setAuth({ email, password });
   }, []);
 
-  const socketLogout = React.useCallback(() => {
-    window.sessionStorage.removeItem('token');
+  const socketLogout = React.useCallback((clearToken) => {
+    if (clearToken) tokenStorageClear();
     setAuth(null);
     setSocket(null);
   }, []);
 
-  const setToken = React.useCallback((token) => {
-    window.sessionStorage.setItem('token', token);
+  const socketSetAuthToken = React.useCallback((token) => {
+    tokenStorageSet(token);
   }, []);
 
   const socketEmit = React.useCallback(
@@ -50,7 +68,7 @@ export default function SocketIOContext({ children }) {
     if (!auth) {
       // the user did not log in yet
       // if we have stored a token, then try to use it
-      const token = window.sessionStorage.getItem('token');
+      const token = tokenStorageGet();
       if (token) {
         setAuth({ token });
       } else {
@@ -78,23 +96,28 @@ export default function SocketIOContext({ children }) {
     setSocket(s);
 
     s.on('connect_error', (err) => {
+      const isRejected = err.message.includes('rejected');
       if (errorCallback) {
         errorCallback(
-          err.message.includes('rejected')
+          isRejected
             ? 'Invalid username or password.'
             : 'The server appears to be offline. Please try again later.',
         );
       }
-      window.sessionStorage.removeItem('token');
+      // if (isRejected) tokenStorageClear();
       setSocket(null);
       setAuth(null);
       setIsPasswordReset(false);
     });
 
     s.on('disconnect', (reason, _details) => {
-      socketLogout();
+      // notes on possible reason...
+      // machine sleeps: 'transport close'
+      // server disconnect: 'io server disconnect'
       controlledLog('socket disconnect for reason: ' + reason);
-      if (reason === 'io server disconnect') {
+      const serverDisconnect = reason === 'io server disconnect';
+      socketLogout(serverDisconnect);
+      if (serverDisconnect) {
         const msg =
           'The Hepcat server disconnected here.' +
           ' It may be due to a login under the same account in a different location.';
@@ -128,9 +151,9 @@ export default function SocketIOContext({ children }) {
         socketLogout,
         socket,
         socketEmit,
-        setToken,
-        isPasswordReset: isPasswordReset,
-        setIsPasswordReset: setIsPasswordReset,
+        socketSetAuthToken,
+        isPasswordReset,
+        setIsPasswordReset,
       }}
     >
       {children}

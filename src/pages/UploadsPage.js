@@ -65,7 +65,7 @@ export default function UploadsPage() {
     if (window.confirm(text) === true) {
       controlledLog('Wipe DB button confirmed. Redirect.');
       socketEmit('admin_wipe_database');
-      socketLogout();
+      socketLogout(true);
     } else {
       controlledLog('Wipe DB button canceled.');
     }

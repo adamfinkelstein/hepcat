@@ -20,13 +20,26 @@ import {
 
 export default function Body() {
   const { socketEmit } = useSocketIO();
-  const { user, isAdmin, allRooms, roomCalledTo, roomChoice, setRoomChoice } =
-    useUser();
+  const {
+    user,
+    isAdmin,
+    allRooms,
+    conflictbot,
+    roomCalledTo,
+    roomChoice,
+    setRoomChoice,
+  } = useUser();
   const globals = useAppGlobals();
   const splitWidth = useSplitWidth();
   const changeSplitWidth = useChangeSplitWidth();
 
-  const showRoomWarning = !isAdmin && roomCalledTo !== roomChoice;
+  const roomStr = user.rooms ? user.rooms : '';
+  const userRooms = allRooms.filter(
+    (room) =>
+      isAdmin || conflictbot || room === 'Plenary' || roomStr.includes(room),
+  );
+  const showRoomWarning =
+    !isAdmin && conflictbot && roomCalledTo !== roomChoice;
   const isScreen = user && user.role_name === 'Screen';
   const queue = globals.queue;
 
@@ -40,13 +53,14 @@ export default function Body() {
   const message = hideQueue ? hideMessage : 'No papers in queue.';
 
   const isPlenary = roomChoice === 'Plenary';
-  const showBringButton = isAdmin && !isPlenary;
+  const showBringButton = isAdmin && conflictbot && !isPlenary;
   const calledUsers = globals.serverGlobs && globals.serverGlobs.called_users;
   const bringButtonLabel = calledUsers
     ? 'Release to Plenary'
     : 'Bring Reviewers';
 
   const handleBringButton = () => {
+    if (!conflictbot) return;
     const data = { bring: !calledUsers, room: roomChoice };
     socketEmit('admin_bring_to_room', data);
   };
@@ -72,7 +86,7 @@ export default function Body() {
                 size="lg"
                 className="a_grid-display-dropdown"
               >
-                {allRooms.map((room, index) => {
+                {userRooms.map((room, index) => {
                   return (
                     <Dropdown.Item
                       key={index}

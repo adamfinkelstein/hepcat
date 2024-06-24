@@ -491,15 +491,6 @@ def get_or_insert_role(role_name):
     return role
 
 
-def get_config_or_default(key, default):
-    app = current_app._get_current_object()
-    if key in app.config:
-        value = app.config[key]
-        if value:
-            return value
-    return default
-
-
 def ensure_user(email, first_name, last_name, role_name, passwd):
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -535,16 +526,16 @@ def reset_all_gqs():
 def ensure_admin():
     ensure_all_gqs()  # Also init global queue variables, if needed
     # Add Admin User
-    email = get_config_or_default("HEPCAT_ADMIN_LOGIN", "admin@example.com")
-    passwd = get_config_or_default("HEPCAT_ADMIN_PASSWD", "pass")
+    email = current_app.config["HEPCAT_ADMIN_LOGIN"]
+    passwd = current_app.config["HEPCAT_ADMIN_PASSWD"]
     ensure_user(email, "Admin", "User", "Super", passwd)
-    email = get_config_or_default("HEPCAT_CHAIR_LOGIN", "chair@example.com")
-    passwd = get_config_or_default("HEPCAT_CHAIR_PASSWD", "chair")
+    email = current_app.config["HEPCAT_CHAIR_LOGIN"]
+    passwd = current_app.config["HEPCAT_CHAIR_PASSWD"]
     ensure_user(email, "Chair", "User", "Super", passwd)
 
 
 def ensure_screens():
-    passwd = get_config_or_default("HEPCAT_SCREEN_PASSWD", "screen")
+    passwd = current_app.config["HEPCAT_SCREEN_PASSWD"]
     rooms = get_all_rooms()
     for room in rooms:
         lower = room.lower()

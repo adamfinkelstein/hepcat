@@ -25,7 +25,7 @@ export default function Grid({ isAbove, gridDisplay }) {
     let className = 'grid-item';
     let paperStatus = gridElem.status;
 
-    if (gridDisplay === 'Sticky') {
+    if (gridDisplay === 'Stickies') {
       if (gridElem.sticky) {
         className += ' sticky';
       } else {

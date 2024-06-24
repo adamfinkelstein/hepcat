@@ -18,15 +18,18 @@ function timeDiff(since) {
 
 export default function UsersPage() {
   const { socketEmit } = useSocketIO();
-  const { allUsers } = useUser();
+  const { allUsers, conflictbot } = useUser();
   const { controlledLog } = useControlledLog();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
   const userLine = (user) => {
     const { full_name, email, rooms, room_name } = user;
-    let line = full_name + ' <' + email + '> Now called to: ' + room_name;
-    if (rooms) line += ' All assigned rooms: [' + rooms + ']';
+    let line = full_name + ' <' + email + '>';
+    if (conflictbot) {
+      line += ' Now called to: ' + room_name;
+    }
+    if (rooms) line += ' — [' + rooms + ']';
     return line;
   };
 

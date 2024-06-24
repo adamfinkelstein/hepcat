@@ -6,7 +6,7 @@ import { useFlasher } from './FlasherContext';
 const userContext = React.createContext();
 
 export default function UserContext({ children }) {
-  const { socket, socketEmit, setToken } = useSocketIO();
+  const { socket, socketEmit, socketSetAuthToken } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
 
@@ -20,6 +20,7 @@ export default function UserContext({ children }) {
   const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
   const [gitInfo, setGitInfo] = React.useState('');
+  const [showAbstract, setShowAbstract] = React.useState(true);
 
   React.useEffect(() => {
     if (socket) {
@@ -29,14 +30,12 @@ export default function UserContext({ children }) {
         setUser(data.user);
         const isAdmin = data.user && data.user.role_is_admin;
         setIsAdmin(isAdmin);
+        setConflictbot(data.conflictbot_enabled);
         if (isAdmin && data.all_users) {
           setAllUsers(data.all_users);
         }
         if (isAdmin && data.admin_key && data.admin_key.length) {
           setAdminKey(data.admin_key);
-        }
-        if (isAdmin && data.conflictbot_enabled) {
-          setConflictbot(data.conflictbot_enabled);
         }
         if (isAdmin && data.git_info) {
           setGitInfo(data.git_info);
@@ -47,7 +46,7 @@ export default function UserContext({ children }) {
           setRoomChoice(data.user.room_name);
           setRoomCalledTo(data.user.room_name);
         }
-        setToken(data.token);
+        socketSetAuthToken(data.token);
         socketEmit('user_request_grid');
         socketEmit('user_request_queue', roomChoice);
       };
@@ -117,7 +116,7 @@ export default function UserContext({ children }) {
     roomChoice,
     roomCalledTo,
     socketEmit,
-    setToken,
+    socketSetAuthToken,
     user,
     allUsers,
     gitInfo,
@@ -137,6 +136,8 @@ export default function UserContext({ children }) {
         roomCalledTo,
         roomChoice,
         setRoomChoice,
+        showAbstract,
+        setShowAbstract,
       }}
     >
       {children}

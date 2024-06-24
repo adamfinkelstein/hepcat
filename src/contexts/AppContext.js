@@ -10,6 +10,7 @@ var CryptoJS = require('crypto-js');
 const AppGlobalsContext = React.createContext();
 
 const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
+const notSetYetMsg = '(not set)';
 
 function decryptMsgUsingKey(msg, keyStr) {
   const key = CryptoJS.enc.Utf8.parse(keyStr);
@@ -43,8 +44,8 @@ export default function AppContext({ children }) {
   const [queue, setQueue] = useState([]);
   const [grid, setGrid] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
-  const [probeCount, setProbeCount] = useState(0);
-  const [probeWhen, setProbeWhen] = useState('');
+  const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
+  const [probeTextMsg, setProbeTextMsg] = useState(notSetYetMsg);
   const [fileUploads, setFileUploads] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null);
   const [newStatus, setNewStatus] = useState('Tabled');
@@ -223,7 +224,8 @@ export default function AppContext({ children }) {
         data.paper_list = decryptPaperQueue(data.paper_list_encrypted);
         setQueue(data.paper_list);
         receiveGlobs(data.globs);
-        setProbeWhen(''); // when queue arrives, invalidate probe
+        setProbeGUIMsg(notSetYetMsg); // when queue arrives, invalidate probe
+        setProbeTextMsg(notSetYetMsg);
       } else {
         // maybe need to check for other updates????XXX
       }
@@ -235,12 +237,23 @@ export default function AppContext({ children }) {
       setFileUploads(file_uploads);
     };
 
-    const receiveProbe = (count) => {
+    const getMsgFromProbe = (count, label) => {
       const now = Date.now();
-      const fmt = moment.utc(now).local().format('ddd h:mm:ss');
-      controlledLog('received probe count: ' + count + ' ' + fmt);
-      setProbeCount(count);
-      setProbeWhen(fmt);
+      const fmtNow = moment.utc(now).local().format('ddd h:mm:ss');
+      const fmtMsg = count + ' (' + fmtNow + ')';
+      const msg = count < 0 ? notSetYetMsg : fmtMsg;
+      controlledLog('received probe ' + label + ' ' + msg);
+      return msg;
+    };
+
+    const receiveProbe = (count) => {
+      const msg = getMsgFromProbe(count, 'GUI');
+      setProbeGUIMsg(msg);
+    };
+
+    const receiveProbeText = (count) => {
+      const msg = getMsgFromProbe(count, 'text');
+      setProbeTextMsg(msg);
     };
 
     const oidListToNidList = (oids) => {
@@ -309,6 +322,7 @@ export default function AppContext({ children }) {
       socket.on('server_set_sticky', receiveSticky);
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_probe_count', receiveProbe);
+      socket.on('server_probe_text_count', receiveProbeText);
       socket.on('server_file_uploads', receiveFileUploads);
       socket.on('server_reload_user', receiveReload);
       socket.on('server_send_query', receiveQuery);
@@ -325,6 +339,7 @@ export default function AppContext({ children }) {
         socket.off('server_set_sticky', receiveSticky);
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_probe_count', receiveProbe);
+        socket.off('server_probe_text_count', receiveProbeText);
         socket.off('server_file_uploads', receiveFileUploads);
         socket.off('server_reload_user', receiveReload);
         socket.off('server_send_query', receiveQuery);
@@ -357,41 +372,41 @@ export default function AppContext({ children }) {
   return (
     <AppGlobalsContext.Provider
       value={{
-        queue: queue,
-        grid: grid,
-        queueCurrent: queueCurrent,
-        newStatus: newStatus,
-        setNewStatus: setNewStatus,
-        serverGlobs: serverGlobs,
-        probeCount: probeCount,
-        probeWhen: probeWhen,
-        fileUploads: fileUploads,
-        guiBar: guiBar,
-        setGuiBar: setGuiBar,
-        hideQ: hideQ,
-        setHideQ: setHideQ,
-        hiddenMsg: hiddenMsg,
-        setHiddenMsg: setHiddenMsg,
+        queue,
+        grid,
+        queueCurrent,
+        newStatus,
+        setNewStatus,
+        serverGlobs,
+        probeGUIMsg,
+        probeTextMsg,
+        fileUploads,
+        guiBar,
+        setGuiBar,
+        hideQ,
+        setHideQ,
+        hiddenMsg,
+        setHiddenMsg,
 
-        statusCheckbox: statusCheckbox,
-        setStatusCheckbox: setStatusCheckbox,
-        onlyCheckbox: onlyCheckbox,
-        setOnlyCheckbox: setOnlyCheckbox,
-        scoreSelection: scoreSelection,
-        setScoreSelection: setScoreSelection,
-        lowRange: lowRange,
-        setLowRange: setLowRange,
-        highRange: highRange,
-        setHighRange: setHighRange,
+        statusCheckbox,
+        setStatusCheckbox,
+        onlyCheckbox,
+        setOnlyCheckbox,
+        scoreSelection,
+        setScoreSelection,
+        lowRange,
+        setLowRange,
+        highRange,
+        setHighRange,
 
-        adminQueries: adminQueries,
-        setAdminQueries: setAdminQueries,
-        queryName: queryName,
-        setQueryName: setQueryName,
-        queryStateHandler: queryStateHandler,
-        setQueryStateHandler: setQueryStateHandler,
-        statusList: statusList,
-        checkValidNID: checkValidNID,
+        adminQueries,
+        setAdminQueries,
+        queryName,
+        setQueryName,
+        queryStateHandler,
+        setQueryStateHandler,
+        statusList,
+        checkValidNID,
       }}
     >
       {children}

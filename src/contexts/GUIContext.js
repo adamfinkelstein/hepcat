@@ -6,13 +6,13 @@ export function useGUI() {
   return useContext(GUIFiltersContext);
 }
 export default function GUIContext({ children }) {
-  const [queueExplicitList, setQueueExplicitList] = useState('');
+  const [textFilterBox, setTextFilterBox] = useState('');
 
   return (
     <GUIFiltersContext.Provider
       value={{
-        queueExplicitList: queueExplicitList,
-        setQueueExplicitList: setQueueExplicitList,
+        textFilterBox: textFilterBox,
+        setTextFilterBox: setTextFilterBox,
       }}
     >
       {children}

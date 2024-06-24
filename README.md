@@ -34,29 +34,20 @@ cd hepcat
 python3 -m venv venv
 source venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt (or on m1, use -m1 version)
+pip install -r requirements.txt
 
 npm install (one time, to set up build directory etc)
 npm run build
 ```
 
-## Baris' notes on installation above
+See [this github repo] for how to generate fake data.
 
-This works in python version 3.9.13 (generally 3.9.x):
+## More notes on installation above, for mac:
 
-- Installed python 3.9.13 for MacOS from python.org
-
-- Located the right version of python under usr/local/bin as python3.9
-
-- Used /usr/local/bin/python3.9 -m venv venv to build environment
-
-- We also had to brew install postgresql to install one of the packages.
-
-## Adam's notes on installation above
-
-There is a problem with socketio using python 3.10.xx. Instead install python 3.9.13 (same version as Baris) using:
+There was a problem with socketio using python 3.10.x.
 
 ```
+brew install postgresql
 brew install pyenv
 pyenv install 3.9.13
 pyenv local 3.9.13
@@ -65,51 +56,22 @@ source venv/bin/activate
 python --version
 ```
 
-## To generate fake data
-
-```
-cd fake
-python3 -m venv venv-fake
-source venv-fake/bin/activate
-python -m pip install --upgrade pip
-pip install numpy faker
-python fake.py
-```
-
 ## Local database options
 
 - Postgress / SQL [quick notes](https://hasura.io/blog/top-psql-commands-and-flags-you-need-to-know-postgresql/)
 
-- If you don't specify the database URL it writes a local sqlite/SQL file-based database. To wipe it out, do `rm data-dev.sqlite`
+- If you don't specify the database URL it writes a local sqlite/SQL file-based database. To wipe it out, do `rm data.sqlite`
 
 - To connect to a local Postgres database via: `DEV_DATABASE_URL=postgresql://localhost`
   (AF tested on Mac with Postgres Version 2.5.6.)
-
-## To drop all tables in local Postgres
-
-```
-\dt (<==shows tables)
-DROP TABLE IF EXISTS history CASCADE;
-DROP TABLE IF EXISTS conflicts CASCADE;
-DROP TABLE IF EXISTS papers CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
-DROP TABLE IF EXISTS file_uploads CASCADE;
-DROP TABLE IF EXISTS glob_queues CASCADE;
-DROP TABLE IF EXISTS labels CASCADE;
-DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS queries CASCADE;
-```
-
-(To do so at Heroku, log into Heroku panel and find the spot in settings for that database.)
 
 ## To run locally with static build:
 
 - If you plan to use Postgres, start that server and set environment variable (see above).
 - If you made changes to the React app, first run `npm run build`.
-- Run `python hepcat.py` - This lauches the Flask server.
-- Navigate browser to `http://127.0.0.1:5000` (not localhost, which gives a 503 error for some reason?!?) The Flask server serves the files compiled by `npm` into the build folder.
-- Log in using one of the test/admin accounts (see `ensure_admin()` in `models.py`).
+- Run `python hepcat.py` - This launches the Flask server.
+- Navigate browser to `http://127.0.0.1:5000` (not localhost, which gives a 503 error for some reason?) The Flask server serves the files compiled by `npm` into the build folder.
+- Log in using one of the test/admin accounts (see config variables).
 
 ## To run locally using npm to serve React:
 
@@ -123,10 +85,10 @@ python hepcat.py
 - In another terminal run React server:
 
 ```
-export HOST="localhost"
+export HOST="http://127.0.0.1"
 export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
 export REACT_APP_SHOW_LOGS=True
-export REACT_APP_ABOUT_IMAGE_PREFIX="http://localhost:3000/about/"
+export DANGEROUSLY_DISABLE_HOST_CHECK=true
 npm start
 ```
 
@@ -154,27 +116,13 @@ heroku buildpacks:add heroku/python
 heroku buildpacks
 ```
 
-In an older version of Hepcat, we installed the concorde binary using this buildpack, which has since been replaced by checking a local directory in containing the executable for various architectures:
-
-```
-https://github.com/tonyta/heroku-buildpack-custom-binaries#v1.0.0
-```
-
 Also set environment variables at Heroku, at least:
 
 - `SECRET_KEY` (change resets all hepcat local store inc acts)
-- `DATABASE_URL_HEROKU` (to the postgres database)
-- `FLASK_CONFIG=production` (later, make this default in code)
-- `HEPCAT_ADMIN_LOGIN`
-- `HEPCAT_ADMIN_PASSWD`
-- `HEPCAT_CHAIR_LOGIN`
-- `HEPCAT_CHAIR_PASSWD`
-- `HEPCAT_USE_ORTOOLS=True`
-- `ZOOM_CONFLICTBOT_CLIENT_ID`
-- `ZOOM_CONFLICTBOT_CLIENT_SECRET`
-- `HEPCAT_CONFLICTBOT_SOCKET`
+- `SQLALCHEMY_DATABASE_URI` (to the postgres database)
+- `FLASK_CONFIG=production` (should default in code)
 
-** AF should check this list at Heroku and see if more updates are needed. **
+** See longer list in config.py **
 
 Finally, after sending local changes, deploy at Heroku like this:
 
@@ -182,7 +130,7 @@ Finally, after sending local changes, deploy at Heroku like this:
 git push heroku
 ```
 
-This appears to restart Heroku app but not clear if it picks up changes to environment vars:
+Later these commands appears to restart Heroku app, but not clear if it picks up changes to environment vars:
 
 ```
 heroku maintenance:on
@@ -200,11 +148,9 @@ Examples of usage:
 
 ```
 python tests/fakeclients.py -w 3 -t 4 http://127.0.0.1:5000 tests/test-data/users.csv
-python tests/fakeclients.py -w 3 -t 4 https://hepcat.herokuapp.com tests/test-data/users.csv 
+python tests/fakeclients.py -w 3 -t 4 https://hepcat.herokuapp.com tests/test-data/users.csv
 ```
 
 This runs a user simulation with three worker processes (`-w 3`), each with four client threads (`-t 4`). For this example to work, the `users.csv` file must have at least 12 users. If there aren't enough users for the requested concurrency, the script ends with an error message.
 
 Each thread within each worker process will connect to the server running at the URL given. Some random waits are included, so that not all clients connect at the same time. Once connected, each client will wait for a random amount of time and then disconnect and reconnect, this time using the token that was returned by the user on the first connection. When the script is left running, there is going to be a constant stream of clients going away and returning a few seconds later, as if they were refreshing their browsers. If you log in as the super administrator, you can operate the server and see messages as they are pushed to clients. The clients log all received messages, but other than looking for the reconnection token they ignore all received messages.
-
-Other behaviors besides reconnecting can be included if necessary. Let me know if you would like me to add other behaviors myself.

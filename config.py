@@ -5,10 +5,12 @@ default_db = "sqlite:///" + subdir_path("data.sqlite")
 
 class Config:
     SECRET_KEY = env_get_str("SECRET_KEY", "UeVbP7PG4RmtNhz")
-    HEPCAT_LOG_LEVEL = env_get_str("HEPCAT_LOG_LEVEL", "INFO")
     REACT_APP_SHOW_LOGS = env_get_bool("REACT_APP_SHOW_LOGS", False)
+    HEPCAT_LOG_LEVEL = env_get_str("HEPCAT_LOG_LEVEL", "INFO")
     HEPCAT_SHOW_TIMERS = env_get_bool("HEPCAT_SHOW_TIMERS", False)
+    HEPCAT_TSP_DISABLED = env_get_bool("HEPCAT_TSP_DISABLED", False)
     HEPCAT_USE_ORTOOLS = env_get_bool("HEPCAT_USE_ORTOOLS", False)
+    HEPCAT_TSP_MAX = env_get_int("HEPCAT_TSP_MAX", 60)
 
     CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
     CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")

@@ -33,8 +33,8 @@ export default function ChangePasswordPage() {
   const oldPassNeeded = !isForOther && !isPasswordReset;
 
   if (!user && !isPasswordReset) {
-    // if we are not logged in and not resetting the password then we shouldn't
-    // be here
+    // If we are not logged in, and not resetting the password,
+    // then we should not be here.
     return <Navigate to="/" />;
   }
 

@@ -13,14 +13,6 @@ export default function HeaderBar() {
   const { user, isAdmin, allUsers } = useUser();
   const { socketLogout } = useSocketIO();
 
-  let userNamePlus = user && user.full_name ? user.full_name : 'User';
-  if (isAdmin) {
-    userNamePlus += ' (Admin)';
-  }
-  if (user && user.rooms) {
-    userNamePlus += ' [' + user.rooms + ']';
-  }
-
   function countOnlineUsers() {
     if (!isAdmin) return 0;
     let count = 0;
@@ -30,7 +22,20 @@ export default function HeaderBar() {
     return count;
   }
 
-  let onlineCount = countOnlineUsers();
+  function getHeaderBarName() {
+    let headerBarName = user && user.full_name ? user.full_name : 'User';
+    if (isAdmin) {
+      headerBarName += ' (Admin)';
+    }
+    if (user && user.rooms) {
+      const roomCodes = user.rooms.replace(/Room_/g, '');
+      headerBarName += ' [' + roomCodes + ']';
+    }
+    return headerBarName;
+  }
+
+  const onlineCount = countOnlineUsers();
+  const headerBarName = getHeaderBarName();
 
   return (
     <Navbar bg="dark" variant="dark" fixed="top">
@@ -54,7 +59,7 @@ export default function HeaderBar() {
                     </Nav.Link>
                   </Nav.Item>
                 )}
-                <NavDropdown title={userNamePlus} id="navbarScrollingDropdown">
+                <NavDropdown title={headerBarName} id="navbarScrollingDropdown">
                   <NavDropdown.Item as={NavLink} to="/">
                     PC Meeting
                   </NavDropdown.Item>
@@ -81,7 +86,7 @@ export default function HeaderBar() {
                   <NavDropdown.Item
                     onClick={() => {
                       controlledLog('clicked logout');
-                      socketLogout();
+                      socketLogout(true);
                     }}
                   >
                     Log Out

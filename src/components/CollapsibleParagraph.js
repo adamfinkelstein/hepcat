@@ -1,20 +1,23 @@
 import { Collapse } from 'react-bootstrap';
-import { useState } from 'react';
+import { useUser } from '../contexts/UserContext';
 
 export default function CollapsibleParagraph({ title, text }) {
-  const [open, setOpen] = useState(true);
-  const showHideText = open ? 'Hide' : 'Show';
+  const { showAbstract, setShowAbstract } = useUser();
+  const showHideText = showAbstract ? 'Hide' : 'Show';
 
   return (
     <p className="font-size-4">
       <span
         className="collapsible-par-header"
         role="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          console.log('click on was: ' + showAbstract);
+          setShowAbstract(!showAbstract);
+        }}
       >
         {showHideText} {title}
       </span>
-      <Collapse in={open}>
+      <Collapse in={showAbstract}>
         <span>:&nbsp;{text}</span>
       </Collapse>
     </p>

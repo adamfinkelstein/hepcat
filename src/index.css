@@ -547,11 +547,11 @@ a.nav-link {
   margin-right: 10px;
 }
 
-.queue-explicit-btn {
+.text-filter-btn {
   margin-top: 20px;
 }
 
-.queue-explicit-instructions {
+.text-filter-instructions {
   margin-left: 40px;
 }
 
@@ -575,6 +575,7 @@ a.nav-link {
 .message-input {
   margin-left: 10px;
   margin-right: 10px;
+  width: 400px;
 }
 
 .text-tty {
@@ -652,8 +653,8 @@ a.nav-link {
   margin: 6px;
 }
 
-.queue-explicit-input {
-  width: 500px;
+.text-filter-input {
+  width: 550px;
 }
 
 /************* LOGIN PAGE **************/

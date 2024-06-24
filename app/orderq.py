@@ -266,17 +266,16 @@ def read_solution(solution_file):
 
 
 def setup_and_run_tsp_opt(distance_matrix):
-    app = current_app._get_current_object()
-    working_folder = app.config["UPLOAD_FOLDER"]
-    bin_folder = app.config["BIN_FOLDER"]
-    app_folder = app.config["APP_FOLDER"]
+    working_folder = current_app.config["UPLOAD_FOLDER"]
+    bin_folder = current_app.config["BIN_FOLDER"]
+    app_folder = current_app.config["APP_FOLDER"]
     make_path_if_needed(working_folder)
     input_file = "tsp_matrix.txt"
     output_file = "tsp_matrix.sol"
     current_directory = os.getcwd()  # remember where we were
     os.chdir(working_folder)
     write_tsp_input(distance_matrix, input_file)
-    use_ortools = app.config["HEPCAT_USE_ORTOOLS"]
+    use_ortools = current_app.config["HEPCAT_USE_ORTOOLS"]
     concorde_path = get_concorde_path_if_exists(bin_folder)
     if use_ortools or not concorde_path:  # global set at top of file
         solver = "ortools"
@@ -377,18 +376,18 @@ def papers_with_only_conflicts_in_room(papers, room):
 
 def order_q(papers, room, verbose=False):
     n = len(papers)
-    maxn = 60
+    tsp_max = current_app.config["HEPCAT_TSP_MAX"]
     over_max = False
     # remainder = None
     if n < 3:
         log_print(f"skip ordering {n} papers because it is too few.")
         return papers, over_max
-    if n > maxn:
-        n = maxn
-        # remainder = papers[maxn:] # slice off the ones after max
+    if n > tsp_max:
+        n = tsp_max
+        # remainder = papers[tsp_max:] # slice off the ones after max
         random.shuffle(papers)  # choose random subset
-        papers = papers[:maxn]  # only optimize these first ones
-        over_max = maxn
+        papers = papers[:tsp_max]  # only optimize these first ones
+        over_max = tsp_max
     papers_copy = papers_with_only_conflicts_in_room(papers, room)
     distance_matrix = get_distance_matrix(papers_copy)
     permutation = order_q_select_alg(distance_matrix)

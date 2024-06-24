@@ -77,6 +77,7 @@ def create_app(config_name, build_path):
     global static_folder
     app = Flask(__name__, static_url_path="", static_folder=build_path)
     app.config.from_object(config[config_name])
+    app.config["CONFIG_NAME"] = config_name
     log_init(app.config["HEPCAT_LOG_LEVEL"])
 
     static_folder = build_path  # save this for use in app/main

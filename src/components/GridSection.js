@@ -58,7 +58,7 @@ export default function GridSection() {
           variant="secondary"
           className="grid-display-dropdown"
         >
-          {['Normal', 'Sticky', 'Favorites'].map((gridDisplay, index) => {
+          {['Normal', 'Stickies', 'Favorites'].map((gridDisplay, index) => {
             return (
               <Dropdown.Item
                 key={index}

@@ -3,7 +3,6 @@ import csv
 import uuid
 from flask import current_app
 from . import db, log_print
-
 from .util import (
     run_cmd,
     make_path_if_needed,
@@ -11,6 +10,7 @@ from .util import (
     write_text_to_file,
     timer_start,
     timer_end,
+    get_conflictbot_namespace,
 )
 from .util_history import (
     get_latest_room_history_status,
@@ -36,6 +36,8 @@ from .models import (
     set_all_users_to_be_in_plenary,
     fill_history_context_tables_and_room_list,
 )
+
+conflictbot_namespace = get_conflictbot_namespace()
 
 
 def delete_all_users():
@@ -292,7 +294,8 @@ def insert_paper_rows(rows):
             if label and paper:
                 paper.tag_labels.append(label)
                 db.session.add(paper)
-    insert_test_paper()
+    if conflictbot_namespace:  # only for online meetings
+        insert_test_paper()
     return count
 
 
@@ -307,7 +310,8 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
-    insert_test_paper_conflicts()
+    if conflictbot_namespace:  # only for online meetings
+        insert_test_paper_conflicts()
     return count
 
 
@@ -640,8 +644,7 @@ def pending_uploads(uploads):
 
 
 def get_or_make_upload_folder():
-    app = current_app._get_current_object()
-    folder = app.config["UPLOAD_FOLDER"]
+    folder = current_app.config["UPLOAD_FOLDER"]
     make_path_if_needed(folder)
     return folder
 

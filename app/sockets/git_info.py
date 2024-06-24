@@ -7,6 +7,8 @@ def info_to_txt(info):
         str = info[key]
         if key == "commit":
             str = str[:7]
+        elif key == "message":
+            str = "Comments: " + str
         result += f" {str}"
     return result
 
