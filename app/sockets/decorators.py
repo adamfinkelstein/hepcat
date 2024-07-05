@@ -1,9 +1,89 @@
+import json
 from functools import wraps
+from flask import current_app
 from flask_socketio import disconnect
-from .users import current_user_is_admin, current_user_is_super
+from .. import db, log_print
+from .users import (
+    current_user_is_admin,
+    current_user_is_super,
+    get_current_user_or_none,
+)
+from ..models import Action
+
+##################################
+#
+# Recording Admin Actions
+#
+# Note: do not need to call try_sql_commit() either
+# 1) when recording Action to db, or
+# 2) during playback
+# because (at least for now) all functions wrapped with
+# @admin_required_for_io_with_record do so already.
+#
+##################################
+
+recorded_functions = {}
 
 
-def admin_required_for_io(f):
+def remember_function_by_name(f):
+    global recorded_functions
+    func_name = f.__name__
+    recorded_functions[func_name] = f
+
+
+def playback_recorded_actions():
+    global recorded_functions
+    log_print("playback_recorded_actions")
+    actions = Action.query.order_by(Action.id).all()
+    if not actions:
+        log_print("(none)")
+    for a in actions:
+        func_name = a.func_name
+        args_json = a.args_json
+        log_print(f"playback {func_name}: {args_json}")
+        if func_name not in recorded_functions:
+            log_print("error: could not find function named {func_name}")
+            continue
+        f = recorded_functions[func_name]
+        args = json.loads(args_json)
+        # log_print(f"{f}: {args}")
+        f(*args)
+
+
+def record_action(func_name, args_json):
+    action = Action(func_name=func_name, args_json=args_json)
+    user = get_current_user_or_none()
+    if user:
+        action.email = user.email
+    db.session.add(action)
+    # log_print("admin recorded:", func_name, args_json)
+
+
+##################################
+#
+#  Wrappers for Admin Functions
+#
+##################################
+
+
+def admin_required_for_io_with_record(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user_is_admin():
+            disconnect()
+            return
+        record_admin = current_app.config["HEPCAT_RECORD_ADMIN"]
+        if record_admin:
+            func_name = f.__name__
+            args_json = json.dumps(args)
+            record_action(func_name, args_json)
+        return f(*args, **kwargs)
+
+    remember_function_by_name(f)
+    return decorated
+
+
+def admin_required_for_io_no_record(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user_is_admin():

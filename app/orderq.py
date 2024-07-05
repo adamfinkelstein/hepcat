@@ -385,7 +385,8 @@ def order_q(papers, room, verbose=False):
     if n > tsp_max:
         n = tsp_max
         # remainder = papers[tsp_max:] # slice off the ones after max
-        random.shuffle(papers)  # choose random subset
+        # Seed one instance of random generator, so deterministic shuffle.
+        random.Random(0).shuffle(papers)  # choose random subset
         papers = papers[:tsp_max]  # only optimize these first ones
         over_max = tsp_max
     papers_copy = papers_with_only_conflicts_in_room(papers, room)

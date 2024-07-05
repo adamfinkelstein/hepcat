@@ -1,0 +1,65 @@
+import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Stack from 'react-bootstrap/Stack';
+
+export default function SetQueue({
+  isGUI,
+  inputBoxName,
+  filterName,
+  allFilterNames,
+  handleLoadFilter,
+  handleSaveFilter,
+  handleDeleteFilter,
+  handleInputChange,
+}) {
+  const noneSavedYet = !allFilterNames.length;
+  const filterType = isGUI ? 'GUI' : 'Text';
+  let guiFilterTitle = 'Saved ' + filterType + ' Filters';
+  if (noneSavedYet) {
+    guiFilterTitle = 'No ' + guiFilterTitle + ' Yet';
+  }
+
+  return (
+    <Stack direction="horizontal" gap={4} className="named-filters">
+      <DropdownButton
+        disabled={noneSavedYet}
+        title={guiFilterTitle}
+        type="button"
+        variant="secondary"
+        drop="end"
+      >
+        {allFilterNames.map((name, index) => {
+          return (
+            <Dropdown.Item
+              key={index}
+              as="button"
+              onClick={() => handleLoadFilter(name, isGUI)}
+            >
+              {name}
+            </Dropdown.Item>
+          );
+        })}
+      </DropdownButton>
+      <input
+        name={inputBoxName}
+        value={filterName}
+        onChange={(e) => handleInputChange(e, isGUI)}
+      />
+      <Button
+        variant="warning"
+        onClick={() => handleSaveFilter(isGUI)}
+        className="change-bar-btn"
+      >
+        Save
+      </Button>
+      <Button
+        variant="danger"
+        onClick={() => handleDeleteFilter(isGUI)}
+        className="change-bar-btn"
+      >
+        Delete
+      </Button>
+    </Stack>
+  );
+}

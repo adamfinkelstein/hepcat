@@ -12,7 +12,7 @@ from .models import History, context_str_to_enum
 # all history for this paper
 def get_latest_history(paper):
     latest_history = (
-        History.query.filter_by(paper_id=paper.id).order_by(History.when.desc()).first()
+        History.query.filter_by(paper_id=paper.id).order_by(History.id.desc()).first()
     )
     return latest_history
 
@@ -23,7 +23,7 @@ def get_latest_room_history(paper):
     latest_history = (
         History.query.filter_by(paper_id=paper.id)
         .filter(History.context_enum >= context_plenary)
-        .order_by(History.when.desc())
+        .order_by(History.id.desc())
         .first()
     )
     return latest_history

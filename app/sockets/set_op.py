@@ -16,21 +16,21 @@ LEAF: /[A-Za-z][A-Za-z0-9:_]*/
 
 
 class SetOpTransformer(Transformer):
-    def __init__(self, set_universe, set_query, extra_arg=None):
+    def __init__(self, set_universe, set_filter, extra_arg=None):
         self.set_universe = set_universe  # set containing all items
-        self.set_query = set_query  # function to query a set by string
+        self.set_filter = set_filter  # function to filter a set by string
         self.extra_arg = extra_arg
 
     def one_expr(self, args):
         return args[0]
 
     def leaf_expr(self, args):
-        query = args[0].value
+        filter = args[0].value
         extra_arg = self.extra_arg
         if extra_arg is None:
-            result = self.set_query(query)
+            result = self.set_filter(filter)
         else:
-            result = self.set_query(query, extra_arg)
+            result = self.set_filter(filter, extra_arg)
         return result
 
     def and_expr(self, args):
@@ -57,8 +57,8 @@ class SetOpTransformer(Transformer):
 ##############################
 
 
-def set_op_make_parser(set_universe, set_query, extra_arg=None):
-    x_form = SetOpTransformer(set_universe, set_query, extra_arg)
+def set_op_make_parser(set_universe, set_filter, extra_arg=None):
+    x_form = SetOpTransformer(set_universe, set_filter, extra_arg)
     grammar = get_set_op_grammar()
     parser = Lark(grammar, parser="lalr", transformer=x_form)
     return parser

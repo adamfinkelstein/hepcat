@@ -52,14 +52,6 @@ export default function AppContext({ children }) {
   const [guiBar, setGuiBar] = useState('');
   const [hideQ, setHideQ] = useState(false);
   const [hiddenMsg, setHiddenMsg] = useState('');
-  const [statusCheckbox, setStatusCheckbox] = useState([]);
-  const [onlyCheckbox, setOnlyCheckbox] = useState([]);
-  const [scoreSelection, setScoreSelection] = useState('In Range'); // default matches SetQueue.js
-  const [lowRange, setLowRange] = useState(-9.0);
-  const [highRange, setHighRange] = useState(9.0);
-  const [adminQueries, setAdminQueries] = useState([]);
-  const [queryName, setQueryName] = useState('');
-  const [queryStateHandler, setQueryStateHandler] = useState(null);
 
   const { user, isAdmin, paperKeys, roomChoice } = useUser();
 
@@ -237,17 +229,17 @@ export default function AppContext({ children }) {
       setFileUploads(file_uploads);
     };
 
-    const getMsgFromProbe = (count, label) => {
+    const getMsgFromProbe = (data, label) => {
       const now = Date.now();
       const fmtNow = moment.utc(now).local().format('ddd h:mm:ss');
-      const fmtMsg = count + ' (' + fmtNow + ')';
-      const msg = count < 0 ? notSetYetMsg : fmtMsg;
+      const fmtMsg = data + ' — updated ' + fmtNow;
+      const msg = !data.length ? notSetYetMsg : fmtMsg;
       controlledLog('received probe ' + label + ' ' + msg);
       return msg;
     };
 
-    const receiveProbe = (count) => {
-      const msg = getMsgFromProbe(count, 'GUI');
+    const receiveProbe = (data) => {
+      const msg = getMsgFromProbe(data, 'GUI');
       setProbeGUIMsg(msg);
     };
 
@@ -300,20 +292,6 @@ export default function AppContext({ children }) {
       window.location.reload();
     };
 
-    const receiveQuery = (filters) => {
-      controlledLog('received query, only:');
-      controlledLog(filters);
-      setOnlyCheckbox(filters.only);
-      setStatusCheckbox(filters.statuses);
-      setScoreSelection('In Range');
-      setLowRange(filters.lowRange);
-      setHighRange(filters.highRange);
-    };
-
-    const receiveQueries = (queries) => {
-      setAdminQueries(queries);
-    };
-
     if (socket && 'on' in socket) {
       controlledLog('register socket handlers');
       socket.on('server_set_queue', receiveQueue);
@@ -325,8 +303,6 @@ export default function AppContext({ children }) {
       socket.on('server_probe_text_count', receiveProbeText);
       socket.on('server_file_uploads', receiveFileUploads);
       socket.on('server_reload_user', receiveReload);
-      socket.on('server_send_query', receiveQuery);
-      socket.on('server_send_queries', receiveQueries);
     }
 
     // return from useEffect is function that does cleanup
@@ -342,8 +318,6 @@ export default function AppContext({ children }) {
         socket.off('server_probe_text_count', receiveProbeText);
         socket.off('server_file_uploads', receiveFileUploads);
         socket.off('server_reload_user', receiveReload);
-        socket.off('server_send_query', receiveQuery);
-        socket.off('server_send_queries', receiveQueries);
       }
     };
   }, [
@@ -387,24 +361,6 @@ export default function AppContext({ children }) {
         setHideQ,
         hiddenMsg,
         setHiddenMsg,
-
-        statusCheckbox,
-        setStatusCheckbox,
-        onlyCheckbox,
-        setOnlyCheckbox,
-        scoreSelection,
-        setScoreSelection,
-        lowRange,
-        setLowRange,
-        highRange,
-        setHighRange,
-
-        adminQueries,
-        setAdminQueries,
-        queryName,
-        setQueryName,
-        queryStateHandler,
-        setQueryStateHandler,
         statusList,
         checkValidNID,
       }}

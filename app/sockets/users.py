@@ -23,8 +23,9 @@ def dprint(msg):
         log_print(msg)
 
 
-def users_with_sockets():
+def connected_user_ids_list():
     user_ids = user_sockets.keys()
+    user_ids = list(user_ids)
     dprint(f"user_sockets: got {len(user_ids)} user ids")
     return user_ids
 
@@ -165,8 +166,10 @@ def user_disconnect():
 
 
 def disconnect_all_users():
-    for user_id in users_with_sockets():
+    current_user_sid = request.sid
+    connected_ids = connected_user_ids_list()
+    for user_id in connected_ids:
         user_sid = get_user_socket(user_id)
-        if request.sid != user_sid:  # not current user
+        if user_sid != current_user_sid:  # not current user
             disconnect(sid=user_sid, namespace="/")
     disconnect()  # disconnect the current user last

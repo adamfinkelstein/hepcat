@@ -4,6 +4,8 @@ import Badge from 'react-bootstrap/Badge';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useFlasher } from '../contexts/FlasherContext';
+import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import Button from 'react-bootstrap/Button';
 
 /*
@@ -17,9 +19,11 @@ function timeDiff(since) {
 */
 
 export default function UsersPage() {
+  const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
   const { allUsers, conflictbot } = useUser();
   const { controlledLog } = useControlledLog();
+  const { revealConfirmationBox } = useConfirmationBox();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
@@ -42,12 +46,18 @@ export default function UsersPage() {
     return () => {
       let text =
         'Are you really sure you want to switch to become user ' + name + '?';
-      if (window.confirm(text) === true) {
-        controlledLog('Switch user confirmed. Emit message.');
-        socketEmit('admin_become_user', user.email);
-      } else {
-        controlledLog('Switch user canceled.');
-      }
+      revealConfirmationBox('Please Confirm', text, (confirmed) => {
+        if (confirmed) {
+          const msg = 'Becoming user ' + name;
+          controlledLog(msg);
+          flash(msg, 'success');
+          socketEmit('admin_become_user', user.email);
+        } else {
+          const msg = 'Canceled switching user.';
+          controlledLog(msg);
+          flash(msg, 'warning');
+        }
+      });
     };
   };
 

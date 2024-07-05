@@ -11,6 +11,10 @@ class Config:
     HEPCAT_TSP_DISABLED = env_get_bool("HEPCAT_TSP_DISABLED", False)
     HEPCAT_USE_ORTOOLS = env_get_bool("HEPCAT_USE_ORTOOLS", False)
     HEPCAT_TSP_MAX = env_get_int("HEPCAT_TSP_MAX", 60)
+    HEPCAT_TEST_UPLOAD = env_get_str("HEPCAT_TEST_UPLOAD", "./tests/test-data")
+    HEPCAT_TEST_HISTORY = env_get_bool("HEPCAT_TEST_HISTORY", True)
+    HEPCAT_TEST_ACTIONS = env_get_bool("HEPCAT_TEST_ACTIONS", True)
+    HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
 
     CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
     CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")

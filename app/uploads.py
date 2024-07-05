@@ -19,10 +19,12 @@ from .models import (
     User,
     Paper,
     History,
+    Action,
     LabelType,
     Label,
     FileUpload,
-    Query,
+    Filter,
+    try_sql_commit,
     num_to_sid,
     sid_to_num,
     get_or_insert_role,
@@ -105,6 +107,11 @@ def delete_non_bbs_history():
     log_print(f"Deleted {num_deleted} history entries.")
 
 
+def delete_actions():
+    num_deleted = Action.query.delete()
+    log_print(f"Deleted {num_deleted} actions.")
+
+
 def papers_clear_all_scores_and_queues():
     papers = Paper.query.all()
     for paper in papers:
@@ -126,9 +133,9 @@ def delete_all_uploads():
     log_print(f"Deleted {num_deleted} file upload entries.")
 
 
-def delete_all_queries():
-    num_deleted = Query.query.delete()
-    log_print(f"Deleted {num_deleted} queries.")
+def delete_all_filters():
+    num_deleted = Filter.query.delete()
+    log_print(f"Deleted {num_deleted} filters.")
 
 
 def keep_rows_with_n_cols(rows, n):
@@ -136,14 +143,16 @@ def keep_rows_with_n_cols(rows, n):
     return rows
 
 
-# Name,Query
-def insert_query_rows(rows):
+# Name,GUI,Filter
+def insert_filter_rows(rows):
     count = 0
     for row in rows:
-        name, json = row
-        json_quote = json.replace("'", '"')  # replace single w double
-        query = Query(name=name, json=json_quote)
-        db.session.add(query)
+        name, is_gui, text = row
+        is_gui = True if is_gui == "True" else False
+        # in CSV, double quotes in JSON were replaced w single
+        double_quote = single_quote_to_double(text)
+        filter = Filter(name=name, is_gui=is_gui, text=double_quote)
+        db.session.add(filter)
         count += 1
     return count
 
@@ -475,15 +484,29 @@ def insert_history_rows(rows):
     return count
 
 
-csvTypes = {
+def insert_actions_rows(rows):
+    count = 0
+    for row in rows:
+        email, when, func_name, args_json = row
+        # when XXX ???
+        args_json = single_quote_to_double(args_json)
+        action = Action(func_name=func_name, args_json=args_json)
+        if email:
+            action.email = email
+        db.session.add(action)
+    return count
+
+
+csvHeaders = {
+    "actions": "Email,When,Action,Args",
     "chair": "Submission ID,Sort Score,Status,Reviews",
     "clusters": "Submission ID,Cluster",
     "conflicts": "Submission ID,Email",
+    "filters": "Name,GUI,Filter",
     "history": "Submission ID,When,Context,Status",
     "paper_rooms": "Submission ID,Room",
     "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
     "people_rooms": "Email,Room",
-    "queries": "Name,Query",
     "users": "Email,First Name,Last Name,Role,Password",
 }
 
@@ -493,10 +516,11 @@ csvInsertFunctions = {
     "clusters": insert_cluster_rows,
     "conflicts": insert_conflict_rows,
     "history": insert_history_rows,
+    "actions": insert_actions_rows,
     "paper_rooms": insert_paper_room_rows,
     "papers": insert_paper_rows,
     "people_rooms": insert_people_room_rows,
-    "queries": insert_query_rows,
+    "filters": insert_filter_rows,
     "users": insert_user_rows,
 }
 
@@ -505,10 +529,11 @@ csvDeleteFunctions = {
     "clusters": delete_all_clusters,
     "conflicts": delete_all_conflicts,
     "history": delete_non_bbs_history,
+    "actions": delete_actions,
     "paper_rooms": delete_all_paper_rooms,
     "papers": delete_all_papers,
     "people_rooms": set_all_users_to_be_in_plenary,
-    "queries": delete_all_queries,
+    "filters": delete_all_filters,
     "users": delete_all_users,
 }
 
@@ -564,8 +589,8 @@ def get_csv_type(header):
     if not header:
         return None, 0
     header = header.lower()  # only check lower case
-    for typ in csvTypes:
-        knownHeader = csvTypes[typ].lower()  # lower case
+    for typ in csvHeaders:
+        knownHeader = csvHeaders[typ].lower()  # lower case
         if header.startswith(knownHeader):
             cols = knownHeader.split(",")
             n_cols = len(cols)
@@ -604,6 +629,8 @@ def cache_user_password_hashes():
 
 
 def read_csv(filename):
+    if not os.path.exists(filename):
+        return None
     timer_start()
     header, rows = read_csv_rows(filename)
     header_type, n_cols = get_csv_type(header)
@@ -649,14 +676,47 @@ def get_or_make_upload_folder():
     return folder
 
 
-def save_and_read_csv(data, filename):
+def save_and_read_csv(data):
+    tmp_file = "upload.csv"
     folder = get_or_make_upload_folder()
-    fullpath = os.path.join(folder, filename)
-    # file.save(fullpath) # when it was a file upload
-    write_data_to_file(data, fullpath)
-    # flash('saved csv file here: '+fullpath)
-    header_type = read_csv(fullpath)
+    tmp_path = os.path.join(folder, tmp_file)
+    write_data_to_file(data, tmp_path)
+    header_type = read_csv(tmp_path)
+    if header_type:
+        save_file = f"upload_{header_type}.csv"
+        save_path = os.path.join(folder, save_file)
+        os.rename(tmp_path, save_path)
     return header_type
+
+
+def read_test_csv_files():
+    folder = current_app.config["HEPCAT_TEST_UPLOAD"]
+    include_history = current_app.config["HEPCAT_TEST_HISTORY"]
+    include_actions = current_app.config["HEPCAT_TEST_ACTIONS"]
+    csv_order = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
+    csv_order = csv_order.split(",")
+    if include_history:
+        csv_order.append("history")
+    if include_actions:
+        csv_order.append("actions")
+    for csv_type in csv_order:
+        filename = csv_type + ".csv"
+        fullpath = os.path.join(folder, filename)
+        log_print(f"reading csv: {fullpath}")
+        header_type = read_csv(fullpath)
+        if not header_type:
+            log_print(f"failed to read csv: {fullpath}")
+        elif not try_sql_commit():
+            log_print(f"failed sql commit: {csv_type}")
+        elif header_type != csv_type:  # just a sanity check
+            log_print(f"warning: csv type mismatch: {header_type} {csv_type}")
+
+
+###############################################
+#
+# writing CSV files below here
+#
+###############################################
 
 
 def get_paper_conflicts(paper):
@@ -698,9 +758,20 @@ def get_paper_areas_string(paper):
     return paper_areas
 
 
+def single_quote_to_double(text):
+    text = text.replace("'", '"')
+    return text
+
+
+def double_quote_to_single(text):
+    text = text.replace('"', "'")
+    return text
+
+
+# double all double quotes then add surrounding double quotes
 def double_quote_text_for_csv(text):
     text = text.replace('"', '""')  # double up double quotes
-    text = '"' + text + '"'
+    text = '"' + text + '"'  # add surrounding double quotes
     return text
 
 
@@ -721,27 +792,43 @@ def get_results_as_rows():
     return rows
 
 
-def get_queries_as_rows():
-    queries = Query.query.all()
-    header = "Name,Query"
+def get_filters_as_rows():
+    filters = Filter.query.all()
+    header = "Name,GUI,Filter"
     rows = [header]
-    for query in queries:
-        json_quote = query.json.replace('"', "'")  # replace double w single
+    for filter in filters:
+        # in CSV, double quotes in JSON are replaced w single
+        json_quote = double_quote_to_single(filter.text)
         json_quote = double_quote_text_for_csv(json_quote)
-        query_name = double_quote_text_for_csv(query.name)
-        row = f"{query_name},{json_quote}"
+        filter_name = double_quote_text_for_csv(filter.name)
+        row = f"{filter_name},True,{json_quote}"
         rows.append(row)
     return rows
 
 
 def get_history_as_rows():
-    history = History.query.order_by(History.when).all()
+    history = History.query.order_by(History.id).all()
     header = "Submission ID,When,Context,Status"
     rows = [header]
     for h in history:
         when = str(h.when)
         when = double_quote_text_for_csv(when)
         row = f"{h.paper.sid},{when},{h.context},{h.status}"
+        rows.append(row)
+    return rows
+
+
+def get_actions_as_rows():
+    actions = Action.query.order_by(Action.id).all()
+    header = "Email,When,Action,Args"
+    rows = [header]
+    for a in actions:
+        email = a.email if a.email else ""
+        when = str(a.when)
+        when = double_quote_text_for_csv(when)
+        args = double_quote_to_single(a.args_json)
+        args = double_quote_text_for_csv(args)
+        row = f"{email},{when},{a.func_name},{args}"
         rows.append(row)
     return rows
 
@@ -766,6 +853,8 @@ def get_people_rooms_as_rows():
     header = "Email,Room"
     rows = [header]
     for u in users:
+        if not u.rooms:
+            continue
         rooms = u.rooms
         rooms = rooms.split()
         for room in rooms:
@@ -868,10 +957,11 @@ csvExtractFunctions = {
     "paper_rooms": get_paper_rooms_as_rows,
     "papers": get_papers_as_rows,
     "people_rooms": get_people_rooms_as_rows,
-    "queries": get_queries_as_rows,
+    "filters": get_filters_as_rows,
     "users": get_users_as_rows,
-    # "results" downlaod is unlike any uploadable file above
+    # "results" download is unlike any uploadable file above
     "results": get_results_as_rows,
+    "actions": get_actions_as_rows,
 }
 
 

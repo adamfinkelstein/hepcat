@@ -1,5 +1,11 @@
 import Container from 'react-bootstrap/Container';
 import Split from 'react-split';
+import Stack from 'react-bootstrap/Stack';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
@@ -7,12 +13,6 @@ import Queue from './Queue';
 import Paper from './Paper';
 import GridSection from './GridSection';
 import SetQueue from './SetQueue';
-import Stack from 'react-bootstrap/Stack';
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import {
   useSplitWidth,
   useChangeSplitWidth,

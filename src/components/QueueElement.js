@@ -6,7 +6,7 @@ import Stack from 'react-bootstrap/Stack';
 import PaperConflict from './PaperConflict';
 import { useFavorites } from '../contexts/PreferencesContext';
 
-export default function QueueElement({ paper, active }) {
+export default function QueueElement({ paper, showConflicts, showStars }) {
   const { user } = useUser();
   const globals = useAppGlobals();
   const favorites = useFavorites();
@@ -21,7 +21,8 @@ export default function QueueElement({ paper, active }) {
   const status = showStatus ? paper.status : '';
   const starSymbol = '\u2605';
   const confSymbol = '\u26D4';
-  const prefixSym = isConflict ? confSymbol : isFavorite ? starSymbol : '';
+  const possibleStar = isFavorite && showStars ? starSymbol : '';
+  const suffixSym = isConflict ? confSymbol : possibleStar;
   const showTitle = isPast ? '' : paper.title;
   let qLine = ' (' + paper.nid + '): ' + status + showTitle;
 
@@ -37,7 +38,7 @@ export default function QueueElement({ paper, active }) {
           Q{paper.queue_order}
           {qLine}
         </span>
-        <div className="qSymbol">{prefixSym}</div>
+        <div className="qSymbol">{suffixSym}</div>
       </Stack>
       {!isPast && (
         <div
@@ -45,9 +46,9 @@ export default function QueueElement({ paper, active }) {
           style={
             // this next line was broken so AF comment it out:
             {
-              // maxHeight: `${(active === false || content === null) ? "0" : (content.current.scrollHeight )}px`
+              // maxHeight: `${(showConflicts === false || content === null) ? "0" : (content.current.scrollHeight )}px`
               maxHeight: `${
-                active === false || content === null ? '0' : '100'
+                showConflicts === false || content === null ? '0' : '100'
               }px`,
             }
           }

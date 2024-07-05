@@ -4,7 +4,8 @@ import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
-import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import Form from 'react-bootstrap/Form';
@@ -13,6 +14,7 @@ import Button from 'react-bootstrap/Button';
 export default function UploadsPage() {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
+  const { revealConfirmationBox } = useConfirmationBox();
 
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
@@ -58,17 +60,25 @@ export default function UploadsPage() {
     return fmt;
   }
 
-  function handleWipeDBButton() {
-    controlledLog('Wipe DB button pressed.');
-    let text =
-      'Are you really, Really, REALLY sure you want to wipe out the database?';
-    if (window.confirm(text) === true) {
-      controlledLog('Wipe DB button confirmed. Redirect.');
-      socketEmit('admin_wipe_database');
-      socketLogout(true);
-    } else {
-      controlledLog('Wipe DB button canceled.');
-    }
+  function handleWipeDBButton(isLoad) {
+    const verb = isLoad ? 'load' : 'wipe';
+    const text =
+      'Are you really, Really, REALLY sure you want to ' +
+      verb +
+      ' the database?';
+    controlledLog(verb + ' DB button pressed.');
+    const socketMsg = 'admin_' + verb + '_database';
+    revealConfirmationBox('Please Confirm', text, (confirmed) => {
+      if (confirmed) {
+        controlledLog('confirmed: ' + socketMsg);
+        socketEmit(socketMsg);
+        socketLogout(true);
+      } else {
+        controlledLog('canceled: ' + socketMsg);
+        const msg = 'Button canceled.';
+        flash(msg, 'warning');
+      }
+    });
   }
 
   return (
@@ -148,13 +158,13 @@ export default function UploadsPage() {
         <Stack className="space-down-btn" direction="horizontal">
           <a
             className="btn btn-primary"
-            href={'/admin/download_csv/queries/' + adminKey}
+            href={'/admin/download_csv/filters/' + adminKey}
             target="_blank"
             rel="noopener noreferrer"
           >
             Download Queries
           </a>
-          &nbsp;&nbsp;Download a CSV with current queries.
+          &nbsp;&nbsp;Download a CSV with current filters.
         </Stack>
         <Stack className="space-down-btn" direction="horizontal">
           <a
@@ -179,12 +189,23 @@ export default function UploadsPage() {
           &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
         </Stack>
         {isSuper && (
-          <Stack className="space-down-btn" direction="horizontal">
-            <Button variant="danger" onClick={handleWipeDBButton}>
-              Wipe Database Clean
-            </Button>
-            &nbsp;&nbsp;This removes ALL data from the database!
-          </Stack>
+          <>
+            <Stack className="space-down-btn" direction="horizontal">
+              <Button variant="danger" onClick={() => handleWipeDBButton(true)}>
+                Load Test Database
+              </Button>
+              &nbsp;&nbsp;This loads a clean test database.
+            </Stack>
+            <Stack className="space-down-btn" direction="horizontal">
+              <Button
+                variant="danger"
+                onClick={() => handleWipeDBButton(false)}
+              >
+                Wipe Database Clean
+              </Button>
+              &nbsp;&nbsp;This removes ALL data from the database!
+            </Stack>
+          </>
         )}
       </Container>
     </Container>

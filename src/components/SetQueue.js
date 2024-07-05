@@ -5,9 +5,11 @@ import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useAppGlobals } from '../contexts/AppContext';
-import { useGUI } from '../contexts/GUIContext';
+import { useFilterContext } from '../contexts/FilterContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
+import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
+import SaveFilters from './SaveFilters.js';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -27,12 +29,14 @@ const scoreOptions = [
 
 export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
+  const [noTSP, setNoTSP] = useState(false);
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { roomChoice, conflictbot } = useUser();
-  const { textFilterBox, setTextFilterBox } = useGUI();
+  // const { textFilterBox, setTextFilterBox } = useGUI();
   const globals = useAppGlobals();
   const { revealModalDialog } = useModalDialog();
+  const { revealConfirmationBox } = useConfirmationBox();
   const hideQ = globals.hideQ;
   const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
   const setHideQ = globals.setHideQ;
@@ -40,23 +44,31 @@ export default function SetQueue() {
   const setHiddenMsg = globals.setHiddenMsg;
   const guiBarString = globals.guiBar + '';
   const setGuiBar = globals.setGuiBar;
-  const queryName = globals.queryName;
-  const setQueryName = globals.setQueryName;
-  const adminQueries = globals.adminQueries;
-  const statusCheckbox = globals.statusCheckbox;
-  const setStatusCheckbox = globals.setStatusCheckbox;
-  const onlyCheckbox = globals.onlyCheckbox;
-  const setOnlyCheckbox = globals.setOnlyCheckbox;
-  const lowRange = globals.lowRange;
-  const setLowRange = globals.setLowRange;
-  const highRange = globals.highRange;
-  const setHighRange = globals.setHighRange;
-  const scoreSelection = globals.scoreSelection;
-  const setScoreSelection = globals.setScoreSelection;
+  const {
+    allGuiFilterNames,
+    allTextFilterNames,
+    guiFilterName,
+    setGuiFilterName,
+    textFilterName,
+    setTextFilterName,
+    textFilterBox,
+    setTextFilterBox,
+    statusCheckbox,
+    setStatusCheckbox,
+    onlyCheckbox,
+    setOnlyCheckbox,
+    lowRange,
+    setLowRange,
+    highRange,
+    setHighRange,
+    scoreSelection,
+    setScoreSelection,
+  } = useFilterContext();
+
   const probeGUIMsg = globals.probeGUIMsg;
   const probeTextMsg = globals.probeTextMsg;
+  const exampleFilter = 'My_GUI_filter';
 
-  const exampleQuery = adminQueries.length ? adminQueries[0] : 'MyQuery';
   const showQMessageTime = false;
 
   const { flash } = useFlasher();
@@ -119,42 +131,84 @@ export default function SetQueue() {
     setOnlyCheckbox(checked);
   }
 
-  function getQueueFilterInfo() {
+  function gatherGuiFilterSettings() {
     const statuses = statusCheckbox;
     const only = onlyCheckbox;
-    const data = { roomChoice, statuses, only, lowRange, highRange, queryName };
+    const filterName = guiFilterName;
+    const data = {
+      roomChoice,
+      statuses,
+      only,
+      lowRange,
+      highRange,
+      filterName,
+    };
     return data;
   }
 
-  function queryNameNotOK() {
+  function emitAdminFilterMsg(msgToEmit) {
+    const data = gatherGuiFilterSettings();
+    controlledLog('sending filter info for ' + msgToEmit);
+    controlledLog(data);
+    socketEmit(msgToEmit, data);
+  }
+
+  function filterNameNotOK(filterName) {
     const firstLetter = /^[a-zA-Z]/;
-    const firstIsLetter = queryName.match(firstLetter);
+    const firstIsLetter = filterName.match(firstLetter);
     if (!firstIsLetter) return 'must start with a letter.';
     const nonAlphaNum = /\W/;
-    const hasNonAlphaNum = queryName.match(nonAlphaNum);
+    const hasNonAlphaNum = filterName.match(nonAlphaNum);
     if (hasNonAlphaNum) return 'only letters, digits or underscore allowed.';
     return false;
   }
 
-  function emitFilterRequest(emit) {
-    const data = getQueueFilterInfo();
-    controlledLog('sending filter info for ' + emit);
-    controlledLog(data);
-    socketEmit(emit, data);
+  function handleGetFilteredCount() {
+    emitAdminFilterMsg('admin_probe_queue');
   }
 
-  function handleSaveQuery() {
-    const problem = queryNameNotOK();
+  function handleSetQueueButton() {
+    emitAdminFilterMsg('admin_set_queue');
+    flash('Sent queue request.', 'success');
+  }
+
+  function handleSaveGuiFilter() {
+    const problem = filterNameNotOK(guiFilterName);
     if (problem) {
-      const msg = 'Bad query name (' + queryName + ') -- ' + problem;
+      const msg = 'Bad filter name (' + guiFilterName + ') -- ' + problem;
       revealModalDialog('Error', msg);
       return;
     }
-    emitFilterRequest('admin_save_query');
+    if (allTextFilterNames.includes(guiFilterName)) {
+      const msg =
+        'Sorry filter name "' +
+        guiFilterName +
+        '" is already in use for a text filter and therefore ' +
+        'cannot be used for a GUI filter.';
+      revealModalDialog('Error', msg);
+      return;
+    }
+    emitAdminFilterMsg('admin_save_filter');
   }
 
-  function handleGetFilteredCount() {
-    emitFilterRequest('admin_probe_queue');
+  function handleSaveTextFilter() {
+    const problem = filterNameNotOK(textFilterName);
+    if (problem) {
+      const msg = 'Bad filter name (' + textFilterName + ') -- ' + problem;
+      revealModalDialog('Error', msg);
+      return;
+    }
+    if (allGuiFilterNames.includes(textFilterName)) {
+      const msg =
+        'Sorry filter name "' +
+        textFilterName +
+        '" is already in use for a GUI filter and therefore ' +
+        'cannot be used for a text filter.';
+      revealModalDialog('Error', msg);
+      return;
+    }
+    const data = { filterName: textFilterName, text: textFilterBox };
+    socketEmit('admin_save_filter', data);
   }
 
   function handleGetFilteredCountText() {
@@ -165,39 +219,44 @@ export default function SetQueue() {
     flash('Sent request for paper count.', 'success');
   }
 
-  function handleDeleteQuery() {
-    controlledLog('delete named filter: ' + queryName);
-    socketEmit('admin_delete_query', queryName);
+  function handleDeleteGuiFilter() {
+    controlledLog('delete named filter: ' + guiFilterName);
+    socketEmit('admin_delete_filter', guiFilterName);
+    setGuiFilterName('');
   }
 
-  function handleLoadQuery(name) {
-    controlledLog('load named filter: ' + name);
-    setQueryName(name);
-    socketEmit('admin_load_query', name);
+  function handleDeleteTextFilter() {
+    controlledLog('delete named filter: ' + textFilterName);
+    socketEmit('admin_delete_filter', textFilterName);
+    setTextFilterName('');
   }
 
-  function handleSetQueueButton() {
-    const data = getQueueFilterInfo();
-    controlledLog('sending queue request:');
-    controlledLog(data);
-    socketEmit('admin_set_queue', data);
-    flash('Sent queue request.', 'success');
+  function handleLoadGuiFilter(name) {
+    controlledLog('load gui filter: ' + name);
+    setGuiFilterName(name);
+    socketEmit('admin_load_filter', name);
+  }
+
+  function handleLoadTextFilter(name) {
+    controlledLog('load text filter: ' + name);
+    setTextFilterName(name);
+    socketEmit('admin_load_filter', name);
   }
 
   function handleClearQueueButton() {
     controlledLog('sending clear queue request');
     const explicit = '';
     const data = { roomChoice, explicit };
-    socketEmit('admin_set_queue_explicit', data);
+    socketEmit('admin_set_text_filter', data);
     flash('Sent clear queue request.', 'success');
   }
 
-  function handleSetQueueExplicitButton() {
+  function handleSendTextFilterButton() {
     controlledLog('sending explicit queue request: ' + textFilterBox);
     const explicit = textFilterBox;
-    const data = { roomChoice, explicit };
-    socketEmit('admin_set_queue_explicit', data);
-    flash('Sent explicit queue request.', 'success');
+    const data = { roomChoice, explicit, noTSP };
+    socketEmit('admin_set_text_filter', data);
+    flash('Sent queue request.', 'success');
   }
 
   function handleInputChange(event) {
@@ -207,9 +266,10 @@ export default function SetQueue() {
     if (name === 'lowRange') setLowRange(value);
     else if (name === 'highRange') setHighRange(value);
     else if (name === 'message') setHiddenMsg(value);
-    else if (name === 'queueExplicit') setTextFilterBox(value);
+    else if (name === 'textFilterBox') setTextFilterBox(value);
     else if (name === 'bar') setGuiBar(value);
-    else if (name === 'queryName') setQueryName(value);
+    else if (name === 'guiFilterName') setGuiFilterName(value);
+    else if (name === 'textFilterName') setTextFilterName(value);
   }
 
   function setTimeInHiddenMessage(msg) {
@@ -242,6 +302,9 @@ export default function SetQueue() {
 
   function handleRefreshConflictbot(inAllRooms) {
     if (!conflictbot) return;
+    // This function is only used in online meetings.
+    // Could replace window.confirm with revealConfirmationBox()
+    // as elsewhere in this file, but the logic is a bit twisted.
     let confirmAllRooms =
       'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
     if (inAllRooms && window.confirm(confirmAllRooms) !== true) {
@@ -262,26 +325,40 @@ export default function SetQueue() {
     socketEmit('admin_set_bar', guiBarString);
   }
 
-  function handleBulkRejectButton() {
-    controlledLog('Bulk reject button pressed.');
-    let text = 'Are you sure you want to bulk reject below bar?';
-    if (window.confirm(text) === true) {
-      controlledLog('Bulk reject button confirmed.');
-      socketEmit('admin_bulk_reject');
-    } else {
-      controlledLog('Bulk reject button canceled.');
-    }
+  function handleBulkRejectButton(isQueueNotBar) {
+    controlledLog('Bulk reject button pressed (' + isQueueNotBar + ').');
+    const endText = isQueueNotBar ? 'in queue' : 'below bar';
+    const text = 'Are you sure you want to bulk reject ' + endText + '?';
+    revealConfirmationBox('Please Confirm', text, (confirmed) => {
+      if (confirmed) {
+        const msg = 'Bulk reject' + endText;
+        controlledLog(msg);
+        flash(msg, 'success');
+        const queueRoom = isQueueNotBar ? roomChoice : 'is_bar';
+        socketEmit('admin_bulk_reject', queueRoom);
+      } else {
+        const msg = 'Bulk reject button canceled.';
+        controlledLog(msg);
+        flash(msg, 'warning');
+      }
+    });
   }
 
   function handleClearStickiesButton() {
     controlledLog('Clear stickies button pressed.');
     let text = 'Are you sure you want to clear all stickies?';
-    if (window.confirm(text) === true) {
-      controlledLog('Clear stickies button confirmed.');
-      socketEmit('admin_clear_stickies');
-    } else {
-      controlledLog('Clear stickies button canceled.');
-    }
+    revealConfirmationBox('Please Confirm', text, (confirmed) => {
+      if (confirmed) {
+        const msg = 'Clearing stickies.';
+        controlledLog(msg);
+        flash(msg, 'success');
+        socketEmit('admin_clear_stickies');
+      } else {
+        const msg = 'Canceled clearing stickies.';
+        controlledLog(msg);
+        flash(msg, 'warning');
+      }
+    });
   }
 
   return (
@@ -315,50 +392,21 @@ export default function SetQueue() {
       <hr className="horizontal-divider" />
       <div>
         <h2>GUI Filters</h2>
-        <Stack direction="horizontal" gap={4} className="named-filters">
-          <DropdownButton
-            title="Saved GUI Filters"
-            type="button"
-            variant="secondary"
-            drop="end"
-          >
-            {adminQueries.map((name, index) => {
-              return (
-                <Dropdown.Item
-                  key={index}
-                  as="button"
-                  onClick={() => handleLoadQuery(name)}
-                >
-                  {name}
-                </Dropdown.Item>
-              );
-            })}
-          </DropdownButton>
-          <input
-            name="queryName"
-            value={queryName}
-            onChange={handleInputChange}
-          />
-          <Button
-            variant="warning"
-            onClick={handleSaveQuery}
-            className="change-bar-btn"
-          >
-            Save
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleDeleteQuery}
-            className="change-bar-btn"
-          >
-            Delete
-          </Button>
-        </Stack>
+        <SaveFilters
+          isGUI={true}
+          inputBoxName={'guiFilterName'}
+          filterName={guiFilterName}
+          allFilterNames={allGuiFilterNames}
+          handleLoadFilter={handleLoadGuiFilter}
+          handleSaveFilter={handleSaveGuiFilter}
+          handleDeleteFilter={handleDeleteGuiFilter}
+          handleInputChange={handleInputChange}
+        />
         <p>&nbsp;</p>
         <Stack direction="horizontal" gap={4} className="admin-filters">
           <div>
             <span className="font-size-3">
-              <u>Include All</u>:
+              <u>Union</u>:
             </span>
             <br />
             <div key={`status-checkbox`} className="mb-4">
@@ -380,7 +428,7 @@ export default function SetQueue() {
           <div className="vr" />
           <div>
             <span className="font-size-3">
-              <u>Include Only</u>:
+              <u>Intersection</u>:
             </span>
             <br />
             <div key={`only-checkbox`} className="mb-0">
@@ -404,7 +452,7 @@ export default function SetQueue() {
             <Stack direction="vertical" gap={4}>
               <div>
                 <span className="font-size-3">
-                  <u>Include Scores</u>:
+                  <u>Intersect Scores</u>:
                 </span>
               </div>
               <DropdownButton
@@ -476,8 +524,20 @@ export default function SetQueue() {
       <hr className="horizontal-divider" />
       <div>
         <h2>Text Filters</h2>
+        <SaveFilters
+          isGUI={false}
+          inputBoxName={'textFilterName'}
+          filterName={textFilterName}
+          allFilterNames={allTextFilterNames}
+          handleLoadFilter={handleLoadTextFilter}
+          handleSaveFilter={handleSaveTextFilter}
+          handleDeleteFilter={handleDeleteTextFilter}
+          handleInputChange={handleInputChange}
+        />
+        <br />
+        <div class="font-size-4">Enter text filter here:</div>
         <input
-          name="queueExplicit"
+          name="textFilterBox"
           value={textFilterBox}
           className="text-filter-input"
           onChange={handleInputChange}
@@ -486,27 +546,36 @@ export default function SetQueue() {
         &nbsp;
         <br />
         <Stack direction="horizontal">
-          <div>
+          <Stack direction="vertical">
             <Button variant="secondary" onClick={handleGetFilteredCountText}>
               Get Count
             </Button>
-            <br />
             <Button
-              onClick={handleSetQueueExplicitButton}
+              onClick={handleSendTextFilterButton}
               className="text-filter-btn"
             >
               Set Queue
             </Button>
-          </div>
+            <Form.Check
+              className="no-tsp"
+              label="No TSP"
+              type="checkbox"
+              checked={noTSP}
+              onChange={() => {
+                setNoTSP(!noTSP);
+              }}
+            />
+          </Stack>
           <div>
             <ul className="text-filter-instructions">
               <li className="font-size-4">Count: {probeTextMsg}</li>
               <li className="font-size-4">
-                Room:Plenary / Area:Geometry / Cluster:A / Query:{exampleQuery}
+                Room:Plenary / Area:Geometry / Cluster:A / Filter:
+                {exampleFilter}
               </li>
               <li className="font-size-4">101 / 101,103,105,107</li>
               <li className="font-size-4">
-                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleQuery})
+                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleFilter})
               </li>
             </ul>
           </div>
@@ -549,10 +618,16 @@ export default function SetQueue() {
         </Button>
         &nbsp;&nbsp;Clear all stickies.
         <hr className="horizontal-divider" />
-        <Button variant="warning" onClick={handleBulkRejectButton}>
-          Bulk Reject
+        <Button variant="warning" onClick={() => handleBulkRejectButton(false)}>
+          Bulk Reject Below Bar
         </Button>
-        &nbsp;&nbsp;Mark status of all reject papers below bar as already
+        &nbsp;&nbsp;Mark status of all unseen reject papers below bar as now
+        discussed.
+        <hr className="horizontal-divider" />
+        <Button variant="warning" onClick={() => handleBulkRejectButton(true)}>
+          Bulk Reject in Queue
+        </Button>
+        &nbsp;&nbsp;Mark status of all unseen reject papers in queue as now
         discussed.
       </div>
     </Container>

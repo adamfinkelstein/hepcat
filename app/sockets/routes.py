@@ -7,10 +7,15 @@ from Crypto.Util.Padding import pad
 from flask import current_app
 from flask_socketio import emit, disconnect, join_room, leave_room
 from sqlalchemy.sql.expression import func
-from .decorators import admin_required_for_io, super_required_for_io
+from .decorators import (
+    admin_required_for_io_with_record,
+    admin_required_for_io_no_record,
+    super_required_for_io,
+    playback_recorded_actions,
+)
 from .. import db, socketio, log_print
 from ..orderq import order_q, get_enter_leave_conf_sets
-from ..uploads import save_and_read_csv, pending_uploads
+from ..uploads import save_and_read_csv, pending_uploads, read_test_csv_files
 from .set_op import set_op_make_parser, set_op_parse_expr
 from .git_info import get_git_info_from_repo
 from .users import (
@@ -43,7 +48,7 @@ from ..models import (
     UserSchema,
     PaperSchema,
     History,
-    Query,
+    Filter,
     HistorySchema,
     FileUploadSchema,
     GlobQueue,
@@ -288,11 +293,6 @@ def has_chair_conflict(paper):
     return False
 
 
-def room_to_code(room):
-    room_code = room[-2:]  # last two characters
-    return room_code
-
-
 def room_in_user_rooms(room, user):
     if not user.rooms:
         return False
@@ -342,10 +342,8 @@ def filters_allow_paper(paper, filters):
     return True
 
 
-def paper_is_unseen_reject_below_bar(paper):
-    bar = get_bar()
-    sort_score = paper.sort_score
-    if sort_score >= bar:
+def paper_is_unseen_reject(paper, consider_bar):
+    if consider_bar is not None and paper.sort_score >= consider_bar:
         return False
     if not is_paper_unseen(paper):
         return False
@@ -355,15 +353,21 @@ def paper_is_unseen_reject_below_bar(paper):
     return True
 
 
-def get_all_unseen_reject_below_bar_papers():
-    papers = Paper.query.all()
+def get_all_unseen_reject_papers(queue_room):
+    if queue_room == "is_bar":
+        papers = Paper.query.all()
+        bar = get_bar()
+    else:
+        gq = get_or_create_gq(queue_room)
+        papers = Paper.query.filter_by(queue_id=gq.id).all()
+        bar = None
     list_papers = list(papers)
-    filter_papers = [p for p in list_papers if paper_is_unseen_reject_below_bar(p)]
+    filter_papers = [p for p in list_papers if paper_is_unseen_reject(p, bar)]
     return filter_papers
 
 
-def bulk_reject_below_bar():
-    papers = get_all_unseen_reject_below_bar_papers()
+def bulk_reject_bar_or_queue(queue_room):
+    papers = get_all_unseen_reject_papers(queue_room)
     context_plenary = context_str_to_enum("Plenary")
     status_enum = status_str_to_enum("Reject")
     for paper in papers:
@@ -471,9 +475,27 @@ def set_queue(room, filters):
     return set_queue_to_paper_list(room, filter_papers, solve_tsp)
 
 
-def get_filter_paper_count(filters):
-    filter_papers = get_filtered_papers(filters)
-    return len(filter_papers)
+def filter_papers_in_queues(paper_list):
+    in_queues = [paper for paper in paper_list if paper.queue_id]
+    return in_queues
+
+
+def get_filter_paper_counts(filter_papers):
+    papers_in_queues = filter_papers_in_queues(filter_papers)
+    total = len(filter_papers)
+    n_in_queues = len(papers_in_queues)
+    return total, n_in_queues
+
+
+def get_probe_counts_msg(filter_papers):
+    total, in_queues = get_filter_paper_counts(filter_papers)
+    if not total:
+        msg = ""
+    elif not in_queues:
+        msg = f"{total}"
+    else:
+        msg = f"{total} total (already in queues: {in_queues})"
+    return msg
 
 
 def get_papers_with_ids(ids):
@@ -483,36 +505,51 @@ def get_papers_with_ids(ids):
     return p_list
 
 
-def get_query_parts(name):
+def get_filter_parts(name):
     if ":" in name:
         label_type, label_name, *_ = name.split(":")
         return label_type, label_name
-    return "Query", name
+    return "Filter", name
 
 
-def get_ids_matching_query(name, room):
-    query = Query.query.filter_by(name=name).first()
-    if not query:
-        msg = f"Cannot find query with name: {name}"
+def get_ids_matching_filter(name, room):
+    filter = Filter.query.filter_by(name=name).first()
+    if not filter:
+        msg = f"Cannot find filter with name: {name}"
         log_print(msg)
         empty_list = []
         return empty_list
-    filters = json.loads(query.json)
+    # XXX CURRENTLY only handles gui-filter but should also text
+    filters = json.loads(filter.text)
     filters["roomChoice"] = room
-    log_print(f"get_ids_matching_query filters: {filters}")
+    log_print(f"get_ids_matching_filter filters: {filters}")
     p_list = get_filtered_papers(filters)
     ids = [p.nid for p in p_list]
     return ids
 
 
-def set_op_leaf_query(name, room):
-    log_print(f"set operation leaf query: {name} (room {room})")
-    # Two possible types:
-    # 1) Query (like 'BelowBarQuery')
-    # 2) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
-    label_type, label_name = get_query_parts(name)
-    if label_type == "Query" or not hasattr(LabelType, label_type):
-        ids = get_ids_matching_query(label_name, room)
+def get_id_set_from_papers_string(papers_string):
+    all_ids = get_set_of_all_paper_ids()
+    ids = papers_string.split("_")
+    ids = [int(id) for id in ids if id.isdigit()]
+    ids = set(ids)
+    ids = ids & all_ids  # intersect to ensure only valid paper ids
+    return ids
+
+
+def set_op_leaf_filter(name, room):
+    log_print(f"set_op_leaf_filter: {name} (room {room})")
+    # Possible types:
+    # 1) Papers:101_102_103
+    # 2) Filter (like 'BelowBarFilter')
+    # 3) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    label_type, label_name = get_filter_parts(name)
+    print(f"{label_type} : {label_name}")
+    if label_type == "Papers":
+        ids = get_id_set_from_papers_string(label_name)
+        return ids
+    if label_type == "Filter" or not hasattr(LabelType, label_type):
+        ids = get_ids_matching_filter(label_name, room)
         return set(ids)
     if label_type == "Room" and label_name == "This":
         label_name = room
@@ -538,7 +575,7 @@ def get_set_of_all_paper_ids():
 
 def get_ids_by_set_op(room, expr):
     all_ids = get_set_of_all_paper_ids()
-    parser = set_op_make_parser(all_ids, set_op_leaf_query, room)
+    parser = set_op_make_parser(all_ids, set_op_leaf_filter, room)
     ids = set_op_parse_expr(parser, expr)
     return ids
 
@@ -575,19 +612,20 @@ def parse_explicit_queue(room, exp):
     return p_list, solve_tsp, ""
 
 
-def set_queue_explicit(room, exp):
+def set_queue_explicit(room, exp, no_tsp):
     filter_papers, solve_tsp, msg = parse_explicit_queue(room, exp)
     if filter_papers is None:
         return msg  # XXX this is actually ignored!
+    if no_tsp:
+        solve_tsp = False
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
     return msg
 
 
 def probe_queue_explicit(room, exp):
     filter_papers, _, _ = parse_explicit_queue(room, exp)
-    if not filter_papers:
-        return 0
-    return len(filter_papers)
+    msg = get_probe_counts_msg(filter_papers)
+    return msg
 
 
 def show_current_paper(room):
@@ -756,7 +794,7 @@ def login_user_and_send_welcome(user):
     emit("server_welcome", data)
     if user.role_is_admin:
         emit_admin_uploads(False)
-        emit_admin_queries(False)
+        emit_admin_filters(False)
     if not user.role_is_super:
         # tell all admins about this login...
         emit("server_refresh_user", user_dump, room="admin")
@@ -798,7 +836,7 @@ def io_connect(auth):
 
 
 @socketio.on("admin_become_user")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_become_user(email):
     new_user = User.query.filter_by(email=email).first()
     if not new_user:
@@ -855,7 +893,7 @@ def io_disconnect():
 
 
 @socketio.on("admin_bring_to_room")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_bring_to_room(gui_data):
     if not conflictbot_namespace:
         return  # only useful in online setting
@@ -874,7 +912,7 @@ def admin_bring_to_room(gui_data):
 
 
 @socketio.on("admin_bring_to_all_rooms")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_bring_to_all_rooms():
     if not conflictbot_namespace:
         return  # only useful in online setting
@@ -882,7 +920,7 @@ def admin_bring_to_all_rooms():
 
 
 @socketio.on("admin_prev_paper")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_prev_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, -1)  # also "hides" current
@@ -894,7 +932,7 @@ def admin_prev_paper(room):
 
 
 @socketio.on("admin_next_paper")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_next_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current
@@ -906,7 +944,7 @@ def admin_next_paper(room):
 
 
 @socketio.on("admin_advance_queue")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["newStatus"]
@@ -930,7 +968,7 @@ def admin_advance_queue(data):
 
 
 @socketio.on("admin_show_current")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_show_current(room):
     log_print(f"admin request for show paper in {room}")
     show_current_paper(room)
@@ -942,7 +980,7 @@ def admin_show_current(room):
 
 
 @socketio.on("admin_hide_queue")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_hide_queue(data):
     room = data["roomChoice"]
     hide = data["hide"]
@@ -963,7 +1001,7 @@ def admin_hide_queue(data):
 
 
 @socketio.on("admin_set_queue")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_set_queue(filters):
     room = filters["roomChoice"]
     log_print(f"admin request for set queue in {room}: {filters}")
@@ -977,96 +1015,106 @@ def admin_set_queue(filters):
     emit("server_send_flasher", data)
 
 
-@socketio.on("admin_save_query")
-@admin_required_for_io
-def admin_save_query(filters):
-    log_print(f"admin save query: {filters}")
-    json_string = json.dumps(filters)
-    # log_print('json: '+json_string)
-    name = filters["queryName"]
-    query = Query.query.filter_by(name=name).first()
-    if query:  # if it exists... update:
-        query.json = json_string
+@socketio.on("admin_save_filter")
+@admin_required_for_io_with_record
+def admin_save_filter(data):
+    log_print(f"admin_save_filter: {data}")
+    is_gui = "text" not in data
+    if is_gui:
+        text = json.dumps(data)
+    else:
+        text = data["text"]
+    name = data["filterName"]
+    filter = Filter.query.filter_by(name=name).first()
+    if filter:  # if it exists... update:
+        filter.text = text
+        filter.is_gui = is_gui  # just in case
     else:  # otherwise... create:
-        query = Query(name=name, json=json_string)
-    db.session.add(query)
+        filter = Filter(name=name, is_gui=is_gui, text=text)
+    db.session.add(filter)
     if try_sql_commit():
-        emit_admin_queries(True)
-        msg = f"Saved query named: {name}."
+        emit_admin_filters(True)
+        msg = f"Saved filter named: {name}."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
 
 
-@socketio.on("admin_load_query")
-@admin_required_for_io
-def admin_load_query(name):
-    log_print(f"admin load query: {name}")
-    query = Query.query.filter_by(name=name).first()
-    if query:
-        filters = json.loads(query.json)
-        log_print(f"server_send_query {filters}")
-        emit("server_send_query", filters)
+@socketio.on("admin_load_filter")
+@admin_required_for_io_no_record
+def admin_load_filter(name):
+    log_print(f"admin_load_filter: {name}")
+    filter = Filter.query.filter_by(name=name).first()
+    if filter:
+        data = filter.text
+        if filter.is_gui:
+            data = json.loads(data)
+        log_print(f"server_send_one_filter {data}")
+        emit("server_send_one_filter", data)
     else:
-        msg = f"Cannot find query with name: {name}"
+        msg = f"Cannot find filter with name: {name}"
         log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
-@socketio.on("admin_delete_query")
-@admin_required_for_io
-def admin_delete_query(name):
-    log_print(f"admin delete query: {name}")
-    query = Query.query.filter_by(name=name).first()
-    if not query:
-        msg = f"Cannot find query with name: {name}"
+@socketio.on("admin_delete_filter")
+@admin_required_for_io_with_record
+def admin_delete_filter(name):
+    log_print(f"admin_delete_filter: {name}")
+    filter = Filter.query.filter_by(name=name).first()
+    if not filter:
+        msg = f"Cannot find filter with name: {name}"
         log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
         return
-    num_deleted = Query.query.filter_by(name=name).delete()
-    log_print(f"delete {num_deleted} queries (should be 1).")
+    num_deleted = Filter.query.filter_by(name=name).delete()
+    log_print(f"delete {num_deleted} filters (should be 1).")
     if try_sql_commit():
-        emit_admin_queries(True)
-        msg = f"Deleted query with name: {name}"
+        emit_admin_filters(True)
+        msg = f"Deleted filter with name: {name}"
         log_print(msg)
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
-        msg = f"Cannot delete query with name: {name}"
+        msg = f"Cannot delete filter with name: {name}"
         log_print(msg)
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
 @socketio.on("admin_probe_queue")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_probe_queue(filters):
     log_print(f"admin probe queue: {filters}")
-    count = get_filter_paper_count(filters)
-    emit("server_probe_count", count)
+    filter_papers = get_filtered_papers(filters)
+    msg = get_probe_counts_msg(filter_papers)
+    emit("server_probe_count", msg)
 
 
 @socketio.on("admin_probe_text")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_probe_queue_explicit(data):
     room = data["roomChoice"]
     explicit = data["explicit"].strip()
     log_print(f"admin request for probe explicit queue {room}: {explicit}")
     if explicit:
-        count = probe_queue_explicit(room, explicit)
+        msg = probe_queue_explicit(room, explicit)
     else:
-        count = -1
-    emit("server_probe_text_count", count)
+        msg = ""
+    emit("server_probe_text_count", msg)
 
 
-@socketio.on("admin_set_queue_explicit")
-@admin_required_for_io
-def admin_set_queue_explicit(data):
+@socketio.on("admin_set_text_filter")
+@admin_required_for_io_with_record
+def admin_set_text_filter(data):
     room = data["roomChoice"]
     explicit = data["explicit"]
-    log_print(f"admin request for set explicit queue {room}: {explicit}")
-    msg = set_queue_explicit(room, explicit)
+    no_tsp = data["noTSP"]
+    log_print(
+        f"admin request for set explicit queue {room}: {explicit} (no tsp {no_tsp})"
+    )
+    msg = set_queue_explicit(room, explicit, no_tsp)
     try_sql_commit()
     queue, current_paper = get_queue_dump_cached(room, True)
     emit("server_set_queue", queue, broadcast=True)
@@ -1077,7 +1125,7 @@ def admin_set_queue_explicit(data):
 
 
 @socketio.on("admin_set_bar")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_set_bar(bar):
     log_print(f"admin request set bar to {bar}")
     set_bar(bar)
@@ -1092,16 +1140,18 @@ def admin_set_bar(bar):
 
 
 @socketio.on("admin_bulk_reject")
-@admin_required_for_io
-def admin_bulk_reject():
-    msg = "got request admin_bulk_reject"
+@admin_required_for_io_with_record
+def admin_bulk_reject(queue_room):
+    msg = f"got request admin_bulk_reject {queue_room}"
     log_print(msg)
-    bulk_reject_below_bar()
+    bulk_reject_bar_or_queue(queue_room)  # room or "is_bar"
     success = try_sql_commit()
+    invalidate_grid_cache()
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     if success:
-        msg = "Mark unseen reject papers below bar as now seen."
+        cond = "below bar" if queue_room == "is_bar" else f"in {queue_room} queue"
+        msg = f"Marked unseen reject papers {cond} as now seen."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
@@ -1111,7 +1161,7 @@ def admin_bulk_reject():
 
 
 @socketio.on("admin_clear_stickies")
-@admin_required_for_io
+@admin_required_for_io_with_record
 def admin_clear_stickies():
     msg = "got request admin_clear_stickies"
     log_print(msg)
@@ -1200,14 +1250,17 @@ def user_change_password(data):
     emit("server_send_flasher", reply)
 
 
-def emit_admin_queries(broadcast):
-    queries = Query.query.all()
-    names = [query.name for query in queries]
-    names.sort()
+def emit_admin_filters(broadcast):
+    filters = Filter.query.all()
+    gui_names = [filter.name for filter in filters if filter.is_gui]
+    text_names = [filter.name for filter in filters if not filter.is_gui]
+    gui_names.sort()
+    text_names.sort()
+    names = {"gui": gui_names, "text": text_names}
     if broadcast:
-        emit("server_send_queries", names, room="admin")
+        emit("server_send_filter_names", names, room="admin")
     else:  # otherwise just to the client of this request
-        emit("server_send_queries", names)
+        emit("server_send_filter_names", names)
 
 
 #################################################
@@ -1297,10 +1350,10 @@ def emit_admin_uploads(broadcast):
 
 
 @socketio.on("admin_file_upload")
-@admin_required_for_io
-def admin_upload_file(file):
-    filename = "upload.csv"
-    header_type = save_and_read_csv(file, filename)
+@admin_required_for_io_no_record
+def admin_upload_file(contents):
+    invalidate_cache_all()  # just in case this changes some state
+    header_type = save_and_read_csv(contents)
     if header_type and not try_sql_commit():
         header_type = None
     if not header_type:
@@ -1308,7 +1361,7 @@ def admin_upload_file(file):
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
     emit_admin_uploads(True)
-    emit_admin_queries(True)
+    emit_admin_filters(True)
     if header_type == "users":
         disconnect_all_users()
         return
@@ -1319,20 +1372,33 @@ def admin_upload_file(file):
     msg = f"File upload ({header_type}) successful. {msg}"
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
-    invalidate_cache_all()  # just in case this changes some state
+
+
+def wipe_db_and_disconnect_all():
+    log_print("about to wipe database...")
+    invalidate_cache_all()
+    disconnect_all_users()  # do this first because users in db
+    wipe_db_clean()
 
 
 @socketio.on("admin_wipe_database")
 @super_required_for_io
 def admin_wipe_database():
-    log_print("about to wipe database...")
-    wipe_db_clean()
-    disconnect_all_users()
-    invalidate_cache_all()
+    wipe_db_and_disconnect_all()
+
+
+@socketio.on("admin_load_database")
+@super_required_for_io
+def admin_load_database():
+    wipe_db_and_disconnect_all()
+    read_test_csv_files()
+    try_sql_commit()
+    if current_app.config["HEPCAT_TEST_ACTIONS"]:
+        playback_recorded_actions()
 
 
 @socketio.on("admin_refresh_conflictbot")
-@admin_required_for_io
+@admin_required_for_io_no_record
 def admin_refresh_conflictbot(room):
     log_print(f"admin_refresh_conflictbot for {room}...")
     if conflictbot_namespace:

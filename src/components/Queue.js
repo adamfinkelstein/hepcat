@@ -1,9 +1,10 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import Form from 'react-bootstrap/Form';
+import { useState } from 'react';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
 import QueueElement from './QueueElement.js';
-import { useState } from 'react';
 import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {
@@ -22,10 +23,10 @@ export default function Queue() {
   const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue;
   const hiddenMsg = globals.serverGlobs ? globals.serverGlobs.message : '';
 
-  const [queueExpanded, setQueueExpanded] = useState(false);
-  const expandButtonLabel = queueExpanded ? 'Hide Conflicts' : 'Show Conflicts';
+  const [showConflictsInQ, setShowConflictsInQ] = useState(true);
+  const [showStarsInQ, setShowStarsInQ] = useState(true);
 
-  function currentClass(index, paper) {
+  function getQEntryClass(index, paper) {
     const isConflict = paper.nid === 0;
 
     let className = 'queue_element';
@@ -57,16 +58,28 @@ export default function Queue() {
           <span className="font-size-2">
             Current: {currentCount} {queue.length}
           </span>
-          <div className="expand-buttons">
-            <button
-              onClick={() => setQueueExpanded(!queueExpanded)}
-              type="button"
-              className="btn btn-light expand-button paper-change-button
-                                font-size-3"
-            >
-              {expandButtonLabel}
-            </button>
-          </div>
+          <Stack direction="horizontal" className="q-show-checks">
+            <div className="font-size-4">
+              <strong>Show:&nbsp;&nbsp;&nbsp;</strong>
+            </div>
+            <Form.Check
+              label="Conflicts"
+              type="checkbox"
+              checked={showConflictsInQ}
+              onChange={() => {
+                setShowConflictsInQ(!showConflictsInQ);
+              }}
+            />
+            <span className="font-size-4">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <Form.Check
+              label="Stars"
+              type="checkbox"
+              checked={showStarsInQ}
+              onChange={() => {
+                setShowStarsInQ(!showStarsInQ);
+              }}
+            />
+          </Stack>
         </Stack>
       </Container>
       <Container className="queue-container custom-font-size">
@@ -75,9 +88,13 @@ export default function Queue() {
             return (
               <li
                 key={index}
-                className={currentClass(index + start_index, paper)}
+                className={getQEntryClass(index + start_index, paper)}
               >
-                <QueueElement paper={paper} active={queueExpanded} />
+                <QueueElement
+                  paper={paper}
+                  showConflicts={showConflictsInQ}
+                  showStars={showStarsInQ}
+                />
               </li>
             );
           })}

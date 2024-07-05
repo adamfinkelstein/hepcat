@@ -139,7 +139,7 @@ a.nav-link {
   padding: 5px;
 }
 
-.expand-buttons {
+.q-show-checks {
   margin-left: auto;
 }
 
@@ -479,6 +479,8 @@ a.nav-link {
 
 .favorites-input {
   margin-left: 10px;
+  width: 550px;
+  margin-bottom: 20px;
 }
 
 .favorites-submit-btn {
@@ -490,11 +492,12 @@ a.nav-link {
 }
 
 .example-favorites {
+  margin-top: 10px;
   margin-left: 10px;
 }
 
-.delete-all-btn {
-  margin-left: 10px;
+.current-favorite {
+  margin: 10px;
 }
 
 .current-favorites-bar {
@@ -551,8 +554,13 @@ a.nav-link {
   margin-top: 20px;
 }
 
+.no-tsp {
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
 .text-filter-instructions {
-  margin-left: 40px;
+  margin-left: 20px;
 }
 
 .horizontal-divider {

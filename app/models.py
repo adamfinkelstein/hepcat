@@ -268,7 +268,7 @@ class Paper(db.Model):
         backref=db.backref("tag_papers", lazy="dynamic"),
     )
     history = db.relationship(
-        "History", backref="paper", lazy="dynamic", order_by="History.when"
+        "History", backref="paper", lazy="dynamic", order_by="History.id"
     )
 
     def __repr__(self):
@@ -366,11 +366,21 @@ class FileUpload(db.Model):
     when = db.Column(db.DateTime, server_default=func.now())
 
 
-class Query(db.Model):
-    __tablename__ = "queries"
+class Filter(db.Model):
+    __tablename__ = "filters"
     id = db.Column(db.Integer, primary_key=True)
+    is_gui = db.Column(db.Boolean, default=True)
     name = db.Column(db.String(64), unique=True, index=True)
-    json = db.Column(db.String(), default="")
+    text = db.Column(db.String(), default="")
+
+
+class Action(db.Model):
+    __tablename__ = "actions"
+    id = db.Column(db.Integer, primary_key=True)
+    when = db.Column(db.DateTime, server_default=func.now())
+    email = db.Column(db.String(64))  # email of admin who sent this action
+    func_name = db.Column(db.String(64))
+    args_json = db.Column(db.String(), default="")
 
 
 ######################
@@ -432,9 +442,13 @@ class GlobQueueSchema(ma.Schema):
         )
 
 
-class QuerySchema(ma.Schema):
-    class Meta:
-        fields = ("name", "json")
+# Currently unused. Could possibly be made useful by
+# adding a virtual field (function) to the model that
+# returns json.loads(filter.text) if is_gui.
+#
+# class FilterSchema(ma.Schema):
+#     class Meta:
+#         fields = ("name", "is_gui", "text")
 
 
 ######################
