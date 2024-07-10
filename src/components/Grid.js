@@ -1,54 +1,29 @@
-//import { Container } from "react-bootstrap";
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFavorites } from '../contexts/PreferencesContext';
-//import FavoritePreferences from './FavoritePreferences';
 
 export default function Grid({ isAbove, gridDisplay }) {
-  const globals = useAppGlobals();
+  // const globals = useAppGlobals();
+  const { queue, grid, queueCurrent } = useAppGlobals();
   const favorites = useFavorites();
-  const queue = globals.queue;
-  const grid = globals.grid;
   const aboveOrBelowIDs = isAbove ? grid.above_nids : grid.below_nids;
   const idsOrEmpty = aboveOrBelowIDs ? aboveOrBelowIDs : [];
-
-  let queueCurrentID = 0; // none has 0 nid
-  if (
-    queue.length &&
-    globals.queueCurrent < queue.length &&
-    globals.queueCurrent >= 0
-  ) {
-    queueCurrentID = queue[globals.queueCurrent].nid;
-  }
+  const queueCurrentOk =
+    queue.length && queueCurrent < queue.length && queueCurrent >= 0;
+  const queueCurrentID = queueCurrentOk ? queue[queueCurrent].nid : 0;
 
   function gridGetClasses(nid) {
     const gridElem = grid.papers[nid];
-    let className = 'grid-item';
-    let paperStatus = gridElem.status;
-
-    if (gridDisplay === 'Stickies') {
-      if (gridElem.sticky) {
-        className += ' sticky';
-      } else {
-        className += ' non-sticky';
-      }
-    } else if (gridDisplay === 'Favorites') {
-      if (favorites.includes(gridElem.nid)) {
-        className += ' ' + paperStatus;
-      } else {
-        className += ' non-sticky';
-      }
-      if (gridElem.sticky) {
-        className += ' has-sticky';
-      }
-    } else {
-      if (gridElem.nid === queueCurrentID) {
-        className += ' Current';
-      } else {
-        className += ' ' + paperStatus;
-      }
-      if (gridElem.sticky) {
-        className += ' has-sticky';
-      }
+    const nonSticky = gridDisplay === 'Stickies' && !gridElem.sticky;
+    const nonFavorite = gridDisplay === 'Favorites' && !favorites.includes(nid);
+    let className = 'grid-item ' + gridElem.status;
+    if (gridElem.sticky) {
+      className += ' sticky-border';
+    }
+    if (nonSticky || nonFavorite) {
+      className += ' faded-grid';
+    }
+    if (gridDisplay === 'Normal' && gridElem.nid === queueCurrentID) {
+      className += ' Current';
     }
     return className;
   }

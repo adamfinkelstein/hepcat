@@ -174,6 +174,7 @@ def keep_rows_with_unique_lowercase_emails(rows):
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows, hash_cache):
+    ok_roles = "Admin,Chair,Backup,Screen".split(",")
     count = 0
     hash_count = 0
     rows = keep_rows_with_unique_lowercase_emails(rows)
@@ -195,7 +196,7 @@ def insert_user_rows(rows, hash_cache):
                 # set to something random (to be reset later)
                 hash = gen_random_key(32)
             user.password_hash = hash
-        if len(role_name):
+        if role_name in ok_roles:
             role = get_or_insert_role(role_name)
             user.role = role
             # could potentially cache these but relatively rare

@@ -2,37 +2,40 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import Button from 'react-bootstrap/Button';
+import { useControlledLog } from '../contexts/ControlledLogContext';
+import { useFlasher } from '../contexts/FlasherContext';
 import {
   useColors,
   useChangeColor,
   useDefaultColors,
   useChangeTextColors,
 } from '../contexts/PreferencesContext';
-// import { SketchPresetColors } from 'react-color/lib/components/sketch/SketchPresetColors';
-// import { Col } from 'react-bootstrap';
 import ColorsDisplay from './ColorsDisplay';
-import Button from 'react-bootstrap/Button';
-import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useFlasher } from '../contexts/FlasherContext';
 
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
-  let colors = useColors();
-  let changeColor = useChangeColor();
-  let defaultColors = Object.values(useDefaultColors()['defaultColors']);
-  let changeToDefaultColors = useDefaultColors()['changeToDefaultColors'];
-  // let textColors = useTextColors()
-  let changeTextColors = useChangeTextColors();
-  let [pickingFor, setPickingFor] = useState('Unseen');
+  const colors = useColors();
+  const changeColor = useChangeColor();
+  const { defaultColors, changeToDefaultColors } = useDefaultColors();
+  const defaultColorVals = Object.values(defaultColors);
+  const changeTextColors = useChangeTextColors();
+  const [selectedColorKey, setSelectedColorKey] = useState('Unseen');
 
   const { flash } = useFlasher();
 
-  let handleChangeComplete = (type, color) => {
+  let handleChangeColor = (type, color) => {
     controlledLog(color);
-    const blackWhiteThresh = 0.7; // threshold between black or white text
-    const textBlack = color.hsl.l > blackWhiteThresh ? true : false;
+    const colorLightness = color.hsl.l;
+    const blackWhiteThresh = 0.65; // threshold between black or white text
+    const textBlack = colorLightness > blackWhiteThresh;
     changeTextColors(type, textBlack);
     changeColor(type, color.hex);
+  };
+
+  const handleDefaultColorButton = () => {
+    changeToDefaultColors();
+    flash('Reset to default colors.', 'success');
   };
 
   return (
@@ -42,26 +45,22 @@ export default function ColorPreferences() {
       <Stack direction="horizontal">
         <ColorsDisplay
           clickable
-          setPickingFor={setPickingFor}
-          pickingFor={pickingFor}
+          setSelectedColorKey={setSelectedColorKey}
+          selectedColorKey={selectedColorKey}
         />
         <SketchPicker
           disableAlpha
-          color={colors[pickingFor]}
-          onChangeComplete={(color) => handleChangeComplete(pickingFor, color)}
+          color={colors[selectedColorKey]}
+          onChangeComplete={(color) =>
+            handleChangeColor(selectedColorKey, color)
+          }
           className="color-picker"
-          presetColors={defaultColors}
+          presetColors={defaultColorVals}
         />
       </Stack>
       <Container>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            flash('Changed to default colors.', 'success');
-            changeToDefaultColors();
-          }}
-        >
-          Go Back to Default Colors
+        <Button variant="secondary" onClick={handleDefaultColorButton}>
+          Reset to Default Colors
         </Button>
       </Container>
     </Container>

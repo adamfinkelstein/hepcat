@@ -1,6 +1,4 @@
-//import { text } from '@fortawesome/fontawesome-svg-core'
 import React, { useState, useContext, useEffect } from 'react';
-// import { useAppGlobals } from '../contexts/AppContext';
 
 const defaultColors = {
   Unseen: '#F4F4F4',
@@ -11,7 +9,7 @@ const defaultColors = {
   Current: '#000000',
 };
 
-const defaultTextColors = {
+const defaultTextBlackOrWhite = {
   Unseen: true,
   Tabled: true,
   Reject: true,
@@ -94,16 +92,24 @@ export function useChangeSplitWidth() {
 
 export default function PreferencesContext({ children }) {
   const [colors, setColors] = useState(defaultColors);
-  const [textColors, setTextColors] = useState(defaultTextColors);
+  const [textBlackOrWhite, setTextBlackOrWhite] = useState(
+    defaultTextBlackOrWhite,
+  );
   const [fontSize, setFontSize] = useState('Medium');
-  // not sure if this is the best approach (avoiding overwriting of data on load with this variable)
-  const [prefUpdated, setPrefUpdated] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [splitWidth, setSplitWidth] = useState([40, 60]);
+  // not sure if this is the best approach (avoiding overwriting of data on load with this variable)
+  const [prefUpdated, setPrefUpdated] = useState(false);
 
-  //  let controlledLog = useAppGlobals()["controlledLog"]
+  const writePrefsToLocalStorage = () => {
+    localStorage.setItem('colors', JSON.stringify(colors));
+    localStorage.setItem('textColors', JSON.stringify(textBlackOrWhite));
+    localStorage.setItem('fontSize', JSON.stringify(fontSize));
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    localStorage.setItem('splitWidth', JSON.stringify(splitWidth));
+  };
 
-  useEffect(() => {
+  const readPrefsFromLocalStorage = () => {
     const colorData = localStorage.getItem('colors');
     const textColorData = localStorage.getItem('textColors');
     const fontSizeData = localStorage.getItem('fontSize');
@@ -114,7 +120,7 @@ export default function PreferencesContext({ children }) {
       setColors(JSON.parse(colorData));
     }
     if (fontSizeData) {
-      setTextColors(JSON.parse(textColorData));
+      setTextBlackOrWhite(JSON.parse(textColorData));
     }
     if (fontSizeData) {
       setFontSize(JSON.parse(fontSizeData));
@@ -125,68 +131,33 @@ export default function PreferencesContext({ children }) {
     if (splitWidthData) {
       setSplitWidth(JSON.parse(splitWidthData));
     }
+  };
+
+  // Empty dependency array means this effect will only run once.
+  useEffect(() => {
+    readPrefsFromLocalStorage();
     setPrefUpdated(true);
   }, []);
 
-  useEffect(() => {
-    let cssStyle = document.createElement('style');
-    cssStyle.type = 'text/css';
-    let multiplier = fontSizes[fontSize];
-    Object.keys(baseFontSizes).forEach((fontType) => {
-      const baseFontSize = baseFontSizes[fontType];
-      const fontPX = baseFontSize * multiplier;
-      const fontSizeRule = document.createTextNode(
-        `.${fontType}{font-size:${fontPX}px}`,
-      );
-      cssStyle.appendChild(fontSizeRule);
-
-      let fontSizeRuleMD = null;
-
-      switch (fontType) {
-        case 'font-size-1':
-          fontSizeRuleMD = document.createTextNode(
-            `.about-container h1{font-size:${fontPX}px}`,
-          );
-          break;
-        case 'font-size-2':
-          fontSizeRuleMD = document.createTextNode(
-            `.about-container h3{font-size:${fontPX}px}`,
-          );
-          cssStyle.appendChild(fontSizeRuleMD);
-          break;
-        case 'font-size-3':
-        default:
-          fontSizeRuleMD = document.createTextNode(
-            `.about-container li, .about-container p{font-size:${fontPX}px}`,
-          );
-          break;
-      }
-
-      if (fontSizeRuleMD) {
-        cssStyle.appendChild(fontSizeRuleMD);
-      }
-    });
-
-    document.getElementsByTagName('head')[0].appendChild(cssStyle);
-  }, [fontSize]);
-
-  // XXX ??? This effect fires on every render!
-  // Too often?
+  // No dependency array means this effect will run on every render.
+  // Is that too often??? Maybe.
   useEffect(() => {
     if (prefUpdated) {
-      localStorage.setItem('colors', JSON.stringify(colors));
-      localStorage.setItem('textColors', JSON.stringify(textColors));
-      localStorage.setItem('fontSize', JSON.stringify(fontSize));
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-      localStorage.setItem('splitWidth', JSON.stringify(splitWidth));
+      writePrefsToLocalStorage();
     }
-    var cssStyle = document.createElement('style');
-    cssStyle.type = 'text/css';
-    Object.keys(colors).forEach((colorKey) => {
-      var prefRule = document.createTextNode(`.${colorKey}{background:${
-        colors[colorKey]
-      };
-          color:${textColors[colorKey] ? '#000' : '#fff'}}`);
+  });
+
+  // No dependency array means this effect will run on every render.
+  // Is that too often??? Maybe.
+  useEffect(() => {
+    const cssStyle = document.createElement('style');
+    const colorKeys = Object.keys(colors);
+    colorKeys.forEach((colorKey) => {
+      const textBG = colors[colorKey];
+      const textColor = textBlackOrWhite[colorKey] ? '#000' : '#fff';
+      const textCSS =
+        '.' + colorKey + '{background:' + textBG + ';color:' + textColor + '}';
+      const prefRule = document.createTextNode(textCSS);
       cssStyle.appendChild(prefRule);
     });
 
@@ -194,9 +165,24 @@ export default function PreferencesContext({ children }) {
     document.getElementsByTagName('head')[0].appendChild(cssStyle);
   });
 
+  // Dependency array means this effect will run whenever the fontSize changes.
+  useEffect(() => {
+    const cssStyle = document.createElement('style');
+    const multiplier = fontSizes[fontSize];
+    const fontKeys = Object.keys(baseFontSizes);
+    fontKeys.forEach((fontType) => {
+      const baseFontSize = baseFontSizes[fontType];
+      const fontPX = baseFontSize * multiplier;
+      const textNode = `.${fontType}{font-size:${fontPX}px}`;
+      const fontSizeRule = document.createTextNode(textNode);
+      cssStyle.appendChild(fontSizeRule);
+    });
+    document.getElementsByTagName('head')[0].appendChild(cssStyle);
+  }, [fontSize]);
+
   function changeToDefaultColors() {
     setColors(defaultColors);
-    setTextColors(defaultTextColors);
+    setTextBlackOrWhite(defaultTextBlackOrWhite);
   }
 
   function changeColor(colorType, newColor) {
@@ -206,9 +192,9 @@ export default function PreferencesContext({ children }) {
   }
 
   function changeTextColors(textColorType, newTextColor) {
-    let newTextColors = { ...textColors };
+    let newTextColors = { ...textBlackOrWhite };
     newTextColors[textColorType] = newTextColor;
-    setTextColors(newTextColors);
+    setTextBlackOrWhite(newTextColors);
   }
 
   return (
@@ -220,7 +206,7 @@ export default function PreferencesContext({ children }) {
             changeToDefaultColors: changeToDefaultColors,
           }}
         >
-          <TextColorsContext.Provider value={textColors}>
+          <TextColorsContext.Provider value={textBlackOrWhite}>
             <ChangeTextColorsContext.Provider value={changeTextColors}>
               <FontInfoContext.Provider
                 value={{ currentFontSize: fontSize, fontSizes: fontSizes }}

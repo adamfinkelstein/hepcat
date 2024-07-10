@@ -7,6 +7,7 @@ import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
 
 /*
 import moment from 'moment';
@@ -21,21 +22,12 @@ function timeDiff(since) {
 export default function UsersPage() {
   const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
-  const { allUsers, conflictbot } = useUser();
+  const { allUsers } = useUser();
   const { controlledLog } = useControlledLog();
   const { revealConfirmationBox } = useConfirmationBox();
+
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
-
-  const userLine = (user) => {
-    const { full_name, email, rooms, room_name } = user;
-    let line = full_name + ' <' + email + '>';
-    if (conflictbot) {
-      line += ' Now called to: ' + room_name;
-    }
-    if (rooms) line += ' — [' + rooms + ']';
-    return line;
-  };
 
   const userClasses = (user) => {
     return user.role_is_admin ? 'admin-user' : '';
@@ -45,7 +37,7 @@ export default function UsersPage() {
     const name = user.full_name;
     return () => {
       let text =
-        'Are you really sure you want to switch to become user ' + name + '?';
+        'Are you really sure you want to switch to become ' + name + '?';
       revealConfirmationBox('Please Confirm', text, (confirmed) => {
         if (confirmed) {
           const msg = 'Becoming user ' + name;
@@ -68,29 +60,42 @@ export default function UsersPage() {
         <Stack direction="horizontal">
           <span className="font-size-1">All Users&nbsp;&nbsp;</span>
         </Stack>
-        <Stack direction="vertical">
-          {usersArr.map((user) => {
-            return (
-              <div key={user.email}>
-                <Button
-                  className="switch-button"
-                  variant="secondary"
-                  onClick={switchUserFunc(user)}
-                >
-                  Become
-                </Button>
-                <span className={userClasses(user)}>{userLine(user)}</span>
-                {user.is_online && (
-                  <>
-                    &nbsp;
-                    <Badge bg="success">Online</Badge>
-                  </>
-                )}
-              </div>
-            );
-          })}
-          <p>&nbsp;</p>
-        </Stack>
+        <Table striped bordered hover className="stats-table">
+          <thead>
+            <tr>
+              <th>Switch</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Rooms</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usersArr.map((user) => {
+              return (
+                <tr key={user.email}>
+                  <td>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={switchUserFunc(user)}
+                    >
+                      Become
+                    </Button>
+                  </td>
+                  <td>
+                    <span className={userClasses(user)}>{user.full_name}</span>
+                  </td>
+                  <td>{user.email}</td>
+                  <td>{user.rooms?.replace(/Room_/g, '')}</td>
+                  <td>
+                    {user.is_online && <Badge bg="success">Online</Badge>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </Container>
     </Container>
   );

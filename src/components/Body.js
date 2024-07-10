@@ -9,14 +9,14 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
-import Queue from './Queue';
-import Paper from './Paper';
-import GridSection from './GridSection';
-import SetQueue from './SetQueue';
 import {
   useSplitWidth,
   useChangeSplitWidth,
 } from '../contexts/PreferencesContext';
+import Queue from './Queue';
+import Paper from './Paper';
+import GridSection from './GridSection';
+import SetQueue from './SetQueue';
 
 export default function Body() {
   const { socketEmit } = useSocketIO();
@@ -29,35 +29,33 @@ export default function Body() {
     roomChoice,
     setRoomChoice,
   } = useUser();
-  const globals = useAppGlobals();
+  const { queue, serverGlobs } = useAppGlobals();
   const splitWidth = useSplitWidth();
   const changeSplitWidth = useChangeSplitWidth();
-
-  const roomStr = user.rooms ? user.rooms : '';
-  const userRooms = allRooms.filter(
-    (room) =>
-      isAdmin || conflictbot || room === 'Plenary' || roomStr.includes(room),
-  );
   const showRoomWarning =
     !isAdmin && conflictbot && roomCalledTo !== roomChoice;
-  const isScreen = user && user.role_name === 'Screen';
-  const queue = globals.queue;
-
-  //const isPaper = queue && queue.length && globals.queueCurrent < queue.length
-  const hideQueue =
-    !isAdmin && globals.serverGlobs && globals.serverGlobs.hide_queue;
+  const isScreen = user?.role_name === 'Screen';
+  const hideQueue = !isAdmin && serverGlobs?.hide_queue;
   const hideMessage =
-    globals.serverGlobs && globals.serverGlobs.message
-      ? globals.serverGlobs.message
+    serverGlobs && serverGlobs.message
+      ? serverGlobs.message
       : 'The queue is hidden.';
   const message = hideQueue ? hideMessage : 'No papers in queue.';
-
   const isPlenary = roomChoice === 'Plenary';
   const showBringButton = isAdmin && conflictbot && !isPlenary;
-  const calledUsers = globals.serverGlobs && globals.serverGlobs.called_users;
+  const calledUsers = serverGlobs && serverGlobs.called_users;
   const bringButtonLabel = calledUsers
     ? 'Release to Plenary'
     : 'Bring Reviewers';
+
+  const userBelongsInRoom = (room) =>
+    room === 'Plenary' || user?.rooms?.includes(room);
+
+  const userRooms = allRooms.filter(
+    (room) => isAdmin || conflictbot || userBelongsInRoom(room),
+  );
+
+  const handleDragEnd = (sizes) => changeSplitWidth(sizes);
 
   const handleBringButton = () => {
     if (!conflictbot) return;
@@ -76,7 +74,7 @@ export default function Body() {
           sizes={[splitWidth[0], splitWidth[1]]}
           cursor="col-resize"
           minSize={[500, 550]}
-          onDragEnd={(sizes) => changeSplitWidth(sizes)}
+          onDragEnd={handleDragEnd}
         >
           <Container className="left-panel">
             <Stack direction="horizontal" gap={4} className="RoomButtonStack">
@@ -132,7 +130,7 @@ export default function Body() {
                 </Tab>
               )}
               {isAdmin && (
-                <Tab eventKey="admin" title="Admin Controls" className="tab">
+                <Tab eventKey="queue" title="Set Queue" className="tab">
                   <SetQueue />
                 </Tab>
               )}

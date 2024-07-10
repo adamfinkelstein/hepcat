@@ -1,43 +1,47 @@
-// import { Container } from "react-bootstrap";
 import Stack from 'react-bootstrap/Stack';
 import { useColors } from '../contexts/PreferencesContext';
+// import { click } from '@testing-library/user-event/dist/click';
 
 export default function ColorsDisplay({
   clickable,
-  pickingFor,
-  setPickingFor,
+  selectedColorKey,
+  setSelectedColorKey,
 }) {
-  let colors = useColors();
-
-  function toTitleCase(str) {
-    return str.replace(/\w\S*/g, function (txt) {
-      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    });
-  }
+  const colors = useColors();
+  const colorKeys = Object.keys(colors);
 
   return (
     <div className="grid_legend">
       <div className="legend-title font-size-3">Plenary Status</div>
       <ul>
-        {Object.keys(colors).map((key) => {
+        {colorKeys.map((key) => {
+          // Something like this comment code could make the selected color
+          // behave like a grid item, for better preview. But it's a bit broken.
+          // const selected = clickable && selectedColorKey === key;
+          // const className = selected
+          //   ? 'grid-item ' + selectedColorKey
+          //   : 'legend-container';
+          const className = 'legend-container';
           return (
             <li
               key={key}
-              className="legend-container"
+              className={className}
               onClick={() => {
                 if (clickable) {
-                  setPickingFor(key);
+                  setSelectedColorKey(key);
                 }
               }}
             >
               <Stack
                 direction="horizontal"
-                className={pickingFor === key ? 'picking-for' : 'legend-stack'}
+                className={
+                  selectedColorKey === key
+                    ? 'selected-color'
+                    : 'unselected-color'
+                }
               >
                 <div className={'rectangle ' + key}></div>
-                <div className="legend-label font-size-3">
-                  {toTitleCase(key)}
-                </div>
+                <div className="legend-label font-size-3">{key}</div>
               </Stack>
             </li>
           );

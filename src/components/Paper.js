@@ -149,7 +149,7 @@ export default function Paper() {
 
   function userToClass(user) {
     let className = 'font-size-3';
-    if (user.role_is_admin) {
+    if (user.role_is_admin || user.role_name === 'Backup') {
       className += ' admin-user';
     }
     if (user.otherRoom) {

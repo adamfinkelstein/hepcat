@@ -399,16 +399,16 @@ a.nav-link {
   width: 15px;
 }
 
-.has-sticky {
+.sticky-border {
   border: 2.5px solid black;
   border-radius: 8px;
 }
 
-.sticky {
+/* .sticky {
   background-color: gray;
   border: 2px solid black;
   color: white;
-}
+} */
 
 .send-sticky-column > div {
   padding-bottom: 12px;
@@ -418,7 +418,7 @@ a.nav-link {
   margin-top: 20px;
 }
 
-.non-sticky {
+.faded-grid {
   background-color: gray;
   color: white;
   opacity: 0.2;
@@ -461,13 +461,13 @@ a.nav-link {
 }
 
 /* this is the hstack for a legend that is not currently picked */
-.legend-stack {
+.unselected-color {
   border: 1px solid white;
   padding: 3px;
 }
 
 /* this is the hstack for a legend that is currently picked */
-.picking-for {
+.selected-color {
   border: 1px solid black;
   border-radius: 6px;
   padding: 3px;
@@ -555,12 +555,12 @@ a.nav-link {
 }
 
 .no-tsp {
-  margin-top: 10px;
-  margin-left: 20px;
+  margin-top: 20px;
+  margin-left: 10px;
 }
 
 .text-filter-instructions {
-  margin-left: 20px;
+  margin-top: 12px;
 }
 
 .horizontal-divider {
@@ -657,8 +657,8 @@ a.nav-link {
   padding-top: 30px;
 }
 
-.switch-button {
-  margin: 6px;
+.space-down-from-bar {
+  padding-top: 20px;
 }
 
 .text-filter-input {
@@ -702,4 +702,12 @@ label {
   color: rgb(34, 34, 34);
   font-size: 14px;
   font-weight: 600;
+}
+
+.stats-table {
+  margin-top: 20px;
+}
+
+.button-desc {
+  margin-left: 20px;
 }

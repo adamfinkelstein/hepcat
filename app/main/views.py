@@ -11,6 +11,7 @@ from ..models import User
 @main.route("/about/")
 @main.route("/preferences/")
 @main.route("/uploads/")
+@main.route("/progress/")
 @main.route("/users/")
 @main.route("/change_password/")
 @main.route("/")

@@ -1,16 +1,16 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-
-import MainPage from '../pages/MainPage.js';
-import PreferencesPage from '../pages/PreferencesPage.js';
-import AboutPage from '../pages/AboutPage.js';
-import LoginPage from '../pages/LoginPage.js';
-import ForgotPasswordPage from '../pages/ForgotPasswordPage.js';
-import UploadsPage from '../pages/UploadsPage.js';
-import UsersPage from '../pages/UsersPage.js';
-import ChangePasswordPage from '../pages/ChangePasswordPage.js';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useUser } from '../contexts/UserContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import MainPage from '../pages/MainPage';
+import PreferencesPage from '../pages/PreferencesPage';
+import AboutPage from '../pages/AboutPage';
+import LoginPage from '../pages/LoginPage';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import UploadsPage from '../pages/UploadsPage';
+import ProgressPage from '../pages/ProgressPage';
+import UsersPage from '../pages/UsersPage';
+import ChangePasswordPage from '../pages/ChangePasswordPage';
 
 export default function AppRoutes() {
   const { socket } = useSocketIO();
@@ -40,6 +40,7 @@ export default function AppRoutes() {
           {isAdmin && (
             <>
               <Route path="/uploads" element={<UploadsPage />} />
+              <Route path="/progress" element={<ProgressPage />} />
               <Route path="/users" element={<UsersPage />} />
             </>
           )}

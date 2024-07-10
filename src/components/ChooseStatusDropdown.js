@@ -5,7 +5,7 @@ import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 
 export default function ChooseStatusDropdown({ currentStatus, setValue }) {
-  const statusList = useAppGlobals()['statusList'];
+  const { statusList } = useAppGlobals();
 
   return (
     <Dropdown as={ButtonGroup} id="status-dropdown-menu">

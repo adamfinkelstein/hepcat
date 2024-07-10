@@ -21,6 +21,7 @@ export default function UserContext({ children }) {
   const [roomChoice, setRoomChoice] = React.useState('Plenary');
   const [gitInfo, setGitInfo] = React.useState('');
   const [showAbstract, setShowAbstract] = React.useState(true);
+  const [showGlobalOps, setShowGlobalOps] = React.useState(false);
 
   React.useEffect(() => {
     if (socket) {
@@ -138,6 +139,8 @@ export default function UserContext({ children }) {
         setRoomChoice,
         showAbstract,
         setShowAbstract,
+        showGlobalOps,
+        setShowGlobalOps,
       }}
     >
       {children}

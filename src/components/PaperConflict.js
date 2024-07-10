@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 export default function PaperConflict({ conflicts, isCurrent }) {
   function userToClass(user) {
     let className = 'font-size-4';
-    if (user.role_is_admin) {
+    if (user.role_is_admin || user.role_name === 'Backup') {
       className += isCurrent ? ' current-admin-user' : ' admin-user';
     }
     return className;
@@ -20,7 +20,7 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   return (
     <Container>
       {conflicts.length === 0 ? (
-        <div>(no conflicts)</div>
+        <div class="font-size-4">(no conflicts)</div>
       ) : (
         <div className="queue-paper-conf-list">
           <span className="queue-paper-conf-header font-size-4">

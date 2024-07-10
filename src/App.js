@@ -1,18 +1,19 @@
 import Container from 'react-bootstrap/Container';
-import HeaderBar from './components/HeaderBar.js';
-import AppRoutes from './components/AppRoutes.js';
-import ModalDialog from './components/ModalDialog.js';
-import ConfirmationBox from './components/ConfirmationBox.js';
+import HeaderBar from './components/HeaderBar';
+import AppRoutes from './components/AppRoutes';
+import ModalDialog from './components/ModalDialog';
+import ConfirmationBox from './components/ConfirmationBox';
 import { BrowserRouter } from 'react-router-dom';
-import ControlledLogContext from './contexts/ControlledLogContext.js';
-import SocketIOContext from './contexts/SocketIOContext.js';
-import UserContext from './contexts/UserContext.js';
-import AppContext from './contexts/AppContext.js';
-import FilterContext from './contexts/FilterContext.js';
+import ControlledLogContext from './contexts/ControlledLogContext';
+import SocketIOContext from './contexts/SocketIOContext';
+import UserContext from './contexts/UserContext';
+import AppContext from './contexts/AppContext';
+import FilterContext from './contexts/FilterContext';
+import StatsContext from './contexts/StatsContext';
 import PreferencesContext from './contexts/PreferencesContext';
-import FlasherContext from './contexts/FlasherContext.js';
-import ModalDialogContext from './contexts/ModalDialogContext.js';
-import ConfirmationBoxContext from './contexts/ConfirmationBoxContext.js';
+import FlasherContext from './contexts/FlasherContext';
+import ModalDialogContext from './contexts/ModalDialogContext';
+import ConfirmationBoxContext from './contexts/ConfirmationBoxContext';
 
 export default function App() {
   return (
@@ -26,12 +27,14 @@ export default function App() {
                   <UserContext>
                     <AppContext>
                       <FilterContext>
-                        <PreferencesContext>
-                          <ModalDialog />
-                          <ConfirmationBox />
-                          <HeaderBar />
-                          <AppRoutes />
-                        </PreferencesContext>
+                        <StatsContext>
+                          <PreferencesContext>
+                            <ModalDialog />
+                            <ConfirmationBox />
+                            <HeaderBar />
+                            <AppRoutes />
+                          </PreferencesContext>
+                        </StatsContext>
                       </FilterContext>
                     </AppContext>
                   </UserContext>

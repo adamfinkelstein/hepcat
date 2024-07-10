@@ -74,6 +74,9 @@ export default function HeaderBar() {
                       <NavDropdown.Item as={NavLink} to="uploads">
                         Upload Files
                       </NavDropdown.Item>
+                      <NavDropdown.Item as={NavLink} to="progress">
+                        Progress
+                      </NavDropdown.Item>
                       <NavDropdown.Item as={NavLink} to="users">
                         Users
                       </NavDropdown.Item>

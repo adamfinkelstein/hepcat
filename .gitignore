@@ -11,6 +11,9 @@
 # production
 /build
 
+# for domain SSL
+/certs
+
 # misc
 .DS_Store
 .python-version

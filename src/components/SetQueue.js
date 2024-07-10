@@ -1,4 +1,9 @@
 import moment from 'moment';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Stack from 'react-bootstrap/Stack';
 import { Container } from 'react-bootstrap';
 import { useState } from 'react';
 import { useControlledLog } from '../contexts/ControlledLogContext';
@@ -8,13 +13,7 @@ import { useAppGlobals } from '../contexts/AppContext';
 import { useFilterContext } from '../contexts/FilterContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
-import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
-import SaveFilters from './SaveFilters.js';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Stack from 'react-bootstrap/Stack';
+import SaveFilters from './SaveFilters';
 
 const scoreOptionAll = 'All Scores';
 const scoreOptionAbove = 'At/Above Bar';
@@ -32,18 +31,20 @@ export default function SetQueue() {
   const [noTSP, setNoTSP] = useState(false);
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
-  const { roomChoice, conflictbot } = useUser();
-  // const { textFilterBox, setTextFilterBox } = useGUI();
-  const globals = useAppGlobals();
   const { revealModalDialog } = useModalDialog();
-  const { revealConfirmationBox } = useConfirmationBox();
-  const hideQ = globals.hideQ;
-  const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
-  const setHideQ = globals.setHideQ;
-  const hiddenMsg = globals.hiddenMsg;
-  const setHiddenMsg = globals.setHiddenMsg;
-  const guiBarString = globals.guiBar + '';
-  const setGuiBar = globals.setGuiBar;
+  const { roomChoice } = useUser();
+  const { flash } = useFlasher();
+  const {
+    hideQ,
+    setHideQ,
+    hiddenMsg,
+    setHiddenMsg,
+    guiBar,
+    setGuiBar,
+    probeGUIMsg,
+    probeTextMsg,
+    statusList,
+  } = useAppGlobals();
   const {
     allGuiFilterNames,
     allTextFilterNames,
@@ -64,14 +65,11 @@ export default function SetQueue() {
     scoreSelection,
     setScoreSelection,
   } = useFilterContext();
-
-  const probeGUIMsg = globals.probeGUIMsg;
-  const probeTextMsg = globals.probeTextMsg;
+  const guiBarString = guiBar + '';
+  const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
   const exampleFilter = 'My_GUI_filter';
 
   const showQMessageTime = false;
-
-  const { flash } = useFlasher();
 
   const filterList = [
     'This Room Only',
@@ -83,14 +81,13 @@ export default function SetQueue() {
     'No Admin Conf',
     'Only Admin Conf',
   ];
-  const statusList = globals['statusList'];
 
   /* This function handles the values of the range inputs
-         scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange:
+      scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange:
      All scores: lowRange=min, highRange=max
      Above bar: lowRange=bar, highRange=max
      Below bar: lowRange=min, highRange=bar
-     In range: both are enabled for freeform input
+     In range: both are enabled for freeform input.
     */
   function handleScoreSelectionUpdate(selection) {
     const minScore = '-9.0';
@@ -300,70 +297,10 @@ export default function SetQueue() {
     controlledLog(data);
   }
 
-  function handleRefreshConflictbot(inAllRooms) {
-    if (!conflictbot) return;
-    // This function is only used in online meetings.
-    // Could replace window.confirm with revealConfirmationBox()
-    // as elsewhere in this file, but the logic is a bit twisted.
-    let confirmAllRooms =
-      'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
-    if (inAllRooms && window.confirm(confirmAllRooms) !== true) {
-      const msg = 'This Conflictbot refresh (all rooms) was canceled.';
-      controlledLog(msg);
-      flash(msg, 'warning');
-    } else {
-      let room = inAllRooms ? 'ALL_ROOMS' : roomChoice;
-      socketEmit('admin_refresh_conflictbot', room);
-      const msg = 'Sent request to Conflictbot to refresh ' + room;
-      controlledLog(msg);
-      flash(msg, 'success');
-    }
-  }
-
-  function handleSetBarButton() {
-    controlledLog('bar set:', guiBarString);
-    socketEmit('admin_set_bar', guiBarString);
-  }
-
-  function handleBulkRejectButton(isQueueNotBar) {
-    controlledLog('Bulk reject button pressed (' + isQueueNotBar + ').');
-    const endText = isQueueNotBar ? 'in queue' : 'below bar';
-    const text = 'Are you sure you want to bulk reject ' + endText + '?';
-    revealConfirmationBox('Please Confirm', text, (confirmed) => {
-      if (confirmed) {
-        const msg = 'Bulk reject' + endText;
-        controlledLog(msg);
-        flash(msg, 'success');
-        const queueRoom = isQueueNotBar ? roomChoice : 'is_bar';
-        socketEmit('admin_bulk_reject', queueRoom);
-      } else {
-        const msg = 'Bulk reject button canceled.';
-        controlledLog(msg);
-        flash(msg, 'warning');
-      }
-    });
-  }
-
-  function handleClearStickiesButton() {
-    controlledLog('Clear stickies button pressed.');
-    let text = 'Are you sure you want to clear all stickies?';
-    revealConfirmationBox('Please Confirm', text, (confirmed) => {
-      if (confirmed) {
-        const msg = 'Clearing stickies.';
-        controlledLog(msg);
-        flash(msg, 'success');
-        socketEmit('admin_clear_stickies');
-      } else {
-        const msg = 'Canceled clearing stickies.';
-        controlledLog(msg);
-        flash(msg, 'warning');
-      }
-    });
-  }
-
   return (
     <Container>
       <div>
+        <h2>Hide Queue</h2>
         <Stack direction="horizontal" className="set-message-row">
           <span className="font-size-4">{qMsgLabel}</span>
           <input
@@ -542,14 +479,28 @@ export default function SetQueue() {
           className="text-filter-input"
           onChange={handleInputChange}
         />
-        <br />
-        &nbsp;
-        <br />
-        <Stack direction="horizontal">
-          <Stack direction="vertical">
+        <Stack direction="vertical">
+          <Container>
+            <ul className="text-filter-instructions">
+              <li className="font-size-4">
+                Room:Plenary / Area:Geometry / Cluster:A / Filter:
+                {exampleFilter}
+              </li>
+              <li className="font-size-4">101 / 101,103,105,107</li>
+              <li className="font-size-4">
+                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleFilter})
+              </li>
+            </ul>
+          </Container>
+          <Stack direction="horizontal">
             <Button variant="secondary" onClick={handleGetFilteredCountText}>
               Get Count
             </Button>
+            <span className="font-size-4 get-filtered-count-text">
+              Count: {probeTextMsg}
+            </span>
+          </Stack>
+          <Stack direction="horizontal">
             <Button
               onClick={handleSendTextFilterButton}
               className="text-filter-btn"
@@ -566,69 +517,7 @@ export default function SetQueue() {
               }}
             />
           </Stack>
-          <div>
-            <ul className="text-filter-instructions">
-              <li className="font-size-4">Count: {probeTextMsg}</li>
-              <li className="font-size-4">
-                Room:Plenary / Area:Geometry / Cluster:A / Filter:
-                {exampleFilter}
-              </li>
-              <li className="font-size-4">101 / 101,103,105,107</li>
-              <li className="font-size-4">
-                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleFilter})
-              </li>
-            </ul>
-          </div>
         </Stack>
-      </div>
-      <div>
-        {conflictbot && (
-          <div>
-            <hr className="horizontal-divider" />
-            Conflictbot move users in:&nbsp;&nbsp;
-            <Button
-              variant="warning"
-              onClick={() => handleRefreshConflictbot(false)}
-            >
-              {roomChoice}
-            </Button>
-            &nbsp;&nbsp;or&nbsp;&nbsp;
-            <Button
-              variant="warning"
-              onClick={() => handleRefreshConflictbot(true)}
-            >
-              All Rooms
-            </Button>
-          </div>
-        )}
-        <hr className="horizontal-divider" />
-        <Stack direction="horizontal">
-          <Button
-            variant="warning"
-            onClick={handleSetBarButton}
-            className="change-bar-btn"
-          >
-            Change Bar
-          </Button>
-          <input name="bar" value={guiBarString} onChange={handleInputChange} />
-        </Stack>
-        <hr className="horizontal-divider" />
-        <Button variant="warning" onClick={handleClearStickiesButton}>
-          Clear Stickies
-        </Button>
-        &nbsp;&nbsp;Clear all stickies.
-        <hr className="horizontal-divider" />
-        <Button variant="warning" onClick={() => handleBulkRejectButton(false)}>
-          Bulk Reject Below Bar
-        </Button>
-        &nbsp;&nbsp;Mark status of all unseen reject papers below bar as now
-        discussed.
-        <hr className="horizontal-divider" />
-        <Button variant="warning" onClick={() => handleBulkRejectButton(true)}>
-          Bulk Reject in Queue
-        </Button>
-        &nbsp;&nbsp;Mark status of all unseen reject papers in queue as now
-        discussed.
       </div>
     </Container>
   );

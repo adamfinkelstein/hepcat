@@ -48,6 +48,7 @@ export default function FlashContext({ children }) {
     (message, type, duration) => {
       const id = ++flashId;
       if (duration === undefined) {
+        // default duration is 4 seconds
         duration = 4;
       }
 
@@ -55,6 +56,8 @@ export default function FlashContext({ children }) {
         ...messages,
         { message, type, flashId: id, visible: true },
       ]);
+      // If duration is positive, hide the alert after that many seconds.
+      // If duration is zero, the alert will stay until manually closed.
       if (duration > 0) {
         setTimeout(hideFlash.bind(null, id), duration * 1000);
       }

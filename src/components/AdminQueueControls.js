@@ -1,65 +1,71 @@
 import Stack from 'react-bootstrap/Stack';
+import Button from 'react-bootstrap/Button';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useAppGlobals } from '../contexts/AppContext';
-import ChooseStatusDropdown from './ChooseStatusDropdown.js';
+import ChooseStatusDropdown from './ChooseStatusDropdown';
 
 export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
   const { roomChoice } = useUser();
-  const globals = useAppGlobals();
-  const newStatus = globals.newStatus;
-  const setNewStatus = globals.setNewStatus;
-  const completed = globals.queueCurrent >= globals.queue.length;
-  const disablePrev = globals.queueCurrent === 0 ? 'disabled' : '';
-  const disableShow =
-    completed || globals.serverGlobs.current_show ? 'disabled' : '';
-  const disableNext = completed ? 'disabled' : '';
+  const { newStatus, setNewStatus, queueCurrent, queue, serverGlobs } =
+    useAppGlobals();
+  const disablePrev = queueCurrent === 0;
+  const disableNext = queueCurrent >= queue.length;
+  const disableShow = disableNext || serverGlobs.current_show;
+
+  const handleUpArrow = () => {
+    socketEmit('admin_prev_paper', roomChoice);
+  };
+
+  const handleDownArrow = () => {
+    socketEmit('admin_next_paper', roomChoice);
+  };
+
+  const handleAdvanceButton = () => {
+    const data = { roomChoice, newStatus };
+    socketEmit('admin_advance_queue', data);
+  };
+
+  const handleShowButton = () => {
+    socketEmit('admin_show_current', roomChoice);
+  };
 
   return (
     <Stack direction="horizontal" className="AdminQueueControls">
-      <button
+      <Button
         disabled={disablePrev}
         type="button"
         className="btn btn-light paper-change-button"
-        onClick={() => {
-          socketEmit('admin_prev_paper', roomChoice);
-        }}
+        onClick={handleUpArrow}
       >
         &uarr;
-      </button>
-      <button
+      </Button>
+      <Button
         disabled={disableNext}
         type="button"
         className="btn btn-light paper-change-button"
-        onClick={() => {
-          socketEmit('admin_next_paper', roomChoice);
-        }}
+        onClick={handleDownArrow}
       >
         &darr;
-      </button>
-      <button
+      </Button>
+      <Button
         disabled={disableShow}
         type="button"
         className="btn btn-light paper-change-button"
-        onClick={() => {
-          socketEmit('admin_show_current', roomChoice);
-        }}
+        onClick={handleShowButton}
       >
         Show
-      </button>
+      </Button>
       <ChooseStatusDropdown currentStatus={newStatus} setValue={setNewStatus} />
-      <button
+      <Button
         disabled={disableNext}
         type="button"
         className="btn btn-light paper-change-button advance-btn"
-        onClick={() => {
-          const data = { roomChoice, newStatus };
-          socketEmit('admin_advance_queue', data);
-        }}
+        onClick={handleAdvanceButton}
       >
         Advance
-      </button>
+      </Button>
     </Stack>
   );
 }

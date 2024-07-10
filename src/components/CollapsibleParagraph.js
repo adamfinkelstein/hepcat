@@ -11,7 +11,6 @@ export default function CollapsibleParagraph({ title, text }) {
         className="collapsible-par-header"
         role="button"
         onClick={() => {
-          console.log('click on was: ' + showAbstract);
           setShowAbstract(!showAbstract);
         }}
       >

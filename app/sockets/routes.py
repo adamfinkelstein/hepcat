@@ -307,6 +307,13 @@ def paper_in_room(paper, room):
     return False
 
 
+def get_paper_room(paper):
+    for label in paper.tag_labels:
+        if label.is_room:
+            return label.name
+    return "Plenary"
+
+
 def filters_allow_paper(paper, filters):
     sort_score = paper.sort_score
     lowRange = float(filters["lowRange"])
@@ -662,6 +669,80 @@ def update_current_paper_status(room, new_status):
     history = History(paper=paper, context_enum=room_context, status_enum=status_enum)
     db.session.add(history)  # commit will follow on setting current index
     return current_index, paper
+
+
+def room_short_name(room):
+    if room == "Plenary":
+        return "P"
+    return room.replace("Room_", "")
+
+
+def collect_stats_by_room(all_rooms, all_status):
+    counts = {}
+    totals = {}
+    done = {}
+    unseen_sticky = {}
+    # start with all zero counts
+    for room in all_rooms:
+        totals[room] = 0
+        done[room] = 0
+        unseen_sticky[room] = 0
+        counts[room] = {}
+        for status in all_status:
+            counts[room][status] = 0
+    papers = Paper.query.all()
+    for paper in papers:
+        room = get_paper_room(paper)
+        room = room_short_name(room)
+        if room not in all_rooms:
+            continue  # sanity check
+        status = get_latest_room_history_status(paper)
+        if not status:
+            status = "Unseen"
+            if is_paper_sticky(paper):
+                unseen_sticky[room] += 1
+        else:
+            done[room] += 1
+        if status not in all_status:
+            continue  # sanity check
+        counts[room][status] += 1
+        totals[room] += 1
+    return counts, totals, done, unseen_sticky
+
+
+def append_stats_row(all_rows, row_order, colA, row, before_end=False):
+    full_row = [colA] + row
+    all_rows[colA] = full_row
+    if before_end:
+        row_order.insert(-1, colA)
+    else:
+        row_order.append(colA)
+
+
+def get_stats():
+    all_rooms = get_all_rooms()
+    all_rooms = [room_short_name(room) for room in all_rooms]
+    all_status = "Conference,Journal,Reject,Tabled,Unseen".split(",")
+    counts, totals, done, unseen_sticky = collect_stats_by_room(all_rooms, all_status)
+    all_rows = {}
+    row_order = []
+    for status in all_status:
+        colA = status if status == "Unseen" else f"Marked {status}"
+        row = [counts[room][status] for room in all_rooms]
+        append_stats_row(all_rows, row_order, colA, row)
+    colA = "Total Seen (C+J+R+T)"
+    row = [done[room] for room in all_rooms]
+    append_stats_row(all_rows, row_order, colA, row, True)
+    colA = "Unseen & Sticky"
+    row = [unseen_sticky[room] for room in all_rooms]
+    append_stats_row(all_rows, row_order, colA, row)
+    colA = "Total (Seen+Unseen)"
+    row = [totals[room] for room in all_rooms]
+    append_stats_row(all_rows, row_order, colA, row)
+    rows = [all_rows[row_name] for row_name in row_order]
+    header = ["Status"] + all_rooms
+    stats = {"header": header, "rows": rows}
+    return stats
 
 
 def get_paper_at_queue_index(room, index):
@@ -1122,6 +1203,14 @@ def admin_set_text_filter(data):
     conflictbots_broadcast_conflicts(globs, current_paper)
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
+
+
+@socketio.on("admin_get_stats")
+@admin_required_for_io_no_record
+def admin_get_stats():
+    log_print("admin_get_stats")
+    stats = get_stats()
+    emit("server_send_stats", stats)
 
 
 @socketio.on("admin_set_bar")

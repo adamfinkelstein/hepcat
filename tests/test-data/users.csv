@@ -2,6 +2,7 @@ Email,First Name,Last Name,Role,Password
 fake.admin@example.com,Fake,Admin,Admin,pass
 fake.chair@example.com,Fake,Chair,Chair,pass
 fake.citizen@example.com,Fake,Citizen,,pass
+jennifer.jordan@example.com,Jennifer,Jordan,Backup,pass
 heather.ponce@example.com,Heather,Ponce,,pass
 brittany.odonnell@example.com,Brittany,Odonnell,,pass
 justin.allen@example.com,Justin,Allen,,pass
@@ -10,7 +11,6 @@ bob.allen@example.com,Bob,Allen,,pass
 matthew.alvarado@example.com,Matthew,Alvarado,,pass
 andrew.williams@example.com,Andrew,Williams,,pass
 crystal.wyatt@example.com,Crystal,Wyatt,,pass
-jennifer.jordan@example.com,Jennifer,Jordan,,pass
 emily.greer@example.com,Emily,Greer,,pass
 sandra.butler@example.com,Sandra,Butler,,pass
 yesenia.fry@example.com,Yesenia,Fry,,pass
