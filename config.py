@@ -26,6 +26,7 @@ class Config:
     HEPCAT_CHAIR_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
     HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "screen@example.com")
     HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
+    DISABLE_PASSWORD_CACHE = env_get_bool("DISABLE_PASSWORD_CACHE", False)
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = env_get_str("DEV_DATABASE_URL", default_db)

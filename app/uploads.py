@@ -173,7 +173,7 @@ def keep_rows_with_unique_lowercase_emails(rows):
 
 
 # Email,First Name,Last Name,Role,Password
-def insert_user_rows(rows, hash_cache):
+def insert_user_rows(rows, hash_cache=None):
     ok_roles = "Admin,Chair,Backup,Screen".split(",")
     count = 0
     hash_count = 0
@@ -188,7 +188,7 @@ def insert_user_rows(rows, hash_cache):
         if password:
             user.password = password
         else:
-            if email in hash_cache:
+            if hash_cache and email in hash_cache:
                 # restore password cached from before
                 hash = hash_cache[email]
                 hash_count += 1
@@ -640,8 +640,10 @@ def read_csv(filename):
     log_print(f"Reading csv of type {header_type}")
     rows = keep_rows_with_n_cols(rows, n_cols)
     is_users = header_type == "users"
-    if is_users:
+    if is_users and not current_app.config["DISABLE_PASSWORD_CACHE"]:
         hash_cache = cache_user_password_hashes()
+    else:
+        hash_cache = None
     # first delete old database info
     timer_end(f"finished reading {header_type} csv", True)
     dump_users_papers_and_conflicts(f"Before deleting {header_type}")
