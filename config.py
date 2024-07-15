@@ -35,6 +35,7 @@ class Config:
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
     ALLOW_CORS_SOCKET = env_get_bool("ALLOW_CORS_SOCKET")
 
+    # https://sendgrid.com/en-us/blog/sending-emails-from-python-flask-applications-with-twilio-sendgrid
     MAIL_SERVER = env_get_str("MAIL_SERVER", "smtp.sendgrid.net")
     MAIL_PORT = env_get_int("MAIL_PORT", 587)
     MAIL_USE_TLS = env_get_bool("MAIL_USE_TLS", True)

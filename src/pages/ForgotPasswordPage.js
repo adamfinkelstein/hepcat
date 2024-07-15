@@ -3,21 +3,25 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
+import { useControlledLog } from '../contexts/ControlledLogContext.js';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const emailField = useRef();
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
+  const { controlledLog } = useControlledLog();
   const navigate = useNavigate();
 
   const handleResetButton = async (ev) => {
     ev.preventDefault();
+    controlledLog('sending password reset request for email ' + email);
     const response = await fetch('/api/reset_password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
+    controlledLog('reset request got response:', response);
     if (!response.ok) {
       const data = await response.json();
       const msg =
