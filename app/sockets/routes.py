@@ -1191,7 +1191,7 @@ def admin_probe_queue_explicit(data):
 def admin_set_text_filter(data):
     room = data["roomChoice"]
     explicit = data["explicit"]
-    no_tsp = data["noTSP"]
+    no_tsp = data["noTSP"] if "noTSP" in data else False
     log_print(
         f"admin request for set explicit queue {room}: {explicit} (no tsp {no_tsp})"
     )
