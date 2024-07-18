@@ -349,8 +349,8 @@ def filters_allow_paper(paper, filters):
     return True
 
 
-def paper_is_unseen_reject(paper, consider_bar):
-    if consider_bar is not None and paper.sort_score >= consider_bar:
+def paper_is_unseen_reject_below_bar(paper, bar):
+    if paper.sort_score >= bar:
         return False
     if not is_paper_unseen(paper):
         return False
@@ -360,27 +360,31 @@ def paper_is_unseen_reject(paper, consider_bar):
     return True
 
 
-def get_all_unseen_reject_papers(queue_room):
-    if queue_room == "is_bar":
-        papers = Paper.query.all()
-        bar = get_bar()
-    else:
-        gq = get_or_create_gq(queue_room)
-        papers = Paper.query.filter_by(queue_id=gq.id).all()
-        bar = None
-    list_papers = list(papers)
-    filter_papers = [p for p in list_papers if paper_is_unseen_reject(p, bar)]
-    return filter_papers
-
-
-def bulk_reject_bar_or_queue(queue_room):
-    papers = get_all_unseen_reject_papers(queue_room)
-    context_plenary = context_str_to_enum("Plenary")
-    status_enum = status_str_to_enum("Reject")
+def bulk_reject_below_bar():
+    bar = get_bar()
+    papers = Paper.query.all()
+    papers = list(papers)
+    papers = [p for p in papers if paper_is_unseen_reject_below_bar(p, bar)]
+    plenary = context_str_to_enum("Plenary")
+    reject = status_str_to_enum("Reject")
     for paper in papers:
-        history = History(
-            paper=paper, context_enum=context_plenary, status_enum=status_enum
-        )
+        history = History(paper=paper, context_enum=plenary, status_enum=reject)
+        db.session.add(history)
+
+
+def bulk_confirm_in_queue():
+    # for all papers in queue that are unseen...
+    # ...mark as "seen" with current status.
+    gq = get_or_create_gq("Plenary")
+    papers = Paper.query.filter_by(queue_id=gq.id).all()
+    papers = list(papers)
+    papers = [p for p in papers if is_paper_unseen(p)]
+    plenary = context_str_to_enum("Plenary")
+    tabled = status_str_to_enum("Tabled")
+    for paper in papers:
+        prev_history = get_latest_history(paper)
+        status = prev_history.status_enum if prev_history else tabled
+        history = History(paper=paper, context_enum=plenary, status_enum=status)
         db.session.add(history)
 
 
@@ -677,72 +681,131 @@ def room_short_name(room):
     return room.replace("Room_", "")
 
 
-def collect_stats_by_room(all_rooms, all_status):
+stats_table_rows = {
+    "C": "Marked Conference",
+    "J": "Marked Journal",
+    "R": "Marked Reject",
+    "T": "Marked Tabled",
+    "M": "Marked (C+J+R+T)",
+    "U": "Unseen",
+    "A": "All Papers (M+U)",
+    "S": "Stickies",
+    "P": "Presumed Reject",
+    "W": "Work (A-P-C-J-R)",
+    "F": "Fraction (W/(A-P))",
+}
+
+
+def inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed):
+    # Gather info about paper...
+    room = get_paper_room(paper)
+    room = room_short_name(room)
+    is_presumed_reject = False
+    is_sticky = is_paper_sticky(paper)
+    room_status = get_latest_room_history_status(paper)
+    presumed_status = get_latest_history_status(paper)
+    if room_status:
+        is_done = True
+        status_code = room_status[0]
+    else:
+        is_done = False
+        status_code = "U"  # Unseen
+        if paper.sort_score < bar and presumed_status == "Reject":
+            # presumed reject is unseen & below bar & reject
+            is_presumed_reject = True
+    # Update counts...
+    counts[room][status_code] += 1
+    totals[room] += 1
+    if is_done:
+        done[room] += 1
+    if is_sticky:
+        sticky[room] += 1
+    if is_presumed_reject:
+        presumed[room] += 1
+
+
+def get_work_fraction(work, total, presumed):
+    denom = total - presumed
+    frac = round(100.0 * work / denom) if denom else 0
+    return f"{frac}%"
+
+
+def collect_stats_by_room(all_rooms):
     counts = {}
     totals = {}
     done = {}
-    unseen_sticky = {}
+    sticky = {}
+    presumed = {}  # presumed reject
+    work = {}
+    fraction = {}
+    status_codes = list("CJRTU")  # Conference, Journal, Reject, Tabled, Unseen
     # start with all zero counts
     for room in all_rooms:
         totals[room] = 0
         done[room] = 0
-        unseen_sticky[room] = 0
+        sticky[room] = 0
+        presumed[room] = 0
         counts[room] = {}
-        for status in all_status:
+        for status in status_codes:
             counts[room][status] = 0
+    bar = get_bar()
     papers = Paper.query.all()
     for paper in papers:
-        room = get_paper_room(paper)
-        room = room_short_name(room)
-        if room not in all_rooms:
-            continue  # sanity check
-        status = get_latest_room_history_status(paper)
-        if not status:
-            status = "Unseen"
-            if is_paper_sticky(paper):
-                unseen_sticky[room] += 1
-        else:
-            done[room] += 1
-        if status not in all_status:
-            continue  # sanity check
-        counts[room][status] += 1
-        totals[room] += 1
-    return counts, totals, done, unseen_sticky
+        inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed)
+    for room in all_rooms:
+        # Work (A-P-C-J-R)
+        work[room] = totals[room] - presumed[room]
+        converged_codes = ["C", "J", "R"]
+        for status in converged_codes:
+            work[room] -= counts[room][status]
+        fraction[room] = get_work_fraction(work[room], totals[room], presumed[room])
+    return status_codes, counts, totals, done, sticky, presumed, work, fraction
 
 
-def append_stats_row(all_rows, row_order, colA, row, before_end=False):
-    full_row = [colA] + row
-    all_rows[colA] = full_row
-    if before_end:
-        row_order.insert(-1, colA)
-    else:
-        row_order.append(colA)
+def append_stats_row(all_rows, col_code, row, total=None):
+    colA = col_code + ": " + stats_table_rows[col_code]
+    if not total:
+        total = sum(row)
+    full_row = [colA] + row + [total]
+    all_rows[col_code] = full_row
 
 
 def get_stats():
     all_rooms = get_all_rooms()
     all_rooms = [room_short_name(room) for room in all_rooms]
-    all_status = "Conference,Journal,Reject,Tabled,Unseen".split(",")
-    counts, totals, done, unseen_sticky = collect_stats_by_room(all_rooms, all_status)
+    stats = collect_stats_by_room(all_rooms)
+    status_codes, counts, totals, done, sticky, presumed, work, fraction = stats
     all_rows = {}
-    row_order = []
-    for status in all_status:
-        colA = status if status == "Unseen" else f"Marked {status}"
-        row = [counts[room][status] for room in all_rooms]
-        append_stats_row(all_rows, row_order, colA, row)
-    colA = "Total Seen (C+J+R+T)"
+    # append row for each status
+    for status_code in status_codes:
+        row = [counts[room][status_code] for room in all_rooms]
+        append_stats_row(all_rows, status_code, row)
+    # append row for total marked
     row = [done[room] for room in all_rooms]
-    append_stats_row(all_rows, row_order, colA, row, True)
-    colA = "Unseen & Sticky"
-    row = [unseen_sticky[room] for room in all_rooms]
-    append_stats_row(all_rows, row_order, colA, row)
-    colA = "Total (Seen+Unseen)"
+    append_stats_row(all_rows, "M", row)
+    # append row for total
     row = [totals[room] for room in all_rooms]
-    append_stats_row(all_rows, row_order, colA, row)
-    rows = [all_rows[row_name] for row_name in row_order]
-    header = ["Status"] + all_rooms
-    stats = {"header": header, "rows": rows}
-    return stats
+    append_stats_row(all_rows, "A", row)
+    # append row for stickies
+    row = [sticky[room] for room in all_rooms]
+    append_stats_row(all_rows, "S", row)
+    # append row for presumed reject
+    row = [presumed[room] for room in all_rooms]
+    append_stats_row(all_rows, "P", row)
+    # append row for work
+    row = [work[room] for room in all_rooms]
+    append_stats_row(all_rows, "W", row)
+    # append row for fraction
+    row = [fraction[room] for room in all_rooms]
+    total_frac = get_work_fraction(
+        sum(work.values()), sum(totals.values()), sum(presumed.values())
+    )
+    append_stats_row(all_rows, "F", row, total_frac)
+    # build table organized by row_order
+    rows = [all_rows[row_code] for row_code in stats_table_rows]
+    header = ["Status"] + all_rooms + ["All"]
+    data = {"header": header, "rows": rows}
+    return data
 
 
 def get_paper_at_queue_index(room, index):
@@ -1228,23 +1291,27 @@ def admin_set_bar(bar):
     emit("server_send_flasher", data)
 
 
-@socketio.on("admin_bulk_reject")
+@socketio.on("admin_bulk_action")
 @admin_required_for_io_with_record
-def admin_bulk_reject(queue_room):
-    msg = f"got request admin_bulk_reject {queue_room}"
+def admin_bulk_action(data):
+    is_queue_not_bar = data["isQueueNotBar"]
+    end_text = "confirm in queue" if is_queue_not_bar else "reject below bar"
+    msg = f"got request admin_bulk_action: {end_text})"
     log_print(msg)
-    bulk_reject_bar_or_queue(queue_room)  # room or "is_bar"
+    if is_queue_not_bar:
+        bulk_confirm_in_queue()
+    else:
+        bulk_reject_below_bar()
     success = try_sql_commit()
     invalidate_grid_cache()
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     if success:
-        cond = "below bar" if queue_room == "is_bar" else f"in {queue_room} queue"
-        msg = f"Marked unseen reject papers {cond} as now seen."
+        msg = f"Bulk {end_text} completed."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
-        msg = "Error in bulk reject."
+        msg = f"Error in bulk action ({end_text})."
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 

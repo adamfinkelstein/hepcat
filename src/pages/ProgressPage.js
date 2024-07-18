@@ -56,19 +56,19 @@ export default function ProgressPage() {
     socketEmit('admin_set_bar', guiBarString);
   }
 
-  function handleBulkRejectButton(isQueueNotBar) {
+  function handleBulkActionButton(isQueueNotBar) {
     controlledLog('Bulk reject button pressed (' + isQueueNotBar + ').');
-    const endText = isQueueNotBar ? 'in queue' : 'below bar';
-    const text = 'Are you sure you want to bulk reject ' + endText + '?';
+    const endText = isQueueNotBar ? 'confirm in queue' : 'reject below bar';
+    const text = 'Are you sure you want to bulk ' + endText + '?';
     revealConfirmationBox('Please Confirm', text, (confirmed) => {
       if (confirmed) {
-        const msg = 'Bulk reject' + endText;
+        const msg = 'Bulk ' + endText;
         controlledLog(msg);
         flash(msg, 'success');
-        const queueRoom = isQueueNotBar ? roomChoice : 'is_bar';
-        socketEmit('admin_bulk_reject', queueRoom);
+        const data = { isQueueNotBar };
+        socketEmit('admin_bulk_action', data);
       } else {
-        const msg = 'Bulk reject button canceled.';
+        const msg = 'Bulk action button canceled.';
         controlledLog(msg);
         flash(msg, 'warning');
       }
@@ -167,7 +167,7 @@ export default function ProgressPage() {
           <Stack direction="horizontal">
             <Button
               variant="danger"
-              onClick={() => handleBulkRejectButton(false)}
+              onClick={() => handleBulkActionButton(false)}
             >
               Bulk&nbsp;Reject Below&nbsp;Bar
             </Button>
@@ -180,12 +180,13 @@ export default function ProgressPage() {
           <Stack direction="horizontal">
             <Button
               variant="danger"
-              onClick={() => handleBulkRejectButton(true)}
+              onClick={() => handleBulkActionButton(true)}
             >
-              Bulk&nbsp;Reject in&nbsp;Queue
+              Bulk&nbsp;Confirm in&nbsp;Queue
             </Button>
             <div class="button-desc">
-              Mark status of all unseen reject papers in queue as now discussed.
+              Mark status of all unseen papers in PLENARY queue as now
+              discussed.
             </div>
           </Stack>
         </Stack>

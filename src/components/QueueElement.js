@@ -55,7 +55,12 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
           className="queue-conflicts"
         >
           <div>
-            <PaperConflict conflicts={paper.conflicts} isCurrent={isCurrent} />
+            {!isConflict && (
+              <PaperConflict
+                conflicts={paper.conflicts}
+                isCurrent={isCurrent}
+              />
+            )}
           </div>
         </div>
       )}

@@ -26,6 +26,7 @@ class Config:
     HEPCAT_CHAIR_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
     HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "screen@example.com")
     HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
+    OMIT_USER_DOMAINS = env_get_str("OMIT_USER_DOMAINS", "linklings.com")
     DISABLE_PASSWORD_CACHE = env_get_bool("DISABLE_PASSWORD_CACHE", False)
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -29,8 +29,9 @@ export default function UsersPage() {
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-  const userClasses = (user) => {
-    return user.role_is_admin ? 'admin-user' : '';
+  const userToClass = (user) => {
+    const highlight = user.role_is_admin || user.role_name === 'Backup';
+    return highlight ? 'admin-user' : '';
   };
 
   const switchUserFunc = (user) => {
@@ -65,9 +66,10 @@ export default function UsersPage() {
             <tr>
               <th>Switch</th>
               <th>Name</th>
+              <th>Role</th>
               <th>Email</th>
               <th>Rooms</th>
-              <th>Status</th>
+              <th>Online?</th>
             </tr>
           </thead>
           <tbody>
@@ -84,8 +86,9 @@ export default function UsersPage() {
                     </Button>
                   </td>
                   <td>
-                    <span className={userClasses(user)}>{user.full_name}</span>
+                    <span className={userToClass(user)}>{user.full_name}</span>
                   </td>
+                  <td>{user.role_name}</td>
                   <td>{user.email}</td>
                   <td>{user.rooms?.replace(/Room_/g, '')}</td>
                   <td>

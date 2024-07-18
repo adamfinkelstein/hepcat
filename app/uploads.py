@@ -172,14 +172,28 @@ def keep_rows_with_unique_lowercase_emails(rows):
     return result
 
 
+def domain_from_email(email):
+    if "@" not in email:
+        return None
+    parts = email.split("@")
+    if len(parts) < 2:
+        return None
+    return parts[1]
+
+
 # Email,First Name,Last Name,Role,Password
-def insert_user_rows(rows, hash_cache=None):
+def insert_user_rows(rows, hash_cache):
     ok_roles = "Admin,Chair,Backup,Screen".split(",")
+    omit_domains = current_app.config["OMIT_USER_DOMAINS"]
     count = 0
     hash_count = 0
     rows = keep_rows_with_unique_lowercase_emails(rows)
     for row in rows:
         email, first_name, last_name, role_name, password = row
+        domain = domain_from_email(email)
+        if domain and omit_domains and domain in omit_domains:
+            log_print(f"omit domain {domain} user {email}")
+            continue
         user = User(
             email=email,
             first_name=first_name,

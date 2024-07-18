@@ -16,7 +16,7 @@ def env_get_str(name, default=None):
 
 
 # return False for any of these:
-#   unset, empty string, 0, false, False, FALSE
+#   empty string, 0, false, False, FALSE
 # otherwise any string returns True
 def env_get_bool(name, default=False):
     var = env_get_str(name, None)

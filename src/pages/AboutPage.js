@@ -18,7 +18,7 @@ export default function AboutPage() {
         <a
           target="_blank"
           rel="noreferrer"
-          href="https://docs.google.com/document/d/1tSBt7gtLuLdjfH6e7hDI5RHKToUcZuszKltev2VcFZM/edit?usp=sharing"
+          href="https://docs.google.com/document/d/e/2PACX-1vTooKgBrn5p5NGoXrnf6eAoLMRZPJRTOaSRR-fb4lvv1aDAEFoI4u__2MMFoOwQuBf4mg8DUcAtwO5t/pub"
         >
           this page
         </a>

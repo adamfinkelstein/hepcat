@@ -146,6 +146,8 @@ class Role(db.Model):
             return True
         if self.name == "Admin":
             return True
+        if self.name == "Chair":
+            return True
         return False
 
     @hybrid_property
