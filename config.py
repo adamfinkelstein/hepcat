@@ -30,8 +30,8 @@ class Config:
     HEPCAT_ADMIN_PASSWD = env_get_str("HEPCAT_ADMIN_PASSWD", "pass")
     HEPCAT_CHAIR_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "chair@example.com")
     HEPCAT_CHAIR_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
-    HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_CHAIR_LOGIN", "screen@example.com")
-    HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_CHAIR_PASSWD", "pass")
+    HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_SCREEN_LOGIN", "screen@example.com")
+    HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_SCREEN_PASSWD", "pass")
     OMIT_USER_DOMAINS = env_get_str("OMIT_USER_DOMAINS", "linklings.com")
     DISABLE_PASSWORD_CACHE = env_get_bool("DISABLE_PASSWORD_CACHE", False)
 
