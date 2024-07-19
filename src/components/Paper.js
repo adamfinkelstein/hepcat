@@ -99,6 +99,8 @@ export default function Paper() {
     let html = scores ? scores : '';
     html = html.replaceAll('A!', '<b>A</b>');
     html = html.replaceAll('R!', '<b>R</b>');
+    html = html.replaceAll('C!', '<b>C</b>');
+    html = html.replaceAll('J!', '<b>J</b>');
     html = extraSpaceBefore(html, 'j[');
     html = extraSpaceBefore(html, 'c[');
     html = extraSpaceBefore(html, 'bbs:');
