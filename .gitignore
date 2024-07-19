@@ -43,3 +43,4 @@ node_modules
 af-notes
 custom_bin
 .coverage
+clean-restart.sh

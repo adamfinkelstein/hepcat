@@ -539,7 +539,7 @@ def reset_all_gqs():
         reset_gq(room)
 
 
-def ensure_admin():
+def ensure_supers():
     ensure_all_gqs()  # Also init global queue variables, if needed
     # Add Admin User
     email = current_app.config["HEPCAT_ADMIN_LOGIN"]
@@ -552,6 +552,7 @@ def ensure_admin():
 
 def ensure_screens():
     passwd = current_app.config["HEPCAT_SCREEN_PASSWD"]
+    log_print(f"ensure_screens: passwd={passwd}")
     rooms = get_all_rooms()
     for room in rooms:
         lower = room.lower()

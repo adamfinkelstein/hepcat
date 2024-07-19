@@ -59,7 +59,7 @@ from ..models import (
     status_str_to_enum,
     context_str_to_enum,
     try_sql_commit,
-    ensure_admin,
+    ensure_supers,
     wipe_db_clean,
     label_str_to_enum,
 )
@@ -968,7 +968,7 @@ def socketio_error_handler(exc):
 
 @socketio.on("connect")
 def io_connect(auth):
-    ensure_admin()  # Ensure that special (chair) admin exists at login
+    ensure_supers()  # Ensure that special (chair) admin exists at login
     user = user_connect(auth)
     if not user:
         return False  # reject the connection
