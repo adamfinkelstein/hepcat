@@ -389,6 +389,7 @@ def order_q(papers, room, verbose=False):
         random.Random(0).shuffle(papers)  # choose random subset
         papers = papers[:tsp_max]  # only optimize these first ones
         over_max = tsp_max
+        log_print(f"ordering HEPCAT_TSP_MAX={n} papers for room {room}")
     papers_copy = papers_with_only_conflicts_in_room(papers, room)
     distance_matrix = get_distance_matrix(papers_copy)
     permutation = order_q_select_alg(distance_matrix)

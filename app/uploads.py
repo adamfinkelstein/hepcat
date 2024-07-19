@@ -3,6 +3,7 @@ import csv
 import uuid
 from flask import current_app
 from . import db, log_print
+from .util_history import get_latest_room_history
 from .util import (
     run_cmd,
     make_path_if_needed,
@@ -11,9 +12,6 @@ from .util import (
     timer_start,
     timer_end,
     get_conflictbot_namespace,
-)
-from .util_history import (
-    get_latest_room_history_status,
 )
 from .models import (
     User,
@@ -478,7 +476,9 @@ def insert_history_rows(rows):
     count = 0
     for row in rows:
         sid, _, context, status = row
-        if context == "BBS":  # these get set by status file
+        if not context or context == "BBS":
+            # No context if downloading paper with no history.
+            # Also ignore BBS status since they are set by chair file.
             continue
         nid = sid_to_num(sid)
         # secs = int(secs) # Now ignoring time which was hack for debugging
@@ -798,13 +798,23 @@ def paper_is_test(paper):
 
 def get_results_as_rows():
     papers = Paper.query.all()
-    header = "Submission ID,Status"
+    header = "Submission ID,When,Context,Status"
     rows = [header]
     for p in papers:
         if paper_is_test(p):
             continue
-        status = get_latest_room_history_status(p)
-        row = f"{p.sid},{status}"
+        latest = get_latest_room_history(p)
+        if latest:
+            when = str(latest.when)
+            when = double_quote_text_for_csv(when)
+            context = latest.context
+            status = latest.status
+        else:
+            when = ""
+            context = ""
+            status = "Unknown"
+            # continue  # uncomment to omit such papers
+        row = f"{p.sid},{when},{context},{status}"
         rows.append(row)
     return rows
 
@@ -815,10 +825,11 @@ def get_filters_as_rows():
     rows = [header]
     for filter in filters:
         # in CSV, double quotes in JSON are replaced w single
+        filter_name = double_quote_text_for_csv(filter.name)
+        is_gui = "True" if filter.is_gui else "False"
         json_quote = double_quote_to_single(filter.text)
         json_quote = double_quote_text_for_csv(json_quote)
-        filter_name = double_quote_text_for_csv(filter.name)
-        row = f"{filter_name},True,{json_quote}"
+        row = f"{filter_name},{is_gui},{json_quote}"
         rows.append(row)
     return rows
 

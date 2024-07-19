@@ -1,9 +1,12 @@
+from os.path import join
 from dotenv import load_dotenv
-from app.basics import subdir_path, env_get_str, env_get_bool, env_get_int
+from app.basics import subdir_path, env_get_str, env_get_bool, env_get_int, basedir
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
 
-load_dotenv()
+dotenv_path = join(basedir, ".env")
+print(f"loading .env file: {dotenv_path}")
+load_dotenv(dotenv_path)
 
 
 class Config:
