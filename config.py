@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
 from app.basics import subdir_path, env_get_str, env_get_bool, env_get_int
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
+
+load_dotenv()
 
 
 class Config:

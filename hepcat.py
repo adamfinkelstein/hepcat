@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-from dotenv import load_dotenv
 from app.basics import subdir_path, env_get_str, env_get_bool
-
-load_dotenv()
 
 if env_get_bool("USE_EVENTLET"):
     # monkey patch the standard library to make it non-blocking under eventlet
