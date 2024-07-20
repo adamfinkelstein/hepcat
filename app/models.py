@@ -56,7 +56,7 @@ def fill_history_context_tables_and_room_list():
     init_history_context_tables()
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
-    room_labels = get_active_room_labels()
+    room_labels = get_active_room_labels()  # omits BBS, Sticky, Plenary
     all_queue_rooms = []  # empty array (global)
     for room_label in room_labels:
         room_name = room_label.name

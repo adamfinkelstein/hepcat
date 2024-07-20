@@ -483,12 +483,12 @@ export default function SetQueue() {
           <Container>
             <ul className="text-filter-instructions">
               <li className="font-size-4">
-                Room:Plenary / Area:Geometry / Cluster:A / Filter:
+                Room:Room_A / Area:Geometry / Cluster:A / Filter:
                 {exampleFilter}
               </li>
               <li className="font-size-4">101 / 101,103,105,107</li>
               <li className="font-size-4">
-                AND( OR(Room:Plenary, NOT(Area:Geometry)), {exampleFilter})
+                AND( OR(Room:Room_A, NOT(Area:Geometry)), {exampleFilter})
               </li>
             </ul>
           </Container>

@@ -68,6 +68,7 @@ def delete_all_clusters():
 
 # this function mimics delete_all_clusters above
 def delete_all_paper_rooms():
+    delete_non_bbs_history()  # must delete room history because of room deletion
     papers = Paper.query.all()
     for paper in papers:
         # first remove all room labels from paper
@@ -382,15 +383,33 @@ def insert_cluster_rows(rows):
     return count
 
 
+def assign_papers_without_rooms_to_plenary(plenary):
+    count = 0
+    papers = Paper.query.all()
+    for paper in papers:
+        if not get_paper_room_name_or_none(paper):
+            paper.tag_labels.append(plenary)
+            db.session.add(paper)
+            count += 1
+    log_print(f"assigned {count} papers without rooms to Plenary room")
+
+
 # Submission ID,Room
 def insert_paper_room_rows(rows):
     room_type = int(LabelType.Room)
     label_names = rows_to_unique_labels(rows)
+    if "Plenary" not in label_names:
+        label_names.append("Plenary")
     label_dict = ensure_labels_exist_dict(room_type, label_names)
     count = insert_label_rows(rows, label_dict)
     # Since paper rooms changed, update the list of rooms available.
     # Also ensure all GQs exist, and reset them.
     fill_history_context_tables_and_room_list()
+    plenary = label_dict["Plenary"]
+    assign_papers_without_rooms_to_plenary(plenary)
+    # Note that this could lead to orphaned GQs if rooms are deleted.
+    # However, they are small and few, and there is no need to clean them up.
+    # Also note that uploading papers will reset all GQs.
     ensure_all_gqs()
     reset_all_gqs()
     ensure_screens()
@@ -561,7 +580,7 @@ csvDependence = {
         "paper_rooms",
         "chair",
     ],
-    "paper_rooms": ["people_rooms"],
+    "paper_rooms": ["people_rooms", "history"],
     "users": ["conflicts", "people_rooms"],
 }
 
@@ -742,13 +761,12 @@ def get_paper_conflicts(paper):
     return conflicts
 
 
-def get_paper_room(paper):
+def get_paper_room_name_or_none(paper):
     labels = paper.tag_labels
-    paper_room = None
     for label in labels:
         if label.is_room:
-            paper_room = label.name
-    return paper_room
+            return label.name
+    return None
 
 
 def get_paper_clusters(paper):
@@ -915,7 +933,7 @@ def get_paper_rooms_as_rows():
     for p in papers:
         if paper_is_test(p):
             continue
-        room = get_paper_room(p)
+        room = get_paper_room_name_or_none(p)
         if room:
             row = f"{p.sid},{room}"
             rows.append(row)

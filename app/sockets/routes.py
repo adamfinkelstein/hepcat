@@ -307,7 +307,7 @@ def paper_in_room(paper, room):
     return False
 
 
-def get_paper_room(paper):
+def get_paper_room_name(paper):
     for label in paper.tag_labels:
         if label.is_room:
             return label.name
@@ -698,7 +698,7 @@ stats_table_rows = {
 
 def inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed):
     # Gather info about paper...
-    room = get_paper_room(paper)
+    room = get_paper_room_name(paper)
     room = room_short_name(room)
     is_presumed_reject = False
     is_sticky = is_paper_sticky(paper)
