@@ -501,7 +501,7 @@ def get_filter_paper_counts(filter_papers):
 def get_probe_counts_msg(filter_papers):
     total, in_queues = get_filter_paper_counts(filter_papers)
     if not total:
-        msg = ""
+        msg = "no matching papers"
     elif not in_queues:
         msg = f"{total}"
     else:

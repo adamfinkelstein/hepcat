@@ -229,22 +229,22 @@ export default function AppContext({ children }) {
       setFileUploads(file_uploads);
     };
 
-    const getMsgFromProbe = (data, label) => {
+    const getMsgFromProbe = (countStr, label) => {
       const now = Date.now();
       const fmtNow = moment.utc(now).local().format('ddd h:mm:ss');
-      const fmtMsg = data + ' — updated ' + fmtNow;
-      const msg = !data.length ? notSetYetMsg : fmtMsg;
+      const fmtMsg = countStr + ' — updated ' + fmtNow;
+      const msg = !countStr.length ? notSetYetMsg : fmtMsg;
       controlledLog('received probe ' + label + ' ' + msg);
       return msg;
     };
 
-    const receiveProbe = (data) => {
-      const msg = getMsgFromProbe(data, 'GUI');
+    const receiveProbe = (countStr) => {
+      const msg = getMsgFromProbe(countStr, 'GUI');
       setProbeGUIMsg(msg);
     };
 
-    const receiveProbeText = (count) => {
-      const msg = getMsgFromProbe(count, 'text');
+    const receiveProbeText = (countStr) => {
+      const msg = getMsgFromProbe(countStr, 'text');
       setProbeTextMsg(msg);
     };
 

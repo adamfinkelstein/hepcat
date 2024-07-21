@@ -67,7 +67,11 @@ export default function SetQueue() {
   } = useFilterContext();
   const guiBarString = guiBar + '';
   const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
-  const exampleFilter = 'My_GUI_filter';
+  const genericFilterName = 'My_GUI_filter';
+  const exampleFilter =
+    allGuiFilterNames && allGuiFilterNames.length
+      ? allGuiFilterNames[0]
+      : genericFilterName;
 
   const showQMessageTime = false;
 
@@ -213,7 +217,7 @@ export default function SetQueue() {
     const explicit = textFilterBox;
     const data = { roomChoice, explicit };
     socketEmit('admin_probe_text', data);
-    flash('Sent request for paper count.', 'success');
+    // flash('Sent request for paper count.', 'success');
   }
 
   function handleDeleteGuiFilter() {
@@ -483,7 +487,7 @@ export default function SetQueue() {
           <Container>
             <ul className="text-filter-instructions">
               <li className="font-size-4">
-                Room:Room_A / Area:Geometry / Cluster:A / Filter:
+                Room:{roomChoice} / Area:Geometry / Cluster:A / Filter:
                 {exampleFilter}
               </li>
               <li className="font-size-4">101 / 101,103,105,107</li>
