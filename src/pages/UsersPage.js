@@ -22,20 +22,20 @@ function timeDiff(since) {
 export default function UsersPage() {
   const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
-  const { allUsers } = useUser();
+  const { user, allUsers } = useUser();
   const { controlledLog } = useControlledLog();
   const { revealConfirmationBox } = useConfirmationBox();
 
-  const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
+  const usersArr = Object.entries(allUsers).map(([_email, oneUser]) => oneUser);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-  const userToClass = (user) => {
-    const highlight = user.role_is_admin || user.role_name === 'Backup';
+  const userToClass = (oneUser) => {
+    const highlight = oneUser.role_is_admin || oneUser.role_name === 'Backup';
     return highlight ? 'admin-user' : '';
   };
 
-  const switchUserFunc = (user) => {
-    const name = user.full_name;
+  const switchUserFunc = (oneUser) => {
+    const name = oneUser.full_name;
     return () => {
       let text =
         'Are you really sure you want to switch to become ' + name + '?';
@@ -44,7 +44,7 @@ export default function UsersPage() {
           const msg = 'Becoming user ' + name;
           controlledLog(msg);
           flash(msg, 'success');
-          socketEmit('admin_become_user', user.email);
+          socketEmit('admin_become_user', oneUser.email);
         } else {
           const msg = 'Canceled switching user.';
           controlledLog(msg);
@@ -73,26 +73,30 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {usersArr.map((user) => {
+            {usersArr.map((oneUser) => {
               return (
-                <tr key={user.email}>
+                <tr key={oneUser.email}>
                   <td>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={switchUserFunc(user)}
-                    >
-                      Become
-                    </Button>
+                    {oneUser.email !== user.email && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={switchUserFunc(oneUser)}
+                      >
+                        Become
+                      </Button>
+                    )}
                   </td>
                   <td>
-                    <span className={userToClass(user)}>{user.full_name}</span>
+                    <span className={userToClass(oneUser)}>
+                      {oneUser.full_name}
+                    </span>
                   </td>
-                  <td>{user.role_name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.rooms?.replace(/Room_/g, '')}</td>
+                  <td>{oneUser.role_name}</td>
+                  <td>{oneUser.email}</td>
+                  <td>{oneUser.rooms?.replace(/Room_/g, '')}</td>
                   <td>
-                    {user.is_online && <Badge bg="success">Online</Badge>}
+                    {oneUser.is_online && <Badge bg="success">Online</Badge>}
                   </td>
                 </tr>
               );

@@ -927,8 +927,8 @@ def login_user_and_send_welcome(user):
         "all_rooms": all_rooms,
         "conflictbot_enabled": conflictbot_enabled,
     }
+    all_users = get_all_user_dict_dump_cached(True)
     if user.role_is_admin:
-        all_users = get_all_user_dict_dump_cached(False)
         config_name = current_app.config["CONFIG_NAME"]
         git_info = f"Running in {config_name} mode. "
         git_info += get_git_info_from_repo()
@@ -939,9 +939,9 @@ def login_user_and_send_welcome(user):
     if user.role_is_admin:
         emit_admin_uploads(False)
         emit_admin_filters(False)
-    if not user.role_is_super:
-        # tell all admins about this login...
-        emit("server_refresh_user", user_dump, room="admin")
+    # if not user.role_is_super: (better safe than sorry)
+    # tell all admins about this login...
+    emit("server_refresh_all_users", all_users, room="admin")
 
 
 ###########

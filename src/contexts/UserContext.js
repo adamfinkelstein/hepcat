@@ -24,7 +24,12 @@ export default function UserContext({ children }) {
   const [showGlobalOps, setShowGlobalOps] = React.useState(false);
 
   React.useEffect(() => {
-    if (socket) {
+    if (!socket) {
+      setUser(null);
+      setIsAdmin(false);
+      setAdminKey('');
+      setPaperKeys(null);
+    } else {
       const receiveWelcome = (data) => {
         controlledLog('received welcome:');
         controlledLog(data);
@@ -68,7 +73,8 @@ export default function UserContext({ children }) {
         const room = data.room;
         const bring = data.bring;
         const wereAssigned = room === roomCalledTo;
-        if (isAdmin && data.all_users && data.all_users.length) {
+        if (isAdmin && data.all_users) {
+          // removed extra condition: && data.all_users.length
           setAllUsers(data.all_users);
         }
         let target = null;
@@ -88,26 +94,32 @@ export default function UserContext({ children }) {
       const receiveRefreshUser = (oneUser) => {
         controlledLog('received refresh for one user:');
         controlledLog(oneUser);
+        controlledLog('before refresh one user, old user list:');
+        controlledLog(allUsers);
         const allUsersCopy = { ...allUsers };
         const email = oneUser.email;
         allUsersCopy[email] = oneUser;
         setAllUsers(allUsersCopy);
+        controlledLog('after refresh one user, new user list:');
+        controlledLog(allUsersCopy);
+      };
+
+      const receiveRefreshAllUsers = (usersObj) => {
+        controlledLog('received refresh for all users:');
+        controlledLog(usersObj);
       };
 
       socket.on('server_welcome', receiveWelcome);
       socket.on('server_call_to_room', receiveCallToRoom);
       socket.on('server_refresh_user', receiveRefreshUser);
+      socket.on('server_refresh_all_users', receiveRefreshAllUsers);
 
       return () => {
         socket.off('server_welcome', receiveWelcome);
         socket.off('server_call_to_room', receiveCallToRoom);
         socket.off('server_refresh_user', receiveRefreshUser);
+        socket.off('server_refresh_all_users', receiveRefreshAllUsers);
       };
-    } else {
-      setUser(null);
-      setIsAdmin(false);
-      setAdminKey('');
-      setPaperKeys(null);
     }
   }, [
     socket,
