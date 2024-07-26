@@ -94,19 +94,20 @@ export default function UserContext({ children }) {
       const receiveRefreshUser = (oneUser) => {
         controlledLog('received refresh for one user:');
         controlledLog(oneUser);
-        controlledLog('before refresh one user, old user list:');
-        controlledLog(allUsers);
+        // controlledLog('before refresh one user, old user list:');
+        // controlledLog(allUsers);
         const allUsersCopy = { ...allUsers };
         const email = oneUser.email;
         allUsersCopy[email] = oneUser;
         setAllUsers(allUsersCopy);
-        controlledLog('after refresh one user, new user list:');
-        controlledLog(allUsersCopy);
+        // controlledLog('after refresh one user, new user list:');
+        // controlledLog(allUsersCopy);
       };
 
       const receiveRefreshAllUsers = (usersObj) => {
         controlledLog('received refresh for all users:');
         controlledLog(usersObj);
+        setAllUsers(usersObj);
       };
 
       socket.on('server_welcome', receiveWelcome);

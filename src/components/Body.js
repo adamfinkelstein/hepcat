@@ -34,7 +34,10 @@ export default function Body() {
   const changeSplitWidth = useChangeSplitWidth();
   const showRoomWarning =
     !isAdmin && conflictbot && roomCalledTo !== roomChoice;
-  const isScreen = user?.role_name === 'Screen';
+  const isScreenRole = user?.role_name === 'Screen';
+  const isOutsideRole = user?.role_name === 'Outside';
+  const isScreen = isScreenRole || isOutsideRole;
+  const showGrid = !isScreen;
   const hideQueue = !isAdmin && serverGlobs?.hide_queue;
   const hideMessage =
     serverGlobs && serverGlobs.message
@@ -124,7 +127,7 @@ export default function Body() {
                   <Paper />
                 </Tab>
               )}
-              {!isScreen && (
+              {showGrid && (
                 <Tab eventKey="grid" title="Grid" className="tab">
                   <GridSection />
                 </Tab>

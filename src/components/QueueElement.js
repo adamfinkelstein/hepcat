@@ -16,7 +16,9 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
   const isPast = queueIndex < globals.queueCurrent;
   const isConflict = paper.nid === 0;
   const isFavorite = favorites.includes(paper.nid);
-  const isScreen = user && user.role_name === 'Screen';
+  const isScreenRole = user?.role_name === 'Screen';
+  const isOutsideRole = user?.role_name === 'Outside';
+  const isScreen = isScreenRole || isOutsideRole;
   const showStatus = paper.status && !isCurrent && !isScreen;
   const status = showStatus ? paper.status : '';
   const starSymbol = '\u2605';

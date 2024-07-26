@@ -182,7 +182,7 @@ def domain_from_email(email):
 
 # Email,First Name,Last Name,Role,Password
 def insert_user_rows(rows, hash_cache):
-    ok_roles = "Admin,Chair,Backup,Screen".split(",")
+    ok_roles = "Admin,Chair,Backup,Screen,Outside".split(",")
     omit_domains = current_app.config["OMIT_USER_DOMAINS"]
     count = 0
     hash_count = 0
@@ -884,9 +884,10 @@ def get_users_as_rows():
     header = "Email,First Name,Last Name,Role,Password"
     rows = [header]
     empty = ""
+    auto_roles = "Super,Screen,Outside".split(",")
     for u in users:
         role = u.role_name
-        if role == "Super" or role == "Screen":
+        if role in auto_roles:
             # these are created automatically
             continue
         row = f"{u.email},{u.first_name},{u.last_name},{role},{empty}"

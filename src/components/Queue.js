@@ -14,7 +14,9 @@ export default function Queue() {
   const current = globals.queueCurrent;
   const counter = current + 1;
   const currentCount = counter > queue.length ? 'completed' : counter + ' of';
-  const isScreen = user && user.role_name === 'Screen';
+  const isScreenRole = user?.role_name === 'Screen';
+  const isOutsideRole = user?.role_name === 'Outside';
+  const isScreen = isScreenRole || isOutsideRole;
   const past_max = isScreen ? 0 : 3;
   const future_max = 12;
   const start_index = Math.max(0, current - past_max);

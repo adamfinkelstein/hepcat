@@ -8,7 +8,8 @@ import CollapsibleParagraph from './CollapsibleParagraph.js';
 export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const { roomChoice } = useUser();
+  const { user, roomChoice } = useUser();
+  const isOutsideRole = user?.role_name === 'Outside';
   const globals = useAppGlobals();
   const queue = globals.queue;
   const isPaper =
@@ -27,8 +28,13 @@ export default function Paper() {
   const safeScores = cp ? cp.all_scores : '';
   const scoresHTML = formatScoresInHTML(safeScores);
   const currentStart = isPaper && globals.serverGlobs.current_start;
-  const hideThisPaper = !isPaper || isConflict;
-  const hideMessage = isConflict ? 'CONFLICTED!' : 'No current paper.';
+  const hidePaperOutside = isOutsideRole && currentShow;
+  const hideThisPaper = hidePaperOutside || !isPaper || isConflict;
+  const hideMessage = isConflict
+    ? 'CONFLICTED!'
+    : !isPaper
+    ? 'No current paper.'
+    : 'In session.';
 
   function userBelongsInRoom(user, room) {
     const rooms = user.rooms;

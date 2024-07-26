@@ -150,6 +150,7 @@ class Role(db.Model):
             return True
         return False
 
+    # appears to be unused currently
     @hybrid_property
     def is_screen(self):
         if self.name == "Screen":
@@ -507,7 +508,7 @@ def get_or_insert_role(role_name):
     return role
 
 
-def ensure_user(email, first_name, last_name, role_name, passwd):
+def ensure_user(email, first_name, last_name, role_name, passwd, room_name=None):
     user = User.query.filter_by(email=email).first()
     if not user:
         role = get_or_insert_role(role_name)
@@ -518,6 +519,9 @@ def ensure_user(email, first_name, last_name, role_name, passwd):
             role=role,
             password=passwd,
         )
+        if room_name:
+            user.rooms = room_name
+            user.room_name = room_name
         db.session.add(user)
 
 
@@ -557,7 +561,9 @@ def ensure_screens():
     for room in rooms:
         lower = room.lower()
         email = f"screen.{lower}@example.com"
-        ensure_user(email, "Screen", room, "Screen", passwd)
+        ensure_user(email, "Screen", room, "Screen", passwd, room)
+        email = f"outside.{lower}@example.com"
+        ensure_user(email, "Outside", room, "Outside", passwd, room)
 
 
 def dump_users_papers_and_conflicts(title):
