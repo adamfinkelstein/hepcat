@@ -44,3 +44,4 @@ af-notes
 custom_bin
 .coverage
 clean-restart.sh
+cloc.sh

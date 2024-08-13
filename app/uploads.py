@@ -3,7 +3,7 @@ import csv
 import uuid
 from flask import current_app
 from . import db, log_print
-from .util_history import get_latest_room_history
+from .util_history import get_latest_room_history, get_latest_history
 from .util import (
     run_cmd,
     make_path_if_needed,
@@ -22,6 +22,7 @@ from .models import (
     Label,
     FileUpload,
     Filter,
+    GlobQueue,
     try_sql_commit,
     num_to_sid,
     sid_to_num,
@@ -35,6 +36,7 @@ from .models import (
     drop_and_rebuild_tables,
     set_all_users_to_be_in_plenary,
     fill_history_context_tables_and_room_list,
+    get_or_create_gq,
 )
 
 conflictbot_namespace = get_conflictbot_namespace()
@@ -111,14 +113,34 @@ def delete_actions():
     log_print(f"Deleted {num_deleted} actions.")
 
 
-def papers_clear_all_scores_and_queues():
+def papers_clear_all_scores():
     papers = Paper.query.all()
     for paper in papers:
         paper.sort_score = 0
         paper.all_scores = "This paper has no reviews."
+        db.session.add(paper)
+
+
+def papers_clear_all_queues():
+    papers = Paper.query.all()
+    for paper in papers:
         paper.queue_id = None
         paper.queue_order = 0
         db.session.add(paper)
+
+
+def count_papers_in_all_queues():
+    count = 0
+    papers = Paper.query.all()
+    for paper in papers:
+        if paper.queue_id:
+            count += 1
+    return count
+
+
+def papers_clear_all_scores_and_queues():
+    papers_clear_all_scores()
+    papers_clear_all_queues()
 
 
 def delete_all_chair_scores():
@@ -322,14 +344,35 @@ def insert_paper_rows(rows):
     return count
 
 
+def get_users_by_email():
+    users = User.query.all()
+    users_by_email = {}
+    for user in users:
+        email = user.email
+        users_by_email[email] = user
+    return users_by_email
+
+
+def get_papers_by_sid():
+    papers = Paper.query.all()
+    papers_by_sid = {}
+    for paper in papers:
+        sid = paper.sid
+        papers_by_sid[sid] = paper
+    return papers_by_sid
+
+
 # Submission ID,Email
 def insert_conflict_rows(rows):
     count = 0
+    users_by_email = get_users_by_email()
+    papers_by_sid = get_papers_by_sid()
     for row in rows:
         sid, email = row
-        user = User.query.filter_by(email=email).first()
-        paper = Paper.query.filter_by(sid=sid).first()
-        if user and paper:
+        email = email.lower()  # ensure emails are all lower case
+        if email in users_by_email and sid in papers_by_sid:
+            user = users_by_email[email]
+            paper = papers_by_sid[sid]
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
@@ -432,24 +475,26 @@ def encode_room_list(room_list):
 
 # Email,Room
 def insert_people_room_rows(rows):
+    users_by_email = get_users_by_email()
     email_to_room_list = {}
     # gather rooms by person
     for row in rows:
         email, room = row
         email = email.lower()  # ensure emails are all lower case
+        if email not in users_by_email:
+            continue
         if email not in email_to_room_list:
             email_to_room_list[email] = []
         email_to_room_list[email].append(room)
     count = 0
     # loop over people adding rooms
     for email in email_to_room_list:
-        person = User.query.filter_by(email=email).first()
+        person = users_by_email[email]
         room_list = email_to_room_list[email]
         rooms = encode_room_list(room_list)
-        if person and rooms:
-            person.rooms = rooms
-            db.session.add(person)
-            count += 1
+        person.rooms = rooms
+        db.session.add(person)
+        count += 1
     return count
 
 
@@ -490,9 +535,27 @@ def insert_chair_score_rows(rows):
     return count
 
 
+def sticky_context_maybe_below_bar(paper, bar, status_str):
+    is_reject = status_str == "Reject"
+    is_below_bar = paper.sort_score < bar
+    context_plenary = context_str_to_enum("Plenary")
+    context = context_str_to_enum("Sticky")  # default (most cases)
+    auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
+    if auto_reject and is_below_bar and is_reject:
+        context = context_plenary  # Mark in Plenary instead of Sticky
+    return context
+
+
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
+    test_bar = current_app.config["HEPCAT_TEST_BAR"]
+    if test_bar:
+        set_bar(test_bar)
+    if current_app.config["HEPCAT_TEST_AUTO_INIT"]:
+        init_grid_from_bbs()
+    bar = get_bar()
     count = 0
+    max_count = current_app.config["HEPCAT_TEST_HISTORY"]
     for row in rows:
         sid, _, context, status = row
         if not context or context == "BBS":
@@ -505,8 +568,11 @@ def insert_history_rows(rows):
         if not paper:
             continue
         # debug: then = now - timedelta(seconds=secs)
-        context_enum = context_str_to_enum(context)
         status_enum = status_str_to_enum(status)
+        if context == "Sticky":
+            context_enum = sticky_context_maybe_below_bar(paper, bar, status)
+        else:
+            context_enum = context_str_to_enum(context)
         history = History(
             paper=paper,
             # when=then,
@@ -515,19 +581,24 @@ def insert_history_rows(rows):
         )
         db.session.add(history)
         count += 1
+        if count >= max_count:
+            break
     return count
 
 
 def insert_actions_rows(rows):
     count = 0
+    max_count = current_app.config["HEPCAT_TEST_ACTIONS"]
     for row in rows:
-        email, when, func_name, args_json = row
-        # when XXX ???
+        email, _, func_name, args_json = row  # ignore when
         args_json = single_quote_to_double(args_json)
         action = Action(func_name=func_name, args_json=args_json)
         if email:
             action.email = email
         db.session.add(action)
+        count += 1
+        if count >= max_count:
+            break
     return count
 
 
@@ -814,6 +885,13 @@ def paper_is_test(paper):
     return paper.nid >= 9999
 
 
+def datetime_to_quoted_str(when):
+    time_fmt = "%Y/%m/%d %H:%M:%S UTC"
+    when = when.strftime(time_fmt)
+    when = double_quote_text_for_csv(when)
+    return when
+
+
 def get_results_as_rows():
     papers = Paper.query.all()
     header = "Submission ID,When,Context,Status"
@@ -823,8 +901,7 @@ def get_results_as_rows():
             continue
         latest = get_latest_room_history(p)
         if latest:
-            when = str(latest.when)
-            when = double_quote_text_for_csv(when)
+            when = datetime_to_quoted_str(latest.when)
             context = latest.context
             status = latest.status
         else:
@@ -857,8 +934,7 @@ def get_history_as_rows():
     header = "Submission ID,When,Context,Status"
     rows = [header]
     for h in history:
-        when = str(h.when)
-        when = double_quote_text_for_csv(when)
+        when = datetime_to_quoted_str(h.when)
         row = f"{h.paper.sid},{when},{h.context},{h.status}"
         rows.append(row)
     return rows
@@ -870,13 +946,66 @@ def get_actions_as_rows():
     rows = [header]
     for a in actions:
         email = a.email if a.email else ""
-        when = str(a.when)
-        when = double_quote_text_for_csv(when)
+        when = datetime_to_quoted_str(a.when)
         args = double_quote_to_single(a.args_json)
         args = double_quote_text_for_csv(args)
         row = f"{email},{when},{a.func_name},{args}"
         rows.append(row)
     return rows
+
+
+def make_tuple_array_from_rows(rows):
+    tuple_array = []
+    for row in rows:
+        parts = row.split(",")
+        when = parts[1]
+        key = when + row
+        tup = (key, row)
+        tuple_array.append(tup)
+    return tuple_array
+
+
+def extract_stickies_from_history_as_actions(history_rows):
+    # history: "Submission ID,When,Context,Status"
+    # actions: "Email,When,Action,Args"
+    stickies = []
+    for row in history_rows:
+        sid, when, context, status = row.split(",")
+        if context == "Sticky":
+            row = f"Sticky,{when},{sid},{status}"
+            stickies.append(row)
+    return stickies
+
+
+def combine_rows_by_when(header, history, actions, starting):
+    actions = actions + history
+    actions.sort(key=lambda x: x[0])
+    if starting:
+        log_print(f"only include actions starting from {starting}")
+        actions = [x for x in actions if x[0] >= starting]
+    actions = [x[1] for x in actions]
+    actions = [header] + actions
+    return actions
+
+
+def get_when_chair_file_was_uploaded():
+    upload = FileUpload.query.filter_by(file="chair").first()
+    if not upload:
+        return None
+    when = datetime_to_quoted_str(upload.when)
+    return when
+
+
+def get_combined_as_rows():
+    history = get_history_as_rows()
+    actions = get_actions_as_rows()
+    header = actions.pop(0)
+    history = extract_stickies_from_history_as_actions(history)
+    history = make_tuple_array_from_rows(history)
+    actions = make_tuple_array_from_rows(actions)
+    starting = get_when_chair_file_was_uploaded()
+    actions = combine_rows_by_when(header, history, actions, starting)
+    return actions
 
 
 def get_users_as_rows():
@@ -1009,6 +1138,7 @@ csvExtractFunctions = {
     # "results" download is unlike any uploadable file above
     "results": get_results_as_rows,
     "actions": get_actions_as_rows,
+    "combined": get_combined_as_rows,
 }
 
 
@@ -1051,3 +1181,49 @@ def write_zip_of_all_csvs():
     else:
         log_print(f"zip claimed error -- output:\n{output}")
         return None
+
+
+def set_bar(bar):
+    bar = float(bar)
+    queues = GlobQueue.query.all()
+    for gq in queues:
+        gq.bar = bar
+        db.session.add(gq)
+
+
+def get_bar():
+    gq = get_or_create_gq("Plenary")  # global->Plenary
+    if gq and gq.bar is not None:
+        bar = gq.bar
+    else:
+        bar = 0
+    return bar
+
+
+# At the start of the meeting, initialize the grid from BBS.
+# It works as follows:
+#   1. Tabled papers: no action.
+#   2. Below-bar reject: set to reject (plenary).
+#   3. Everything else: set a sticky.
+def init_grid_from_bbs():
+    delete_non_bbs_history()  # just in case...
+    bar = get_bar()
+    papers = Paper.query.all()
+    papers = list(papers)
+    context_plenary = context_str_to_enum("Plenary")
+    context_sticky = context_str_to_enum("Sticky")
+    tabled = status_str_to_enum("Tabled")
+    reject = status_str_to_enum("Reject")
+    for paper in papers:
+        bbs_history = get_latest_history(paper)
+        if not bbs_history:
+            continue  # should not happen if chair uploaded BBS
+        bbs_status = bbs_history.status_enum
+        if bbs_status == tabled:
+            continue  # nothing needed for tabled papers
+        if paper.sort_score < bar and bbs_status == reject:
+            context = context_plenary  # Mark in plenary
+        else:
+            context = context_sticky  # File a sticky
+        history = History(paper=paper, context_enum=context, status_enum=bbs_status)
+        db.session.add(history)

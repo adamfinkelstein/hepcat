@@ -148,8 +148,12 @@ def create_app(config_name, build_path):
         cors_allowed_origins=cors_allowed_origins,
     )
 
+    # This trick deals with a problem: the app is not yet created.
+    # It creates a fake env with variables like current_app.
+    # Trick could also be used to set a global var at startup.
     with app.app_context():
-        # AF added this to create db without migrations. It is idempotent.
+        # AF added this to create db without migrations.
+        # create_all() is idempotent so can be called even if db exists.
         # Follows this:
         # https://stackoverflow.com/questions/19437883/when-scattering-flask-models-runtimeerror-application-not-registered-on-db-w
         db.create_all()

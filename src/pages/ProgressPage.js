@@ -75,6 +75,23 @@ export default function ProgressPage() {
     });
   }
 
+  function handleInitGridButton() {
+    controlledLog('Init Grid button pressed.');
+    let text = 'Are you sure you want to initialize the grid?';
+    revealConfirmationBox('Please Confirm', text, (confirmed) => {
+      if (confirmed) {
+        const msg = 'Initializing grid.';
+        controlledLog(msg);
+        flash(msg, 'success');
+        socketEmit('admin_init_grid');
+      } else {
+        const msg = 'Canceled initializing grid.';
+        controlledLog(msg);
+        flash(msg, 'warning');
+      }
+    });
+  }
+
   function handleClearStickiesButton() {
     controlledLog('Clear stickies button pressed.');
     let text = 'Are you sure you want to clear all stickies?';
@@ -155,6 +172,15 @@ export default function ProgressPage() {
               value={guiBarString}
               onChange={(e) => setGuiBar(e.target.value)}
             />
+          </Stack>
+          <hr className="horizontal-divider" />
+          <Stack direction="horizontal">
+            <Button variant="danger" onClick={handleInitGridButton}>
+              Initialize Grid
+            </Button>
+            <div class="button-desc">
+              Initialize grid based on BBS discussions.
+            </div>
           </Stack>
           <hr className="horizontal-divider" />
           <Stack direction="horizontal">

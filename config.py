@@ -1,6 +1,13 @@
 from os.path import join
 from dotenv import load_dotenv
-from app.basics import subdir_path, env_get_str, env_get_bool, env_get_int, basedir
+from app.basics import (
+    subdir_path,
+    env_get_str,
+    env_get_bool,
+    env_get_int,
+    env_get_float,
+    basedir,
+)
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
 
@@ -18,9 +25,12 @@ class Config:
     HEPCAT_USE_ORTOOLS = env_get_bool("HEPCAT_USE_ORTOOLS", False)
     HEPCAT_TSP_MAX = env_get_int("HEPCAT_TSP_MAX", 60)
     HEPCAT_TEST_UPLOAD = env_get_str("HEPCAT_TEST_UPLOAD", "./tests/test-data")
-    HEPCAT_TEST_HISTORY = env_get_bool("HEPCAT_TEST_HISTORY", True)
-    HEPCAT_TEST_ACTIONS = env_get_bool("HEPCAT_TEST_ACTIONS", True)
+    HEPCAT_TEST_HISTORY = env_get_int("HEPCAT_TEST_HISTORY", 0)  # 0=none
+    HEPCAT_TEST_ACTIONS = env_get_int("HEPCAT_TEST_ACTIONS", 0)  # 0=none
+    HEPCAT_TEST_AUTO_INIT = env_get_bool("HEPCAT_TEST_AUTO_INIT", True)
+    HEPCAT_TEST_BAR = env_get_float("HEPCAT_TEST_BAR", None)
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
+    HEPCAT_AUTO_REJECT = env_get_bool("HEPCAT_AUTO_REJECT", True)
 
     CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
     CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")

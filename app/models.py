@@ -474,7 +474,7 @@ def reset_gq(room):
     gq = GlobQueue.query.filter_by(room=room).first()
     if not gq:
         gq = get_or_create_gq(room)
-    gq.bar = 0
+    # gq.bar = 0 # too aggressive
     gq.hide_queue = False
     gq.message = ""
     gq.current = -1

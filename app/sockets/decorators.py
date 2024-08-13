@@ -31,16 +31,26 @@ def remember_function_by_name(f):
     recorded_functions[func_name] = f
 
 
-def playback_recorded_actions():
+def playback_recorded_actions(handle_sticky_func):
     global recorded_functions
     log_print("playback_recorded_actions")
     actions = Action.query.order_by(Action.id).all()
     if not actions:
-        log_print("(none)")
+        log_print("no actions to playback")
     for a in actions:
+        email = a.email
         func_name = a.func_name
         args_json = a.args_json
-        log_print(f"playback {func_name}: {args_json}")
+        log_print(f"playback ({email}) {func_name}: {args_json}")
+        if email == "Sticky":
+            parts = func_name.split("_")
+            nid = int(parts[1])
+            status = args_json.replace('"', "")  # remove quotes
+            playback = True
+            data = {"nid": nid, "status": status, "playback": playback}
+            log_print(f"playback sticky: {data}")
+            handle_sticky_func(data)
+            continue
         if func_name not in recorded_functions:
             log_print("error: could not find function named {func_name}")
             continue

@@ -15,7 +15,15 @@ from .decorators import (
 )
 from .. import db, socketio, log_print
 from ..orderq import order_q, get_enter_leave_conf_sets
-from ..uploads import save_and_read_csv, pending_uploads, read_test_csv_files
+from ..uploads import (
+    save_and_read_csv,
+    pending_uploads,
+    read_test_csv_files,
+    init_grid_from_bbs,
+    count_papers_in_all_queues,
+    set_bar,
+    get_bar,
+)
 from .set_op import set_op_make_parser, set_op_parse_expr
 from .git_info import get_git_info_from_repo
 from .users import (
@@ -404,23 +412,6 @@ def zero_or_inc_current_index(room, zero_or_inc):
     db.session.add(gq)
 
 
-def get_bar():
-    gq = get_or_create_gq("Plenary")  # global->Plenary
-    if gq and gq.bar is not None:
-        bar = gq.bar
-    else:
-        bar = 0
-    return bar
-
-
-def set_bar(bar):
-    bar = float(bar)
-    queues = GlobQueue.query.all()
-    for gq in queues:
-        gq.bar = bar
-        db.session.add(gq)
-
-
 def clear_queue(room):
     gq = get_or_create_gq(room)
     papers = Paper.query.filter_by(queue_id=gq.id).all()
@@ -666,6 +657,8 @@ def update_current_paper_status(room, new_status):
     globs = get_globs_dump(room)
     current_index = globs["current"]
     paper = get_paper_at_queue_index(room, current_index)
+    if not paper:
+        return None, None
     status_enum = status_str_to_enum(new_status)
     room_context = context_str_to_enum(room)
     if not room_context:  # just for safety default to plenary
@@ -1094,6 +1087,12 @@ def admin_advance_queue(data):
     status_update = data["newStatus"]
     log_print(f"admin request to advance queue in {room} with status {status_update}")
     before_index, paper = update_current_paper_status(room, status_update)
+    if not paper:
+        msg = "Attempt to advance queue beyond end"
+        log_print(msg)
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+        return
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
     invalidate_grid_cache()
@@ -1291,6 +1290,31 @@ def admin_set_bar(bar):
     emit("server_send_flasher", data)
 
 
+@socketio.on("admin_init_grid")
+@admin_required_for_io_with_record
+def admin_init_grid():
+    msg = "got request admin_init_grid"
+    log_print(msg)
+    if count_papers_in_all_queues() > 0:
+        msg = "Cannot initialize grid when queues are not empty."
+        log_print(msg)
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+        return
+    init_grid_from_bbs()
+    success = try_sql_commit()
+    if success:
+        grid_dump = get_grid_dump_cached(True)
+        emit("server_set_grid", grid_dump, broadcast=True)
+        msg = "Successfully initialized grid."
+        data = {"message": msg, "type": "success"}
+        emit("server_send_flasher", data)
+    else:
+        msg = "Error when initializing grid."
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+
+
 @socketio.on("admin_bulk_action")
 @admin_required_for_io_with_record
 def admin_bulk_action(data):
@@ -1303,7 +1327,7 @@ def admin_bulk_action(data):
     else:
         bulk_reject_below_bar()
     success = try_sql_commit()
-    invalidate_grid_cache()
+    # invalidate_grid_cache() # next line will do this
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     if success:
@@ -1332,7 +1356,7 @@ def admin_clear_stickies():
         emit("server_send_flasher", data)
     else:
         msg = "No stickies were cleared."
-        data = {"message": msg, "type": "success"}
+        data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
@@ -1345,19 +1369,27 @@ def user_set_sticky(data):
     log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
     status = data["status"]
+    playback = "playback" in data
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
         return  # should never happen because it is now checked at the client
-    context_sticky = context_str_to_enum("Sticky")
+    is_reject = status == "Reject"
+    is_below_bar = paper.sort_score < get_bar()
     status_enum = status_str_to_enum(status)
-    history = History(paper=paper, context_enum=context_sticky, status_enum=status_enum)
+    context_plenary = context_str_to_enum("Plenary")
+    context = context_str_to_enum("Sticky")  # default (most cases)
+    auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
+    if auto_reject and is_below_bar and is_reject:
+        context = context_plenary  # Mark in Plenary instead of Sticky
+    history = History(paper=paper, context_enum=context, status_enum=status_enum)
     db.session.add(history)
     if try_sql_commit():
         invalidate_grid_cache()
         emit("server_set_sticky", nid, broadcast=True)
-        message = f"Sticky filed for paper {nid} ({status})."
-        data = {"message": message, "type": "success"}
-        emit("server_send_flasher", data)
+        if not playback:
+            message = f"Sticky filed for paper {nid} ({status})."
+            data = {"message": message, "type": "success"}
+            emit("server_send_flasher", data)
     else:
         msg = f"Failed attempt to file sticky for paper {nid} ({status})."
         log_print(msg)
@@ -1550,7 +1582,7 @@ def admin_load_database():
     read_test_csv_files()
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
-        playback_recorded_actions()
+        playback_recorded_actions(user_set_sticky)
 
 
 @socketio.on("admin_refresh_conflictbot")
