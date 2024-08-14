@@ -35,6 +35,7 @@
     "Prefs",
     "psycopg",
     "sendgrid",
+    "SIGGRAPH",
     "SQLALCHEMY",
     "stickie",
     "uarr",

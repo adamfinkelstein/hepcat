@@ -1,22 +1,23 @@
 # Hepcat project source tree
 
-This is the source code for the Hepcat project. This software is used to help guide the discussion and manage conflicts during the ACM SIGGRAPH PC meeeting.
+This is the source code for the Hepcat project. This software is used to help guide the discussion and manage conflicts during the ACM SIGGRAPH PC meeting.
 
-## To test at Heroku:
+## Production URLs:
 
-Visit: `https://hepcat.herokuapp.com/`
+Heroku: `https://hepcat.herokuapp.com/`
+Digital Ocean: `https://hepcat.app/`
 
 ## Architecture
 
 This app uses the following major components:
 
-- Flask - backend
+- Flask - server
   - SQAlchemy (database)
   - Flask-Login (for authentication)
-- React - frontend
+- React - client
   - Bootstrap for styling/widgets
-  - Commpiled static version served in production
-- Socket.IO - communication between backend and frontend
+  - Compiled static version served in production
+- Socket.IO - communication between server and client
 
 ## To clone and set up locally:
 
@@ -58,7 +59,7 @@ python --version
 
 ## Local database options
 
-- Postgress / SQL [quick notes](https://hasura.io/blog/top-psql-commands-and-flags-you-need-to-know-postgresql/)
+- Postgres / SQL [quick notes](https://hasura.io/blog/top-psql-commands-and-flags-you-need-to-know-postgresql/)
 
 - If you don't specify the database URL it writes a local sqlite/SQL file-based database. To wipe it out, do `rm data.sqlite`
 
