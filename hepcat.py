@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from app.basics import subdir_path, env_get_str, env_get_bool
+from config import subdir_path, env_get_str, env_get_bool
 
 if env_get_bool("USE_EVENTLET"):
     # monkey patch the standard library to make it non-blocking under eventlet

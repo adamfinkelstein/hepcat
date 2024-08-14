@@ -1,13 +1,68 @@
+from os import getcwd, getenv
 from os.path import join
 from dotenv import load_dotenv
-from app.basics import (
-    subdir_path,
-    env_get_str,
-    env_get_bool,
-    env_get_int,
-    env_get_float,
-    basedir,
-)
+
+
+basedir = getcwd()
+
+
+def subdir_path(dir):
+    return join(basedir, dir)
+
+
+def is_float(str):
+    try:
+        float(str)
+        return True
+    except ValueError:
+        return False
+
+
+# return environment variable.
+# return default, if var does not exist or is empty string.
+def env_get_str(name, default=None):
+    # could also use os.environ.get (similar)
+    return getenv(name) or default
+
+
+# return False for any of these:
+#   empty string, 0, false, False, FALSE
+# otherwise any string returns True
+def env_get_bool(name, default=False):
+    var = env_get_str(name, None)
+    if var is None:
+        return default
+    lower = var.lower()
+    if not lower or lower == "false" or lower == "0":
+        return False
+    return True
+
+
+# return integer from environment variable.
+# return default if var does not exist or is not all digits.
+def env_get_int(name, default=0):
+    var = env_get_str(name)
+    if not var or not var.isdigit():
+        return default
+    return int(var)
+
+
+# return float from environment variable.
+# return default if var does not exist or is not all digits.
+def env_get_float(name, default=0.0):
+    var = env_get_str(name)
+    if not var or not is_float(var):
+        return default
+    return float(var)
+
+
+def get_conflictbot_namespace():
+    namespace = env_get_str("CONFLICTBOT_NAMESPACE")
+    if not namespace:
+        return None
+    cb_namespace = "/conflictbot_" + namespace
+    return cb_namespace
+
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
 
@@ -31,6 +86,8 @@ class Config:
     HEPCAT_TEST_BAR = env_get_float("HEPCAT_TEST_BAR", None)
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
     HEPCAT_AUTO_REJECT = env_get_bool("HEPCAT_AUTO_REJECT", True)
+    HEPCAT_CACHE_NAME = env_get_str("HEPCAT_CACHE_NAME", "cache")  # or "" for no cache
+    HEPCAT_CACHE_DIR = subdir_path(HEPCAT_CACHE_NAME) if HEPCAT_CACHE_NAME else None
 
     CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
     CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")
@@ -64,7 +121,9 @@ class Config:
     UPLOAD_FOLDER = subdir_path("tmp")
     BIN_FOLDER = subdir_path("local_bin")
     APP_FOLDER = subdir_path("app")
-    CACHE_FOLDER = subdir_path("cache")  # NOT USED! (change to None for no cache)
+
+    CONFLICTBOT_NAMESPACE = get_conflictbot_namespace()
+    MEETING_IS_ONLINE = CONFLICTBOT_NAMESPACE is not None
 
 
 class DevelopmentConfig(Config):

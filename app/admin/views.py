@@ -8,9 +8,6 @@ from flask import (
 from . import admin
 from .. import log_print
 from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
-from ..util import get_conflictbot_namespace
-
-conflictbot_namespace = get_conflictbot_namespace()
 
 
 @admin.route("/download_csv/<kind>/<key>")
@@ -42,6 +39,7 @@ def download_zip(key):
 @admin.route("/old_zoom_conflictbot/<key>")
 def old_zoom_conflictbot(key):
     inst = current_app.config["INSTANCE"]
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         msg = "Sorry -- conflictbot is not enabled at server."
         flash(msg)
@@ -65,6 +63,7 @@ def old_zoom_conflictbot(key):
 @admin.route("/debug_conflictbot/<key>")
 def debug_conflictbot(key):
     inst = current_app.config["INSTANCE"]
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         msg = "Sorry -- conflictbot is not enabled at server."
         flash(msg)
@@ -82,6 +81,7 @@ def debug_conflictbot(key):
 @admin.route("/conflictbot3/<key>")
 def conflictbot3(key):
     inst = current_app.config["INSTANCE"]
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if key != inst:
         msg = "Sorry -- the admin key is wrong. Try logging back in."
         flash(msg)

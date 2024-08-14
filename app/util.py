@@ -3,22 +3,8 @@ import shutil
 import pickle
 from subprocess import run
 from timeit import default_timer as timer
+from flask import current_app
 from . import log_print
-from .basics import env_get_str, env_get_bool
-
-#######################
-#
-# Common environment
-#
-#######################
-
-
-def get_conflictbot_namespace():
-    namespace = env_get_str("CONFLICTBOT_NAMESPACE")
-    if not namespace:
-        return None
-    cb_namespace = "/conflictbot_" + namespace
-    return cb_namespace
 
 
 #######################
@@ -27,19 +13,17 @@ def get_conflictbot_namespace():
 #
 #######################
 
-show_timers = env_get_bool("HEPCAT_SHOW_TIMERS")
-
 
 def timer_start():
     global time_start
-    if not show_timers:
+    if not current_app.config["HEPCAT_SHOW_TIMERS"]:
         return
     time_start = timer()
 
 
 def timer_end(msg="", reset=False):
     global time_start
-    if not show_timers:
+    if not current_app.config["HEPCAT_SHOW_TIMERS"]:
         return
     time_end = timer()
     time_ms = round(1000 * (time_end - time_start))
@@ -101,15 +85,21 @@ def run_cmd(cmd, ignore_errors=False):
 #
 #######################
 
-cache_dir = env_get_str("HEPCAT_CACHE_DIR")
-
 
 def invalidate_cache_all():
+    cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     if cache_dir:
         remove_dir_recursive(cache_dir)
 
 
-invalidate_cache_all()  # start server with empty cache
+cache_initialized = False
+
+
+def init_cache_if_needed():
+    global cache_initialized
+    if not cache_initialized:
+        invalidate_cache_all()
+        cache_initialized = True
 
 
 def name_to_pickle_fname(dir, name):
@@ -120,6 +110,8 @@ def name_to_pickle_fname(dir, name):
 
 
 def write_cache_file(name, var):
+    init_cache_if_needed()
+    cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     make_path_if_needed(cache_dir)
     fname = name_to_pickle_fname(cache_dir, name)
     with open(fname, "wb") as handle:
@@ -128,6 +120,8 @@ def write_cache_file(name, var):
 
 
 def read_cache_file(name):
+    init_cache_if_needed()
+    cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     fname = name_to_pickle_fname(cache_dir, name)
     if not os.path.exists(fname):
         return None
@@ -138,6 +132,8 @@ def read_cache_file(name):
 
 
 def invalidate_cache_var(name):
+    init_cache_if_needed()
+    cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     if not cache_dir:
         return
     fname = name_to_pickle_fname(cache_dir, name)
@@ -147,8 +143,10 @@ def invalidate_cache_var(name):
 
 
 def get_cache_var_dump(name, dump_func, func_arg, refresh_cache):
+    init_cache_if_needed()
     timer_start()
     var_dump = None
+    cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     if cache_dir and not refresh_cache:
         var_dump = read_cache_file(name)
     read_failed = not var_dump

@@ -37,7 +37,6 @@ from .users import (
     get_current_user_or_none,
 )
 from ..util import (
-    get_conflictbot_namespace,
     get_cache_var_dump,
     invalidate_cache_var,
     invalidate_cache_all,
@@ -72,7 +71,6 @@ from ..models import (
     label_str_to_enum,
 )
 
-conflictbot_namespace = get_conflictbot_namespace()
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -912,7 +910,7 @@ def login_user_and_send_welcome(user):
     user_dump = get_one_user_dump(user)
     paper_keys = get_unconflicted_paper_keys_cached(user)
     all_rooms = get_all_rooms()
-    conflictbot_enabled = conflictbot_namespace is not None
+    conflictbot_enabled = current_app.config["MEETING_IS_ONLINE"]
     data = {
         "user": user_dump,
         "token": user.generate_token(),  # used to remember user after page refreshes
@@ -1032,7 +1030,7 @@ def io_disconnect():
 @socketio.on("admin_bring_to_room")
 @admin_required_for_io_no_record
 def admin_bring_to_room(gui_data):
-    if not conflictbot_namespace:
+    if not current_app.config["MEETING_IS_ONLINE"]:
         return  # only useful in online setting
     bring = gui_data["bring"]
     room = gui_data["room"]
@@ -1051,7 +1049,7 @@ def admin_bring_to_room(gui_data):
 @socketio.on("admin_bring_to_all_rooms")
 @admin_required_for_io_no_record
 def admin_bring_to_all_rooms():
-    if not conflictbot_namespace:
+    if not current_app.config["MEETING_IS_ONLINE"]:
         return  # only useful in online setting
     conflictbots_broadcast_call_to_room(False)
 
@@ -1459,6 +1457,7 @@ def emit_admin_filters(broadcast):
 
 
 def conflictbots_broadcast_user_list():
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         return
     users_dump = get_all_user_list_dump()
@@ -1468,6 +1467,7 @@ def conflictbots_broadcast_user_list():
 
 
 def conflictbots_broadcast_call_to_room(room):
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         return
     if not room:
@@ -1477,6 +1477,7 @@ def conflictbots_broadcast_call_to_room(room):
 
 
 def conflictbots_broadcast_conflicts(globs, current_paper):
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         return
     room = globs["room"]
@@ -1504,8 +1505,10 @@ def conflictbots_broadcast_conflicts(globs, current_paper):
     emit("conflicts", data, namespace=conflictbot_namespace, broadcast=True)
 
 
-@socketio.on("connect", namespace=(conflictbot_namespace or "disabled"))
+# this next line is broken because the namespace is not set yet.
+@socketio.on("connect", namespace="disabled_conflictbot_namespace")
 def conflictbot_connect():
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if not conflictbot_namespace:
         return
     log_print("conflictbot connected")
@@ -1589,5 +1592,6 @@ def admin_load_database():
 @admin_required_for_io_no_record
 def admin_refresh_conflictbot(room):
     log_print(f"admin_refresh_conflictbot for {room}...")
+    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
     if conflictbot_namespace:
         emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)

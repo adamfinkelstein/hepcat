@@ -11,7 +11,6 @@ from .util import (
     write_text_to_file,
     timer_start,
     timer_end,
-    get_conflictbot_namespace,
 )
 from .models import (
     User,
@@ -38,8 +37,6 @@ from .models import (
     fill_history_context_tables_and_room_list,
     get_or_create_gq,
 )
-
-conflictbot_namespace = get_conflictbot_namespace()
 
 
 def delete_all_users():
@@ -339,8 +336,11 @@ def insert_paper_rows(rows):
             if label and paper:
                 paper.tag_labels.append(label)
                 db.session.add(paper)
-    if conflictbot_namespace:  # only for online meetings
+    if current_app.config["MEETING_IS_ONLINE"]:
         insert_test_paper()
+        log_print("inserted test paper")
+    else:
+        log_print("no test paper for online meeting")
     return count
 
 
@@ -376,7 +376,7 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
-    if conflictbot_namespace:  # only for online meetings
+    if current_app.config["MEETING_IS_ONLINE"]:
         insert_test_paper_conflicts()
     return count
 
