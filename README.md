@@ -86,10 +86,13 @@ python hepcat.py
 - In another terminal run React server:
 
 ```
-export HOST="http://127.0.0.1"
-export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
+# no longer needed:
+# export HOST="http://127.0.0.1"
+# export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
+
+# optional, to show logs in console
 export REACT_APP_SHOW_LOGS=True
-export DANGEROUSLY_DISABLE_HOST_CHECK=true
+
 npm start
 ```
 
