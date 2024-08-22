@@ -10,6 +10,7 @@ from config import config
 from logging.config import dictConfig
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+
 bootstrap = Bootstrap()
 mail = Mail()
 db = SQLAlchemy()
@@ -156,8 +157,8 @@ def create_app(config_name, build_path):
         # Follows this:
         # https://stackoverflow.com/questions/19437883/when-scattering-flask-models-runtimeerror-application-not-registered-on-db-w
         db.create_all()
-        # AF note:
-        # could call initialize cache here.
+        # could wipe out cache here.
+        # but need to avoid circular import on util (for log_print)
 
     # tell flask it is running behind a proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
