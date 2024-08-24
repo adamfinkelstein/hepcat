@@ -6,10 +6,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_socketio import SocketIO
 from flask_cors import CORS
-from config import config
 from logging.config import dictConfig
 from werkzeug.middleware.proxy_fix import ProxyFix
-
+from config import config
+from .util import init_util
 
 bootstrap = Bootstrap()
 mail = Mail()
@@ -157,8 +157,8 @@ def create_app(config_name, build_path):
         # Follows this:
         # https://stackoverflow.com/questions/19437883/when-scattering-flask-models-runtimeerror-application-not-registered-on-db-w
         db.create_all()
-        # could wipe out cache here.
-        # but need to avoid circular import on util (for log_print)
+        # pass log_print to avoid circular import in util
+        init_util(log_print)
 
     # tell flask it is running behind a proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)

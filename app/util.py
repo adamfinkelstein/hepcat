@@ -4,7 +4,30 @@ import pickle
 from subprocess import run
 from timeit import default_timer as timer
 from flask import current_app
-from . import log_print
+
+
+#######################
+#
+# logging for this module
+#
+#######################
+
+
+log_print_set_on_init = None
+
+
+def init_util(log_print):
+    global log_print_set_on_init
+    log_print_set_on_init = log_print
+    invalidate_cache_all()
+
+
+def log_print_util(msg):
+    global log_print_set_on_init
+    if log_print_set_on_init is None:
+        print(f"no log so print: {msg}")
+    else:
+        log_print_set_on_init(msg)
 
 
 #######################
@@ -27,7 +50,7 @@ def timer_end(msg="", reset=False):
         return
     time_end = timer()
     time_ms = round(1000 * (time_end - time_start))
-    log_print(f"::: {msg} time: {time_ms}ms")
+    log_print_util(f"::: {msg} time: {time_ms}ms")
     if reset:
         timer_start()
 
@@ -90,16 +113,7 @@ def invalidate_cache_all():
     cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     if cache_dir:
         remove_dir_recursive(cache_dir)
-
-
-cache_initialized = False
-
-
-def init_cache_if_needed():
-    global cache_initialized
-    if not cache_initialized:
-        invalidate_cache_all()
-        cache_initialized = True
+        log_print_util(f"removed cache dir {cache_dir}")
 
 
 def name_to_pickle_fname(dir, name):
@@ -110,40 +124,36 @@ def name_to_pickle_fname(dir, name):
 
 
 def write_cache_file(name, var):
-    init_cache_if_needed()
     cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     make_path_if_needed(cache_dir)
     fname = name_to_pickle_fname(cache_dir, name)
     with open(fname, "wb") as handle:
         pickle.dump(var, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # log_print(f"wrote cache file: {name}")
+    # log_print_util(f"wrote cache file: {name}")
 
 
 def read_cache_file(name):
-    init_cache_if_needed()
     cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     fname = name_to_pickle_fname(cache_dir, name)
     if not os.path.exists(fname):
         return None
     with open(fname, "rb") as handle:
         var = pickle.load(handle)
-    # log_print(f"did read cache file: {name}")
+    # log_print_util(f"did read cache file: {name}")
     return var
 
 
 def invalidate_cache_var(name):
-    init_cache_if_needed()
     cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
     if not cache_dir:
         return
     fname = name_to_pickle_fname(cache_dir, name)
     if os.path.exists(fname):
         os.remove(fname)
-        log_print(f"removed cache file {fname}")
+        log_print_util(f"removed cache file {fname}")
 
 
 def get_cache_var_dump(name, dump_func, func_arg, refresh_cache):
-    init_cache_if_needed()
     timer_start()
     var_dump = None
     cache_dir = current_app.config["HEPCAT_CACHE_DIR"]
