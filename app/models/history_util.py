@@ -1,11 +1,14 @@
-from .models import History, context_str_to_enum
-
+from .tables import History, context_str_to_enum
 
 ######################
-# The next four functions are related but distinct.
-# * get_latest_history - considers all history for this paper
-# * get_latest_room_history - only history set in a meeting room
-# ... and then the next pair of function return the actual status
+#
+# EXPORTED FUNCTIONS on paper history.
+#
+# These four functions are related but distinct:
+# * get_latest_history - considers all history for this paper.
+# * get_latest_room_history - only history set in a meeting room.
+# ... and then the next pair of functions return the actual status
+#
 ######################
 
 

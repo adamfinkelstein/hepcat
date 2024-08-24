@@ -4,7 +4,7 @@ from flask import send_from_directory, request, render_template, url_for
 from flask_mail import Message
 from . import main
 from .. import static_folder, log_print, mail
-from ..models import User
+from ..models.tables import User
 
 
 @main.route("/login/")

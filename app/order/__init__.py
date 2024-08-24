@@ -4,8 +4,14 @@ import time
 import random
 import numpy as np
 from flask import current_app
-from .util import run_cmd, make_path_if_needed, write_text_to_file, read_lines_from_file
-from . import log_print
+from ..util import (
+    run_cmd,
+    make_path_if_needed,
+    remove_file_if_exists,
+    write_text_to_file,
+    read_lines_from_file,
+)
+from .. import log_print
 
 
 def get_paper_conflicts_set(p):
@@ -234,17 +240,12 @@ def run_concorde(concorde_path, input_file):
     # -V   : just run fast cuts
     # -o f : output solution to file f
     cmd = f"{concorde_path} -s 0 -x -V {input_file}"
+    log_print(cmd)
     run_cmd(cmd, True)
-    # log_print(cmd)
-    # ok, output = run_cmd(cmd, True)
-    # if ok:
-    #     log_print(f"concorde claimed ok -- output:\n{output}")
-    # else:
-    #     log_print(f"concorde claimed error -- output:\n{output}")
 
 
 def run_ortools(app_folder, input_file):
-    script_path = os.path.join(app_folder, "tsp_ortools.py")
+    script_path = os.path.join(app_folder, "order", "tsp_ortools.py")
     cmd = f"python {script_path} {input_file}"
     # log_print(cmd)
     ok, output = run_cmd(cmd, False)
@@ -256,6 +257,8 @@ def run_ortools(app_folder, input_file):
 
 def read_solution(solution_file):
     lines = read_lines_from_file(solution_file)
+    if not lines:
+        return None
     del lines[0]  # first row just contains number of nodes
     order = []
     for line in lines:
@@ -274,6 +277,7 @@ def setup_and_run_tsp_opt(distance_matrix):
     output_file = "tsp_matrix.sol"
     current_directory = os.getcwd()  # remember where we were
     os.chdir(working_folder)
+    remove_file_if_exists(output_file)
     write_tsp_input(distance_matrix, input_file)
     use_ortools = current_app.config["HEPCAT_USE_ORTOOLS"]
     concorde_path = get_concorde_path_if_exists(bin_folder)
@@ -329,11 +333,11 @@ def order_q_select_alg(distance_matrix):
     log_print(f"cost of linear path: {cost}")
     start_timer()
     nodes, solver = setup_and_run_tsp_opt(distance_matrix)
+    if not nodes:
+        return None
     diff = elapsed_time()
     cost = tour_cost(distance_matrix, nodes)
     log_print(f"cost of {solver} path: {cost} (time {diff})")
-    if not nodes:
-        return None, 0
     # nodes, distance = improve_tour(papers, distance_matrix, nodes)
     return nodes
 
@@ -396,7 +400,7 @@ def order_q(papers, room, verbose=False):
     if permutation:
         ordered_papers = permute_papers(papers, permutation)
     else:
-        ordered_papers = papers
+        return papers, False  # ordering failed
     if verbose:
         debug_order(distance_matrix, permutation, 0, ordered_papers)
     log_print(f"ordered {n} papers")  # with total cost {distance}')

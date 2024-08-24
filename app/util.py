@@ -72,6 +72,11 @@ def remove_dir_recursive(dir):
         shutil.rmtree(dir)
 
 
+def remove_file_if_exists(path):
+    if os.path.exists(path):
+        os.remove(path)
+
+
 def write_text_to_file(text, filename):
     with open(filename, "w") as f:
         f.write(text)
@@ -83,11 +88,15 @@ def write_data_to_file(data, filename):
 
 
 def read_text_from_file(filename):
+    if not os.path.exists(filename):
+        return None
     with open(filename, "r") as f:
         return f.read()
 
 
 def read_lines_from_file(filename):
+    if not os.path.exists(filename):
+        return None
     with open(filename, "r") as f:
         return f.readlines()
 

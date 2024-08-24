@@ -1,6 +1,6 @@
 from tests.hepcat_test_case import HepcatTestCase
 from app import db
-from app.models import User, Paper, conflicts, Label, LabelType, History
+from app.models.tables import User, Paper, conflicts, Label, LabelType, History
 
 
 class TestApp(HepcatTestCase):

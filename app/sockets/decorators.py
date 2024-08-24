@@ -8,7 +8,7 @@ from .users import (
     current_user_is_super,
     get_current_user_or_none,
 )
-from ..models import Action
+from ..models.tables import Action
 
 ##################################
 #

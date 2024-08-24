@@ -1,7 +1,7 @@
 from flask import request, session
 from flask_socketio import disconnect
 from app import db, log_print
-from app.models import User
+from app.models.tables import User
 
 
 #####################

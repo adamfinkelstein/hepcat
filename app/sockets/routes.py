@@ -14,15 +14,12 @@ from .decorators import (
     playback_recorded_actions,
 )
 from .. import db, socketio, log_print
-from ..orderq import order_q, get_enter_leave_conf_sets
-from ..uploads import (
+from ..order import order_q, get_enter_leave_conf_sets
+from ..uploads.insert import (
     save_and_read_csv,
     pending_uploads,
     read_test_csv_files,
     init_grid_from_bbs,
-    count_papers_in_all_queues,
-    set_bar,
-    get_bar,
 )
 from .set_op import set_op_make_parser, set_op_parse_expr
 from .git_info import get_git_info_from_repo
@@ -41,36 +38,42 @@ from ..util import (
     invalidate_cache_var,
     invalidate_cache_all,
 )
-from ..util_history import (
+from ..models.bar import set_bar, get_bar
+from ..models.history_util import (
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
 )
-from ..models import (
+from ..models.tables import (
     User,
     Paper,
     Label,
     LabelType,
     FileUpload,
-    UserSchema,
-    PaperSchema,
     History,
     Filter,
-    HistorySchema,
-    FileUploadSchema,
     GlobQueue,
-    GlobQueueSchema,
-    get_all_rooms,
-    dump_users_papers_and_conflicts,
-    get_or_create_gq,
     status_str_to_enum,
     context_str_to_enum,
+    get_all_rooms,
+)
+from ..models.schemas import (
+    UserSchema,
+    PaperSchema,
+    HistorySchema,
+    FileUploadSchema,
+    GlobQueueSchema,
+)
+from ..models.helpers import (
+    dump_users_papers_and_conflicts,
+    get_or_create_gq,
     try_sql_commit,
     ensure_supers,
     wipe_db_clean,
+)
+from ..models.label_util import (
     label_str_to_enum,
 )
-
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -107,6 +110,15 @@ def get_react_env_vars():
         if item.startswith("REACT_APP"):
             vars[item] = value
     return vars
+
+
+def count_papers_in_all_queues():
+    count = 0
+    papers = Paper.query.all()
+    for paper in papers:
+        if paper.queue_id:
+            count += 1
+    return count
 
 
 def get_grid_paper_dump(paper):

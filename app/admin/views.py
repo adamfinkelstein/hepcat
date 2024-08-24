@@ -7,7 +7,7 @@ from flask import (
 )
 from . import admin
 from .. import log_print
-from ..uploads import write_kind_of_csv, write_zip_of_all_csvs
+from ..uploads.write_csv import write_kind_of_csv, write_zip_of_all_csvs
 
 
 @admin.route("/download_csv/<kind>/<key>")

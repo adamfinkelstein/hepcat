@@ -1,18 +1,9 @@
 import os
 import csv
 import uuid
-from flask import current_app
-from . import db, log_print
-from .util_history import get_latest_room_history, get_latest_history
-from .util import (
-    run_cmd,
-    make_path_if_needed,
-    write_data_to_file,
-    write_text_to_file,
-    timer_start,
-    timer_end,
-)
-from .models import (
+from .. import db, log_print, current_app
+from ..util import write_data_to_file, timer_start, timer_end
+from ..models.tables import (
     User,
     Paper,
     History,
@@ -21,139 +12,75 @@ from .models import (
     Label,
     FileUpload,
     Filter,
-    GlobQueue,
+    context_str_to_enum,
+    status_str_to_enum,
+    fill_history_context_tables_and_room_list,
+)
+from ..models.helpers import (
     try_sql_commit,
     num_to_sid,
     sid_to_num,
     get_or_insert_role,
     dump_users_papers_and_conflicts,
-    context_str_to_enum,
-    status_str_to_enum,
     reset_all_gqs,
     ensure_all_gqs,
     ensure_screens,
-    drop_and_rebuild_tables,
-    set_all_users_to_be_in_plenary,
-    fill_history_context_tables_and_room_list,
-    get_or_create_gq,
 )
+from ..models.history_util import get_latest_history
+from ..models.bar import set_bar, get_bar
+from . import (
+    single_quote_to_double,
+    get_paper_room_name_or_none,
+    get_or_make_upload_folder,
+)
+from .delete import delete_prev_file_uploads, delete_non_bbs_history, csvDeleteFunctions
 
 
-def delete_all_users():
-    drop_and_rebuild_tables("conflicts,users,roles")
+def is_csv(filename):
+    if "." not in filename:
+        return False
+    ext = filename.rsplit(".", 1)[1].lower()
+    return ext == "csv"
 
 
-def delete_all_papers():
-    drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues")
-    ensure_all_gqs()
+def csv_row_strip_whitespace(row):
+    row = [item.strip() for item in row]
+    return row
 
 
-def delete_all_conflicts():
-    drop_and_rebuild_tables("conflicts")
+def csv_row_total_content_chars(row):
+    lengths = [len(item) for item in row]
+    total = sum(lengths)
+    return total
 
 
-def delete_all_clusters():
-    papers = Paper.query.all()
-    for paper in papers:
-        # first remove all cluster labels from paper
-        labels = list(paper.tag_labels)
-        new_labels = [label for label in labels if not label.is_cluster]
-        if len(new_labels) < len(labels):
-            paper.tag_labels = new_labels
-            db.session.add(paper)
-    num_deleted = Label.query.filter(Label.is_cluster).delete()
-    log_print(f"delete {num_deleted} cluster labels.")
+def read_csv_rows(filename):
+    with open(filename) as f:
+        csvReader = csv.reader(f)
+        rows = []
+        for row in csvReader:
+            row = csv_row_strip_whitespace(row)
+            if csv_row_total_content_chars(row) > 3:  # arb min 3 chars
+                rows.append(row)
+    if len(rows) < 1:
+        return None, None
+    header = rows[0]
+    header = ",".join(header)
+    rows = rows[1:]
+    return header, rows
 
 
-# this function mimics delete_all_clusters above
-def delete_all_paper_rooms():
-    delete_non_bbs_history()  # must delete room history because of room deletion
-    papers = Paper.query.all()
-    for paper in papers:
-        # first remove all room labels from paper
-        labels = list(paper.tag_labels)
-        new_labels = [label for label in labels if not label.is_room]
-        if len(new_labels) < len(labels):
-            paper.tag_labels = new_labels
-            db.session.add(paper)
-    num_deleted = Label.query.filter(Label.is_room).delete()
-    log_print(f"Deleted {num_deleted} cluster labels for paper rooms.")
-
-
-def delete_all_labels():
-    # first remove all labels from papers
-    labels = Label.query.all()
-    for label in labels:
-        label.tag_papers = []  # empty list
-        db.session.add(label)
-    # next delete all labels
-    num_deleted = Label.query.delete()
-    log_print(f"Deleted {num_deleted} labels.")
-
-
-# needed when deleting reviews (above)
-def delete_all_history():
-    num_deleted = History.query.delete()
-    log_print(f"Deleted {num_deleted} history entries.")
-
-
-# this is before history upload, which is just for debugging
-def delete_non_bbs_history():
-    context_bbs = context_str_to_enum("BBS")
-    # Note that filter() allows for != (but filter_by does not allow it)
-    num_deleted = History.query.filter(History.context_enum != context_bbs).delete()
-    log_print(f"Deleted {num_deleted} history entries.")
-
-
-def delete_actions():
-    num_deleted = Action.query.delete()
-    log_print(f"Deleted {num_deleted} actions.")
-
-
-def papers_clear_all_scores():
-    papers = Paper.query.all()
-    for paper in papers:
-        paper.sort_score = 0
-        paper.all_scores = "This paper has no reviews."
-        db.session.add(paper)
-
-
-def papers_clear_all_queues():
-    papers = Paper.query.all()
-    for paper in papers:
-        paper.queue_id = None
-        paper.queue_order = 0
-        db.session.add(paper)
-
-
-def count_papers_in_all_queues():
-    count = 0
-    papers = Paper.query.all()
-    for paper in papers:
-        if paper.queue_id:
-            count += 1
-    return count
-
-
-def papers_clear_all_scores_and_queues():
-    papers_clear_all_scores()
-    papers_clear_all_queues()
-
-
-def delete_all_chair_scores():
-    delete_all_history()  # clears both bbs status and stickies
-    papers_clear_all_scores_and_queues()
-    reset_all_gqs()
-
-
-def delete_all_uploads():
-    num_deleted = FileUpload.query.delete()
-    log_print(f"Deleted {num_deleted} file upload entries.")
-
-
-def delete_all_filters():
-    num_deleted = Filter.query.delete()
-    log_print(f"Deleted {num_deleted} filters.")
+def get_csv_type(header):
+    if not header:
+        return None, 0
+    header = header.lower()  # only check lower case
+    for typ in csvHeaders:
+        knownHeader = csvHeaders[typ].lower()  # lower case
+        if header.startswith(knownHeader):
+            cols = knownHeader.split(",")
+            n_cols = len(cols)
+            return typ, n_cols
+    return None, 0
 
 
 def keep_rows_with_n_cols(rows, n):
@@ -546,6 +473,35 @@ def sticky_context_maybe_below_bar(paper, bar, status_str):
     return context
 
 
+# At the start of the meeting, initialize the grid from BBS.
+# It works as follows:
+#   1. Tabled papers: no action.
+#   2. Below-bar reject: set to reject (plenary).
+#   3. Everything else: set a sticky.
+def init_grid_from_bbs():
+    delete_non_bbs_history()  # just in case...
+    bar = get_bar()
+    papers = Paper.query.all()
+    papers = list(papers)
+    context_plenary = context_str_to_enum("Plenary")
+    context_sticky = context_str_to_enum("Sticky")
+    tabled = status_str_to_enum("Tabled")
+    reject = status_str_to_enum("Reject")
+    for paper in papers:
+        bbs_history = get_latest_history(paper)
+        if not bbs_history:
+            continue  # should not happen if chair uploaded BBS
+        bbs_status = bbs_history.status_enum
+        if bbs_status == tabled:
+            continue  # nothing needed for tabled papers
+        if paper.sort_score < bar and bbs_status == reject:
+            context = context_plenary  # Mark in plenary
+        else:
+            context = context_sticky  # File a sticky
+        history = History(paper=paper, context_enum=context, status_enum=bbs_status)
+        db.session.add(history)
+
+
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
     test_bar = current_app.config["HEPCAT_TEST_BAR"]
@@ -629,91 +585,6 @@ csvInsertFunctions = {
     "users": insert_user_rows,
 }
 
-csvDeleteFunctions = {
-    "chair": delete_all_chair_scores,
-    "clusters": delete_all_clusters,
-    "conflicts": delete_all_conflicts,
-    "history": delete_non_bbs_history,
-    "actions": delete_actions,
-    "paper_rooms": delete_all_paper_rooms,
-    "papers": delete_all_papers,
-    "people_rooms": set_all_users_to_be_in_plenary,
-    "filters": delete_all_filters,
-    "users": delete_all_users,
-}
-
-csvDependence = {
-    "chair": ["history"],
-    "papers": [
-        "conflicts",
-        "history",
-        "clusters",
-        "paper_rooms",
-        "chair",
-    ],
-    "paper_rooms": ["people_rooms", "history"],
-    "users": ["conflicts", "people_rooms"],
-}
-
-
-def is_csv(filename):
-    if "." not in filename:
-        return False
-    ext = filename.rsplit(".", 1)[1].lower()
-    return ext == "csv"
-
-
-def csv_row_strip_whitespace(row):
-    row = [item.strip() for item in row]
-    return row
-
-
-def csv_row_total_content_chars(row):
-    lengths = [len(item) for item in row]
-    total = sum(lengths)
-    return total
-
-
-def read_csv_rows(filename):
-    with open(filename) as f:
-        csvReader = csv.reader(f)
-        rows = []
-        for row in csvReader:
-            row = csv_row_strip_whitespace(row)
-            if csv_row_total_content_chars(row) > 3:  # arb min 3 chars
-                rows.append(row)
-    if len(rows) < 1:
-        return None, None
-    header = rows[0]
-    header = ",".join(header)
-    rows = rows[1:]
-    return header, rows
-
-
-def get_csv_type(header):
-    if not header:
-        return None, 0
-    header = header.lower()  # only check lower case
-    for typ in csvHeaders:
-        knownHeader = csvHeaders[typ].lower()  # lower case
-        if header.startswith(knownHeader):
-            cols = knownHeader.split(",")
-            n_cols = len(cols)
-            return typ, n_cols
-    return None, 0
-
-
-def delete_prev_file_uploads(header_type):
-    del_list = []
-    if header_type in csvDependence:
-        del_list = csvDependence[header_type]
-        del_list = del_list.copy()  # work on temp copy
-    del_list.append(header_type)
-    for name in del_list:
-        n_del = FileUpload.query.filter_by(file=name).delete()
-        if n_del:
-            log_print(f"Deleted {n_del} upload record(s) of type {name}")
-
 
 def update_file_upload_info(header_type, count):
     # first delete any old upload records of this type
@@ -777,12 +648,6 @@ def pending_uploads(uploads):
     return pending
 
 
-def get_or_make_upload_folder():
-    folder = current_app.config["UPLOAD_FOLDER"]
-    make_path_if_needed(folder)
-    return folder
-
-
 def save_and_read_csv(data):
     tmp_file = "upload.csv"
     folder = get_or_make_upload_folder()
@@ -817,413 +682,3 @@ def read_test_csv_files():
             log_print(f"failed sql commit: {csv_type}")
         elif header_type != csv_type:  # just a sanity check
             log_print(f"warning: csv type mismatch: {header_type} {csv_type}")
-
-
-###############################################
-#
-# writing CSV files below here
-#
-###############################################
-
-
-def get_paper_conflicts(paper):
-    conflicts = paper.conf_users
-    conflicts = [user.email for user in conflicts]
-    return conflicts
-
-
-def get_paper_room_name_or_none(paper):
-    labels = paper.tag_labels
-    for label in labels:
-        if label.is_room:
-            return label.name
-    return None
-
-
-def get_paper_clusters(paper):
-    labels = paper.tag_labels
-    paper_clusters = []
-    for label in labels:
-        if label.is_cluster:
-            paper_clusters.append(label.name)
-    return paper_clusters
-
-
-def get_paper_areas(paper):
-    labels = paper.tag_labels
-    paper_areas = []
-    for label in labels:
-        if label.is_area:
-            paper_areas.append(label.name)
-    return paper_areas
-
-
-def get_paper_areas_string(paper):
-    paper_areas = get_paper_areas(paper)
-    paper_areas = "/".join(paper_areas)
-    return paper_areas
-
-
-def single_quote_to_double(text):
-    text = text.replace("'", '"')
-    return text
-
-
-def double_quote_to_single(text):
-    text = text.replace('"', "'")
-    return text
-
-
-# double all double quotes then add surrounding double quotes
-def double_quote_text_for_csv(text):
-    text = text.replace('"', '""')  # double up double quotes
-    text = '"' + text + '"'  # add surrounding double quotes
-    return text
-
-
-def paper_is_test(paper):
-    return paper.nid >= 9999
-
-
-def datetime_to_quoted_str(when):
-    time_fmt = "%Y/%m/%d %H:%M:%S UTC"
-    when = when.strftime(time_fmt)
-    when = double_quote_text_for_csv(when)
-    return when
-
-
-def get_results_as_rows():
-    papers = Paper.query.all()
-    header = "Submission ID,When,Context,Status"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
-        latest = get_latest_room_history(p)
-        if latest:
-            when = datetime_to_quoted_str(latest.when)
-            context = latest.context
-            status = latest.status
-        else:
-            when = ""
-            context = ""
-            status = "Unknown"
-            # continue  # uncomment to omit such papers
-        row = f"{p.sid},{when},{context},{status}"
-        rows.append(row)
-    return rows
-
-
-def get_filters_as_rows():
-    filters = Filter.query.all()
-    header = "Name,GUI,Filter"
-    rows = [header]
-    for filter in filters:
-        # in CSV, double quotes in JSON are replaced w single
-        filter_name = double_quote_text_for_csv(filter.name)
-        is_gui = "True" if filter.is_gui else "False"
-        json_quote = double_quote_to_single(filter.text)
-        json_quote = double_quote_text_for_csv(json_quote)
-        row = f"{filter_name},{is_gui},{json_quote}"
-        rows.append(row)
-    return rows
-
-
-def get_history_as_rows():
-    history = History.query.order_by(History.id).all()
-    header = "Submission ID,When,Context,Status"
-    rows = [header]
-    for h in history:
-        when = datetime_to_quoted_str(h.when)
-        row = f"{h.paper.sid},{when},{h.context},{h.status}"
-        rows.append(row)
-    return rows
-
-
-def get_actions_as_rows():
-    actions = Action.query.order_by(Action.id).all()
-    header = "Email,When,Action,Args"
-    rows = [header]
-    for a in actions:
-        email = a.email if a.email else ""
-        when = datetime_to_quoted_str(a.when)
-        args = double_quote_to_single(a.args_json)
-        args = double_quote_text_for_csv(args)
-        row = f"{email},{when},{a.func_name},{args}"
-        rows.append(row)
-    return rows
-
-
-def make_tuple_array_from_rows(rows):
-    tuple_array = []
-    for row in rows:
-        parts = row.split(",")
-        when = parts[1]
-        key = when + row
-        tup = (key, row)
-        tuple_array.append(tup)
-    return tuple_array
-
-
-def extract_stickies_from_history_as_actions(history_rows):
-    # history: "Submission ID,When,Context,Status"
-    # actions: "Email,When,Action,Args"
-    stickies = []
-    for row in history_rows:
-        sid, when, context, status = row.split(",")
-        if context == "Sticky":
-            row = f"Sticky,{when},{sid},{status}"
-            stickies.append(row)
-    return stickies
-
-
-def combine_rows_by_when(header, history, actions, starting):
-    actions = actions + history
-    actions.sort(key=lambda x: x[0])
-    if starting:
-        log_print(f"only include actions starting from {starting}")
-        actions = [x for x in actions if x[0] >= starting]
-    actions = [x[1] for x in actions]
-    actions = [header] + actions
-    return actions
-
-
-def get_when_chair_file_was_uploaded():
-    upload = FileUpload.query.filter_by(file="chair").first()
-    if not upload:
-        return None
-    when = datetime_to_quoted_str(upload.when)
-    return when
-
-
-def get_combined_as_rows():
-    history = get_history_as_rows()
-    actions = get_actions_as_rows()
-    header = actions.pop(0)
-    history = extract_stickies_from_history_as_actions(history)
-    history = make_tuple_array_from_rows(history)
-    actions = make_tuple_array_from_rows(actions)
-    starting = get_when_chair_file_was_uploaded()
-    actions = combine_rows_by_when(header, history, actions, starting)
-    return actions
-
-
-def get_users_as_rows():
-    users = User.query.order_by(User.role_id, User.full_name).all()
-    header = "Email,First Name,Last Name,Role,Password"
-    rows = [header]
-    empty = ""
-    auto_roles = "Super,Screen,Outside".split(",")
-    for u in users:
-        role = u.role_name
-        if role in auto_roles:
-            # these are created automatically
-            continue
-        row = f"{u.email},{u.first_name},{u.last_name},{role},{empty}"
-        rows.append(row)
-    return rows
-
-
-def get_people_rooms_as_rows():
-    users = User.query.order_by(User.email).all()
-    header = "Email,Room"
-    rows = [header]
-    for u in users:
-        if not u.rooms:
-            continue
-        rooms = u.rooms
-        rooms = rooms.split()
-        for room in rooms:
-            if room:
-                row = f"{u.email},{room}"
-                rows.append(row)
-    return rows
-
-
-def get_papers_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
-        dual = "no" if p.journal_only else "yes"
-        areas = get_paper_areas_string(p)
-        title = double_quote_text_for_csv(p.title)
-        abstract = double_quote_text_for_csv(p.abstract)
-        row = f"{p.sid},{p.thumbnail},{title},{areas},{dual},{abstract}"
-        rows.append(row)
-    return rows
-
-
-def get_paper_rooms_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Room"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
-        room = get_paper_room_name_or_none(p)
-        if room:
-            row = f"{p.sid},{room}"
-            rows.append(row)
-    return rows
-
-
-def get_chair_scores_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Sort Score,Status,Reviews"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
-        bbs = ""
-        scores = p.all_scores
-        if scores:
-            bbs = scores.split()[-1]  # a little hacky
-            scores = double_quote_text_for_csv(scores)
-        row = f"{p.sid},{p.sort_score},{bbs},{scores}"
-        rows.append(row)
-    return rows
-
-
-def get_clusters_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Cluster"
-    rows = [header]
-    for p in papers:
-        clusters = get_paper_clusters(p)
-        for c in clusters:
-            row = f"{p.sid},{c}"
-            rows.append(row)
-    return rows
-
-
-def get_conflicts_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Email"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
-        conflicts = get_paper_conflicts(p)
-        for c in conflicts:
-            row = f"{p.sid},{c}"
-            rows.append(row)
-    return rows
-
-
-def write_csv_rows(rows, filename):
-    text = "\n".join(rows)
-    write_text_to_file(text, filename)
-
-
-def write_csv_path(filename, rows):
-    folder = get_or_make_upload_folder()
-    fullpath = os.path.join(folder, filename)
-    write_csv_rows(rows, fullpath)
-    return fullpath
-
-
-csvExtractFunctions = {
-    "chair": get_chair_scores_as_rows,
-    "clusters": get_clusters_as_rows,
-    "conflicts": get_conflicts_as_rows,
-    "history": get_history_as_rows,
-    "paper_rooms": get_paper_rooms_as_rows,
-    "papers": get_papers_as_rows,
-    "people_rooms": get_people_rooms_as_rows,
-    "filters": get_filters_as_rows,
-    "users": get_users_as_rows,
-    # "results" download is unlike any uploadable file above
-    "results": get_results_as_rows,
-    "actions": get_actions_as_rows,
-    "combined": get_combined_as_rows,
-}
-
-
-def write_kind_of_csv(kind):
-    csv_kinds = csvExtractFunctions.keys()
-    if kind not in csv_kinds:
-        return None
-    filename = f"hepcat_{kind}.csv"
-    func = csvExtractFunctions[kind]
-    rows = func()
-    fullpath = write_csv_path(filename, rows)
-    return fullpath
-
-
-def write_all_csvs():
-    csv_kinds = csvExtractFunctions.keys()
-    paths = []
-    for kind in csv_kinds:
-        fullpath = write_kind_of_csv(kind)
-        paths.append(fullpath)
-    return paths
-
-
-def write_zip_of_all_csvs():
-    csv_paths = write_all_csvs()
-    csv_paths = " ".join(csv_paths)
-    folder = get_or_make_upload_folder()
-    zipfile = "hepcat_data.zip"
-    zipfile_path = os.path.join(folder, zipfile)
-    # First remove the zip file if it exists (to avoid adding to it).
-    if os.path.exists(zipfile_path):
-        os.remove(zipfile_path)
-    # The -j option avoids writing full paths into the zip file.
-    cmd = f"/usr/bin/zip -j {zipfile_path} {csv_paths}"
-    log_print(cmd)
-    ok, output = run_cmd(cmd, False)
-    if ok:
-        log_print("zip claimed ok")
-        return zipfile_path
-    else:
-        log_print(f"zip claimed error -- output:\n{output}")
-        return None
-
-
-def set_bar(bar):
-    bar = float(bar)
-    queues = GlobQueue.query.all()
-    for gq in queues:
-        gq.bar = bar
-        db.session.add(gq)
-
-
-def get_bar():
-    gq = get_or_create_gq("Plenary")  # global->Plenary
-    if gq and gq.bar is not None:
-        bar = gq.bar
-    else:
-        bar = 0
-    return bar
-
-
-# At the start of the meeting, initialize the grid from BBS.
-# It works as follows:
-#   1. Tabled papers: no action.
-#   2. Below-bar reject: set to reject (plenary).
-#   3. Everything else: set a sticky.
-def init_grid_from_bbs():
-    delete_non_bbs_history()  # just in case...
-    bar = get_bar()
-    papers = Paper.query.all()
-    papers = list(papers)
-    context_plenary = context_str_to_enum("Plenary")
-    context_sticky = context_str_to_enum("Sticky")
-    tabled = status_str_to_enum("Tabled")
-    reject = status_str_to_enum("Reject")
-    for paper in papers:
-        bbs_history = get_latest_history(paper)
-        if not bbs_history:
-            continue  # should not happen if chair uploaded BBS
-        bbs_status = bbs_history.status_enum
-        if bbs_status == tabled:
-            continue  # nothing needed for tabled papers
-        if paper.sort_score < bar and bbs_status == reject:
-            context = context_plenary  # Mark in plenary
-        else:
-            context = context_sticky  # File a sticky
-        history = History(paper=paper, context_enum=context, status_enum=bbs_status)
-        db.session.add(history)
