@@ -53,7 +53,7 @@ export default function FlashContext({ children }) {
       }
 
       setMessages((messages) => [
-        ...messages,
+        ...messages.filter((msg) => msg.message !== message),
         { message, type, flashId: id, visible: true },
       ]);
       // If duration is positive, hide the alert after that many seconds.
