@@ -1,4 +1,6 @@
 import click
+import os
+import sys
 from . import cli
 
 
@@ -8,7 +10,10 @@ def tests(test_names):
     """Run the tests."""
     import pytest
 
-    pytest.main(
-        ["--cov=app", "--cov-branch", "--cov-report=term-missing"]
-        + list(test_names or ["tests"])
+    os.environ["DATABASE_URL"] = "sqlite:///"  # memory
+    sys.exit(
+        pytest.main(
+            ["--cov=app", "--cov-branch", "--cov-report=term-missing"]
+            + list(test_names or ["tests"])
+        )
     )

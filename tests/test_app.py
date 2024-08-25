@@ -5,9 +5,9 @@ from app.models.tables import User, Paper, conflicts, Label, LabelType, History
 
 class TestApp(HepcatTestCase):
     def test_database(self):
-        assert User.query.count() == 15
-        assert Paper.query.count() == 100
-        assert db.session.query(conflicts).count() == 280
+        assert User.query.count() == 31  # 21 users in test-data/users.csv + 10 rooms
+        assert Paper.query.count() == 150
+        assert db.session.query(conflicts).count() == 426
         clusters = [
             cluster.name
             for cluster in Label.query.filter_by(type_enum=LabelType.Cluster)
@@ -15,10 +15,21 @@ class TestApp(HepcatTestCase):
         for cluster in ["a", "b", "c", "d", "e"]:
             assert cluster in clusters
         rooms = [room.name for room in Label.query.filter_by(type_enum=LabelType.Room)]
-        for room in ["P", "A", "B", "X", "Y"]:
+        for room in ["Plenary", "Room_1A", "Room_1B", "Room_2A", "Room_2B"]:
             assert room in rooms
         for user in User.query:
-            assert user.rooms in [None, "AX", "BX", "AY", "BY"]
+            assert user.rooms in [
+                None,
+                "Plenary",
+                "Room_1A",
+                "Room_1B",
+                "Room_2A",
+                "Room_2B",
+                "Room_1A Room_2A",
+                "Room_1B Room_2A",
+                "Room_1B Room_2B",
+                "Room_1A Room_2B",
+            ]
         for paper in Paper.query:
             assert paper.sort_score != 0.0
-        assert History.query.count() == 198
+        assert History.query.count() == 225

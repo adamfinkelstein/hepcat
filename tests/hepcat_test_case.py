@@ -1,7 +1,7 @@
 import os
 import unittest
 from app import create_app, db, socketio
-from app.uploads import read_csv
+from app.uploads.insert import read_csv
 
 
 class HepcatTestCase(unittest.TestCase):

@@ -16,7 +16,7 @@ class TestSockets(HepcatTestCase):
         events = self.socket_client.get_received()
         assert len(events) == 1
         assert events[0]["name"] == "server_welcome"
-        assert events[0]["args"][0]["user"]["email"] == "bradley.williams@example.com"
+        assert events[0]["args"][0]["user"]["email"] == "fake.citizen@example.com"
 
     def test_grid(self):
         self.socket_client.get_received()  # clear receive buffer
