@@ -9,13 +9,14 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const emailField = useRef();
   const { socketLogin } = useSocketIO();
   const { flash } = useFlasher();
 
   const handleLoginButton = (ev) => {
     ev.preventDefault();
-    socketLogin(email, password, (error) => {
+    socketLogin(email, password, remember, (error) => {
       if (error) {
         flash(error, 'danger');
       }
@@ -24,10 +25,10 @@ export default function LoginPage() {
   };
 
   const handleInputChange = (event) => {
-    event.preventDefault();
     const target = event.target;
     if (target.name === 'email') setEmail(target.value);
     else if (target.name === 'password') setPassword(target.value);
+    else if (target.name === 'remember') setRemember(target.checked);
   };
 
   useEffect(() => {
@@ -66,6 +67,19 @@ export default function LoginPage() {
               placeholder="Enter password"
               onChange={handleInputChange}
             />
+          </div>
+          <div className="form-group mt-3">
+            <input
+              id="remember"
+              name="remember"
+              type="checkbox"
+              className="form-check-input"
+              onChange={handleInputChange}
+            />
+            &nbsp;
+            <label htmlFor="remember" className="form-check-label">
+              Remember me for one week
+            </label>
           </div>
           <div className="d-grid gap-2 mt-3">
             <Button

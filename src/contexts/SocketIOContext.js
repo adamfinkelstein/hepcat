@@ -9,20 +9,31 @@ let errorCallback = null;
 
 const tokenName = 'token';
 
-const tokenStorageSet = (token) => {
-  console.log('set token ' + token);
-  window.sessionStorage.setItem(tokenName, token);
+const tokenStorageSet = (token, remember) => {
+  if (remember) {
+    console.log('set and remember token ' + token);
+    window.localStorage.setItem(tokenName, token);
+  } else {
+    console.log('set token ' + token);
+    window.sessionStorage.setItem(tokenName, token);
+  }
 };
 
 const tokenStorageGet = () => {
-  const token = window.sessionStorage.getItem(tokenName);
-  console.log('get token ' + token);
+  let token = window.localStorage.getItem(tokenName);
+  if (token) {
+    console.log('get remembered token ' + token);
+  } else {
+    token = window.sessionStorage.getItem(tokenName);
+    console.log('get token ' + token);
+  }
   return token;
 };
 
 const tokenStorageClear = () => {
   console.log('clear token');
   window.sessionStorage.removeItem(tokenName);
+  window.localStorage.removeItem(tokenName);
 };
 
 export default function SocketIOContext({ children }) {
@@ -33,9 +44,9 @@ export default function SocketIOContext({ children }) {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
 
-  const socketLogin = React.useCallback((email, password, cb) => {
+  const socketLogin = React.useCallback((email, password, remember, cb) => {
     errorCallback = cb;
-    setAuth({ email, password });
+    setAuth({ email, password, remember });
   }, []);
 
   const socketLogout = React.useCallback((clearToken) => {
@@ -44,9 +55,12 @@ export default function SocketIOContext({ children }) {
     setSocket(null);
   }, []);
 
-  const socketSetAuthToken = React.useCallback((token) => {
-    tokenStorageSet(token);
-  }, []);
+  const socketSetAuthToken = React.useCallback(
+    (token) => {
+      tokenStorageSet(token, auth?.remember);
+    },
+    [auth],
+  );
 
   const socketEmit = React.useCallback(
     (message, data) => {
