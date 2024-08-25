@@ -129,7 +129,7 @@ class User(db.Model):
             # expire_in_secs = 10  # for debugging
             expire_in_secs = 7 * 24 * 60 * 60  # default one week
         expire_in_secs += int(time())  # time from now
-        data = {"user_id": self.id, "exp": expire_in_secs}
+        data = {"email": self.email, "exp": expire_in_secs}
         key = current_app.config["SECRET_KEY"]
         token = jwt.encode(data, key, algorithm="HS256")
         return token
@@ -141,8 +141,8 @@ class User(db.Model):
         try:
             key = current_app.config["SECRET_KEY"]
             data = jwt.decode(token, key, algorithms=["HS256"])
-            user_id = data["user_id"]
-            user = db.session.get(User, user_id)
+            email = data["email"]
+            user = User.query.filter_by(email=email).first()
             return user
         except jwt.PyJWTError:
             return None
