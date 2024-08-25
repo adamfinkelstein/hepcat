@@ -22,7 +22,7 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   return (
     <Container>
       {conflicts.length === 0 ? (
-        <div class="font-size-4">{noConflictsStr}</div>
+        <div className="font-size-4">{noConflictsStr}</div>
       ) : (
         <div className="queue-paper-conf-list">
           <span className="queue-paper-conf-header font-size-4">

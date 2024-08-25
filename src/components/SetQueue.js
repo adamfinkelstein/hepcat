@@ -476,7 +476,7 @@ export default function SetQueue() {
           handleInputChange={handleInputChange}
         />
         <br />
-        <div class="font-size-4">Enter text filter here:</div>
+        <div className="font-size-4">Enter text filter here:</div>
         <input
           name="textFilterBox"
           value={textFilterBox}

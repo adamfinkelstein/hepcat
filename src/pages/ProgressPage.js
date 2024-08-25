@@ -178,7 +178,7 @@ export default function ProgressPage() {
             <Button variant="danger" onClick={handleInitGridButton}>
               Initialize Grid
             </Button>
-            <div class="button-desc">
+            <div className="button-desc">
               Initialize grid based on BBS discussions.
             </div>
           </Stack>
@@ -187,7 +187,7 @@ export default function ProgressPage() {
             <Button variant="danger" onClick={handleClearStickiesButton}>
               Clear Stickies
             </Button>
-            <div class="button-desc">Clear all stickies.</div>
+            <div className="button-desc">Clear all stickies.</div>
           </Stack>
           <hr className="horizontal-divider" />
           <Stack direction="horizontal">
@@ -197,7 +197,7 @@ export default function ProgressPage() {
             >
               Bulk&nbsp;Reject Below&nbsp;Bar
             </Button>
-            <div class="button-desc">
+            <div className="button-desc">
               Mark status of all unseen reject papers below bar as now
               discussed.
             </div>
@@ -210,7 +210,7 @@ export default function ProgressPage() {
             >
               Bulk&nbsp;Confirm in&nbsp;Queue
             </Button>
-            <div class="button-desc">
+            <div className="button-desc">
               Mark status of all unseen papers in PLENARY queue as now
               discussed.
             </div>
