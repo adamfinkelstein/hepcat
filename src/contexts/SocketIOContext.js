@@ -39,7 +39,6 @@ const tokenStorageClear = () => {
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = React.useState(undefined);
   const [auth, setAuth] = React.useState(undefined);
-  const [isPasswordReset, setIsPasswordReset] = React.useState(false);
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
@@ -86,22 +85,12 @@ export default function SocketIOContext({ children }) {
       if (token) {
         setAuth({ token });
       } else {
-        // check if there is a token in the URL
-        // these are included in password reset links sent by email
-        const url = new URL(window.location.href);
-        const token = url.searchParams.get('token');
-        if (token) {
-          setAuth({ token });
-          setIsPasswordReset(true);
-        } else {
-          // setting auth and user to null indicates that the user is not
-          // logged in, which is different than the initial values of undefined
-          // which mean that the app is still starting and trying to figure out
-          // if the user can be authenticated or not.
-          setAuth(null);
-          setSocket(null);
-          setIsPasswordReset(false);
-        }
+        // setting auth and user to null indicates that the user is not
+        // logged in, which is different than the initial values of undefined
+        // which mean that the app is still starting and trying to figure out
+        // if the user can be authenticated or not.
+        setAuth(null);
+        setSocket(null);
       }
       return;
     }
@@ -121,7 +110,6 @@ export default function SocketIOContext({ children }) {
       // if (isRejected) tokenStorageClear();
       setSocket(null);
       setAuth(null);
-      setIsPasswordReset(false);
     });
 
     s.on('disconnect', (reason, _details) => {
@@ -166,8 +154,6 @@ export default function SocketIOContext({ children }) {
         socket,
         socketEmit,
         socketSetAuthToken,
-        isPasswordReset,
-        setIsPasswordReset,
       }}
     >
       {children}

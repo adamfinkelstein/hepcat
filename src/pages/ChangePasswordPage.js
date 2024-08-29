@@ -5,6 +5,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useFlasher } from '../contexts/FlasherContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
@@ -13,7 +14,8 @@ import PasswordChecklist from 'react-password-checklist';
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
   const { controlledLog } = useControlledLog();
-  const { socketEmit, isPasswordReset, setIsPasswordReset } = useSocketIO();
+  const { socketEmit } = useSocketIO();
+  const { flash } = useFlasher();
   const { user, isAdmin, allUsers } = useUser();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -29,11 +31,14 @@ export default function ChangePasswordPage() {
   let [forEmail, setForEmail] = useState('');
   let [isForOther, setIsForOther] = useState(false);
 
-  const allowSetOthers = isAdmin && !isPasswordReset;
-  const oldPassNeeded = !isForOther && !isPasswordReset;
+  const allowSetOthers = user && isAdmin;
+  const oldPassNeeded = user && !isForOther;
 
-  if (!user && !isPasswordReset) {
-    // If we are not logged in, and not resetting the password,
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get('token');
+
+  if (!user && !token) {
+    // If we are not logged in, and not resetting the password via email link,
     // then we should not be here.
     return <Navigate to="/" />;
   }
@@ -74,25 +79,32 @@ export default function ChangePasswordPage() {
     updateSubmitButton();
   }
 
-  /*
-  function resetGUI() {
-    setOldPassword('');
-    setPassword('');
-    setPasswordAgain('');
-    setForEmail('');
-    setForWho(defaultForWho);
-    setIsForOther(false);
-    setEnableSubmit(false);
-  }
-  */
-
-  function handleSubmit() {
-    const data = { oldPassword, password, forEmail };
-    controlledLog('changing password data:');
-    controlledLog(data);
-    socketEmit('user_change_password', data);
-    // resetGUI(); // do we need this if we navigate away next?
-    setIsPasswordReset(false);
+  async function handleSubmit() {
+    if (user) {
+      // changing password as an authenticated user
+      const data = { oldPassword, password, forEmail };
+      controlledLog('changing password data:');
+      controlledLog(data);
+      socketEmit('user_change_password', data);
+    } else {
+      // reset password via email link
+      controlledLog('sending password reset for token ' + token);
+      const response = await fetch('/api/reset_password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+      controlledLog('reset got response:', response);
+      if (!response.ok) {
+        const data = await response.json();
+        const msg = 'Error in password reset: ' + data.error;
+        flash(msg, 'danger');
+        return;
+      } else {
+        const msg = 'Password reset successfully.';
+        flash(msg, 'success');
+      }
+    }
     navigate('/');
   }
 
