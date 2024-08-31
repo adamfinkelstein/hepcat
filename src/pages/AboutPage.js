@@ -9,10 +9,8 @@ export default function AboutPage() {
   controlledLog('git info:' + gitInfo);
 
   return (
-    <Container className="about-container">
-      <p>
-        <span className="font-size-1">About</span>
-      </p>
+    <Container className="AboutPage mt-4">
+      <h1>About</h1>
       <p>
         For up-to-date instructions on this app, see&nbsp;
         <a

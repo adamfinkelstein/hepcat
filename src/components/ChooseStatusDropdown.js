@@ -8,9 +8,9 @@ export default function ChooseStatusDropdown({ currentStatus, setValue }) {
   const { statusList } = useAppGlobals();
 
   return (
-    <Dropdown as={ButtonGroup} id="status-dropdown-menu">
+    <Dropdown as={ButtonGroup} className="ChooseStatusDropdown">
       <Button variant="outline">
-        <Stack direction="horizontal" className="font-size-3">
+        <Stack direction="horizontal" className="font-size-4">
           <div className={'rectangle ' + currentStatus} />
           <span>{currentStatus}</span>
         </Stack>

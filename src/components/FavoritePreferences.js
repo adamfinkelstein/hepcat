@@ -1,5 +1,6 @@
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import Stack from 'react-bootstrap/Stack';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
@@ -9,7 +10,6 @@ import {
   useChangeFavorites,
   useFavorites,
 } from '../contexts/PreferencesContext';
-import ButtonX from './ButtonX';
 
 export default function FavoritePreferences() {
   const { controlledLog } = useControlledLog();
@@ -20,7 +20,11 @@ export default function FavoritePreferences() {
   const globals = useAppGlobals();
   const checkValidNID = globals['checkValidNID'];
   const favorites = useFavorites();
-  const showDelete = favorites && favorites.length > 1;
+  const showDeleteAny = favorites && favorites.length > 0;
+  const showDeleteAll = favorites && favorites.length > 1;
+  const deleteMsg = showDeleteAny
+    ? 'Delete favorites:'
+    : '(No current favorites.)';
 
   function combineFavorites(oldFav, newFav) {
     const both = [...oldFav, ...newFav];
@@ -51,66 +55,71 @@ export default function FavoritePreferences() {
       revealModalDialog('Error', msg);
     }
   }
-  const handleDeleteButton = () => {
-    const text = 'Are you sure you want to remove all favorites?';
+  const handleDeleteButton = (removeID) => {
+    let text = 'Are you sure you want to remove all favorites?';
+    if (removeID) {
+      text = 'Are you sure you want to remove favorite ' + removeID + '?';
+    }
     revealConfirmationBox('Please Confirm', text, (confirmed) => {
       if (confirmed) {
-        const msg = 'All favorites removed.';
+        let msg = 'All favorites removed.';
+        if (removeID) {
+          msg = 'Favorite ' + removeID + ' removed.';
+          changeFavorites((oldFav) => oldFav.filter((id) => id !== removeID));
+        } else {
+          // remove all
+          changeFavorites([]);
+        }
         controlledLog(msg);
         flash(msg, 'success');
-        changeFavorites([]);
       } else {
         const msg = 'Delete favorites button canceled.';
         controlledLog(msg);
-        flash(msg, 'warning');
+        // flash(msg, 'warning'); // bad UX to flash on cancel
       }
     });
   };
 
-  const handleXOneFavButton = (removeID) => {
-    const msg = 'One favorite removed:' + removeID;
-    controlledLog(msg);
-    flash(msg, 'success');
-    changeFavorites((oldFav) => oldFav.filter((id) => id !== removeID));
-  };
-
   return (
-    <Container className="favorite-preferences-container">
+    <Container className="FavoritePreferences">
       <div className="font-size-2">Favorites</div>
-      <div className="example-favorites font-size-4">
-        Enter Paper IDs, like '101' or '101,102,103':
-      </div>
       <form onSubmit={handleSubmit}>
-        <input type="text" name="favorites" className="favorites-input" />
-        <button
-          type="submit"
-          className="btn btn-primary favorites-submit-btn font-size-4"
-        >
-          Add
-        </button>
+        <div className="form-group mt-3">
+          <label className="font-size-4 mt-3">
+            Enter Paper IDs, like '101' or '101 102 103' or '101,102,103':
+          </label>
+          <Stack direction="horizontal" gap={3}>
+            <input type="text" name="favorites" className="favorites-input" />
+            <button type="submit" className="btn btn-primary">
+              Add
+            </button>
+          </Stack>
+        </div>
       </form>
 
-      <Container gap={4}>
-        {showDelete && (
+      <Container className="DeleteFavorites mt-3">
+        <span className="font-size-4 mr-2">{deleteMsg}</span>
+        {showDeleteAll && (
           <Button
+            className="mx-2"
             variant="danger"
-            onClick={handleDeleteButton}
-            className="current-favorite delete-all-btn font-size-4"
+            onClick={() => handleDeleteButton(0)}
           >
             Delete All
           </Button>
         )}
-        <>
-          {favorites.map((favorite, index) => {
-            return (
-              <ButtonX
-                key={index}
-                label={favorite}
-                handleClick={() => handleXOneFavButton(favorite)}
-              />
-            );
-          })}
-        </>
+        {favorites.map((favorite, index) => {
+          return (
+            <Button
+              key={index}
+              className="mx-2"
+              variant="warning"
+              onClick={() => handleDeleteButton(favorite)}
+            >
+              {favorite}
+            </Button>
+          );
+        })}
       </Container>
     </Container>
   );

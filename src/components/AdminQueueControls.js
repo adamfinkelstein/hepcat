@@ -13,6 +13,8 @@ export default function AdminQueueControls() {
   const disablePrev = queueCurrent === 0;
   const disableNext = queueCurrent >= queue.length;
   const disableShow = disableNext || serverGlobs.current_show;
+  const upArrow = '\u2B06';
+  const dnArrow = '\u2B07';
 
   const handleUpArrow = () => {
     socketEmit('admin_prev_paper', roomChoice);
@@ -32,27 +34,24 @@ export default function AdminQueueControls() {
   };
 
   return (
-    <Stack direction="horizontal" className="AdminQueueControls">
+    <Stack direction="horizontal" gap={2} className="AdminQueueControls mt-3">
       <Button
         disabled={disablePrev}
-        type="button"
-        className="btn btn-light paper-change-button"
+        className="btn-light arrow-btn font-size-4"
         onClick={handleUpArrow}
       >
-        &uarr;
+        {upArrow}
       </Button>
       <Button
         disabled={disableNext}
-        type="button"
-        className="btn btn-light paper-change-button"
+        className="btn-light arrow-btn font-size-4"
         onClick={handleDownArrow}
       >
-        &darr;
+        {dnArrow}
       </Button>
       <Button
         disabled={disableShow}
-        type="button"
-        className="btn btn-light paper-change-button"
+        className="btn-light font-size-4"
         onClick={handleShowButton}
       >
         Show
@@ -60,8 +59,7 @@ export default function AdminQueueControls() {
       <ChooseStatusDropdown currentStatus={newStatus} setValue={setNewStatus} />
       <Button
         disabled={disableNext}
-        type="button"
-        className="btn btn-light paper-change-button advance-btn"
+        className="btn-light font-size-4"
         onClick={handleAdvanceButton}
       >
         Advance

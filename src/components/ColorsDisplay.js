@@ -11,8 +11,8 @@ export default function ColorsDisplay({
   const colorKeys = Object.keys(colors);
 
   return (
-    <div className="grid_legend">
-      <div className="legend-title font-size-3">Plenary Status</div>
+    <div className="ColorsDisplay">
+      <div className="col-head font-size-3">Plenary Status</div>
       <ul>
         {colorKeys.map((key) => {
           // Something like this comment code could make the selected color

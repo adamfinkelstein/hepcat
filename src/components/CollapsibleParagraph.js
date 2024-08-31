@@ -1,24 +1,22 @@
-import { Collapse } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
 import { useUser } from '../contexts/UserContext';
 
 export default function CollapsibleParagraph({ title, text }) {
   const { showAbstract, setShowAbstract } = useUser();
-  const showHideText = showAbstract ? 'Hide' : 'Show';
-
+  const checkLabel = 'Show ' + title;
+  const content = showAbstract ? text : '';
   return (
-    <p className="font-size-4">
-      <span
-        className="collapsible-par-header"
-        role="button"
-        onClick={() => {
+    <p className="CollapsibleParagraph font-size-4">
+      <Form.Check
+        className="paper-par-header"
+        label={checkLabel}
+        type="checkbox"
+        checked={showAbstract}
+        onChange={() => {
           setShowAbstract(!showAbstract);
         }}
-      >
-        {showHideText} {title}
-      </span>
-      <Collapse in={showAbstract}>
-        <span>:&nbsp;{text}</span>
-      </Collapse>
+      />
+      <span>{content}</span>
     </p>
   );
 }

@@ -39,10 +39,9 @@ export default function ColorPreferences() {
   };
 
   return (
-    // Color Preferences
-    <Container className="color-preferences-container">
+    <Container className="ColorPreferences">
       <span className="font-size-2">Color</span>
-      <Stack direction="horizontal">
+      <Stack direction="horizontal" gap={5}>
         <ColorsDisplay
           clickable
           setSelectedColorKey={setSelectedColorKey}

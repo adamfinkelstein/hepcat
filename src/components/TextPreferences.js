@@ -8,14 +8,14 @@ export default function TextPreferences() {
   let changeFontSize = useChangeFontSize();
 
   return (
-    <Container>
+    <Container className="TextPreferences mt-4">
       <span className="font-size-2">Text</span>
       <Stack direction="horizontal">
-        <span className="font-size-3">Choose font size</span>
+        <span className="font-size-3">Choose font size:</span>
         <DropdownButton
           id="dropdown-item-button"
           title={fontInfo['currentFontSize']}
-          className="font-size-dropdown"
+          className="mx-3"
         >
           {Object.keys(fontInfo['fontSizes']).map((fontSizeKey, index) => {
             return (

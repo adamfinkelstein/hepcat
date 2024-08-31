@@ -80,13 +80,8 @@ export default function Body() {
           onDragEnd={handleDragEnd}
         >
           <Container className="left-panel">
-            <Stack direction="horizontal" gap={4} className="RoomButtonStack">
-              <DropdownButton
-                title={roomChoice}
-                variant="secondary"
-                size="lg"
-                className="a_grid-display-dropdown"
-              >
+            <Stack direction="horizontal" gap={4} className="room-choice-menu">
+              <DropdownButton title={roomChoice} variant="secondary">
                 {userRooms.map((room, index) => {
                   return (
                     <Dropdown.Item
@@ -113,7 +108,7 @@ export default function Body() {
             {queue.length && !hideQueue ? (
               <Queue />
             ) : (
-              <div id="noPapersInQueue">{message}</div>
+              <div className="queue-message">{message}</div>
             )}
           </Container>
           <Container className="right-panel">

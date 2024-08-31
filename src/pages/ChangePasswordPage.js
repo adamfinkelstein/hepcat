@@ -110,9 +110,9 @@ export default function ChangePasswordPage() {
 
   return (
     <Container className="ChangePasswordPage">
-      <Container className="change-password-main-container">
+      <Stack direction="vertical" className="mt-4" gap={3}>
         <span className="font-size-1">Change Password</span>
-        <div className="password-fields">
+        <Stack direction="vertical" className="mt-4" gap={2}>
           {allowSetOthers && (
             <Stack direction="horizontal" className="password-switch-stack">
               <Form.Check
@@ -214,8 +214,8 @@ export default function ChangePasswordPage() {
               </button>
             </div>
           </Stack>
-        </div>
-      </Container>
+        </Stack>
+      </Stack>
     </Container>
   );
 }

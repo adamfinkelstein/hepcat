@@ -26,6 +26,11 @@ const scoreOptions = [
   scoreOptionRange,
 ];
 
+const replaceBreakingSpaces = (str) => {
+  // replace all spaces with non-breaking spaces
+  return str.replace(/ /g, '\u00A0');
+};
+
 export default function SetQueue() {
   const [disableScoreInputs, setDisableScoreInputs] = useState('');
   const [noTSP, setNoTSP] = useState(false);
@@ -302,16 +307,16 @@ export default function SetQueue() {
   }
 
   return (
-    <Container>
+    <Container className="SetQueue">
       <div>
         <h2>Hide Queue</h2>
-        <Stack direction="horizontal" className="set-message-row">
+        <Stack direction="horizontal" gap={2}>
           <span className="font-size-4">{qMsgLabel}</span>
           <input
             name="message"
             value={hiddenMsg}
             onChange={handleInputChange}
-            className="message-input"
+            className="q-message-input"
             disabled={hideQ}
           />
           {showQMessageTime && (
@@ -321,13 +326,13 @@ export default function SetQueue() {
             </>
           )}
         </Stack>
-        <Stack direction="horizontal">
+        <Stack direction="horizontal" gap={2}>
           <Form.Check
             type="checkbox"
             checked={hideQ}
             onChange={handleHideQueueCheckbox}
           />
-          <span className="hideQ-text font-size-4">Hide queue now.</span>
+          <span className="font-size-4">Hide queue now.</span>
         </Stack>
       </div>
       <hr className="horizontal-divider" />
@@ -343,12 +348,9 @@ export default function SetQueue() {
           handleDeleteFilter={handleDeleteGuiFilter}
           handleInputChange={handleInputChange}
         />
-        <p>&nbsp;</p>
-        <Stack direction="horizontal" gap={4} className="admin-filters">
+        <Stack direction="horizontal" gap={4} className="gui-filters my-4 mx-3">
           <div>
-            <span className="font-size-3">
-              <u>Union</u>:
-            </span>
+            <span className="col-head font-size-3">Union</span>:
             <br />
             <div key={`status-checkbox`} className="mb-4">
               {statusList.map((label, index) => {
@@ -368,16 +370,14 @@ export default function SetQueue() {
           </div>
           <div className="vr" />
           <div>
-            <span className="font-size-3">
-              <u>Intersection</u>:
-            </span>
+            <span className="col-head font-size-3">Intersection</span>:
             <br />
             <div key={`only-checkbox`} className="mb-0">
               {filterList.map((label, index) => {
                 return (
                   <div key={`only-checkbox-div-` + index}>
                     <Form.Check
-                      label={label}
+                      label={replaceBreakingSpaces(label)}
                       type="checkbox"
                       id={`only-checkbox-` + index}
                       checked={onlyCheckbox.includes(label)}
@@ -392,9 +392,10 @@ export default function SetQueue() {
           <div>
             <Stack direction="vertical" gap={4}>
               <div>
-                <span className="font-size-3">
-                  <u>Intersect Scores</u>:
+                <span className="col-head font-size-3">
+                  Intersect&nbsp;Scores
                 </span>
+                :
               </div>
               <DropdownButton
                 id="dropdown-item-button"
@@ -435,8 +436,8 @@ export default function SetQueue() {
             </Stack>
           </div>
         </Stack>
-        <div>
-          <Stack direction="horizontal" className="get-filtered-count">
+        <Stack direction="vertical" gap={2}>
+          <Stack direction="horizontal" gap={2} className="get-filtered-count">
             <Button variant="secondary" onClick={handleGetFilteredCount}>
               Get Count
             </Button>
@@ -444,7 +445,11 @@ export default function SetQueue() {
               Count:&nbsp;{probeGUIMsg}
             </span>
           </Stack>
-          <Stack direction="horizontal" className="set-filtered-queue-stack">
+          <Stack
+            direction="horizontal"
+            gap={2}
+            className="set-filtered-queue-stack"
+          >
             <Button
               variant="primary"
               className="set-filtered-queue-button"
@@ -460,7 +465,7 @@ export default function SetQueue() {
               Clear Queue
             </Button>
           </Stack>
-        </div>
+        </Stack>
       </div>
       <hr className="horizontal-divider" />
       <div>
@@ -483,7 +488,7 @@ export default function SetQueue() {
           className="text-filter-input"
           onChange={handleInputChange}
         />
-        <Stack direction="vertical">
+        <Stack direction="vertical" gap={2}>
           <Container>
             <ul className="text-filter-instructions">
               <li className="font-size-4">
@@ -496,7 +501,7 @@ export default function SetQueue() {
               </li>
             </ul>
           </Container>
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button variant="secondary" onClick={handleGetFilteredCountText}>
               Get Count
             </Button>
@@ -504,7 +509,7 @@ export default function SetQueue() {
               Count: {probeTextMsg}
             </span>
           </Stack>
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button
               onClick={handleSendTextFilterButton}
               className="text-filter-btn"

@@ -3,7 +3,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Stack from 'react-bootstrap/Stack';
 
-export default function SetQueue({
+export default function SaveFilters({
   isGUI,
   inputBoxName,
   filterName,
@@ -21,7 +21,7 @@ export default function SetQueue({
   }
 
   return (
-    <Stack direction="horizontal" gap={4} className="named-filters">
+    <Stack direction="horizontal" gap={4} className="SaveFilters">
       <DropdownButton
         disabled={noneSavedYet}
         title={guiFilterTitle}

@@ -1,5 +1,4 @@
 import Container from 'react-bootstrap/Container';
-import Stack from 'react-bootstrap/Stack';
 import Badge from 'react-bootstrap/Badge';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
@@ -48,7 +47,7 @@ export default function UsersPage() {
         } else {
           const msg = 'Canceled switching user.';
           controlledLog(msg);
-          flash(msg, 'warning');
+          // flash(msg, 'warning'); // bad UX to flash on cancel
         }
       });
     };
@@ -56,11 +55,8 @@ export default function UsersPage() {
 
   return (
     <Container className="UsersPage">
-      <Container className="users-main-container">
-        <p>&nbsp;</p>
-        <Stack direction="horizontal">
-          <span className="font-size-1">All Users&nbsp;&nbsp;</span>
-        </Stack>
+      <Container className="mt-4">
+        <p className="font-size-1">All Users</p>
         <Table striped bordered hover className="stats-table">
           <thead>
             <tr>
@@ -104,6 +100,7 @@ export default function UsersPage() {
           </tbody>
         </Table>
       </Container>
+      <p>&nbsp;</p>
     </Container>
   );
 }

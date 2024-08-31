@@ -150,8 +150,13 @@ export default function Paper() {
     }
     const sec1 = dateToSecs(currentStart);
     const sec2 = dateToSecs(date);
-    const msDiff = Math.max(0, sec2 - sec1) * 1000;
+    const diff = sec2 - sec1;
+    const oneHour = 60 * 60;
+    const msDiff = Math.max(0, diff) * 1000;
     const format = moment.utc(msDiff).format('mm:ss');
+    if (diff >= oneHour) {
+      return '--:--';
+    }
     return format;
   }
 
@@ -172,7 +177,7 @@ export default function Paper() {
     <Container className="Paper">
       <div>
         {hideThisPaper ? (
-          <p>{hideMessage}</p>
+          <p className="paper-message">{hideMessage}</p>
         ) : !currentShow ? (
           <div>
             {conflicts_arrays.map((conf_arr, conf_ind) => {
@@ -201,39 +206,35 @@ export default function Paper() {
             <div className="paper-timer font-size-3">
               {formatTime(currentTime)}
             </div>
-            <p className="paper-title font-size-2">
-              Q{cp.queue_order} ({cp.nid}): {cp.title}
+            <p className="font-size-3">
+              <span className="paper-par-header">
+                Q{cp.queue_order} ({cp.nid}):&nbsp;
+              </span>
+              {cp.title}
             </p>
             {showTags && (
               <p className="font-size-4">
                 <span className="paper-par-header">Tags:</span>{' '}
-                <span className="paper-history-text">
-                  {globals.serverGlobs.current_tags}
-                </span>
+                <span>{globals.serverGlobs.current_tags}</span>
               </p>
             )}
             <p className="font-size-4">
               <span className="paper-par-header">Reviews: </span>
-              <span
-                className="paper-reviews-text"
-                dangerouslySetInnerHTML={scoresHTML}
-              />
+              <span dangerouslySetInnerHTML={scoresHTML} />
             </p>
             {showHist && (
               <p className="font-size-4">
                 <span className="paper-par-header">History:</span>{' '}
-                <span className="paper-history-text">
-                  {formatHistoryList(hist)}
-                </span>
+                <span>{formatHistoryList(hist)}</span>
               </p>
             )}
 
             <CollapsibleParagraph title="Abstract" text={cp.abstract} />
 
-            <div className="paper-img-container">
+            <div className="d-flex justify-content-center">
               <img
                 src={cp.thumbnail}
-                className="paper-image"
+                className="mt-4 w-75"
                 alt="Representative Pic for Paper"
               ></img>
             </div>

@@ -32,10 +32,9 @@ export default function ProgressPage() {
   }
 
   function handleRefreshConflictbot(inAllRooms) {
-    if (!conflictbot) return;
     // This function is only used in online meetings.
-    // Could replace window.confirm with revealConfirmationBox()
-    // as elsewhere in this file, but the logic is a bit twisted.
+    // If revived, eliminate window.confirm and use a modal.
+    if (!conflictbot) return;
     let confirmAllRooms =
       'Are you sure you want to update ALL rooms? Only click this if you are the Chair/Lead. This is should never be done while discussion rooms are running. --Kayvon';
     if (inAllRooms && window.confirm(confirmAllRooms) !== true) {
@@ -70,7 +69,7 @@ export default function ProgressPage() {
       } else {
         const msg = 'Bulk action button canceled.';
         controlledLog(msg);
-        flash(msg, 'warning');
+        // flash(msg, 'warning'); // bad UX to flash on cancel
       }
     });
   }
@@ -87,7 +86,7 @@ export default function ProgressPage() {
       } else {
         const msg = 'Canceled initializing grid.';
         controlledLog(msg);
-        flash(msg, 'warning');
+        // flash(msg, 'warning'); // bad UX to flash on cancel
       }
     });
   }
@@ -104,18 +103,18 @@ export default function ProgressPage() {
       } else {
         const msg = 'Canceled clearing stickies.';
         controlledLog(msg);
-        flash(msg, 'warning');
+        // flash(msg, 'warning'); // bad UX to flash on cancel
       }
     });
   }
 
   return (
-    <Container>
-      <Stack direction="horizontal" className="space-down-from-bar">
+    <Container className="ProgressPage mt-4">
+      <Stack direction="horizontal">
         <span className="font-size-1">Progress Page</span>
       </Stack>
-      <hr className="horizontal-divider" />
-      <Stack direction="horizontal">
+      <hr />
+      <Stack direction="horizontal" className="mb-4">
         <h2>Stats&nbsp;&nbsp;</h2>
         <Button variant="primary" onClick={handleRequestStats}>
           Refresh
@@ -127,8 +126,8 @@ export default function ProgressPage() {
       ) : (
         <div>Click "Refresh" button above to get stats.</div>
       )}
-      <hr className="horizontal-divider" />
-      <Stack direction="horizontal">
+      <hr />
+      <Stack direction="horizontal" className="my-2">
         <h2>Global Operations (use with care)&nbsp;&nbsp;</h2>
         <Button
           variant="secondary"
@@ -138,10 +137,9 @@ export default function ProgressPage() {
         </Button>
       </Stack>
       <Collapse in={showGlobalOps}>
-        <Stack>
+        <Stack direction="vertical" gap={3}>
           {conflictbot && (
             <div>
-              <hr className="horizontal-divider" />
               Conflictbot move users in:&nbsp;&nbsp;
               <Button
                 variant="warning"
@@ -158,8 +156,7 @@ export default function ProgressPage() {
               </Button>
             </div>
           )}
-          <hr className="horizontal-divider" />
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button
               variant="danger"
               onClick={handleSetBarButton}
@@ -173,8 +170,7 @@ export default function ProgressPage() {
               onChange={(e) => setGuiBar(e.target.value)}
             />
           </Stack>
-          <hr className="horizontal-divider" />
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button variant="danger" onClick={handleInitGridButton}>
               Initialize Grid
             </Button>
@@ -182,15 +178,13 @@ export default function ProgressPage() {
               Initialize grid based on BBS discussions.
             </div>
           </Stack>
-          <hr className="horizontal-divider" />
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button variant="danger" onClick={handleClearStickiesButton}>
               Clear Stickies
             </Button>
             <div className="button-desc">Clear all stickies.</div>
           </Stack>
-          <hr className="horizontal-divider" />
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button
               variant="danger"
               onClick={() => handleBulkActionButton(false)}
@@ -202,8 +196,7 @@ export default function ProgressPage() {
               discussed.
             </div>
           </Stack>
-          <hr className="horizontal-divider" />
-          <Stack direction="horizontal">
+          <Stack direction="horizontal" gap={2}>
             <Button
               variant="danger"
               onClick={() => handleBulkActionButton(true)}
@@ -217,7 +210,7 @@ export default function ProgressPage() {
           </Stack>
         </Stack>
       </Collapse>
-      <hr className="horizontal-divider" />
+      <p>&nbsp;</p>
     </Container>
   );
 }

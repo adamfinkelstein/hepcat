@@ -44,10 +44,10 @@ repos:
 
   # css linter
   # (issues need to be addressed before enabling this hook)
-  #- repo: https://github.com/pre-commit/mirrors-csslint
-  #  rev: ''
-  #  hooks:
-  #    - id: csslint
+  - repo: https://github.com/pre-commit/mirrors-csslint
+    rev: ''
+    hooks:
+      - id: csslint
 
   # javascript/css/markdown code formatter
   - repo: https://github.com/pre-commit/mirrors-prettier

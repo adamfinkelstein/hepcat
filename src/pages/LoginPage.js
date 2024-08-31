@@ -76,12 +76,11 @@ export default function LoginPage() {
               className="form-check-input"
               onChange={handleInputChange}
             />
-            &nbsp;
-            <label htmlFor="remember" className="form-check-label">
+            <label htmlFor="remember" className="form-check-label mx-1">
               Remember me for one week
             </label>
           </div>
-          <div className="d-grid gap-2 mt-3">
+          <div className="d-grid mt-3">
             <Button
               type="submit"
               className="btn btn-primary"

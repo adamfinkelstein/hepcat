@@ -31,17 +31,17 @@ export default function Queue() {
   function getQEntryClass(index, paper) {
     const isConflict = paper.nid === 0;
 
-    let className = 'queue_element';
+    let className = 'q-entry';
     if (index === globals.queueCurrent) {
       className += ' Current';
     } else if (index < globals.queueCurrent) {
-      className += ' Past';
+      className += ' past-entry';
       if (!isScreen && !isConflict) {
         className += ' ' + paper.status;
       }
     } else if (index % 2) {
       // future - odd?
-      className += ' odd_row';
+      className += ' odd-entry';
     }
     return className;
   }
@@ -49,21 +49,18 @@ export default function Queue() {
   return (
     <Container className="Queue">
       {user && isAdmin && <AdminQueueControls />}
-      <Container className="expand-bar">
+      <Container>
         {hideQueue && (
           <div className="font-size-3 queue-hidden-for-non">
-            (Queue is hidden for non-admin users, with this message: {hiddenMsg}
-            )
+            Queue hidden for non-admin users, saying: <br /> {hiddenMsg}
           </div>
         )}
-        <Stack direction="horizontal">
-          <span className="font-size-2">
-            Current: {currentCount} {queue.length}
+        <Stack direction="horizontal" className="mt-2">
+          <span className="font-size-4">
+            Current: Q{currentCount} {queue.length}
           </span>
-          <Stack direction="horizontal" className="q-show-checks">
-            <div className="font-size-4">
-              <strong>Show:&nbsp;&nbsp;&nbsp;</strong>
-            </div>
+          <Stack direction="horizontal" className="q-show-checks" gap={3}>
+            <div className="font-size-4">Show:</div>
             <Form.Check
               label="Conflicts"
               type="checkbox"
@@ -72,7 +69,6 @@ export default function Queue() {
                 setShowConflictsInQ(!showConflictsInQ);
               }}
             />
-            <span className="font-size-4">&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <Form.Check
               label="Stars"
               type="checkbox"
@@ -84,7 +80,7 @@ export default function Queue() {
           </Stack>
         </Stack>
       </Container>
-      <Container className="queue-container custom-font-size">
+      <Container className="mt-2 q-list-container">
         <ul>
           {queueSlice.map((paper, index) => {
             return (

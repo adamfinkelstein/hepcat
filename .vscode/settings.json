@@ -16,6 +16,7 @@
     "CJRTU",
     "conflictbot",
     "conflictbots",
+    "csslint",
     "darr",
     "dotenv",
     "endpt",
@@ -23,6 +24,7 @@
     "fontawesome",
     "fortawesome",
     "gitinfo",
+    "hstack",
     "infile",
     "levelname",
     "Linklings",
@@ -30,6 +32,7 @@
     "maxn",
     "Minipaper",
     "nids",
+    "noopener",
     "noreferrer",
     "oids",
     "orderq",
@@ -45,6 +48,7 @@
     "unconficted",
     "unconflicted",
     "Vals",
+    "vstack",
     "werkzeug"
   ]
 }

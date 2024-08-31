@@ -38,7 +38,7 @@ export default function HeaderBar() {
   const headerBarName = getHeaderBarName();
 
   return (
-    <Navbar bg="dark" variant="dark" fixed="top">
+    <Navbar bg="dark" variant="dark" fixed="top" className="HeaderBar">
       <Container>
         <Navbar.Brand as={NavLink} to="/">
           Hepcat: SIGGRAPH PC Meeting
@@ -46,7 +46,7 @@ export default function HeaderBar() {
 
         <Navbar.Collapse id="navbarScroll">
           <Nav
-            className="me-auto my-2 my-lg-0"
+            className="me-auto my-2 my-lg-0 RightSideNav"
             style={{ maxHeight: '200px' }}
             navbarScroll
           >

@@ -1,9 +1,9 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap');
+
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Open Sans', 'Arial';
   margin: 0;
 }
 
@@ -15,53 +15,87 @@ body {
   font-weight: bold;
 }
 
-.font-size-3 {
-  line-height: 95%;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
 .App {
   overflow: hidden;
   padding: 50px 0 0 0;
 }
 
 .Body {
-  margin: 0;
   padding: 0;
   position: fixed;
 }
 
-.left-panel {
-  overflow-y: auto;
-  padding-bottom: 100px;
-  padding-top: 15px;
-}
-.right-panel {
-  overflow-y: auto;
-  padding-bottom: 100px;
+.col-head {
+  text-decoration: underline;
 }
 
-.tabs {
-  background: white;
-  padding-bottom: 15px;
+/*
+ * Coloring USER NAMES in one of:
+ * - conflicts in queue
+ * - conflicts in current paper
+ * - users table
+ */
+
+.admin-user {
+  color: blue;
+}
+
+.current-admin-user {
+  color: #8dcee6;
+}
+
+.other-room {
+  color: gray;
+}
+
+.bold-user {
+  font-weight: bold;
+}
+
+/*
+ * LOGINS
+ */
+
+.LoginPage {
+  /* see https://supertokens.com/blog/building-a-login-screen-with-react-and-bootstrap# */
+  align-items: center;
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  width: 100vw;
+}
+
+.LoginPage .Auth-form {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
+  padding-bottom: 20px;
   padding-top: 30px;
+  width: 420px;
+}
+
+.LoginPage .Auth-form-content {
+  padding-left: 12%;
+  padding-right: 12%;
+}
+
+.LoginPage .Auth-form-title {
+  color: rgb(34, 34, 34);
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 1em;
+  text-align: center;
+}
+
+.HeaderBar .RightSideNav {
+  padding-right: 100px;
   position: fixed;
-  width: 100%;
-  z-index: 10;
+  right: 0;
 }
 
-.tab {
-  margin-top: 100px;
-}
-
-/* Navbar styling */
-.Navbar {
-  border-bottom: 1px solid #ddd;
-}
+/*
+ * FLASHER
+ */
 
 .Flasher {
   background-color: white; /* fallback color */
@@ -117,56 +151,17 @@ code {
   animation-name: FlasherSlideOutAnimation;
 }
 
-.me-auto.my-2.my-lg-0.navbar-nav.navbar-nav-scroll {
-  padding-right: 100px;
-  position: fixed;
-  right: 0;
+.Body .left-panel,
+.Body .right-panel {
+  overflow-y: auto;
+  padding-top: 18px;
+  padding-bottom: 100px;
 }
 
-a.nav-link {
-  padding-right: 60px !important;
-}
-
-/* Queue Styling */
-
-.Queue ul {
-  list-style: none;
-  padding: 0;
-}
-
-.Queue ul li {
-  list-style: none;
-  padding: 5px;
-}
-
-.q-show-checks {
-  margin-left: auto;
-}
-
-.expand-bar {
-  padding: 20px 5px;
-}
-
-.expand-button,
-.collapse-button {
-  border: 1px solid black;
-}
-
-.conflict-element {
-  line-height: 90%;
-  /* these do nothing:
-  display: list-item;
-  list-style-type: circle;
-  */
-}
-
-.queue-paper-conf-header {
-  font-weight: bold;
-}
-
-#noPapersInQueue {
-  border: 1px dashed purple;
+.Body .queue-message,
+.Body .paper-message {
   border-radius: 6px;
+  border: 1px dashed purple;
   color: purple;
   font-size: 20px;
   font-style: italic;
@@ -175,221 +170,210 @@ a.nav-link {
   text-align: center;
 }
 
-/* Queue Item Styling */
+/*
+ * QUEUE Panel
+ */
 
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap');
-
-/* Style the buttons that are used to open and close the accordion panel */
-
-/* Style the accordion content title */
-
-.queue-hidden-for-non {
-  color: purple;
-  font-weight: bold;
-  margin: 15px;
-  margin-bottom: 20px;
+/* gap below room menu applies for both admin and others */
+.Body .room-choice-menu {
+  padding-left: 12px;
+  padding-bottom: 0px;
 }
 
-.accordion_title {
-  display: inline-block;
-  font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
-  text-align: left;
+.AdminQueueControls .btn-light {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 8px;
 }
 
-.qSymbol {
-  display: inline-block;
-  font-size: 20px;
+.AdminQueueControls .arrow-btn {
+  color: #777;
+}
+
+.AdminQueueControls .btn-light:hover {
+  background: lightyellow;
+  border: 1px solid black;
+}
+
+.AdminQueueControls .btn-light:disabled {
+  border: 1px dashed gray;
+  color: #777;
+}
+
+.Queue .q-show-checks {
   margin-left: auto;
-  padding-left: 15px;
 }
 
-/* Style to rotate icon when state is active */
-.rotate {
-  transform: rotate(90deg);
+.Queue .q-list-container {
+  padding: 0;
 }
 
-/* Style the accordion content panel. Note: hidden by default */
-
-.queue-paper-conf-list {
-  line-height: 120%;
-  margin-top: 5px;
+.Queue ul {
+  list-style: none;
+  padding: 0;
 }
 
-.queue-conflicts {
-  overflow: hidden;
-  transition: max-height 0.25s linear;
-}
-
-.queue-title {
-  line-height: 110%;
-}
-
-.queue-element-container {
+.Queue ul li {
   padding: 5px;
-  width: 100%;
+  overflow: hidden;
 }
 
-.queue_element {
+.Queue .q-entry {
   border-bottom: 1px solid #aaa;
   border-left: 1px solid #aaa;
   border-right: 1px solid #aaa;
   cursor: pointer;
-  /* margin-top:-1px; this avoids double-border between elements */
   padding: 10px 5px;
 }
 
-.queue_element.Past {
+.Queue .q-entry.past-entry {
   border-bottom: 0;
   border-left: 1px solid black;
   border-right: 1px solid black;
   border-top: 1px solid black;
 }
 
-.queue_element.Current {
+.Queue .q-entry.Current {
   border: 1px solid black;
 }
 
-.queue_element.odd_row {
+.Queue .q-entry.odd-entry {
   background-color: #eee;
 }
 
-.admin-user {
-  color: blue;
+.Queue .q-symbol {
+  display: inline-block;
+  font-size: 20px;
+  margin-left: auto;
+  padding-left: 15px;
 }
 
-.other-room {
-  color: gray;
-}
-
-.bold-user {
+.Queue .q-title {
   font-weight: bold;
 }
 
-.current-admin-user {
-  color: #8dcee6;
-}
-
-.AdminQueueControls {
-  margin-top: 15px;
-}
-
-.paper-change-button {
-  border: 1px solid black;
-  border-radius: 4px;
-  margin-right: 10px;
-  padding: 8px;
-}
-
-.paper-change-button:hover {
-  background: lightyellow;
-  border: 1px solid black;
-}
-
-.paper-change-button:disabled {
-  border: 1px dashed gray;
-}
-
-.advance-btn {
-  margin-left: 10px;
-}
-
-/* Paper Styling (right panel) */
-
-.paper-timer {
-  background-color: #eee;
-  border-radius: 5px;
+.Queue .queue-hidden-for-non {
+  font-style: italic;
   color: purple;
-  font-family: monospace;
+  border: 1px dashed purple;
+  border-radius: 5px;
+  font-weight: bold;
   padding: 8px;
+  margin: 15px;
+}
+
+/*
+ * PAPER Tab
+*/
+
+.Paper .paper-timer {
+  font-family: 'Courier New';
+  font-weight: bold;
+  color: purple;
+  background-color: #ddd;
   position: absolute;
-  right: 16px;
   text-align: left;
+  top: 22px;
+  right: 16px;
+  border-radius: 5px;
+  padding: 0px 8px;
 }
 
-.paper-title {
-  line-height: 100%;
-  margin-right: 80px;
-}
-
-.paper-image {
-  margin-top: 20px;
-  width: 75%;
-}
-
-.paper-img-container {
-  text-align: center;
-}
-
-.paper-par-header {
+.Paper .paper-par-header {
   font-weight: bold;
 }
 
-.collapsible-par-header {
-  font-weight: bold;
-  text-decoration: underline;
+/*
+ * GRID
+ */
+
+.GridSection .grid-display-dropdown {
+  margin-left: auto;
 }
 
-/* Split Screen CSS */
-
-.split {
-  display: flex;
-  flex-direction: row;
-  height: 100vh;
-}
-
-.gutter {
-  background-color: #eee;
-  background-position: 50%;
-  background-repeat: no-repeat;
-}
-
-.gutter.gutter-horizontal {
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
-  cursor: col-resize;
-}
-
-/* Grid Styling */
-
-.grid-container {
+.Grid {
   display: grid;
   grid-gap: 2px;
   grid-template-columns: repeat(auto-fit, 50px);
   text-align: center;
 }
 
-.grid_legend {
-  margin-top: 10px;
-}
-
-.grid-display-dropdown {
-  margin-left: auto;
-}
-
-.dropdown-menu {
-  max-height: 600px;
-  overflow: scroll;
-}
-
-.grid-controls {
-  padding: 20px 5px;
-}
-
-.grid-control-bar {
-  margin-bottom: 20px;
-}
-
-.legend-container {
-  list-style: none;
-  padding: 3px;
-}
-
-.grid-item {
+.Grid .grid-item {
   border: 1px solid #444;
   border-radius: 4px;
 }
 
-.rectangle {
+.Grid .sticky-border {
+  border: 2.5px solid black;
+  border-radius: 8px;
+}
+
+.Grid .faded-grid {
+  opacity: 0.2;
+}
+
+/* This should align the two items in hstack below grid to the top.
+ * MG??? why doesn't this work? */
+.below-grid {
+  align-items: start;
+}
+
+/*
+ * Set Queue panel
+ */
+
+.SetQueue .q-message-input {
+  width: 400px;
+}
+
+.SetQueue .gui-filters {
+  align-items: start;
+}
+
+.SetQueue .score-box {
+  width: 50px;
+}
+
+.SetQueue .text-filter-input {
+  width: 550px;
+  margin-bottom: 20px;
+}
+
+/*
+ * PREFS
+ */
+
+/* These two align next to each other below grid */
+.ColorsDisplay,
+.set-sticky {
+  line-height: 95%;
+}
+
+.ColorsDisplay .legend-container {
+  list-style: none;
+  padding: 3px;
+}
+
+.ColorsDisplay .col-head {
+  padding-bottom: 12px;
+  padding-left: 24px;
+}
+
+/* this is the hstack for a legend that is not currently picked */
+.ColorsDisplay .unselected-color {
+  border: 1px solid white;
+  padding: 3px 8px;
+}
+
+/* this is the hstack for a legend that is currently picked */
+.ColorsDisplay .selected-color {
+  border: 1px solid black;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.ColorsDisplay .rectangle,
+.ChooseStatusDropdown .rectangle {
   border: 1px solid black;
   border-radius: 4px;
   display: inline-block;
@@ -399,315 +383,19 @@ a.nav-link {
   width: 15px;
 }
 
-.sticky-border {
-  border: 2.5px solid black;
-  border-radius: 8px;
-}
-
-/* .sticky {
-  background-color: gray;
-  border: 2px solid black;
-  color: white;
-} */
-
-.send-sticky-column > div {
-  padding-bottom: 12px;
-}
-
-.sticky-step {
-  margin-top: 20px;
-}
-
-.faded-grid {
-  background-color: gray;
-  color: white;
-  opacity: 0.2;
-}
-
-.set-sticky {
-  margin-left: 40px;
-}
-
-/* Preferences Page Styling */
-
-.grid_colors_preferences {
-  list-style: none;
-}
-.grid_colors_preferences li {
-  padding: 0 15px;
-}
-
-.preferences-container {
-  margin-top: 20px;
-  padding: 20px 5px;
-}
-
-.titled-page {
-  margin-top: 35px;
-}
-
-.font-size-dropdown {
-  margin-left: 15px;
-}
-
-.color-preferences-container {
-  margin-top: 30px;
-}
-
-.legend-title {
-  padding-bottom: 12px;
-  padding-left: 24px;
-  text-decoration: underline;
-}
-
-/* this is the hstack for a legend that is not currently picked */
-.unselected-color {
-  border: 1px solid white;
-  padding: 3px;
-}
-
-/* this is the hstack for a legend that is currently picked */
-.selected-color {
-  border: 1px solid black;
-  border-radius: 6px;
-  padding: 3px;
-}
-
-.favorite-preferences-container {
-  margin-top: 30px;
-}
-
-.favorites-input {
-  margin-left: 10px;
-  width: 550px;
-  margin-bottom: 20px;
-}
-
-.favorites-submit-btn {
-  margin-left: 10px;
-}
-
-.favorites-list {
-  list-style: none;
-}
-
-.example-favorites {
-  margin-top: 10px;
-  margin-left: 10px;
-}
-
-.current-favorite {
-  margin: 10px;
-}
-
-.current-favorites-bar {
-  margin-top: 10px;
-}
-
-.current-favorites-container {
-  margin-top: 10px;
-}
-
-.current-favorites-container li {
-  margin: 5px 0;
-}
-
-.color-picker {
-  margin-left: 150px;
-}
-
-/* Change Password Page Styling */
-.ChangePasswordPage {
-  margin-top: 30px;
-}
-
-.change-password-main-container {
-  padding: 50px 10px;
-}
-
-.reset-password {
-  margin: 0 auto;
-}
-
-.password-switch {
-  margin: 20px 5px 20px 0;
-}
-
-.password-fields {
-  margin: 40px 0 0 40px;
-}
-
-.form-title {
-  font-size: 20px;
-}
-
-.reset-password-row {
-  margin: 20px 5px 20px 0;
-}
-
-/* Set GUI Styling */
-.change-bar-btn {
-  margin-right: 10px;
-}
-
-.text-filter-btn {
-  margin-top: 20px;
-}
-
-.no-tsp {
-  margin-top: 20px;
-  margin-left: 10px;
-}
-
-.text-filter-instructions {
-  margin-top: 12px;
-}
-
-.horizontal-divider {
-  border-radius: 2px;
-  border-top: 3px solid #000;
-  margin: 20px 0;
-}
-
-.vertical-divider {
-  border-left: 3px solid #000;
-  border-radius: 2px;
-  height: 150px !important;
-  margin: 0 0 0 40px;
-}
-
-.hideQ-text {
-  margin-left: 10px;
-}
-
-.message-input {
-  margin-left: 10px;
-  margin-right: 10px;
-  width: 400px;
-}
-
-.text-tty {
-  font-family: monospace;
-}
-
-.set-message-row {
-  margin-top: 10px;
-}
-
-.get-filtered-count {
-  margin-top: 24px;
-}
-
-.get-filtered-count-text {
-  margin-left: 15px;
-  margin-right: 10px;
-}
-
-.set-filtered-queue-stack {
-  margin-top: 30px;
-}
-
-.set-filtered-queue-button {
-  margin-right: 15px;
-}
-
-.score-box {
-  width: 50px;
-}
-
-/* About Page */
-.about-container {
-  margin-top: 20px;
-}
-
-/* Misc. */
-/* this eliminates the blue outline on select button - not ideal for accessibility */
-#status-dropdown-menu {
-  /* width: 160px; */
+.ChooseStatusDropdown {
   border: 1px solid black;
   border-radius: 4px;
-  outline: 0;
 }
 
-#status-dropdown-menu:hover {
+.ChooseStatusDropdown:hover {
   background: lightyellow;
 }
 
-#waiting-for-server {
-  color: #888;
-  font-size: 20px;
-  font-style: italic;
-  margin-left: 20px;
-  margin-top: 20px;
-}
-
-.admin-filters {
-  align-items: start;
-  margin-left: 20px;
-}
-
-#room-warning {
-  color: #f66;
-  font-size: 20px;
-  font-style: italic;
-  margin-left: 10px;
-}
-
-.space-down-btn {
-  padding-top: 30px;
-}
-
-.space-down-from-bar {
-  padding-top: 20px;
-}
-
-.text-filter-input {
+.PreferencesPage .favorites-input {
   width: 550px;
 }
 
-/************* LOGIN PAGE **************/
-/* see https://supertokens.com/blog/building-a-login-screen-with-react-and-bootstrap# */
-
-.LoginPage {
-  align-items: center;
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  width: 100vw;
-}
-
-.Auth-form {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
-  padding-bottom: 20px;
-  padding-top: 30px;
-  width: 420px;
-}
-
-.Auth-form-content {
-  padding-left: 12%;
-  padding-right: 12%;
-}
-
-.Auth-form-title {
-  color: rgb(34, 34, 34);
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 1em;
-  text-align: center;
-}
-
-label {
-  color: rgb(34, 34, 34);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.stats-table {
-  margin-top: 20px;
-}
-
-.button-desc {
-  margin-left: 20px;
+.FavoritePreferences {
+  margin-bottom: 50px;
 }

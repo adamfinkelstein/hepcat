@@ -75,16 +75,16 @@ export default function UploadsPage() {
         socketLogout(true);
       } else {
         controlledLog('canceled: ' + socketMsg);
-        const msg = 'Button canceled.';
-        flash(msg, 'warning');
+        // const msg = 'Button canceled.';
+        // flash(msg, 'warning'); // bad UX to flash on cancel
       }
     });
   }
 
   return (
-    <Container className="titled-page">
-      <span className="font-size-1">Upload CSV Files Here</span>
-      <Container className="change-password-main-container">
+    <Container className="UploadsPage mt-4">
+      <p className="font-size-1 mt-2">Upload CSV Files Here</p>
+      <Container>
         <Form>
           <Form.Group controlId="form-file-upload" className="mb-3">
             <Form.Label>Choose a CSV file:</Form.Label>
@@ -95,7 +95,7 @@ export default function UploadsPage() {
           <div>
             <button
               type="submit"
-              className="btn btn-primary reset-password-button"
+              className="btn btn-primary"
               onClick={(e) => handleSubmit(e)}
             >
               Send File
@@ -124,89 +124,92 @@ export default function UploadsPage() {
           })}
         </ul>
         <div>
-          <p>&nbsp;</p>
           <hr />
-          <p>&nbsp;</p>
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
-        {conflictbot && (
-          <Stack className="space-down-btn" direction="horizontal">
-            <a
-              className="btn btn-primary"
-              href={'/admin/conflictbot3/' + adminKey}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              New Conflictbot3
-            </a>
-            &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
-          </Stack>
-        )}
-        {conflictbot && (
-          <Stack className="space-down-btn" direction="horizontal">
-            <a
-              className="btn btn-primary"
-              href={'/admin/old_zoom_conflictbot/' + adminKey}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Old Zoom Conflictbot
-            </a>
-            &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
-          </Stack>
-        )}
-        <Stack className="space-down-btn" direction="horizontal">
-          <a
-            className="btn btn-primary"
-            href={'/admin/download_csv/filters/' + adminKey}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download Queries
-          </a>
-          &nbsp;&nbsp;Download a CSV with current filters.
-        </Stack>
-        <Stack className="space-down-btn" direction="horizontal">
-          <a
-            className="btn btn-warning"
-            href={'/admin/download_csv/results/' + adminKey}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download Results
-          </a>
-          &nbsp;&nbsp;Download a CSV with the final status of all papers.
-        </Stack>
-        <Stack className="space-down-btn" direction="horizontal">
-          <a
-            className="btn btn-warning"
-            href={'/admin/download_zip/' + adminKey}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download ZIP
-          </a>
-          &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
-        </Stack>
-        {isSuper && (
-          <>
-            <Stack className="space-down-btn" direction="horizontal">
-              <Button variant="danger" onClick={() => handleWipeDBButton(true)}>
-                Load Test Database
-              </Button>
-              &nbsp;&nbsp;This loads a clean test database.
-            </Stack>
-            <Stack className="space-down-btn" direction="horizontal">
-              <Button
-                variant="danger"
-                onClick={() => handleWipeDBButton(false)}
+        <Stack className="mt-4" direction="vertical" gap={4}>
+          {conflictbot && (
+            <Stack direction="horizontal">
+              <a
+                className="btn btn-primary"
+                href={'/admin/conflictbot3/' + adminKey}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Wipe Database Clean
-              </Button>
-              &nbsp;&nbsp;This removes ALL data from the database!
+                New Conflictbot3
+              </a>
+              &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
             </Stack>
-          </>
-        )}
+          )}
+          {conflictbot && (
+            <Stack direction="horizontal">
+              <a
+                className="btn btn-primary"
+                href={'/admin/old_zoom_conflictbot/' + adminKey}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Old Zoom Conflictbot
+              </a>
+              &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
+            </Stack>
+          )}
+          <Stack direction="horizontal">
+            <a
+              className="btn btn-primary"
+              href={'/admin/download_csv/filters/' + adminKey}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download Queries
+            </a>
+            &nbsp;&nbsp;Download a CSV with current filters.
+          </Stack>
+          <Stack direction="horizontal">
+            <a
+              className="btn btn-warning"
+              href={'/admin/download_csv/results/' + adminKey}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download Results
+            </a>
+            &nbsp;&nbsp;Download a CSV with the final status of all papers.
+          </Stack>
+          <Stack direction="horizontal">
+            <a
+              className="btn btn-warning"
+              href={'/admin/download_zip/' + adminKey}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download ZIP
+            </a>
+            &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
+          </Stack>
+          {isSuper && (
+            <>
+              <Stack direction="horizontal">
+                <Button
+                  variant="danger"
+                  onClick={() => handleWipeDBButton(true)}
+                >
+                  Load Test Database
+                </Button>
+                &nbsp;&nbsp;This loads a clean test database.
+              </Stack>
+              <Stack direction="horizontal">
+                <Button
+                  variant="danger"
+                  onClick={() => handleWipeDBButton(false)}
+                >
+                  Wipe Database Clean
+                </Button>
+                &nbsp;&nbsp;This removes ALL data from the database!
+              </Stack>
+            </>
+          )}
+        </Stack>
       </Container>
     </Container>
   );

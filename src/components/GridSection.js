@@ -1,4 +1,3 @@
-import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Grid from './Grid.js';
 import { useState } from 'react';
@@ -44,9 +43,9 @@ export default function GridSection() {
   }
 
   return (
-    <Container>
-      <Stack direction="horizontal" className="grid-control-bar">
-        <div className="font-size-3">
+    <Stack direction="vertical" gap={3} className="GridSection">
+      <Stack direction="horizontal" className="grid-control-bar" gap={3}>
+        <div className="font-size-4">
           Bar:&nbsp;{guiBar}
           &nbsp; Above:&nbsp;{gridNidsAbove}
           &nbsp; Below:&nbsp;{gridNidsBelow}
@@ -77,17 +76,23 @@ export default function GridSection() {
       <Grid gridDisplay={gridDisplay} />
       <hr className="horizontal-divider" />
 
-      <Stack direction="horizontal">
+      <Stack direction="horizontal" gap={4} className="below-grid">
         <ColorsDisplay />
-        <hr className="vertical-divider"></hr>
-        <Container className="set-sticky">
-          <p className="sticky-step font-size-3">
+        <div className="vr" />
+        <Stack direction="vertical" gap={2} className="set-sticky">
+          <div>
+            <span className="col-head font-size-3">File Sticky</span>:
+          </div>
+          <div className="font-size-4 mt-3">
             Step 1 &mdash; choose a sticky type:
-          </p>
-          <ChooseStatusDropdown currentStatus={sticky} setValue={setSticky} />
-          <p className="sticky-step font-size-3">
+          </div>
+          <Stack direction="horizontal">
+            <ChooseStatusDropdown currentStatus={sticky} setValue={setSticky} />
+            <div />
+          </Stack>
+          <div className="font-size-4 mt-3">
             Step 2 &mdash; type the numeric paper ID:
-          </p>
+          </div>
           <div>
             <input
               maxLength={4}
@@ -97,14 +102,17 @@ export default function GridSection() {
               }}
             />
           </div>
-          <p className="sticky-step font-size-3">
+          <div className="font-size-4 mt-3">
             Step 3 &mdash; click to send sticky:
-          </p>
-          <Button variant="primary" onClick={sendSticky}>
-            Send Sticky
-          </Button>
-        </Container>
+          </div>
+          <Stack direction="horizontal">
+            <Button variant="primary" onClick={sendSticky}>
+              Send Sticky
+            </Button>
+            <div />
+          </Stack>
+        </Stack>
       </Stack>
-    </Container>
+    </Stack>
   );
 }

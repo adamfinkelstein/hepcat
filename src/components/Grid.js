@@ -29,7 +29,7 @@ export default function Grid({ isAbove, gridDisplay }) {
   }
 
   return (
-    <div className="grid-container">
+    <div className="Grid grid-container">
       {idsOrEmpty.map((nid) => {
         return (
           <div key={nid} className={gridGetClasses(nid)}>

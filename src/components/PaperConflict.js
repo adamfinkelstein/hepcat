@@ -20,14 +20,12 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   }
 
   return (
-    <Container>
+    <Container className="PaperConflict">
       {conflicts.length === 0 ? (
         <div className="font-size-4">{noConflictsStr}</div>
       ) : (
-        <div className="queue-paper-conf-list">
-          <span className="queue-paper-conf-header font-size-4">
-            Conflicts:{' '}
-          </span>
+        <div>
+          <span className="q-title font-size-4">Conflicts:&nbsp;</span>
           {conflicts.map((conflict, index) => {
             return (
               <span key={index} className={userToClass(conflict)}>

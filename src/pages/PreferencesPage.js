@@ -2,19 +2,19 @@ import TextPreferences from '../components/TextPreferences';
 import ColorPreferences from '../components/ColorPreferences';
 import FavoritePreferences from '../components/FavoritePreferences';
 import Container from 'react-bootstrap/Container';
-//import {useFlasher} from '../contexts/FlasherContext'
+import Stack from 'react-bootstrap/Stack';
 
 export default function PreferencesPage() {
   return (
-    <Container className="titled-page">
+    <Container className="PreferencesPage mt-4">
       <span className="font-size-1">Preferences</span>
-      <Container className="preferences-container">
+      <Stack direction="vertical" gap={2}>
         <TextPreferences />
         <hr className="horizontal-divider" />
         <ColorPreferences />
         <hr className="horizontal-divider" />
         <FavoritePreferences />
-      </Container>
+      </Stack>
     </Container>
   );
 }
