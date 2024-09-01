@@ -5,7 +5,13 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from flask import current_app
-from flask_socketio import emit, disconnect, join_room, leave_room
+from flask_socketio import (
+    emit,
+    disconnect,
+    join_room,
+    leave_room,
+    ConnectionRefusedError,
+)
 from sqlalchemy.sql.expression import func
 from .decorators import (
     admin_required_for_io_with_record,
@@ -1033,7 +1039,7 @@ def io_connect(auth):
     ensure_supers()  # Ensure that special (chair) admin exists at login
     user = user_connect(auth)
     if not user:
-        return False  # reject the connection
+        raise ConnectionRefusedError("Invalid credentials")  # reject the connection
     if user.role_is_admin:
         join_room("admin")
     # valid user, accept the connection and send welcome

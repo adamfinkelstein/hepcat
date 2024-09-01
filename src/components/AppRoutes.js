@@ -18,7 +18,7 @@ export default function AppRoutes() {
   const { controlledLog } = useControlledLog();
   controlledLog(user);
 
-  if (socket === undefined) {
+  if (socket === undefined || user === undefined) {
     // too early to render, wait for the socket to be either
     // null (not logged in) or a Socket.IO instance
     return null;

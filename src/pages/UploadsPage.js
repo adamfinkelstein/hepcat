@@ -42,7 +42,7 @@ export default function UploadsPage() {
       const msg =
         "The file '" + fileName + "' does not appear to be a CSV file.";
       // flash(msg, 'warning');
-      revealModalDialog('Upload Error', msg);
+      revealModalDialog({ title: 'Upload Error', message: msg });
       fileUp.value = null; // reset the upload
       return;
     }

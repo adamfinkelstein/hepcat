@@ -10,7 +10,7 @@ export default function UserContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
 
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = React.useState(undefined);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [adminKey, setAdminKey] = React.useState('');
   const [conflictbot, setConflictbot] = React.useState(false);
@@ -25,7 +25,9 @@ export default function UserContext({ children }) {
 
   React.useEffect(() => {
     if (!socket) {
-      setUser(null);
+      if (user || socket === null) {
+        setUser(null);
+      }
       setIsAdmin(false);
       setAdminKey('');
       setPaperKeys(null);

@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
       const msg =
         'Error in password reset request (' + email + '):' + data.error;
       // flash(msg, 'danger');
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
       return;
     } else {
       const msg =

@@ -52,7 +52,7 @@ export default function FavoritePreferences() {
     } else {
       const bad = badIDs.join(',');
       const msg = 'Favorites not updated. One or more unknown IDs: ' + bad;
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
     }
   }
   const handleDeleteButton = (removeID) => {

@@ -34,7 +34,10 @@ export default function GridSection() {
     const status = words[0];
     const nid = parseInt(ID);
     if (!checkValidNID(nid)) {
-      revealModalDialog('ERROR', 'Please choose a valid paper id.');
+      revealModalDialog({
+        title: 'Error',
+        message: 'Please choose a valid paper id.',
+      });
       return;
     }
     controlledLog('Send sticky ' + status + ' to paper with id: ' + nid);

@@ -283,7 +283,7 @@ export default function AppContext({ children }) {
 
     const receiveAlert = (data) => {
       if (isAdmin || !data.admin_only) {
-        revealModalDialog(data.title, data.body);
+        revealModalDialog({ title: data.title, message: data.body });
       }
     };
 

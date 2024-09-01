@@ -26,7 +26,7 @@ export default function ScoreFilter({
       let msg = `Invalid score value "${val}" replaced with "0" in "${label}" `;
       msg = msg + ' Please use a number between -9 and 9.';
       updateScore('0');
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
     } else {
       // Convert back to string and set box value.
       // Removes unnecessary decimal point or trailing zero.

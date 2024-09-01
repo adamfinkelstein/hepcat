@@ -99,15 +99,13 @@ export default function SocketIOContext({ children }) {
     setSocket(s);
 
     s.on('connect_error', (err) => {
-      const isRejected = err.message.includes('rejected');
       if (errorCallback) {
-        errorCallback(
-          isRejected
-            ? 'Invalid username or password.'
-            : 'The server appears to be offline. Please try again later.',
-        );
+        const msg =
+          !err.message || err.message.includes('xhr')
+            ? 'The server appears to be offline. Please try again later.'
+            : err.message;
+        errorCallback(msg);
       }
-      // if (isRejected) tokenStorageClear();
       setSocket(null);
       setAuth(null);
     });
@@ -118,13 +116,28 @@ export default function SocketIOContext({ children }) {
       // server disconnect: 'io server disconnect'
       controlledLog('socket disconnect for reason: ' + reason);
       const serverDisconnect = reason === 'io server disconnect';
-      socketLogout(serverDisconnect);
       if (serverDisconnect) {
-        const msg =
-          'The Hepcat server disconnected here.' +
-          ' It may be due to a login under the same account in a different location.';
+        const msg = (
+          <>
+            <p>The connection to the Hepcat server was interrupted.</p>
+            <p>
+              This may be due to a login under the same account in a different
+              location, or because the server is undergoing maintenance.
+            </p>
+          </>
+        );
         // flash(msg, 'warning', 0);
-        revealModalDialog('Disconnected', msg);
+        revealModalDialog({
+          title: 'Disconnected',
+          message: msg,
+          close: false,
+          button: 'Reconnect',
+          onOK: () => {
+            // changing auth will cause this effect function to run again and
+            // attempt to login
+            setAuth(null);
+          },
+        });
       }
     });
 

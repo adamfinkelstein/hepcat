@@ -202,7 +202,7 @@ export default function SetQueue() {
     const problem = filterNameNotOK(guiFilterName);
     if (problem) {
       const msg = 'Bad filter name (' + guiFilterName + ') -- ' + problem;
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
       return;
     }
     if (allTextFilterNames.includes(guiFilterName)) {
@@ -211,7 +211,7 @@ export default function SetQueue() {
         guiFilterName +
         '" is already in use for a text filter and therefore ' +
         'cannot be used for a GUI filter.';
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
       return;
     }
     emitAdminFilterMsg('admin_save_filter');
@@ -221,7 +221,7 @@ export default function SetQueue() {
     const problem = filterNameNotOK(textFilterName);
     if (problem) {
       const msg = 'Bad filter name (' + textFilterName + ') -- ' + problem;
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
       return;
     }
     if (allGuiFilterNames.includes(textFilterName)) {
@@ -230,7 +230,7 @@ export default function SetQueue() {
         textFilterName +
         '" is already in use for a GUI filter and therefore ' +
         'cannot be used for a text filter.';
-      revealModalDialog('Error', msg);
+      revealModalDialog({ title: 'Error', message: msg });
       return;
     }
     const data = { filterName: textFilterName, text: textFilterBox };
