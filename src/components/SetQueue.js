@@ -1,8 +1,6 @@
 import moment from 'moment';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import Stack from 'react-bootstrap/Stack';
 import { Container } from 'react-bootstrap';
 import { useState } from 'react';
@@ -14,25 +12,21 @@ import { useFilterContext } from '../contexts/FilterContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import SaveFilters from './SaveFilters';
-
-const scoreOptionAll = 'All Scores';
-const scoreOptionAbove = 'At/Above Bar';
-const scoreOptionBelow = 'Below Bar';
-const scoreOptionRange = 'In Range';
-const scoreOptions = [
-  scoreOptionAll,
-  scoreOptionAbove,
-  scoreOptionBelow,
-  scoreOptionRange,
-];
+import ScoreFilter from './ScoreFilter';
 
 const replaceBreakingSpaces = (str) => {
   // replace all spaces with non-breaking spaces
   return str.replace(/ /g, '\u00A0');
 };
 
+const formatCheckboxLabel = (label) => {
+  label = label.replace('Above', 'Above \u2265'); // ≥
+  label = label.replace('Below', 'Below \u003C'); // <
+  label = replaceBreakingSpaces(label);
+  return label;
+};
+
 export default function SetQueue() {
-  const [disableScoreInputs, setDisableScoreInputs] = useState('');
   const [noTSP, setNoTSP] = useState(false);
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
@@ -44,7 +38,6 @@ export default function SetQueue() {
     setHideQ,
     hiddenMsg,
     setHiddenMsg,
-    guiBar,
     setGuiBar,
     probeGUIMsg,
     probeTextMsg,
@@ -63,14 +56,15 @@ export default function SetQueue() {
     setStatusCheckbox,
     onlyCheckbox,
     setOnlyCheckbox,
-    lowRange,
-    setLowRange,
-    highRange,
-    setHighRange,
-    scoreSelection,
-    setScoreSelection,
+    aboveScore,
+    setAboveScore,
+    belowScore,
+    setBelowScore,
+    useAboveScore,
+    setUseAboveScore,
+    useBelowScore,
+    setUseBelowScore,
   } = useFilterContext();
-  const guiBarString = guiBar + '';
   const qMsgLabel = hideQ ? 'Queue hidden with:' : 'Hide queue message:';
   const genericFilterName = 'My_GUI_filter';
   const exampleFilter =
@@ -89,52 +83,76 @@ export default function SetQueue() {
     'No Clusters',
     'No Admin Conf',
     'Only Admin Conf',
+    'Above Bar',
+    'Below Bar',
   ];
 
-  /* This function handles the values of the range inputs
-      scoreOptionAll, scoreOptionAbove, scoreOptionBelow, scoreOptionRange:
-     All scores: lowRange=min, highRange=max
-     Above bar: lowRange=bar, highRange=max
-     Below bar: lowRange=min, highRange=bar
-     In range: both are enabled for freeform input.
-    */
-  function handleScoreSelectionUpdate(selection) {
-    const minScore = '-9.0';
-    const maxScore = '9.0';
-    const disable = selection !== scoreOptionRange ? 'disabled' : '';
-    // by default (scoreOptionRange) low and high range values remain
-    let lowInput = lowRange;
-    let highInput = highRange;
-    if (selection === scoreOptionAll) {
-      lowInput = minScore;
-      highInput = maxScore;
-    } else if (selection === scoreOptionAbove) {
-      lowInput = guiBarString;
-      highInput = maxScore;
-    } else if (selection === scoreOptionBelow) {
-      lowInput = minScore;
-      highInput = guiBarString;
-    }
-    setScoreSelection(selection);
-    setDisableScoreInputs(disable);
-    setLowRange(lowInput);
-    setHighRange(highInput);
+  const mutuallyExclusive = [
+    ['Dual Only', 'Journal Only'],
+    ['No Admin Conf', 'Only Admin Conf'],
+    ['Below Bar', 'Above Bar'],
+  ];
+
+  // Convert from checkbox label to its id:
+  // -- Prefix with "checkbox-".
+  // -- Use lower case.
+  // -- Replace other chars with hyphen.
+  // -- eg: "This Room Only" -> "checkbox-this-room-only".
+  function checkLabelToId(label) {
+    const lower = label.toLowerCase();
+    const alpha = lower.replace(/^a-z+/g, '-');
+    return 'checkbox-' + alpha;
   }
 
-  function getCheckedBoxes(boxList, namePrefix) {
-    return boxList.filter(
-      (_item, index) => document.getElementById(namePrefix + index).checked,
-    );
+  function checkLabelIsChecked(label) {
+    const id = checkLabelToId(label);
+    const box = document.getElementById(id);
+    return box.checked;
+  }
+
+  function listWithoutItem(lst, remove) {
+    return lst.filter((item) => item !== remove);
+  }
+
+  function getCheckedBoxes(boxList, prevent) {
+    let result = boxList.filter(checkLabelIsChecked);
+    if (prevent) {
+      result = listWithoutItem(result, prevent);
+    }
+    return result;
   }
 
   function handleStatusCheckClick() {
-    const checked = getCheckedBoxes(statusList, 'status-checkbox-');
+    const checked = getCheckedBoxes(statusList, null);
     setStatusCheckbox(checked);
+    controlledLog('checked:', checked);
   }
 
-  function handleOnlyCheckClick() {
-    const checked = getCheckedBoxes(filterList, 'only-checkbox-');
+  function excludedPartner(label) {
+    for (const pair of mutuallyExclusive) {
+      if (pair.includes(label)) {
+        const partner = pair.filter((item) => item !== label)[0];
+        return partner;
+      }
+    }
+    return null;
+  }
+
+  // Disable mutually exclusive checkboxes.
+  // For example, if you check "Below Bar" then disable
+  // both "Above Bar" and "Below Score" on the right.
+  // Also when unchecking a box, reset the score to default.
+  function handleOnlyCheckClick(label, isChecked) {
+    const prevent = excludedPartner(label);
+    const checked = getCheckedBoxes(filterList, prevent);
     setOnlyCheckbox(checked);
+    if (label === 'Below Bar' && isChecked) {
+      setUseBelowScore(false);
+      setBelowScore(9);
+    } else if (label === 'Above Bar' && isChecked) {
+      setUseAboveScore(false);
+      setAboveScore(-9);
+    }
   }
 
   function gatherGuiFilterSettings() {
@@ -145,8 +163,10 @@ export default function SetQueue() {
       roomChoice,
       statuses,
       only,
-      lowRange,
-      highRange,
+      useAboveScore,
+      useBelowScore,
+      aboveScore,
+      belowScore,
       filterName,
     };
     return data;
@@ -269,9 +289,7 @@ export default function SetQueue() {
     const target = event.target;
     const name = target.name;
     const value = target.value;
-    if (name === 'lowRange') setLowRange(value);
-    else if (name === 'highRange') setHighRange(value);
-    else if (name === 'message') setHiddenMsg(value);
+    if (name === 'message') setHiddenMsg(value);
     else if (name === 'textFilterBox') setTextFilterBox(value);
     else if (name === 'bar') setGuiBar(value);
     else if (name === 'guiFilterName') setGuiFilterName(value);
@@ -304,6 +322,29 @@ export default function SetQueue() {
     socketEmit('admin_hide_queue', data);
     controlledLog('admin_hide_queue:');
     controlledLog(data);
+  }
+
+  /*
+   * The next three functions serve two purposes:
+   * 1. If a score checkbox is unchecked, reset score.
+   * 2. If a score checkbox is checked, uncheck the bar checkbox.
+   */
+  function updateScoreCheck(checked, setUseScore, setScore, reset, prevent) {
+    setUseScore(checked);
+    if (!checked) {
+      setScore(reset);
+    } else if (onlyCheckbox.includes(prevent)) {
+      const update = listWithoutItem(onlyCheckbox, prevent);
+      setOnlyCheckbox(update);
+    }
+  }
+
+  function updateAboveScoreCheck(checked) {
+    updateScoreCheck(checked, setUseAboveScore, setAboveScore, -9, 'Above Bar');
+  }
+
+  function updateBelowScoreCheck(checked) {
+    updateScoreCheck(checked, setUseBelowScore, setBelowScore, 9, 'Below Bar');
   }
 
   return (
@@ -352,18 +393,19 @@ export default function SetQueue() {
           <div>
             <span className="col-head font-size-3">Union</span>:
             <br />
-            <div key={`status-checkbox`} className="mb-4">
-              {statusList.map((label, index) => {
+            <div className="mb-4">
+              {statusList.map((label) => {
+                const checked = statusCheckbox.includes(label);
+                const id = checkLabelToId(label);
                 return (
-                  <div key={`status-checkbox-div-` + index}>
-                    <Form.Check
-                      label={label}
-                      type="checkbox"
-                      id={`status-checkbox-` + index}
-                      checked={statusCheckbox.includes(label)}
-                      onChange={handleStatusCheckClick}
-                    />
-                  </div>
+                  <Form.Check
+                    key={id}
+                    id={id}
+                    label={label}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={handleStatusCheckClick}
+                  />
                 );
               })}
             </div>
@@ -372,18 +414,19 @@ export default function SetQueue() {
           <div>
             <span className="col-head font-size-3">Intersection</span>:
             <br />
-            <div key={`only-checkbox`} className="mb-0">
-              {filterList.map((label, index) => {
+            <div className="mb-0">
+              {filterList.map((label) => {
+                const checked = onlyCheckbox.includes(label);
+                const id = checkLabelToId(label);
                 return (
-                  <div key={`only-checkbox-div-` + index}>
-                    <Form.Check
-                      label={replaceBreakingSpaces(label)}
-                      type="checkbox"
-                      id={`only-checkbox-` + index}
-                      checked={onlyCheckbox.includes(label)}
-                      onChange={handleOnlyCheckClick}
-                    />
-                  </div>
+                  <Form.Check
+                    key={id}
+                    id={id}
+                    label={formatCheckboxLabel(label)}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => handleOnlyCheckClick(label, !checked)}
+                  />
                 );
               })}
             </div>
@@ -397,42 +440,20 @@ export default function SetQueue() {
                 </span>
                 :
               </div>
-              <DropdownButton
-                id="dropdown-item-button"
-                title={scoreSelection}
-                className="new-status-dropdown"
-                variant="secondary"
-                type="button"
-              >
-                {scoreOptions.map((selection, index) => {
-                  return (
-                    <Dropdown.Item
-                      key={index}
-                      as="button"
-                      onClick={() => handleScoreSelectionUpdate(selection)}
-                    >
-                      {selection}
-                    </Dropdown.Item>
-                  );
-                })}
-              </DropdownButton>
-              <div>
-                <input
-                  name="lowRange"
-                  value={lowRange}
-                  onChange={handleInputChange}
-                  disabled={disableScoreInputs}
-                  className="score-box"
-                />
-                <span>&nbsp;&le;&nbsp;score&nbsp;&lt;&nbsp;</span>
-                <input
-                  name="highRange"
-                  value={highRange}
-                  onChange={handleInputChange}
-                  disabled={disableScoreInputs}
-                  className="score-box"
-                />
-              </div>
+              <ScoreFilter
+                checkboxLabel={formatCheckboxLabel('Above')}
+                isChecked={useAboveScore}
+                updateChecked={updateAboveScoreCheck}
+                score={aboveScore}
+                updateScore={setAboveScore}
+              />
+              <ScoreFilter
+                checkboxLabel={formatCheckboxLabel('Below')}
+                isChecked={useBelowScore}
+                updateChecked={updateBelowScoreCheck}
+                score={belowScore}
+                updateScore={setBelowScore}
+              />
             </Stack>
           </div>
         </Stack>
@@ -492,7 +513,8 @@ export default function SetQueue() {
           <Container>
             <ul className="text-filter-instructions">
               <li className="font-size-4">
-                Room:{roomChoice} / Area:Geometry / Cluster:A / Filter:
+                Room:{roomChoice} / Area:Geometry / Cluster:A / Bar:Above /
+                Filter:
                 {exampleFilter}
               </li>
               <li className="font-size-4">101 / 101,103,105,107</li>

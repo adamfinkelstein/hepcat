@@ -38,7 +38,7 @@ from ..util import (
     invalidate_cache_var,
     invalidate_cache_all,
 )
-from ..models.bar import set_bar, get_bar
+from ..models.bar import set_bar
 from ..models.history_util import (
     get_latest_history,
     get_latest_history_status,
@@ -138,7 +138,6 @@ def get_grid_paper_dump(paper):
 
 
 def get_grid_dump():
-    bar = get_bar()
     papers = Paper.query.order_by(Paper.sort_score.desc(), Paper.nid).all()
     papers_encrypted = []
     above_oids = []
@@ -149,10 +148,10 @@ def get_grid_dump():
         key = paper.key
         if nid == 9999:  # do not put test paper in grid
             continue
-        if paper.sort_score >= bar:  # above bar
-            above_oids.append(oid)
-        else:
+        if paper.below_bar:
             below_oids.append(oid)
+        else:
+            above_oids.append(oid)
         paper_dump = get_grid_paper_dump(paper)
         paper_enc = encrypt_obj_with_oid(paper_dump, oid, key)
         papers_encrypted.append(paper_enc)
@@ -275,6 +274,8 @@ def get_paper_tag_labels(paper):
             fmt = f"{label.label_type}:{label.name}"
             result.append(fmt)
     result.sort()
+    bar_status = "Bar:Below" if paper.below_bar else "Bar:Above"
+    result = [bar_status] + result
     if paper_room:  # put room at beginning of list
         result = [paper_room] + result
     result = (", ").join(result)
@@ -332,18 +333,46 @@ def get_paper_room_name(paper):
     return "Plenary"
 
 
+def ensure_key(d, key, default):
+    if key not in d:
+        d[key] = default
+
+
+def ensure_float_key(d, key, default):
+    ensure_key(d, key, default)
+    try:
+        d[key] = float(d[key])
+    except ValueError:
+        d[key] = float(default)
+
+
+def sanitize_paper_filters(filters):
+    sanitized = filters.copy()
+    ensure_key(sanitized, "roomChoice", "Plenary")
+    ensure_key(sanitized, "statuses", [])
+    ensure_key(sanitized, "only", [])
+    ensure_key(sanitized, "useAboveScore", False)
+    ensure_key(sanitized, "useBelowScore", False)
+    ensure_float_key(sanitized, "aboveScore", 0.0)
+    ensure_float_key(sanitized, "belowScore", 0.0)
+    return sanitized
+
+
 def filters_allow_paper(paper, filters):
+    # note that filters have been sanitized by calling the function above.
     sort_score = paper.sort_score
-    lowRange = float(filters["lowRange"])
-    highRange = float(filters["highRange"])
+    use_above_score = filters["useAboveScore"]
+    use_below_score = filters["useBelowScore"]
+    above_score = filters["aboveScore"]
+    below_score = filters["belowScore"]
     filter_statuses = filters["statuses"]
     filter_only = filters["only"]
     current_room = filters["roomChoice"]
     # interface: true(low <= score)  <==>  test here: false(score < low)
     # interface: true(score < high)  <==>  test here: false(score >= high)
-    if sort_score < lowRange:
+    if use_above_score and sort_score < above_score:
         return False
-    if sort_score >= highRange:
+    if use_below_score and sort_score >= below_score:
         return False
     status = get_latest_history_status(paper)
     if status not in filter_statuses:
@@ -364,11 +393,15 @@ def filters_allow_paper(paper, filters):
         return False
     if "Only Admin Conf" in filter_only and not has_chair_conflict(paper):
         return False
+    if "Below Bar" in filter_only and not paper.below_bar:
+        return False
+    if "At/Above Bar" in filter_only and paper.below_bar:
+        return False
     return True
 
 
-def paper_is_unseen_reject_below_bar(paper, bar):
-    if paper.sort_score >= bar:
+def paper_is_unseen_reject_below_bar(paper):
+    if not paper.below_bar:
         return False
     if not is_paper_unseen(paper):
         return False
@@ -379,10 +412,9 @@ def paper_is_unseen_reject_below_bar(paper, bar):
 
 
 def bulk_reject_below_bar():
-    bar = get_bar()
     papers = Paper.query.all()
     papers = list(papers)
-    papers = [p for p in papers if paper_is_unseen_reject_below_bar(p, bar)]
+    papers = [p for p in papers if paper_is_unseen_reject_below_bar(p)]
     plenary = context_str_to_enum("Plenary")
     reject = status_str_to_enum("Reject")
     for paper in papers:
@@ -477,7 +509,8 @@ def set_queue_to_paper_list(room, paper_list, solve_tsp):
 def get_filtered_papers(filters):
     papers = Paper.query.all()
     p_list = list(papers)
-    filter_papers = [p for p in p_list if filters_allow_paper(p, filters)]
+    sanitized = sanitize_paper_filters(filters)
+    filter_papers = [p for p in p_list if filters_allow_paper(p, sanitized)]
     return filter_papers
 
 
@@ -493,6 +526,8 @@ def filter_papers_in_queues(paper_list):
 
 
 def get_filter_paper_counts(filter_papers):
+    if not filter_papers:
+        return 0, 0
     papers_in_queues = filter_papers_in_queues(filter_papers)
     total = len(filter_papers)
     n_in_queues = len(papers_in_queues)
@@ -531,12 +566,17 @@ def get_ids_matching_filter(name, room):
         log_print(msg)
         empty_list = []
         return empty_list
-    # XXX CURRENTLY only handles gui-filter but should also text
-    filters = json.loads(filter.text)
-    filters["roomChoice"] = room
-    log_print(f"get_ids_matching_filter filters: {filters}")
-    p_list = get_filtered_papers(filters)
-    ids = [p.nid for p in p_list]
+    if filter.is_gui:
+        filters = json.loads(filter.text)
+        filters["roomChoice"] = room
+        log_print(f"get_ids_matching_filter filters: {filters}")
+        p_list = get_filtered_papers(filters)
+        ids = [p.nid for p in p_list]
+    else:
+        # This is a text filter, perhaps using set operations.
+        # This is essentially a recursive call on text filters.
+        expr = filter.text
+        ids = get_ids_by_set_op(room, expr)
     return ids
 
 
@@ -549,16 +589,28 @@ def get_id_set_from_papers_string(papers_string):
     return ids
 
 
+def get_id_set_per_bar(above_or_below):
+    want_below = above_or_below.lower() == "below"
+    papers = Paper.query.all()
+    ids = [p.nid for p in papers if p.below_bar == want_below]
+    ids = set(ids)
+    return ids
+
+
 def set_op_leaf_filter(name, room):
     log_print(f"set_op_leaf_filter: {name} (room {room})")
     # Possible types:
     # 1) Papers:101_102_103
-    # 2) Filter (like 'BelowBarFilter')
-    # 3) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    # 2) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
+    # 3) Bar:Below or Bar:Above
+    # 4) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
     label_type, label_name = get_filter_parts(name)
     print(f"{label_type} : {label_name}")
     if label_type == "Papers":
         ids = get_id_set_from_papers_string(label_name)
+        return ids
+    if label_type == "Bar":
+        ids = get_id_set_per_bar(label_name)
         return ids
     if label_type == "Filter" or not hasattr(LabelType, label_type):
         ids = get_ids_matching_filter(label_name, room)
@@ -699,7 +751,7 @@ stats_table_rows = {
 }
 
 
-def inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed):
+def inc_paper_stats(paper, counts, totals, done, sticky, presumed):
     # Gather info about paper...
     room = get_paper_room_name(paper)
     room = room_short_name(room)
@@ -713,7 +765,7 @@ def inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed):
     else:
         is_done = False
         status_code = "U"  # Unseen
-        if paper.sort_score < bar and presumed_status == "Reject":
+        if paper.below_bar and presumed_status == "Reject":
             # presumed reject is unseen & below bar & reject
             is_presumed_reject = True
     # Update counts...
@@ -751,10 +803,9 @@ def collect_stats_by_room(all_rooms):
         counts[room] = {}
         for status in status_codes:
             counts[room][status] = 0
-    bar = get_bar()
     papers = Paper.query.all()
     for paper in papers:
-        inc_paper_stats(paper, bar, counts, totals, done, sticky, presumed)
+        inc_paper_stats(paper, counts, totals, done, sticky, presumed)
     for room in all_rooms:
         # Work (A-P-C-J-R)
         work[room] = totals[room] - presumed[room]
@@ -945,6 +996,14 @@ def login_user_and_send_welcome(user):
     # if not user.role_is_super: (better safe than sorry)
     # tell all admins about this login...
     emit("server_refresh_all_users", all_users, room="admin")
+
+
+def update_all_paper_bar_status(bar):
+    papers = Paper.query.all()
+    for paper in papers:
+        below_bar = paper.sort_score < bar
+        paper.below_bar = below_bar
+        db.session.add(paper)
 
 
 ###########
@@ -1289,7 +1348,8 @@ def admin_get_stats():
 @admin_required_for_io_with_record
 def admin_set_bar(bar):
     log_print(f"admin request set bar to {bar}")
-    set_bar(bar)
+    bar = set_bar(bar)  # converts to float
+    update_all_paper_bar_status(bar)
     try_sql_commit()
     globs, _ = get_globs_dump_with_status("Plenary")
     emit("server_set_globs", globs, broadcast=True)  # bar is in globs
@@ -1384,12 +1444,11 @@ def user_set_sticky(data):
     if not paper:
         return  # should never happen because it is now checked at the client
     is_reject = status == "Reject"
-    is_below_bar = paper.sort_score < get_bar()
     status_enum = status_str_to_enum(status)
     context_plenary = context_str_to_enum("Plenary")
     context = context_str_to_enum("Sticky")  # default (most cases)
     auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
-    if auto_reject and is_below_bar and is_reject:
+    if auto_reject and paper.below_bar and is_reject:
         context = context_plenary  # Mark in Plenary instead of Sticky
     history = History(paper=paper, context_enum=context, status_enum=status_enum)
     db.session.add(history)

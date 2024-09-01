@@ -95,21 +95,11 @@ export default function Paper() {
     },
   ];
 
-  function extraSpaceBefore(scores, before) {
-    const after = '&nbsp;&nbsp;&nbsp;' + before;
-    const ret = scores.replace(before, after);
-    return ret;
-  }
-
   function formatScoresInHTML(scores) {
     let html = scores ? scores : '';
-    html = html.replaceAll('A!', '<b>A</b>');
-    html = html.replaceAll('R!', '<b>R</b>');
-    html = html.replaceAll('C!', '<b>C</b>');
-    html = html.replaceAll('J!', '<b>J</b>');
-    html = extraSpaceBefore(html, 'j[');
-    html = extraSpaceBefore(html, 'c[');
-    html = extraSpaceBefore(html, 'bbs:');
+    // RE matches any capital letter followed by !
+    // with the letter wrapped in <b> tags.
+    html = html.replace(/([A-Z])!/g, '<b>$1</b>');
     const ret = { __html: html };
     return ret;
   }
@@ -208,13 +198,13 @@ export default function Paper() {
             </div>
             <p className="font-size-3">
               <span className="paper-par-header">
-                Q{cp.queue_order} ({cp.nid}):&nbsp;
+                Q{cp.queue_order} ({cp.nid}):
               </span>
               {cp.title}
             </p>
             {showTags && (
               <p className="font-size-4">
-                <span className="paper-par-header">Tags:</span>{' '}
+                <span className="paper-par-header">Tags:</span>
                 <span>{globals.serverGlobs.current_tags}</span>
               </p>
             )}
@@ -224,7 +214,7 @@ export default function Paper() {
             </p>
             {showHist && (
               <p className="font-size-4">
-                <span className="paper-par-header">History:</span>{' '}
+                <span className="paper-par-header">History:</span>
                 <span>{formatHistoryList(hist)}</span>
               </p>
             )}

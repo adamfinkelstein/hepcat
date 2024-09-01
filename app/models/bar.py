@@ -7,6 +7,7 @@ def set_bar(bar):
     gq = get_or_create_gq("Plenary")
     gq.bar = bar
     db.session.add(gq)
+    return bar  # float
 
 
 def get_bar():

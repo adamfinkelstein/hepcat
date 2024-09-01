@@ -167,6 +167,7 @@ class Paper(db.Model):
     abstract = db.Column(db.String())
     all_scores = db.Column(db.String(256))
     journal_only = db.Column(db.Boolean, default=False)
+    below_bar = db.Column(db.Boolean, default=False)
     conf_users = db.relationship(
         "User",
         secondary=conflicts,

@@ -9,9 +9,10 @@ export default function FilterContext({ children }) {
   const { socket, socketEmit } = useSocketIO();
   const [statusCheckbox, setStatusCheckbox] = useState([]);
   const [onlyCheckbox, setOnlyCheckbox] = useState([]);
-  const [scoreSelection, setScoreSelection] = useState('In Range'); // default matches SetQueue.js
-  const [lowRange, setLowRange] = useState(-9.0);
-  const [highRange, setHighRange] = useState(9.0);
+  const [aboveScore, setAboveScore] = useState(-9.0);
+  const [belowScore, setBelowScore] = useState(9.0);
+  const [useAboveScore, setUseAboveScore] = useState(false);
+  const [useBelowScore, setUseBelowScore] = useState(false);
   const [allGuiFilterNames, setAllGuiFilterNames] = useState([]);
   const [allTextFilterNames, setAllTextFilterNames] = useState([]);
   const [guiFilterName, setGuiFilterName] = useState('');
@@ -26,11 +27,14 @@ export default function FilterContext({ children }) {
         setTextFilterBox(filter);
       } else {
         // this is a GUI filter
+        const newAbove = filter.useAboveScore ? filter.aboveScore : -9.0;
+        const newBelow = filter.useBelowScore ? filter.belowScore : 9.0;
         setOnlyCheckbox(filter.only);
         setStatusCheckbox(filter.statuses);
-        setScoreSelection('In Range');
-        setLowRange(filter.lowRange);
-        setHighRange(filter.highRange);
+        setUseAboveScore(filter.useAboveScore);
+        setUseBelowScore(filter.useBelowScore);
+        setAboveScore(newAbove);
+        setBelowScore(newBelow);
       }
     };
 
@@ -62,12 +66,14 @@ export default function FilterContext({ children }) {
         setStatusCheckbox,
         onlyCheckbox,
         setOnlyCheckbox,
-        scoreSelection,
-        setScoreSelection,
-        lowRange,
-        setLowRange,
-        highRange,
-        setHighRange,
+        aboveScore,
+        setAboveScore,
+        belowScore,
+        setBelowScore,
+        useAboveScore,
+        setUseAboveScore,
+        useBelowScore,
+        setUseBelowScore,
         allGuiFilterNames,
         setAllGuiFilterNames,
         allTextFilterNames,

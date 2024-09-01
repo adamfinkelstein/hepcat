@@ -440,6 +440,7 @@ def review_str_to_float(s):
 
 def insert_chair_score_rows(rows):
     count = 0
+    bar = get_bar()
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews
         sid, chair_score, status, reviews = row
@@ -448,8 +449,10 @@ def insert_chair_score_rows(rows):
             continue
         # update paper
         chair_score = review_str_to_float(chair_score)
+        below_bar = chair_score < bar
         paper.sort_score = chair_score
         paper.all_scores = reviews
+        paper.below_bar = below_bar
         db.session.add(paper)
         # update paper history with new bbs entry
         context_bbs = context_str_to_enum("BBS")
@@ -462,13 +465,12 @@ def insert_chair_score_rows(rows):
     return count
 
 
-def sticky_context_maybe_below_bar(paper, bar, status_str):
+def sticky_context_maybe_below_bar(paper, status_str):
     is_reject = status_str == "Reject"
-    is_below_bar = paper.sort_score < bar
     context_plenary = context_str_to_enum("Plenary")
     context = context_str_to_enum("Sticky")  # default (most cases)
     auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
-    if auto_reject and is_below_bar and is_reject:
+    if auto_reject and paper.below_bar and is_reject:
         context = context_plenary  # Mark in Plenary instead of Sticky
     return context
 
@@ -480,7 +482,6 @@ def sticky_context_maybe_below_bar(paper, bar, status_str):
 #   3. Everything else: set a sticky.
 def init_grid_from_bbs():
     delete_non_bbs_history()  # just in case...
-    bar = get_bar()
     papers = Paper.query.all()
     papers = list(papers)
     context_plenary = context_str_to_enum("Plenary")
@@ -494,7 +495,7 @@ def init_grid_from_bbs():
         bbs_status = bbs_history.status_enum
         if bbs_status == tabled:
             continue  # nothing needed for tabled papers
-        if paper.sort_score < bar and bbs_status == reject:
+        if paper.below_bar and bbs_status == reject:
             context = context_plenary  # Mark in plenary
         else:
             context = context_sticky  # File a sticky
@@ -502,6 +503,7 @@ def init_grid_from_bbs():
         db.session.add(history)
 
 
+# This is just for testing purposes. It inserts fake history.
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
     test_bar = current_app.config["HEPCAT_TEST_BAR"]
@@ -509,7 +511,6 @@ def insert_history_rows(rows):
         set_bar(test_bar)
     if current_app.config["HEPCAT_TEST_AUTO_INIT"]:
         init_grid_from_bbs()
-    bar = get_bar()
     count = 0
     max_count = current_app.config["HEPCAT_TEST_HISTORY"]
     for row in rows:
@@ -526,7 +527,7 @@ def insert_history_rows(rows):
         # debug: then = now - timedelta(seconds=secs)
         status_enum = status_str_to_enum(status)
         if context == "Sticky":
-            context_enum = sticky_context_maybe_below_bar(paper, bar, status)
+            context_enum = sticky_context_maybe_below_bar(paper, status)
         else:
             context_enum = context_str_to_enum(context)
         history = History(
