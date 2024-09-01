@@ -395,7 +395,7 @@ def filters_allow_paper(paper, filters):
         return False
     if "Below Bar" in filter_only and not paper.below_bar:
         return False
-    if "At/Above Bar" in filter_only and paper.below_bar:
+    if "Above Bar" in filter_only and paper.below_bar:
         return False
     return True
 
