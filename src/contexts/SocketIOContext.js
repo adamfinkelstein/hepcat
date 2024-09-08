@@ -11,27 +11,31 @@ const tokenName = 'token';
 
 const tokenStorageSet = (token, remember) => {
   if (remember) {
-    console.log('set and remember token ' + token);
+    // console.log('set and remember token ' + token);
     window.localStorage.setItem(tokenName, token);
   } else {
-    console.log('set token ' + token);
-    window.sessionStorage.setItem(tokenName, token);
+    // we only write the token to session storage if local storage does not
+    // have a token
+    if (!window.localStorage.getItem(tokenName)) {
+      // console.log('set token ' + token);
+      window.sessionStorage.setItem(tokenName, token);
+    }
   }
 };
 
 const tokenStorageGet = () => {
   let token = window.localStorage.getItem(tokenName);
   if (token) {
-    console.log('get remembered token ' + token);
+    // console.log('get remembered token ' + token);
   } else {
     token = window.sessionStorage.getItem(tokenName);
-    console.log('get token ' + token);
+    // console.log('get token ' + token);
   }
   return token;
 };
 
 const tokenStorageClear = () => {
-  console.log('clear token');
+  // console.log('clear token');
   window.sessionStorage.removeItem(tokenName);
   window.localStorage.removeItem(tokenName);
 };
@@ -106,6 +110,7 @@ export default function SocketIOContext({ children }) {
             : err.message;
         errorCallback(msg);
       }
+      tokenStorageClear();
       setSocket(null);
       setAuth(null);
     });
