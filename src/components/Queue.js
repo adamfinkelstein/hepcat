@@ -13,7 +13,8 @@ export default function Queue() {
   const queue = globals.queue;
   const current = globals.queueCurrent;
   const counter = current + 1;
-  const currentCount = counter > queue.length ? 'completed' : counter + ' of';
+  const currentCount =
+    counter > queue.length ? 'completed' : 'Q' + counter + ' of';
   const isScreenRole = user?.role_name === 'Screen';
   const isOutsideRole = user?.role_name === 'Outside';
   const isScreen = isScreenRole || isOutsideRole;
@@ -43,6 +44,9 @@ export default function Queue() {
       // future - odd?
       className += ' odd-entry';
     }
+    if (index === end_index - 1) {
+      className += ' last-entry';
+    }
     return className;
   }
 
@@ -57,7 +61,7 @@ export default function Queue() {
         )}
         <Stack direction="horizontal" className="mt-2">
           <span className="font-size-4">
-            Current: Q{currentCount} {queue.length}
+            Current: {currentCount} {queue.length}
           </span>
           <Stack direction="horizontal" className="q-show-checks" gap={3}>
             <div className="font-size-4">Show:</div>

@@ -59,7 +59,7 @@ export default function ColorPreferences() {
       </Stack>
       <Container>
         <Button variant="secondary" onClick={handleDefaultColorButton}>
-          Reset to Default Colors
+          Reset Default Colors
         </Button>
       </Container>
     </Container>

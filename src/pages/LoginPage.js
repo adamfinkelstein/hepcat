@@ -76,8 +76,8 @@ export default function LoginPage() {
               className="form-check-input"
               onChange={handleInputChange}
             />
-            <label htmlFor="remember" className="form-check-label mx-1">
-              Remember me for one week
+            <label htmlFor="remember" className="form-check-label mx-2">
+              Remember me.
             </label>
           </div>
           <div className="d-grid mt-3">

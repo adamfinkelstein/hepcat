@@ -6,21 +6,21 @@ export default function ColorsDisplay({
   clickable,
   selectedColorKey,
   setSelectedColorKey,
+  gridCounts,
 }) {
   const colors = useColors();
   const colorKeys = Object.keys(colors);
+  const addCountToKey = (key) => {
+    if (!gridCounts || !gridCounts.hasOwnProperty(key)) return key;
+    const count = gridCounts[key];
+    return key + ' (' + count + ')';
+  };
 
   return (
     <div className="ColorsDisplay">
       <div className="col-head font-size-3">Plenary Status</div>
       <ul>
         {colorKeys.map((key) => {
-          // Something like this comment code could make the selected color
-          // behave like a grid item, for better preview. But it's a bit broken.
-          // const selected = clickable && selectedColorKey === key;
-          // const className = selected
-          //   ? 'grid-item ' + selectedColorKey
-          //   : 'legend-container';
           const className = 'legend-container';
           return (
             <li
@@ -41,7 +41,9 @@ export default function ColorsDisplay({
                 }
               >
                 <div className={'rectangle ' + key}></div>
-                <div className="legend-label font-size-3">{key}</div>
+                <div className="legend-label font-size-4">
+                  {addCountToKey(key)}
+                </div>
               </Stack>
             </li>
           );

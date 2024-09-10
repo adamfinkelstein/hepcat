@@ -38,6 +38,7 @@
     "orderq",
     "ortools",
     "Prefs",
+    "progressbar",
     "psycopg",
     "pywrapcp",
     "sendgrid",
@@ -48,6 +49,7 @@
     "unconficted",
     "unconflicted",
     "Vals",
+    "valuenow",
     "vstack",
     "werkzeug"
   ]

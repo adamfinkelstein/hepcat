@@ -127,7 +127,7 @@ export default function UploadsPage() {
           <hr />
           <span className="font-size-2">Extra Admin Functions</span>
         </div>
-        <Stack className="mt-4" direction="vertical" gap={4}>
+        <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
           {conflictbot && (
             <Stack direction="horizontal">
               <a

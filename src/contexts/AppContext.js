@@ -127,7 +127,28 @@ export default function AppContext({ children }) {
   }, [roomChoice, controlledLog, socketEmit]);
 
   useEffect(() => {
-    function updateGridEntry(nid, status) {
+    const countConvergedPapersInGrid = (papers) => {
+      let converged = 0;
+      const convergedStatuses = ['Journal', 'Conference', 'Reject'];
+      const counts = {};
+      for (const nid in papers) {
+        const paper = papers[nid];
+        const status = paper.status;
+        if (convergedStatuses.includes(status)) {
+          converged++;
+        }
+        if (status in counts) {
+          counts[status]++;
+        } else {
+          counts[status] = 1;
+        }
+      }
+      counts['Converged'] = converged;
+      // controlledLog('##### countConvergedPapersInGrid:', counts);
+      return counts;
+    };
+
+    const updateGridEntry = (nid, status) => {
       const grid_entry = grid && grid.papers ? grid.papers[nid] : null;
       if (!grid_entry) {
         controlledLog('*** cannot find grid entry for nid:', nid);
@@ -142,10 +163,11 @@ export default function AppContext({ children }) {
       }
       //controlledLog('just updated grid entry:', grid_entry)
       const newGrid = { ...grid };
+      newGrid.counts = countConvergedPapersInGrid(newGrid.papers);
       setGrid(newGrid); // force update
-    }
+    };
 
-    function updateQueueEntry(queue_index, status) {
+    const updateQueueEntry = (queue_index, status) => {
       if (queue_index < 0 || queue_index >= queue.length) {
         controlledLog('cannot updateQueueEntry at queue_index ', queue_index);
         return;
@@ -153,7 +175,7 @@ export default function AppContext({ children }) {
       queue[queue_index].status = status;
       const newQueue = [...queue];
       setQueue(newQueue); // force update
-    }
+    };
 
     const receiveSticky = (grid_nid) => {
       controlledLog('received sticky: ' + grid_nid);
@@ -272,6 +294,7 @@ export default function AppContext({ children }) {
       data.above_nids = oidListToNidList(data.above_oids);
       data.below_nids = oidListToNidList(data.below_oids);
       data.papers = decodeGridPapers(data.papers_encrypted);
+      data.counts = countConvergedPapersInGrid(data.papers);
     };
 
     const receiveGrid = (data) => {

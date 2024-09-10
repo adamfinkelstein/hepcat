@@ -23,18 +23,17 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
   const confSymbol = '\u26D4';
   const possibleStar = isFavorite && showStars ? starSymbol : '';
   const suffixSym = isConflict ? confSymbol : possibleStar;
-  const prefix = ' (' + paper.nid + '): ';
+  const nid = paper.nid;
+  const prefix = nid ? `Q${paper.queue_order} (${nid}):` : '';
   const title = isPast ? status : paper.title;
-  const showTitle = isConflict ? 'CONFLICTED' : title;
+  const showTitle = isConflict ? 'CONFLICT' : title;
+  const qEntryClass = isConflict ? 'font-size-3 mx-auto' : 'font-size-4';
 
   return (
     <Container className="QueueElement">
       <Stack direction="horizontal">
-        <div className="font-size-4">
-          <span className="q-title">
-            Q{paper.queue_order}
-            {prefix}
-          </span>
+        <div className={qEntryClass}>
+          <span className="q-title">{prefix}&nbsp;</span>
           {showTitle}
         </div>
         <div className="q-symbol">{suffixSym}</div>

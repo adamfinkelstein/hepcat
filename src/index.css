@@ -227,10 +227,10 @@ body {
 }
 
 .Queue .q-entry.past-entry {
-  border-bottom: 0;
   border-left: 1px solid black;
   border-right: 1px solid black;
   border-top: 1px solid black;
+  border-bottom: 0;
 }
 
 .Queue .q-entry.Current {
@@ -239,6 +239,10 @@ body {
 
 .Queue .q-entry.odd-entry {
   background-color: #eee;
+}
+
+.Queue .q-entry.last-entry {
+  border-bottom: 1px solid black;
 }
 
 .Queue .q-symbol {
@@ -313,10 +317,27 @@ body {
   opacity: 0.2;
 }
 
-/* This should align the two items in hstack below grid to the top.
- * MG??? why doesn't this work? */
-.below-grid {
+.GridSection .grid-progress-unseen {
+  border: 1px solid #444;
+  height: 28px;
+}
+
+/* thin line between stacked elements in progress bar */
+.GridSection .grid-item .progress-bar {
+  border-right: 1px solid black;
+}
+
+/* thick line between converged and un-converged parts of progress bar */
+.GridSection .grid-item .Tabled.progress-bar {
+  border-left: 5px solid black;
+}
+
+.GridSection .below-grid {
   align-items: start;
+}
+
+.GridSection .unconflicted-count {
+  margin-left: auto;
 }
 
 /*
@@ -358,6 +379,10 @@ body {
 .ColorsDisplay .col-head {
   padding-bottom: 12px;
   padding-left: 24px;
+}
+
+.ColorsDisplay ul {
+  padding-left: 10px;
 }
 
 /* this is the hstack for a legend that is not currently picked */

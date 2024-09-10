@@ -31,7 +31,7 @@ export default function Paper() {
   const hidePaperOutside = isOutsideRole && currentShow;
   const hideThisPaper = hidePaperOutside || !isPaper || isConflict;
   const hideMessage = isConflict
-    ? 'CONFLICTED!'
+    ? 'CONFLICT'
     : !isPaper
     ? 'No current paper.'
     : 'In session.';
