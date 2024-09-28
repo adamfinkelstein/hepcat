@@ -5,6 +5,7 @@ import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
+import { useFontInfo } from '../contexts/PreferencesContext';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
@@ -24,6 +25,7 @@ export default function UsersPage() {
   const { user, allUsers } = useUser();
   const { controlledLog } = useControlledLog();
   const { revealConfirmationBox } = useConfirmationBox();
+  const { currentFontStyle } = useFontInfo();
 
   const usersArr = Object.entries(allUsers).map(([_email, oneUser]) => oneUser);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -55,52 +57,54 @@ export default function UsersPage() {
 
   return (
     <Container className="UsersPage">
-      <Container className="mt-4">
-        <p className="font-size-1">All Users</p>
-        <Table striped bordered hover className="stats-table">
-          <thead>
-            <tr>
-              <th>Switch</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Email</th>
-              <th>Rooms</th>
-              <th>Online?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {usersArr.map((oneUser) => {
-              return (
-                <tr key={oneUser.email}>
-                  <td>
-                    {oneUser.email !== user.email && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={switchUserFunc(oneUser)}
-                      >
-                        Become
-                      </Button>
-                    )}
-                  </td>
-                  <td>
-                    <span className={userToClass(oneUser)}>
-                      {oneUser.full_name}
-                    </span>
-                  </td>
-                  <td>{oneUser.role_name}</td>
-                  <td>{oneUser.email}</td>
-                  <td>{oneUser.rooms?.replace(/Room_/g, '')}</td>
-                  <td>
-                    {oneUser.is_online && <Badge bg="success">Online</Badge>}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
-      </Container>
-      <p>&nbsp;</p>
+      <div className={currentFontStyle}>
+        <Container fluid className="mt-3">
+          <h1>All Users</h1>
+          <Table striped bordered hover className="stats-table">
+            <thead>
+              <tr>
+                <th>Switch</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Rooms</th>
+                <th>Online?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usersArr.map((oneUser) => {
+                return (
+                  <tr key={oneUser.email}>
+                    <td>
+                      {oneUser.email !== user.email && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={switchUserFunc(oneUser)}
+                        >
+                          Become
+                        </Button>
+                      )}
+                    </td>
+                    <td>
+                      <span className={userToClass(oneUser)}>
+                        {oneUser.full_name}
+                      </span>
+                    </td>
+                    <td>{oneUser.role_name}</td>
+                    <td>{oneUser.email}</td>
+                    <td>{oneUser.rooms?.replace(/Room_/g, '')}</td>
+                    <td>
+                      {oneUser.is_online && <Badge bg="success">Online</Badge>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </Container>
+        <p>&nbsp;</p>
+      </div>
     </Container>
   );
 }

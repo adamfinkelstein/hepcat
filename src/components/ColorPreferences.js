@@ -39,7 +39,7 @@ export default function ColorPreferences() {
   };
 
   return (
-    <Container className="ColorPreferences">
+    <Container fluid className="ColorPreferences">
       <span className="font-size-2">Color</span>
       <Stack direction="horizontal" gap={5}>
         <ColorsDisplay
@@ -57,7 +57,7 @@ export default function ColorPreferences() {
           presetColors={defaultColorVals}
         />
       </Stack>
-      <Container>
+      <Container fluid>
         <Button variant="secondary" onClick={handleDefaultColorButton}>
           Reset Default Colors
         </Button>

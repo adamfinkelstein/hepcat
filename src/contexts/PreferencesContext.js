@@ -19,11 +19,11 @@ const defaultTextBlackOrWhite = {
 };
 
 const fontSizes = {
-  'Extra Small': 0.8,
-  Small: 0.9,
-  Medium: 1.0,
-  Large: 1.2,
-  'Extra Large': 1.4,
+  'Extra Small': 'size-extra-small',
+  Small: 'size-small',
+  Medium: 'size-medium',
+  Large: 'size-large',
+  'Extra Large': 'size-extra-large',
 };
 
 const baseFontSizes = {
@@ -165,21 +165,6 @@ export default function PreferencesContext({ children }) {
     document.getElementsByTagName('head')[0].appendChild(cssStyle);
   });
 
-  // Dependency array means this effect will run whenever the fontSize changes.
-  useEffect(() => {
-    const cssStyle = document.createElement('style');
-    const multiplier = fontSizes[fontSize];
-    const fontKeys = Object.keys(baseFontSizes);
-    fontKeys.forEach((fontType) => {
-      const baseFontSize = baseFontSizes[fontType];
-      const fontPX = baseFontSize * multiplier;
-      const textNode = `.${fontType}{font-size:${fontPX}px}`;
-      const fontSizeRule = document.createTextNode(textNode);
-      cssStyle.appendChild(fontSizeRule);
-    });
-    document.getElementsByTagName('head')[0].appendChild(cssStyle);
-  }, [fontSize]);
-
   function changeToDefaultColors() {
     setColors(defaultColors);
     setTextBlackOrWhite(defaultTextBlackOrWhite);
@@ -209,7 +194,11 @@ export default function PreferencesContext({ children }) {
           <TextColorsContext.Provider value={textBlackOrWhite}>
             <ChangeTextColorsContext.Provider value={changeTextColors}>
               <FontInfoContext.Provider
-                value={{ currentFontSize: fontSize, fontSizes: fontSizes }}
+                value={{
+                  currentFontSize: fontSize,
+                  currentFontStyle: fontSizes[fontSize],
+                  fontSizes: fontSizes,
+                }}
               >
                 <ChangeFontSizeContext.Provider value={setFontSize}>
                   <FavoritesContext.Provider value={favorites}>

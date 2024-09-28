@@ -81,7 +81,7 @@ export default function FavoritePreferences() {
   };
 
   return (
-    <Container className="FavoritePreferences">
+    <Container fluid className="FavoritePreferences">
       <div className="font-size-2">Favorites</div>
       <form onSubmit={handleSubmit}>
         <div className="form-group mt-3">
@@ -97,7 +97,7 @@ export default function FavoritePreferences() {
         </div>
       </form>
 
-      <Container className="DeleteFavorites mt-3">
+      <Container fluid className="DeleteFavorites mt-3">
         <span className="font-size-4 mr-2">{deleteMsg}</span>
         {showDeleteAll && (
           <Button

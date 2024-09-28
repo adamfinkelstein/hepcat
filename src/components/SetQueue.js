@@ -348,7 +348,7 @@ export default function SetQueue() {
   }
 
   return (
-    <Container className="SetQueue">
+    <Container fluid className="SetQueue">
       <div>
         <h2>Hide Queue</h2>
         <Stack direction="horizontal" gap={2}>
@@ -510,7 +510,7 @@ export default function SetQueue() {
           onChange={handleInputChange}
         />
         <Stack direction="vertical" gap={2}>
-          <Container>
+          <Container fluid>
             <ul className="text-filter-instructions">
               <li className="font-size-4">
                 Room:{roomChoice} / Area:Geometry / Cluster:A / Bar:Above /

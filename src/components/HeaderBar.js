@@ -7,11 +7,13 @@ import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
+import { useFontInfo } from '../contexts/PreferencesContext';
 
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
   const { user, isAdmin, allUsers } = useUser();
   const { socketLogout } = useSocketIO();
+  const { currentFontStyle } = useFontInfo();
 
   function countOnlineUsers() {
     if (!isAdmin) return 0;
@@ -38,68 +40,76 @@ export default function HeaderBar() {
   const headerBarName = getHeaderBarName();
 
   return (
-    <Navbar bg="dark" variant="dark" fixed="top" className="HeaderBar">
-      <Container>
-        <Navbar.Brand as={NavLink} to="/">
-          Hepcat: SIGGRAPH PC Meeting
-        </Navbar.Brand>
+    <>
+      <Navbar bg="dark" variant="dark" fixed="top" className="HeaderBar">
+        <Container fluid className={currentFontStyle}>
+          <Navbar.Brand as={NavLink} to="/">
+            Hepcat: SIGGRAPH PC Meeting
+          </Navbar.Brand>
 
-        <Navbar.Collapse id="navbarScroll">
-          <Nav
-            className="me-auto my-2 my-lg-0 RightSideNav"
-            style={{ maxHeight: '200px' }}
-            navbarScroll
-          >
-            {user && (
-              <>
-                {isAdmin && (
-                  <Nav.Item>
-                    <Nav.Link as={NavLink} to="users">
-                      Online: <Badge bg="success">{onlineCount}</Badge>
-                    </Nav.Link>
-                  </Nav.Item>
-                )}
-                <NavDropdown title={headerBarName} id="navbarScrollingDropdown">
-                  <NavDropdown.Item as={NavLink} to="/">
-                    PC Meeting
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="about">
-                    About
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="preferences">
-                    Preferences
-                  </NavDropdown.Item>
+          <Navbar.Collapse id="navbarScroll">
+            <Nav
+              className="me-auto my-2 my-lg-0 RightSideNav"
+              style={{ maxHeight: '200px' }}
+              navbarScroll
+            >
+              {user && (
+                <>
                   {isAdmin && (
-                    <>
-                      <NavDropdown.Item as={NavLink} to="uploads">
-                        Upload Files
-                      </NavDropdown.Item>
-                      <NavDropdown.Item as={NavLink} to="progress">
-                        Progress
-                      </NavDropdown.Item>
-                      <NavDropdown.Item as={NavLink} to="users">
-                        Users
-                      </NavDropdown.Item>
-                    </>
+                    <Nav.Item>
+                      <Nav.Link as={NavLink} to="users">
+                        Online: <Badge bg="success">{onlineCount}</Badge>
+                      </Nav.Link>
+                    </Nav.Item>
                   )}
-                  <NavDropdown.Item as={NavLink} to="change_password">
-                    Change Password
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item
-                    onClick={() => {
-                      controlledLog('clicked logout');
-                      socketLogout(true);
-                    }}
+                  <NavDropdown
+                    title={headerBarName}
+                    id="navbarScrollingDropdown"
                   >
-                    Log Out
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </>
-            )}
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+                    <NavDropdown.Item as={NavLink} to="/">
+                      PC Meeting
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={NavLink} to="about">
+                      About
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={NavLink} to="preferences">
+                      Preferences
+                    </NavDropdown.Item>
+                    {isAdmin && (
+                      <>
+                        <NavDropdown.Item as={NavLink} to="uploads">
+                          Upload Files
+                        </NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="progress">
+                          Progress
+                        </NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="users">
+                          Users
+                        </NavDropdown.Item>
+                      </>
+                    )}
+                    <NavDropdown.Item as={NavLink} to="change_password">
+                      Change Password
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item
+                      onClick={() => {
+                        controlledLog('clicked logout');
+                        socketLogout(true);
+                      }}
+                    >
+                      Log Out
+                    </NavDropdown.Item>
+                  </NavDropdown>
+                </>
+              )}
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <div className={currentFontStyle}>
+        <div className="HeaderBarSpacer"></div>
+      </div>
+    </>
   );
 }

@@ -164,7 +164,7 @@ export default function Paper() {
   }
 
   return (
-    <Container className="Paper">
+    <Container fluid className="Paper">
       <div>
         {hideThisPaper ? (
           <p className="paper-message">{hideMessage}</p>

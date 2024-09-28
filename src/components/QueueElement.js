@@ -30,7 +30,7 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
   const qEntryClass = isConflict ? 'font-size-3 mx-auto' : 'font-size-4';
 
   return (
-    <Container className="QueueElement">
+    <Container fluid className="QueueElement">
       <Stack direction="horizontal">
         <div className={qEntryClass}>
           <span className="q-title">{prefix}&nbsp;</span>

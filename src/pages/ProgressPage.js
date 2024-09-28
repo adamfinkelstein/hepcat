@@ -7,6 +7,7 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useStatsContext } from '../contexts/StatsContext';
+import { useFontInfo } from '../contexts/PreferencesContext';
 import Stats from '../components/Stats';
 
 export default function ProgressPage() {
@@ -19,6 +20,7 @@ export default function ProgressPage() {
   const { roomChoice } = useUser();
   const { guiBar, setGuiBar } = useAppGlobals();
   const { stats } = useStatsContext();
+  const { currentFontStyle } = useFontInfo();
   const guiBarString = guiBar + '';
   const statsHeader = stats ? stats.header : [];
   const statsRows = stats ? stats.rows : [];
@@ -109,108 +111,110 @@ export default function ProgressPage() {
   }
 
   return (
-    <Container className="ProgressPage mt-4">
-      <Stack direction="horizontal">
-        <span className="font-size-1">Progress Page</span>
-      </Stack>
-      <hr />
-      <Stack direction="horizontal" className="mb-4">
-        <h2>Stats&nbsp;&nbsp;</h2>
-        <Button variant="primary" onClick={handleRequestStats}>
-          Refresh
-        </Button>
-        {<div>&nbsp;&nbsp;{statsWhen}</div>}
-      </Stack>
-      {stats ? (
-        <Stats header={statsHeader} rows={statsRows} />
-      ) : (
-        <div>Click "Refresh" button above to get stats.</div>
-      )}
-      <hr />
-      <Stack direction="horizontal" className="my-2">
-        <h2>Global Operations (use with care)&nbsp;&nbsp;</h2>
-        <Button
-          variant="secondary"
-          onClick={() => setShowGlobalOps(!showGlobalOps)}
-        >
-          {showHideText}
-        </Button>
-      </Stack>
-      <Collapse in={showGlobalOps}>
-        <Stack direction="vertical" gap={3}>
-          {conflictbot && (
-            <div>
-              Conflictbot move users in:&nbsp;&nbsp;
-              <Button
-                variant="warning"
-                onClick={() => handleRefreshConflictbot(false)}
-              >
-                {roomChoice}
-              </Button>
-              &nbsp;&nbsp;or&nbsp;&nbsp;
-              <Button
-                variant="warning"
-                onClick={() => handleRefreshConflictbot(true)}
-              >
-                All Rooms
-              </Button>
-            </div>
-          )}
-          <Stack direction="horizontal" gap={2}>
-            <Button
-              variant="danger"
-              onClick={handleSetBarButton}
-              className="change-bar-btn"
-            >
-              Change Bar
-            </Button>
-            <input
-              name="bar"
-              value={guiBarString}
-              onChange={(e) => setGuiBar(e.target.value)}
-            />
-          </Stack>
-          <Stack direction="horizontal" gap={2}>
-            <Button variant="danger" onClick={handleInitGridButton}>
-              Initialize Grid
-            </Button>
-            <div className="button-desc">
-              Initialize grid based on BBS discussions.
-            </div>
-          </Stack>
-          <Stack direction="horizontal" gap={2}>
-            <Button variant="danger" onClick={handleClearStickiesButton}>
-              Clear Stickies
-            </Button>
-            <div className="button-desc">Clear all stickies.</div>
-          </Stack>
-          <Stack direction="horizontal" gap={2}>
-            <Button
-              variant="danger"
-              onClick={() => handleBulkActionButton(false)}
-            >
-              Bulk&nbsp;Reject Below&nbsp;Bar
-            </Button>
-            <div className="button-desc">
-              Mark status of all unseen reject papers below bar as now
-              discussed.
-            </div>
-          </Stack>
-          <Stack direction="horizontal" gap={2}>
-            <Button
-              variant="danger"
-              onClick={() => handleBulkActionButton(true)}
-            >
-              Bulk&nbsp;Confirm in&nbsp;Queue
-            </Button>
-            <div className="button-desc">
-              Mark status of all unseen papers in PLENARY queue as now
-              discussed.
-            </div>
-          </Stack>
+    <Container className="ProgressPage mt-3">
+      <div className={currentFontStyle}>
+        <Stack direction="horizontal">
+          <h1>Progress Page</h1>
         </Stack>
-      </Collapse>
-      <p>&nbsp;</p>
+        <hr />
+        <Stack direction="horizontal" className="mb-4">
+          <h2>Stats&nbsp;&nbsp;</h2>
+          <Button variant="primary" onClick={handleRequestStats}>
+            Refresh
+          </Button>
+          {<div>&nbsp;&nbsp;{statsWhen}</div>}
+        </Stack>
+        {stats ? (
+          <Stats header={statsHeader} rows={statsRows} />
+        ) : (
+          <div>Click "Refresh" button above to get stats.</div>
+        )}
+        <hr />
+        <Stack direction="horizontal" className="my-2">
+          <h2>Global Operations (use with care)&nbsp;&nbsp;</h2>
+          <Button
+            variant="secondary"
+            onClick={() => setShowGlobalOps(!showGlobalOps)}
+          >
+            {showHideText}
+          </Button>
+        </Stack>
+        <Collapse in={showGlobalOps}>
+          <Stack direction="vertical" gap={3}>
+            {conflictbot && (
+              <div>
+                Conflictbot move users in:&nbsp;&nbsp;
+                <Button
+                  variant="warning"
+                  onClick={() => handleRefreshConflictbot(false)}
+                >
+                  {roomChoice}
+                </Button>
+                &nbsp;&nbsp;or&nbsp;&nbsp;
+                <Button
+                  variant="warning"
+                  onClick={() => handleRefreshConflictbot(true)}
+                >
+                  All Rooms
+                </Button>
+              </div>
+            )}
+            <Stack direction="horizontal" gap={2}>
+              <Button
+                variant="danger"
+                onClick={handleSetBarButton}
+                className="change-bar-btn"
+              >
+                Change Bar
+              </Button>
+              <input
+                name="bar"
+                value={guiBarString}
+                onChange={(e) => setGuiBar(e.target.value)}
+              />
+            </Stack>
+            <Stack direction="horizontal" gap={2}>
+              <Button variant="danger" onClick={handleInitGridButton}>
+                Initialize Grid
+              </Button>
+              <div className="button-desc">
+                Initialize grid based on BBS discussions.
+              </div>
+            </Stack>
+            <Stack direction="horizontal" gap={2}>
+              <Button variant="danger" onClick={handleClearStickiesButton}>
+                Clear Stickies
+              </Button>
+              <div className="button-desc">Clear all stickies.</div>
+            </Stack>
+            <Stack direction="horizontal" gap={2}>
+              <Button
+                variant="danger"
+                onClick={() => handleBulkActionButton(false)}
+              >
+                Bulk&nbsp;Reject Below&nbsp;Bar
+              </Button>
+              <div className="button-desc">
+                Mark status of all unseen reject papers below bar as now
+                discussed.
+              </div>
+            </Stack>
+            <Stack direction="horizontal" gap={2}>
+              <Button
+                variant="danger"
+                onClick={() => handleBulkActionButton(true)}
+              >
+                Bulk&nbsp;Confirm in&nbsp;Queue
+              </Button>
+              <div className="button-desc">
+                Mark status of all unseen papers in PLENARY queue as now
+                discussed.
+              </div>
+            </Stack>
+          </Stack>
+        </Collapse>
+        <p>&nbsp;</p>
+      </div>
     </Container>
   );
 }

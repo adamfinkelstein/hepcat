@@ -15,14 +15,36 @@ body {
   font-weight: bold;
 }
 
+.size-extra-small {
+  zoom: 70%;
+}
+
+.size-small {
+  zoom: 85%;
+}
+
+.size-medium {
+  zoom: 100%;
+}
+
+.size-large {
+  zoom: 115%;
+}
+
+.size-extra-large {
+  zoom: 130%;
+}
+
 .App {
   overflow: hidden;
-  padding: 50px 0 0 0;
+}
+
+.HeaderBarSpacer {
+  padding: 52px 0 0 0;
 }
 
 .Body {
   padding: 0;
-  position: fixed;
 }
 
 .col-head {
@@ -154,7 +176,7 @@ body {
 .Body .left-panel,
 .Body .right-panel {
   overflow-y: auto;
-  padding-top: 18px;
+  padding-top: 15px;
   padding-bottom: 100px;
 }
 

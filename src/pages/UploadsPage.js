@@ -8,6 +8,7 @@ import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useFontInfo } from '../contexts/PreferencesContext';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
@@ -19,6 +20,7 @@ export default function UploadsPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
   const { user, adminKey, conflictbot } = useUser();
+  const { currentFontStyle } = useFontInfo();
   const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
@@ -82,135 +84,137 @@ export default function UploadsPage() {
   }
 
   return (
-    <Container className="UploadsPage mt-4">
-      <p className="font-size-1 mt-2">Upload CSV Files Here</p>
-      <Container>
-        <Form>
-          <Form.Group controlId="form-file-upload" className="mb-3">
-            <Form.Label>Choose a CSV file:</Form.Label>
-            <Form.Control type="file" />
-          </Form.Group>
-        </Form>
-        <Stack direction="horizontal">
+    <Container className="UploadsPage mt-3">
+      <div className={currentFontStyle}>
+        <h1>Upload CSV Files Here</h1>
+        <Container fluid>
+          <Form>
+            <Form.Group controlId="form-file-upload" className="mb-3">
+              <Form.Label>Choose a CSV file:</Form.Label>
+              <Form.Control type="file" />
+            </Form.Group>
+          </Form>
+          <Stack direction="horizontal">
+            <div>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                onClick={(e) => handleSubmit(e)}
+              >
+                Send File
+              </button>
+            </div>
+          </Stack>
+          <p>&nbsp;</p>
+          <span className="font-size-2">{pendingTitle}</span>
+          <ul>
+            {pendingList.map((item) => {
+              return (
+                <li key={item} className="file-list-item">
+                  {item}
+                </li>
+              );
+            })}
+          </ul>
+          <span className="font-size-2">{uploadTitle}</span>
+          <ul>
+            {uploadList.map((item) => {
+              return (
+                <li key={item.file} className="file-list-item">
+                  {formatUpload(item)}
+                </li>
+              );
+            })}
+          </ul>
           <div>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              onClick={(e) => handleSubmit(e)}
-            >
-              Send File
-            </button>
+            <hr />
+            <span className="font-size-2">Extra Admin Functions</span>
           </div>
-        </Stack>
-        <p>&nbsp;</p>
-        <span className="font-size-2">{pendingTitle}</span>
-        <ul>
-          {pendingList.map((item) => {
-            return (
-              <li key={item} className="file-list-item">
-                {item}
-              </li>
-            );
-          })}
-        </ul>
-        <span className="font-size-2">{uploadTitle}</span>
-        <ul>
-          {uploadList.map((item) => {
-            return (
-              <li key={item.file} className="file-list-item">
-                {formatUpload(item)}
-              </li>
-            );
-          })}
-        </ul>
-        <div>
-          <hr />
-          <span className="font-size-2">Extra Admin Functions</span>
-        </div>
-        <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
-          {conflictbot && (
+          <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
+            {conflictbot && (
+              <Stack direction="horizontal">
+                <a
+                  className="btn btn-primary"
+                  href={'/admin/conflictbot3/' + adminKey}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  New Conflictbot3
+                </a>
+                &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
+              </Stack>
+            )}
+            {conflictbot && (
+              <Stack direction="horizontal">
+                <a
+                  className="btn btn-primary"
+                  href={'/admin/old_zoom_conflictbot/' + adminKey}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Old Zoom Conflictbot
+                </a>
+                &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
+              </Stack>
+            )}
             <Stack direction="horizontal">
               <a
                 className="btn btn-primary"
-                href={'/admin/conflictbot3/' + adminKey}
+                href={'/admin/download_csv/filters/' + adminKey}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                New Conflictbot3
+                Download Queries
               </a>
-              &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
+              &nbsp;&nbsp;Download a CSV with current filters.
             </Stack>
-          )}
-          {conflictbot && (
             <Stack direction="horizontal">
               <a
-                className="btn btn-primary"
-                href={'/admin/old_zoom_conflictbot/' + adminKey}
+                className="btn btn-warning"
+                href={'/admin/download_csv/results/' + adminKey}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Old Zoom Conflictbot
+                Download Results
               </a>
-              &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
+              &nbsp;&nbsp;Download a CSV with the final status of all papers.
             </Stack>
-          )}
-          <Stack direction="horizontal">
-            <a
-              className="btn btn-primary"
-              href={'/admin/download_csv/filters/' + adminKey}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download Queries
-            </a>
-            &nbsp;&nbsp;Download a CSV with current filters.
+            <Stack direction="horizontal">
+              <a
+                className="btn btn-warning"
+                href={'/admin/download_zip/' + adminKey}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download ZIP
+              </a>
+              &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
+            </Stack>
+            {isSuper && (
+              <>
+                <Stack direction="horizontal">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleWipeDBButton(true)}
+                  >
+                    Load Test Database
+                  </Button>
+                  &nbsp;&nbsp;This loads a clean test database.
+                </Stack>
+                <Stack direction="horizontal">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleWipeDBButton(false)}
+                  >
+                    Wipe Database Clean
+                  </Button>
+                  &nbsp;&nbsp;This removes ALL data from the database!
+                </Stack>
+              </>
+            )}
           </Stack>
-          <Stack direction="horizontal">
-            <a
-              className="btn btn-warning"
-              href={'/admin/download_csv/results/' + adminKey}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download Results
-            </a>
-            &nbsp;&nbsp;Download a CSV with the final status of all papers.
-          </Stack>
-          <Stack direction="horizontal">
-            <a
-              className="btn btn-warning"
-              href={'/admin/download_zip/' + adminKey}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download ZIP
-            </a>
-            &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
-          </Stack>
-          {isSuper && (
-            <>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton(true)}
-                >
-                  Load Test Database
-                </Button>
-                &nbsp;&nbsp;This loads a clean test database.
-              </Stack>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton(false)}
-                >
-                  Wipe Database Clean
-                </Button>
-                &nbsp;&nbsp;This removes ALL data from the database!
-              </Stack>
-            </>
-          )}
-        </Stack>
-      </Container>
+        </Container>
+      </div>
     </Container>
   );
 }

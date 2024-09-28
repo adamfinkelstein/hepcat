@@ -6,6 +6,7 @@ import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useFontInfo } from '../contexts/PreferencesContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
@@ -17,6 +18,7 @@ export default function ChangePasswordPage() {
   const { socketEmit } = useSocketIO();
   const { flash } = useFlasher();
   const { user, isAdmin, allUsers } = useUser();
+  const { currentFontStyle } = useFontInfo();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
@@ -110,112 +112,114 @@ export default function ChangePasswordPage() {
 
   return (
     <Container className="ChangePasswordPage">
-      <Stack direction="vertical" className="mt-4" gap={3}>
-        <span className="font-size-1">Change Password</span>
-        <Stack direction="vertical" className="mt-4" gap={2}>
-          {allowSetOthers && (
-            <Stack direction="horizontal" className="password-switch-stack">
-              <Form.Check
-                type="switch"
-                defaultChecked={isForOther}
-                className="password-switch"
-                onChange={() => setIsForOther(!isForOther)}
-              />
-              <span className="font-size-4">Change for someone else</span>
-              {isForOther && (
-                <>
-                  <span>&nbsp;&mdash;&nbsp;</span>
-                  <DropdownButton
-                    title={forWho}
-                    type="button"
-                    variant="secondary"
-                    className="select-user-dropdown"
-                  >
-                    {usersArr.map((user, index) => {
-                      return (
-                        <Dropdown.Item
-                          key={index}
-                          as="button"
-                          onClick={() => handleSetFor(user)}
-                        >
-                          {user.full_name}
-                        </Dropdown.Item>
-                      );
-                    })}
-                  </DropdownButton>
-                </>
-              )}
-            </Stack>
-          )}
+      <div className={currentFontStyle}>
+        <Stack direction="vertical" className="mt-3" gap={3}>
+          <h1>Change Password</h1>
+          <Stack direction="vertical" className="mt-4" gap={2}>
+            {allowSetOthers && (
+              <Stack direction="horizontal" className="password-switch-stack">
+                <Form.Check
+                  type="switch"
+                  defaultChecked={isForOther}
+                  className="password-switch"
+                  onChange={() => setIsForOther(!isForOther)}
+                />
+                <span className="font-size-4">Change for someone else</span>
+                {isForOther && (
+                  <>
+                    <span>&nbsp;&mdash;&nbsp;</span>
+                    <DropdownButton
+                      title={forWho}
+                      type="button"
+                      variant="secondary"
+                      className="select-user-dropdown"
+                    >
+                      {usersArr.map((user, index) => {
+                        return (
+                          <Dropdown.Item
+                            key={index}
+                            as="button"
+                            onClick={() => handleSetFor(user)}
+                          >
+                            {user.full_name}
+                          </Dropdown.Item>
+                        );
+                      })}
+                    </DropdownButton>
+                  </>
+                )}
+              </Stack>
+            )}
 
-          {oldPassNeeded && (
-            <div>
-              <div className="reset-password-row">
-                <label>Current Password:</label>
-                <input
-                  name="oldPassword"
+            {oldPassNeeded && (
+              <div>
+                <div className="reset-password-row">
+                  <label>Current Password:</label>
+                  <input
+                    name="oldPassword"
+                    value={oldPassword}
+                    type="password"
+                    disabled={isForOther}
+                    onChange={handlePasswordChange}
+                    style={{ marginLeft: '15px' }}
+                  />
+                </div>
+                <PasswordChecklist
+                  rules={['minLength']}
+                  minLength={1}
                   value={oldPassword}
-                  type="password"
-                  disabled={isForOther}
-                  onChange={handlePasswordChange}
-                  style={{ marginLeft: '15px' }}
+                  messages={{
+                    minLength:
+                      'Current password is required to set new password.',
+                  }}
                 />
               </div>
-              <PasswordChecklist
-                rules={['minLength']}
-                minLength={1}
-                value={oldPassword}
-                messages={{
-                  minLength:
-                    'Current password is required to set new password.',
-                }}
+            )}
+            <div className="reset-password-row">
+              <label>New Password:</label>
+              <input
+                name="password"
+                value={password}
+                type="password"
+                onChange={handlePasswordChange}
+                style={{ marginLeft: '15px' }}
               />
             </div>
-          )}
-          <div className="reset-password-row">
-            <label>New Password:</label>
-            <input
-              name="password"
-              value={password}
-              type="password"
-              onChange={handlePasswordChange}
-              style={{ marginLeft: '15px' }}
-            />
-          </div>
-          <div className="reset-password-row">
-            <label>Repeat New Password:</label>
-            <input
-              name="passwordAgain"
-              value={passwordAgain}
-              type="password"
-              onChange={handlePasswordChange}
-              style={{ marginLeft: '15px' }}
-            />
-          </div>
-          <div>
-            <PasswordChecklist
-              rules={rules}
-              minLength={minLen}
-              value={password}
-              valueAgain={passwordAgain}
-              onChange={handleChecklist}
-            />
-          </div>
-          <Stack direction="horizontal">
-            <div>
-              <button
-                type="submit"
-                disabled={!enableSubmit}
-                className="btn btn-primary reset-password-button"
-                onClick={() => handleSubmit()}
-                style={{ marginTop: '15px' }}
-              >
-                Reset Password
-              </button>
+            <div className="reset-password-row">
+              <label>Repeat New Password:</label>
+              <input
+                name="passwordAgain"
+                value={passwordAgain}
+                type="password"
+                onChange={handlePasswordChange}
+                style={{ marginLeft: '15px' }}
+              />
             </div>
+            <div>
+              <PasswordChecklist
+                rules={rules}
+                minLength={minLen}
+                value={password}
+                valueAgain={passwordAgain}
+                onChange={handleChecklist}
+              />
+            </div>
+            <Stack direction="horizontal">
+              <div>
+                <button
+                  type="submit"
+                  disabled={!enableSubmit}
+                  className="btn btn-primary reset-password-button"
+                  onClick={() => handleSubmit()}
+                  style={{ marginTop: '15px' }}
+                >
+                  Reset Password
+                </button>
+              </div>
+            </Stack>
           </Stack>
         </Stack>
-      </Stack>
+      </div>
     </Container>
   );
 }

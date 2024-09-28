@@ -51,9 +51,9 @@ export default function Queue() {
   }
 
   return (
-    <Container className="Queue">
+    <Container fluid className="Queue">
       {user && isAdmin && <AdminQueueControls />}
-      <Container>
+      <Container fluid>
         {hideQueue && (
           <div className="font-size-3 queue-hidden-for-non">
             Queue hidden for non-admin users, saying: <br /> {hiddenMsg}
@@ -84,7 +84,7 @@ export default function Queue() {
           </Stack>
         </Stack>
       </Container>
-      <Container className="mt-2 q-list-container">
+      <Container fluid className="mt-2 q-list-container">
         <ul>
           {queueSlice.map((paper, index) => {
             return (

@@ -8,7 +8,7 @@ export default function TextPreferences() {
   let changeFontSize = useChangeFontSize();
 
   return (
-    <Container className="TextPreferences mt-4">
+    <Container fluid className="TextPreferences mt-4">
       <span className="font-size-2">Text</span>
       <Stack direction="horizontal">
         <span className="font-size-3">Choose font size:</span>

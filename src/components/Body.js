@@ -12,6 +12,7 @@ import { useUser } from '../contexts/UserContext';
 import {
   useSplitWidth,
   useChangeSplitWidth,
+  useFontInfo,
 } from '../contexts/PreferencesContext';
 import Queue from './Queue';
 import Paper from './Paper';
@@ -32,6 +33,7 @@ export default function Body() {
   const { queue, serverGlobs } = useAppGlobals();
   const splitWidth = useSplitWidth();
   const changeSplitWidth = useChangeSplitWidth();
+  const { currentFontStyle } = useFontInfo();
   const showRoomWarning =
     !isAdmin && conflictbot && roomCalledTo !== roomChoice;
   const isScreenRole = user?.role_name === 'Screen';
@@ -79,60 +81,68 @@ export default function Body() {
           minSize={[500, 550]}
           onDragEnd={handleDragEnd}
         >
-          <Container className="left-panel">
-            <Stack direction="horizontal" gap={4} className="room-choice-menu">
-              <DropdownButton title={roomChoice} variant="secondary">
-                {userRooms.map((room, index) => {
-                  return (
-                    <Dropdown.Item
-                      key={index}
-                      as="button"
-                      onClick={() => setRoomChoice(room)}
-                    >
-                      {room}
-                    </Dropdown.Item>
-                  );
-                })}
-              </DropdownButton>
-              {showBringButton && (
-                <Button variant="primary" onClick={handleBringButton}>
-                  {bringButtonLabel}
-                </Button>
+          <Container fluid className="left-panel">
+            <div className={currentFontStyle}>
+              <Stack
+                direction="horizontal"
+                gap={4}
+                className="room-choice-menu"
+              >
+                <DropdownButton title={roomChoice} variant="secondary">
+                  {userRooms.map((room, index) => {
+                    return (
+                      <Dropdown.Item
+                        key={index}
+                        as="button"
+                        onClick={() => setRoomChoice(room)}
+                      >
+                        {room}
+                      </Dropdown.Item>
+                    );
+                  })}
+                </DropdownButton>
+                {showBringButton && (
+                  <Button variant="primary" onClick={handleBringButton}>
+                    {bringButtonLabel}
+                  </Button>
+                )}
+                {showRoomWarning && (
+                  <span id="room-warning">
+                    You were last called to {roomCalledTo}.
+                  </span>
+                )}
+              </Stack>
+              {queue.length && !hideQueue ? (
+                <Queue />
+              ) : (
+                <div className="queue-message">{message}</div>
               )}
-              {showRoomWarning && (
-                <span id="room-warning">
-                  You were last called to {roomCalledTo}.
-                </span>
-              )}
-            </Stack>
-            {queue.length && !hideQueue ? (
-              <Queue />
-            ) : (
-              <div className="queue-message">{message}</div>
-            )}
+            </div>
           </Container>
-          <Container className="right-panel">
-            <Tabs
-              defaultActiveKey="paper"
-              id="paper-tabs"
-              className="mb-3 font-size-3 tabs"
-            >
-              {!hideQueue && (
-                <Tab eventKey="paper" title="Paper" className="tab">
-                  <Paper />
-                </Tab>
-              )}
-              {showGrid && (
-                <Tab eventKey="grid" title="Grid" className="tab">
-                  <GridSection />
-                </Tab>
-              )}
-              {isAdmin && (
-                <Tab eventKey="queue" title="Set Queue" className="tab">
-                  <SetQueue />
-                </Tab>
-              )}
-            </Tabs>
+          <Container fluid className="right-panel">
+            <div className={currentFontStyle}>
+              <Tabs
+                defaultActiveKey="paper"
+                id="paper-tabs"
+                className="mb-3 font-size-3 tabs"
+              >
+                {!hideQueue && (
+                  <Tab eventKey="paper" title="Paper" className="tab">
+                    <Paper />
+                  </Tab>
+                )}
+                {showGrid && (
+                  <Tab eventKey="grid" title="Grid" className="tab">
+                    <GridSection />
+                  </Tab>
+                )}
+                {isAdmin && (
+                  <Tab eventKey="queue" title="Set Queue" className="tab">
+                    <SetQueue />
+                  </Tab>
+                )}
+              </Tabs>
+            </div>
           </Container>
         </Split>
       )}

@@ -20,7 +20,7 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   }
 
   return (
-    <Container className="PaperConflict">
+    <Container fluid className="PaperConflict">
       {conflicts.length === 0 ? (
         <div className="font-size-4">{noConflictsStr}</div>
       ) : (
