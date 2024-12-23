@@ -1,0 +1,28 @@
+import HoverTip from './HoverTip.js';
+
+export default function StickyTip() {
+  return (
+    <HoverTip
+      label="How to use this?"
+      header="Sticky Usage"
+      className="StickyTip"
+    >
+      <div>
+        Signal the Chair that a paper is ready for public discussion:
+        <ul>
+          <li>
+            <strong>Tabled-Sticky</strong> &mdash; Either:
+            <ol>
+              <li>Primary wants help/advice from the PC, or</li>
+              <li>A PC member wants to revisit a paper discussion.</li>
+            </ol>
+          </li>
+          <li>
+            <strong>Reject, Conference</strong> or
+            <strong> Journal</strong> &mdash; Paper has converged.
+          </li>
+        </ul>
+      </div>
+    </HoverTip>
+  );
+}

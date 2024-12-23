@@ -129,6 +129,8 @@ export default function AppContext({ children }) {
   useEffect(() => {
     const countConvergedPapersInGrid = (papers) => {
       let converged = 0;
+      let pending = 0;
+      let tabledStickyCount = 0;
       const convergedStatuses = ['Journal', 'Conference', 'Reject'];
       const counts = {};
       for (const nid in papers) {
@@ -136,32 +138,33 @@ export default function AppContext({ children }) {
         const status = paper.status;
         if (convergedStatuses.includes(status)) {
           converged++;
+        } else {
+          pending++;
         }
-        if (status in counts) {
+        // Tabled-Sticky is a special case
+        if (paper.tabled_sticky) {
+          tabledStickyCount++;
+        } // prevent double counting as Tabled
+        else if (status in counts) {
           counts[status]++;
         } else {
           counts[status] = 1;
         }
       }
       counts['Converged'] = converged;
-      // controlledLog('##### countConvergedPapersInGrid:', counts);
+      counts['Pending'] = pending;
+      counts['Tabled-Sticky'] = tabledStickyCount;
+      // controlledLog('###### countConvergedPapersInGrid:', counts);
       return counts;
     };
 
-    const updateGridEntry = (nid, status) => {
-      const grid_entry = grid && grid.papers ? grid.papers[nid] : null;
-      if (!grid_entry) {
+    const updateGridEntry = (grid_update) => {
+      const nid = grid_update.nid;
+      if (!nid || !grid || !grid.papers) {
         controlledLog('*** cannot find grid entry for nid:', nid);
         return;
       }
-      // controlledLog('*** about to update grid entry:', grid_entry)
-      if (status) {
-        grid_entry.status = status;
-        grid_entry.sticky = false;
-      } else {
-        grid_entry.sticky = true;
-      }
-      //controlledLog('just updated grid entry:', grid_entry)
+      grid.papers[nid] = grid_update;
       const newGrid = { ...grid };
       newGrid.counts = countConvergedPapersInGrid(newGrid.papers);
       setGrid(newGrid); // force update
@@ -177,9 +180,14 @@ export default function AppContext({ children }) {
       setQueue(newQueue); // force update
     };
 
-    const receiveSticky = (grid_nid) => {
-      controlledLog('received sticky: ' + grid_nid);
-      updateGridEntry(grid_nid, null); // null status -> set sticky
+    const receiveSticky = (encrypted_grid_update) => {
+      const grid_update = decryptObjectOrNull(encrypted_grid_update);
+      if (!grid_update) {
+        controlledLog('received sticky for conflicted paper (ignored)');
+        return;
+      }
+      controlledLog('received sticky grid update: ' + grid_update);
+      updateGridEntry(grid_update);
     };
 
     const receiveGlobs = (data) => {
@@ -203,7 +211,7 @@ export default function AppContext({ children }) {
         }
       }
       if (data.update) {
-        updateGridEntry(data.update.grid_nid, data.update.status);
+        updateGridEntry(data.update.grid_update);
       }
       // bar is same for all rooms
       const barString = data.bar + '';

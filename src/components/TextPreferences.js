@@ -9,9 +9,9 @@ export default function TextPreferences() {
 
   return (
     <Container fluid className="TextPreferences mt-4">
-      <span className="font-size-2">Text</span>
+      <h2>Text</h2>
       <Stack direction="horizontal">
-        <span className="font-size-3">Choose font size:</span>
+        <span className="bigger-font">Choose font size:</span>
         <DropdownButton
           id="dropdown-item-button"
           title={fontInfo['currentFontSize']}

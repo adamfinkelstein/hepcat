@@ -8,8 +8,14 @@ import ChooseStatusDropdown from './ChooseStatusDropdown';
 export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
   const { roomChoice } = useUser();
-  const { newStatus, setNewStatus, queueCurrent, queue, serverGlobs } =
-    useAppGlobals();
+  const {
+    newStatus,
+    setNewStatus,
+    queueCurrent,
+    queue,
+    serverGlobs,
+    statusList,
+  } = useAppGlobals();
   const disablePrev = queueCurrent === 0;
   const disableNext = queueCurrent >= queue.length;
   const disableShow = disableNext || serverGlobs.current_show;
@@ -37,29 +43,33 @@ export default function AdminQueueControls() {
     <Stack direction="horizontal" gap={2} className="AdminQueueControls mt-3">
       <Button
         disabled={disablePrev}
-        className="btn-light arrow-btn font-size-4"
+        className="btn-light arrow-btn"
         onClick={handleUpArrow}
       >
         {upArrow}
       </Button>
       <Button
         disabled={disableNext}
-        className="btn-light arrow-btn font-size-4"
+        className="btn-light arrow-btn"
         onClick={handleDownArrow}
       >
         {dnArrow}
       </Button>
       <Button
         disabled={disableShow}
-        className="btn-light font-size-4"
+        className="btn-light"
         onClick={handleShowButton}
       >
         Show
       </Button>
-      <ChooseStatusDropdown currentStatus={newStatus} setValue={setNewStatus} />
+      <ChooseStatusDropdown
+        choiceList={statusList}
+        currentChoice={newStatus}
+        setValue={setNewStatus}
+      />
       <Button
         disabled={disableNext}
-        className="btn-light font-size-4"
+        className="btn-light"
         onClick={handleAdvanceButton}
       >
         Advance

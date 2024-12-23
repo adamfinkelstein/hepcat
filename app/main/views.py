@@ -22,6 +22,12 @@ def send_static_index():
     return send_from_directory(static_folder, "index.html")
 
 
+@main.route("/help/")
+def show_help_page():
+    log_print("deliver help page...")
+    return render_template("help.html")
+
+
 @main.route("/api/reset_password", methods=["POST"])
 def reset_password():
     email = request.get_json().get("email")

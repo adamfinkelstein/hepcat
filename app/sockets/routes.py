@@ -129,6 +129,7 @@ def count_papers_in_all_queues():
 
 def get_grid_paper_dump(paper):
     status = "Unseen"
+    sticky_status = None
     sticky = False
     history = list(paper.history)
     context_sticky = context_str_to_enum("Sticky")
@@ -136,11 +137,24 @@ def get_grid_paper_dump(paper):
     for h in history:
         if h.context_enum == context_sticky:
             sticky = True
+            sticky_status = h.status
         elif h.context_enum >= context_plenary:  # any room
             sticky = False
             status = h.status
-    paper_dump = {"nid": paper.nid, "status": status, "sticky": sticky}
+    tabled_sticky = sticky and (status == sticky_status == "Tabled")
+    paper_dump = {
+        "nid": paper.nid,
+        "status": status,
+        "sticky": sticky,
+        "tabled_sticky": tabled_sticky,
+    }
     return paper_dump
+
+
+def get_encrypted_grid_entry(paper):
+    paper_dump = get_grid_paper_dump(paper)
+    paper_enc = encrypt_obj_with_oid(paper_dump, paper.oid, paper.key)
+    return paper_enc
 
 
 def get_grid_dump():
@@ -151,15 +165,13 @@ def get_grid_dump():
     for paper in papers:
         nid = paper.nid
         oid = paper.oid
-        key = paper.key
         if nid == 9999:  # do not put test paper in grid
             continue
         if paper.below_bar:
             below_oids.append(oid)
         else:
             above_oids.append(oid)
-        paper_dump = get_grid_paper_dump(paper)
-        paper_enc = encrypt_obj_with_oid(paper_dump, oid, key)
+        paper_enc = get_encrypted_grid_entry(paper)
         papers_encrypted.append(paper_enc)
     grid_dump = {
         "papers_encrypted": papers_encrypted,
@@ -1161,7 +1173,7 @@ def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["newStatus"]
     log_print(f"admin request to advance queue in {room} with status {status_update}")
-    before_index, paper = update_current_paper_status(room, status_update)
+    index_before_advance, paper = update_current_paper_status(room, status_update)
     if not paper:
         msg = "Attempt to advance queue beyond end"
         log_print(msg)
@@ -1172,10 +1184,11 @@ def admin_advance_queue(data):
     try_sql_commit()
     invalidate_grid_cache()
     invalidate_queue_cache(room)
+    grid_paper_dump = get_grid_paper_dump(paper)
     update = {
-        "queue_index": before_index,
-        "grid_nid": paper.nid,
+        "queue_index": index_before_advance,
         "status": status_update,
+        "grid_update": grid_paper_dump,
     }
     update_encrypted = encrypt_obj_with_oid(update, paper.oid, paper.key)
     globs, current_paper = get_globs_dump_with_status(room)
@@ -1452,15 +1465,18 @@ def user_set_sticky(data):
     is_reject = status == "Reject"
     status_enum = status_str_to_enum(status)
     context_plenary = context_str_to_enum("Plenary")
-    context = context_str_to_enum("Sticky")  # default (most cases)
+    context_sticky = context_str_to_enum("Sticky")
+    context = context_sticky  # default (most cases)
     auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
+    # room_status = get_latest_room_history_status(paper)
     if auto_reject and paper.below_bar and is_reject:
         context = context_plenary  # Mark in Plenary instead of Sticky
     history = History(paper=paper, context_enum=context, status_enum=status_enum)
     db.session.add(history)
     if try_sql_commit():
         invalidate_grid_cache()
-        emit("server_set_sticky", nid, broadcast=True)
+        grid_update = get_encrypted_grid_entry(paper)
+        emit("server_set_sticky", grid_update, broadcast=True)
         if not playback:
             message = f"Sticky filed for paper {nid} ({status})."
             data = {"message": message, "type": "success"}

@@ -148,8 +148,8 @@ export default function SocketIOContext({ children }) {
 
     // Socket.IO handler for the server to push a flashed message */
     s.on('server_send_flasher', (data, cb) => {
-      controlledLog('got flasher:');
-      controlledLog(data);
+      // controlledLog('got flasher:');
+      // controlledLog(data);
       flash(data.message, data.type);
 
       // the server may request acknowledgement of this message, in that case

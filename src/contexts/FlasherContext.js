@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import Alert from 'react-bootstrap/Alert';
-import { useControlledLog } from '../contexts/ControlledLogContext';
+// import { useControlledLog } from '../contexts/ControlledLogContext';
 
 const FlasherContext = createContext();
 let flashId = 0; // use incrementing number to assign a unique ID to each alert
@@ -21,11 +21,11 @@ export default function FlashContext({ children }) {
   // - visible: true when the alert appears sliding from the right,
   //   false when the alert needs to slide out
   const [messages, setMessages] = useState([]);
-  const { controlledLog } = useControlledLog();
+  // const { controlledLog } = useControlledLog();
 
   const hideFlash = useCallback(
     (id) => {
-      controlledLog('hideFlash', id);
+      // controlledLog('hideFlash', id);
       setMessages((messages) =>
         messages.map((message) =>
           message.flashId === id ? { ...message, visible: false } : message,
@@ -34,14 +34,14 @@ export default function FlashContext({ children }) {
 
       // let the slide out animation play, then delete this alert
       const deleteFlash = (id) => {
-        controlledLog('deleteFlash', id);
+        // controlledLog('deleteFlash', id);
         setMessages((messages) =>
           messages.filter((message) => message.flashId !== id),
         );
       };
       setTimeout(deleteFlash.bind(null, id), 600);
     },
-    [controlledLog],
+    [], // was [controlledLog] until commented out
   );
 
   const flash = useCallback(

@@ -7,32 +7,44 @@ body {
   margin: 0;
 }
 
-.font-size-1 {
-  font-weight: bold;
+.bigger-font {
+  font-size: 120%;
 }
 
-.font-size-2 {
-  font-weight: bold;
+.size-3XS {
+  zoom: 60%;
 }
 
-.size-extra-small {
-  zoom: 70%;
+.size-2XS {
+  zoom: 68%;
 }
 
-.size-small {
-  zoom: 85%;
+.size-XS {
+  zoom: 77%;
 }
 
-.size-medium {
+.size-S {
+  zoom: 88%;
+}
+
+.size-M {
   zoom: 100%;
 }
 
-.size-large {
-  zoom: 115%;
+.size-L {
+  zoom: 108%;
 }
 
-.size-extra-large {
-  zoom: 130%;
+.size-XL {
+  zoom: 117%;
+}
+
+.size-2XL {
+  zoom: 126%;
+}
+
+.size-3XL {
+  zoom: 136%;
 }
 
 .App {
@@ -47,7 +59,7 @@ body {
   padding: 0;
 }
 
-.col-head {
+.underline {
   text-decoration: underline;
 }
 
@@ -314,7 +326,7 @@ body {
  * GRID
  */
 
-.GridSection .grid-display-dropdown {
+.GridTab .grid-display-dropdown {
   margin-left: auto;
 }
 
@@ -339,26 +351,34 @@ body {
   opacity: 0.2;
 }
 
-.GridSection .grid-progress-unseen {
+.GridTab .grid-progress-bar {
   border: 1px solid #444;
   height: 28px;
 }
 
 /* thin line between stacked elements in progress bar */
-.GridSection .grid-item .progress-bar {
+.GridTab .grid-item .progress-bar {
   border-right: 1px solid black;
 }
 
-/* thick line between converged and un-converged parts of progress bar */
-.GridSection .grid-item .Tabled.progress-bar {
+/* remove thin line from rightmost items in progress bar */
+.GridTab .Unseen.progress-bar,
+.GridTab .Conflict.progress-bar {
+  border-right: 0;
+}
+
+/* thick line between different sections of progress bar */
+.GridTab .Tabled-Sticky.progress-bar,
+.GridTab .Conflict.progress-bar {
   border-left: 5px solid black;
 }
 
-.GridSection .below-grid {
+/* Appears to no longer be used.
+.GridTab .below-grid {
   align-items: start;
-}
+} */
 
-.GridSection .unconflicted-count {
+.GridTab .unconflicted-count {
   margin-left: auto;
 }
 
@@ -383,61 +403,61 @@ body {
   margin-bottom: 20px;
 }
 
+.SetQueue .dropdown-item {
+  background-color: rgba(39, 87, 195, 0.1);
+}
+
+.SetQueue .dropdown-item:hover {
+  color: white;
+  background-color: rgb(39, 87, 195);
+}
+
 /*
  * PREFS
  */
 
-/* These two align next to each other below grid */
-.ColorsDisplay,
-.set-sticky {
-  line-height: 95%;
-}
-
-.ColorsDisplay .legend-container {
-  list-style: none;
-  padding: 3px;
-}
-
-.ColorsDisplay .col-head {
-  padding-bottom: 12px;
-  padding-left: 24px;
-}
-
-.ColorsDisplay ul {
-  padding-left: 10px;
-}
-
 /* this is the hstack for a legend that is not currently picked */
-.ColorsDisplay .unselected-color {
+.ColorLegend .unselected-color {
   border: 1px solid white;
   padding: 3px 8px;
 }
 
 /* this is the hstack for a legend that is currently picked */
-.ColorsDisplay .selected-color {
+.ColorLegend .selected-color {
   border: 1px solid black;
   border-radius: 6px;
   padding: 3px 8px;
 }
 
-.ColorsDisplay .rectangle,
+.ColorLegend .rectangle,
 .ChooseStatusDropdown .rectangle {
   border: 1px solid black;
   border-radius: 4px;
   display: inline-block;
   height: 15px;
-  margin-left: 5px;
-  margin-right: 10px;
   width: 15px;
+  margin-right: 0.1em;
 }
 
 .ChooseStatusDropdown {
   border: 1px solid black;
   border-radius: 4px;
+  height: 42px; /* force same height as neighboring buttons */
 }
 
 .ChooseStatusDropdown:hover {
   background: lightyellow;
+}
+
+/* this gets rid of the triangle on the dropdown, which was broken.
+ * but we replace it using the "extra" feature.
+ */
+.ChooseStatusDropdown .dropdown-toggle::after {
+  display: none;
+}
+
+.ChooseStatusDropdown .pull-down {
+  margin-top: -5px;
 }
 
 .PreferencesPage .favorites-input {
@@ -446,4 +466,9 @@ body {
 
 .FavoritePreferences {
   margin-bottom: 50px;
+}
+
+.sticky-popover {
+  color: white;
+  background-color: darkgray;
 }

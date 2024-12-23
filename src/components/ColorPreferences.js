@@ -3,6 +3,7 @@ import { SketchPicker } from 'react-color';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
+import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import {
@@ -11,11 +12,12 @@ import {
   useDefaultColors,
   useChangeTextColors,
 } from '../contexts/PreferencesContext';
-import ColorsDisplay from './ColorsDisplay';
+import ColorLegend from './ColorLegend';
 
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
   const colors = useColors();
+  const colorKeys = Object.keys(colors);
   const changeColor = useChangeColor();
   const { defaultColors, changeToDefaultColors } = useDefaultColors();
   const defaultColorVals = Object.values(defaultColors);
@@ -40,13 +42,8 @@ export default function ColorPreferences() {
 
   return (
     <Container fluid className="ColorPreferences">
-      <span className="font-size-2">Color</span>
+      <h2>Modify Colors</h2>
       <Stack direction="horizontal" gap={5}>
-        <ColorsDisplay
-          clickable
-          setSelectedColorKey={setSelectedColorKey}
-          selectedColorKey={selectedColorKey}
-        />
         <SketchPicker
           disableAlpha
           color={colors[selectedColorKey]}
@@ -56,12 +53,25 @@ export default function ColorPreferences() {
           className="color-picker"
           presetColors={defaultColorVals}
         />
+        <Stack direction="vertical" gap={2}>
+          <Stack direction="horizontal" gap={2}>
+            <div className="bigger-font">Modify:</div>
+            <ChooseStatusDropdown
+              choiceList={colorKeys}
+              currentChoice={selectedColorKey}
+              setValue={setSelectedColorKey}
+            />
+            <div />
+          </Stack>
+          <ColorLegend header="Color Codes" />
+          <Stack className="mt-2" direction="horizontal" gap={5}>
+            <Button variant="secondary" onClick={handleDefaultColorButton}>
+              Reset to Defaults
+            </Button>
+            <div />
+          </Stack>
+        </Stack>
       </Stack>
-      <Container fluid>
-        <Button variant="secondary" onClick={handleDefaultColorButton}>
-          Reset Default Colors
-        </Button>
-      </Container>
     </Container>
   );
 }

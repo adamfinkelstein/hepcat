@@ -27,7 +27,7 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
   const prefix = nid ? `Q${paper.queue_order} (${nid}):` : '';
   const title = isPast ? status : paper.title;
   const showTitle = isConflict ? 'CONFLICT' : title;
-  const qEntryClass = isConflict ? 'font-size-3 mx-auto' : 'font-size-4';
+  const qEntryClass = isConflict ? 'bigger-font mx-auto' : '';
 
   return (
     <Container fluid className="QueueElement">

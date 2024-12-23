@@ -4,11 +4,11 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   const noConflictsStr = '(no conflicts)';
 
   function userToClass(user) {
-    let className = 'font-size-4';
     if (user.role_is_admin || user.role_name === 'Backup') {
-      className += isCurrent ? ' current-admin-user' : ' admin-user';
+      // if current queue entry (black background) choose a different blue foreground
+      return isCurrent ? 'current-admin-user' : 'admin-user';
     }
-    return className;
+    return '';
   }
 
   function userToName(user, index) {
@@ -22,10 +22,10 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   return (
     <Container fluid className="PaperConflict">
       {conflicts.length === 0 ? (
-        <div className="font-size-4">{noConflictsStr}</div>
+        <div>{noConflictsStr}</div>
       ) : (
         <div>
-          <span className="q-title font-size-4">Conflicts:&nbsp;</span>
+          <span className="q-title">Conflicts:&nbsp;</span>
           {conflicts.map((conflict, index) => {
             return (
               <span key={index} className={userToClass(conflict)}>

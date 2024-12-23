@@ -151,7 +151,7 @@ export default function Paper() {
   }
 
   function userToClass(user) {
-    let className = 'font-size-3';
+    let className = 'bigger-font';
     if (user.role_is_admin || user.role_name === 'Backup') {
       className += ' admin-user';
     }
@@ -173,7 +173,7 @@ export default function Paper() {
             {conflicts_arrays.map((conf_arr, conf_ind) => {
               return conf_arr.show ? (
                 <div key={conf_ind}>
-                  <span className="font-size-2">{conf_arr.title}</span>
+                  <h3>{conf_arr.title}</h3>
                   <ul>
                     {conf_arr.array.map((user, user_ind) => {
                       return (
@@ -193,27 +193,27 @@ export default function Paper() {
           </div>
         ) : (
           <div>
-            <div className="paper-timer font-size-3">
+            <div className="paper-timer bigger-font">
               {formatTime(currentTime)}
             </div>
-            <p className="font-size-3">
+            <p className="bigger-font">
               <span className="paper-par-header">
                 Q{cp.queue_order} ({cp.nid}):
               </span>
               {cp.title}
             </p>
             {showTags && (
-              <p className="font-size-4">
+              <p>
                 <span className="paper-par-header">Tags:</span>
                 <span>{globals.serverGlobs.current_tags}</span>
               </p>
             )}
-            <p className="font-size-4">
+            <p>
               <span className="paper-par-header">Reviews: </span>
               <span dangerouslySetInnerHTML={scoresHTML} />
             </p>
             {showHist && (
-              <p className="font-size-4">
+              <p>
                 <span className="paper-par-header">History:</span>
                 <span>{formatHistoryList(hist)}</span>
               </p>

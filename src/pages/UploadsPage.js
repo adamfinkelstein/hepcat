@@ -106,7 +106,7 @@ export default function UploadsPage() {
             </div>
           </Stack>
           <p>&nbsp;</p>
-          <span className="font-size-2">{pendingTitle}</span>
+          <h3>{pendingTitle}</h3>
           <ul>
             {pendingList.map((item) => {
               return (
@@ -116,7 +116,7 @@ export default function UploadsPage() {
               );
             })}
           </ul>
-          <span className="font-size-2">{uploadTitle}</span>
+          <h3>{uploadTitle}</h3>
           <ul>
             {uploadList.map((item) => {
               return (
@@ -128,7 +128,7 @@ export default function UploadsPage() {
           </ul>
           <div>
             <hr />
-            <span className="font-size-2">Extra Admin Functions</span>
+            <h2>Extra Admin Functions</h2>
           </div>
           <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
             {conflictbot && (

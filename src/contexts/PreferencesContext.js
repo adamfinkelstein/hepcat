@@ -3,34 +3,35 @@ import React, { useState, useContext, useEffect } from 'react';
 const defaultColors = {
   Unseen: '#F4F4F4',
   Tabled: '#E8F77D',
+  'Tabled-Sticky': '#FFC65E',
   Reject: '#F3A8C0',
   Conference: '#628BF0',
   Journal: '#288D0C',
   Current: '#000000',
+  Conflict: '#DD1111',
 };
 
 const defaultTextBlackOrWhite = {
   Unseen: true,
   Tabled: true,
+  'Tabled-Sticky': true,
   Reject: true,
   Conference: false,
   Journal: false,
   Current: false,
+  Conflicts: false,
 };
 
 const fontSizes = {
-  'Extra Small': 'size-extra-small',
-  Small: 'size-small',
-  Medium: 'size-medium',
-  Large: 'size-large',
-  'Extra Large': 'size-extra-large',
-};
-
-const baseFontSizes = {
-  'font-size-1': 36,
-  'font-size-2': 25,
-  'font-size-3': 20,
-  'font-size-4': 16,
+  Micro: 'size-3XS',
+  Tiny: 'size-2XS',
+  Small: 'size-XS',
+  Smallish: 'size-S',
+  Medium: 'size-M',
+  Largish: 'size-L',
+  Large: 'size-XL',
+  Huge: 'size-2XL',
+  Gigantic: 'size-3XL',
 };
 
 const ColorsContext = React.createContext();

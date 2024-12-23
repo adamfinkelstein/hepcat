@@ -352,7 +352,7 @@ export default function SetQueue() {
       <div>
         <h2>Hide Queue</h2>
         <Stack direction="horizontal" gap={2}>
-          <span className="font-size-4">{qMsgLabel}</span>
+          <span>{qMsgLabel}</span>
           <input
             name="message"
             value={hiddenMsg}
@@ -362,8 +362,8 @@ export default function SetQueue() {
           />
           {showQMessageTime && (
             <>
-              <span className="font-size-4">Can use time:&nbsp;</span>
-              <span className="font-size-4 text-tty">_T+hh:mm_</span>
+              <span>Can use time:&nbsp;</span>
+              <span className="text-tty">_T+hh:mm_</span>
             </>
           )}
         </Stack>
@@ -373,7 +373,7 @@ export default function SetQueue() {
             checked={hideQ}
             onChange={handleHideQueueCheckbox}
           />
-          <span className="font-size-4">Hide queue now.</span>
+          <span>Hide queue now.</span>
         </Stack>
       </div>
       <hr className="horizontal-divider" />
@@ -391,7 +391,7 @@ export default function SetQueue() {
         />
         <Stack direction="horizontal" gap={4} className="gui-filters my-4 mx-3">
           <div>
-            <span className="col-head font-size-3">Union</span>:
+            <span className="underline bigger-font">Union</span>:
             <br />
             <div className="mb-4">
               {statusList.map((label) => {
@@ -412,7 +412,7 @@ export default function SetQueue() {
           </div>
           <div className="vr" />
           <div>
-            <span className="col-head font-size-3">Intersection</span>:
+            <span className="underline bigger-font">Intersection</span>:
             <br />
             <div className="mb-0">
               {filterList.map((label) => {
@@ -435,7 +435,7 @@ export default function SetQueue() {
           <div>
             <Stack direction="vertical" gap={4}>
               <div>
-                <span className="col-head font-size-3">
+                <span className="underline bigger-font">
                   Intersect&nbsp;Scores
                 </span>
                 :
@@ -462,7 +462,7 @@ export default function SetQueue() {
             <Button variant="secondary" onClick={handleGetFilteredCount}>
               Get Count
             </Button>
-            <span className="font-size-4 get-filtered-count-text">
+            <span className="get-filtered-count-text">
               Count:&nbsp;{probeGUIMsg}
             </span>
           </Stack>
@@ -502,7 +502,7 @@ export default function SetQueue() {
           handleInputChange={handleInputChange}
         />
         <br />
-        <div className="font-size-4">Enter text filter here:</div>
+        <div>Enter text filter here:</div>
         <input
           name="textFilterBox"
           value={textFilterBox}
@@ -512,13 +512,13 @@ export default function SetQueue() {
         <Stack direction="vertical" gap={2}>
           <Container fluid>
             <ul className="text-filter-instructions">
-              <li className="font-size-4">
+              <li>
                 Room:{roomChoice} / Area:Geometry / Cluster:A / Bar:Above /
                 Filter:
                 {exampleFilter}
               </li>
-              <li className="font-size-4">101 / 101,103,105,107</li>
-              <li className="font-size-4">
+              <li>101 / 101,103,105,107</li>
+              <li>
                 AND( OR(Room:Room_A, NOT(Area:Geometry)), {exampleFilter})
               </li>
             </ul>
@@ -527,7 +527,7 @@ export default function SetQueue() {
             <Button variant="secondary" onClick={handleGetFilteredCountText}>
               Get Count
             </Button>
-            <span className="font-size-4 get-filtered-count-text">
+            <span className="get-filtered-count-text">
               Count: {probeTextMsg}
             </span>
           </Stack>

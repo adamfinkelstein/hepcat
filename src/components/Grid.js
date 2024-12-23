@@ -19,6 +19,9 @@ export default function Grid({ isAbove, gridDisplay }) {
     if (gridElem.sticky) {
       className += ' sticky-border';
     }
+    if (gridElem.tabled_sticky) {
+      className += ' Tabled-Sticky';
+    }
     if (nonSticky || nonFavorite) {
       className += ' faded-grid';
     }
@@ -33,7 +36,7 @@ export default function Grid({ isAbove, gridDisplay }) {
       {idsOrEmpty.map((nid) => {
         return (
           <div key={nid} className={gridGetClasses(nid)}>
-            <span className="font-size-4">{nid}</span>
+            <span>{nid}</span>
           </div>
         );
       })}

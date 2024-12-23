@@ -16,7 +16,7 @@ import {
 } from '../contexts/PreferencesContext';
 import Queue from './Queue';
 import Paper from './Paper';
-import GridSection from './GridSection';
+import GridTab from './GridTab';
 import SetQueue from './SetQueue';
 
 export default function Body() {
@@ -124,7 +124,7 @@ export default function Body() {
               <Tabs
                 defaultActiveKey="paper"
                 id="paper-tabs"
-                className="mb-3 font-size-3 tabs"
+                className="mb-3 bigger-font tabs"
               >
                 {!hideQueue && (
                   <Tab eventKey="paper" title="Paper" className="tab">
@@ -133,7 +133,7 @@ export default function Body() {
                 )}
                 {showGrid && (
                   <Tab eventKey="grid" title="Grid" className="tab">
-                    <GridSection />
+                    <GridTab />
                   </Tab>
                 )}
                 {isAdmin && (

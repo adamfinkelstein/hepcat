@@ -1,34 +1,41 @@
-import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
-import Stack from 'react-bootstrap/Stack';
-import { useAppGlobals } from '../contexts/AppContext';
+import ColorLabel from './ColorLabel';
 
-export default function ChooseStatusDropdown({ currentStatus, setValue }) {
-  const { statusList } = useAppGlobals();
+function remapStatus(status, renameTabledEntry) {
+  if (status === 'Tabled' && renameTabledEntry) {
+    return renameTabledEntry;
+  }
+  return status;
+}
 
+export default function ChooseStatusDropdown({
+  choiceList,
+  currentChoice,
+  setValue,
+  renameTabledEntry = null,
+}) {
+  const renameCurrent = remapStatus(currentChoice, renameTabledEntry);
   return (
     <Dropdown as={ButtonGroup} className="ChooseStatusDropdown">
-      <Button variant="outline">
-        <Stack direction="horizontal" className="font-size-4">
-          <div className={'rectangle ' + currentStatus} />
-          <span>{currentStatus}</span>
-        </Stack>
-      </Button>
-      <Dropdown.Toggle split variant="outline" id="dropdown-split-basic" />
+      <Dropdown.Toggle variant="outline">
+        <ColorLabel
+          rectClass={renameCurrent}
+          label={renameCurrent}
+          extra={'PULLDOWN'}
+        />
+      </Dropdown.Toggle>
 
       <Dropdown.Menu>
-        {statusList.map((status, index) => {
+        {choiceList.map((status) => {
+          const renameStatus = remapStatus(status, renameTabledEntry);
           return (
             <Dropdown.Item
               as="button"
-              key={index}
+              key={status}
               onClick={() => setValue(status)}
             >
-              <Stack direction="horizontal">
-                <div className={'rectangle ' + status} />
-                <span className="font-size-4">{status}</span>
-              </Stack>
+              <ColorLabel rectClass={renameStatus} label={renameStatus} />
             </Dropdown.Item>
           );
         })}

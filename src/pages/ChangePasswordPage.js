@@ -124,7 +124,7 @@ export default function ChangePasswordPage() {
                   className="password-switch"
                   onChange={() => setIsForOther(!isForOther)}
                 />
-                <span className="font-size-4">Change for someone else</span>
+                <span>Change for someone else</span>
                 {isForOther && (
                   <>
                     <span>&nbsp;&mdash;&nbsp;</span>

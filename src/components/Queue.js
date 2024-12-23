@@ -55,16 +55,16 @@ export default function Queue() {
       {user && isAdmin && <AdminQueueControls />}
       <Container fluid>
         {hideQueue && (
-          <div className="font-size-3 queue-hidden-for-non">
+          <div className="bigger-font queue-hidden-for-non">
             Queue hidden for non-admin users, saying: <br /> {hiddenMsg}
           </div>
         )}
         <Stack direction="horizontal" className="mt-2">
-          <span className="font-size-4">
+          <span>
             Current: {currentCount} {queue.length}
           </span>
           <Stack direction="horizontal" className="q-show-checks" gap={3}>
-            <div className="font-size-4">Show:</div>
+            <div>Show:</div>
             <Form.Check
               label="Conflicts"
               type="checkbox"

@@ -1,6 +1,6 @@
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
+// import DropdownButton from 'react-bootstrap/DropdownButton';
 import Stack from 'react-bootstrap/Stack';
 
 export default function SaveFilters({
@@ -22,25 +22,24 @@ export default function SaveFilters({
 
   return (
     <Stack direction="horizontal" gap={4} className="SaveFilters">
-      <DropdownButton
-        disabled={noneSavedYet}
-        title={guiFilterTitle}
-        type="button"
-        variant="secondary"
-        drop="end"
-      >
-        {allFilterNames.map((name, index) => {
-          return (
-            <Dropdown.Item
-              key={index}
-              as="button"
-              onClick={() => handleLoadFilter(name, isGUI)}
-            >
-              {name}
-            </Dropdown.Item>
-          );
-        })}
-      </DropdownButton>
+      <Dropdown>
+        <Dropdown.Toggle disabled={noneSavedYet}>
+          {guiFilterTitle}
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {allFilterNames.map((name) => {
+            return (
+              <Dropdown.Item
+                key={name}
+                as="button"
+                onClick={() => handleLoadFilter(name, isGUI)}
+              >
+                {name}
+              </Dropdown.Item>
+            );
+          })}
+        </Dropdown.Menu>
+      </Dropdown>
       <input
         name={inputBoxName}
         value={filterName}

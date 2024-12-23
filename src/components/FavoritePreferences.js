@@ -82,10 +82,10 @@ export default function FavoritePreferences() {
 
   return (
     <Container fluid className="FavoritePreferences">
-      <div className="font-size-2">Favorites</div>
+      <h2>Favorites</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group mt-3">
-          <label className="font-size-4 mt-3">
+          <label className="mt-3">
             Enter Paper IDs, like '101' or '101 102 103' or '101,102,103':
           </label>
           <Stack direction="horizontal" gap={3}>
@@ -98,7 +98,7 @@ export default function FavoritePreferences() {
       </form>
 
       <Container fluid className="DeleteFavorites mt-3">
-        <span className="font-size-4 mr-2">{deleteMsg}</span>
+        <span className="mr-2">{deleteMsg}</span>
         {showDeleteAll && (
           <Button
             className="mx-2"
