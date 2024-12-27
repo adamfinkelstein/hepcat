@@ -2,8 +2,8 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Stack from 'react-bootstrap/Stack';
 import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useGrid } from '../contexts/GridContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import {
@@ -17,8 +17,7 @@ export default function FavoritePreferences() {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
-  const globals = useAppGlobals();
-  const checkValidNID = globals['checkValidNID'];
+  const { checkValidNID } = useGrid();
   const favorites = useFavorites();
   const showDeleteAny = favorites && favorites.length > 0;
   const showDeleteAll = favorites && favorites.length > 1;

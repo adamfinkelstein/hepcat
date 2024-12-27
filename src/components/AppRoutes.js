@@ -4,7 +4,7 @@ import { useUser } from '../contexts/UserContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import MainPage from '../pages/MainPage';
 import PreferencesPage from '../pages/PreferencesPage';
-import AboutPage from '../pages/AboutPage';
+import GuidePage from '../pages/GuidePage';
 import LoginPage from '../pages/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import UploadsPage from '../pages/UploadsPage';
@@ -35,7 +35,7 @@ export default function AppRoutes() {
       ) : (
         <Routes>
           <Route path="/" element={<MainPage />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/guide" element={<GuidePage />} />
           <Route path="/preferences" element={<PreferencesPage />} />
           {isAdmin && (
             <>

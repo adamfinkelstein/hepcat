@@ -1,20 +1,20 @@
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFavorites } from '../contexts/PreferencesContext';
+import { useGrid } from '../contexts/GridContext';
 
-export default function Grid({ isAbove, gridDisplay }) {
-  // const globals = useAppGlobals();
-  const { queue, grid, queueCurrent } = useAppGlobals();
+export default function GridBlock({ nidList }) {
+  const { gridMode, grid } = useGrid();
+  const { queue, queueCurrent } = useAppGlobals();
   const favorites = useFavorites();
-  const aboveOrBelowIDs = isAbove ? grid.above_nids : grid.below_nids;
-  const idsOrEmpty = aboveOrBelowIDs ? aboveOrBelowIDs : [];
+  const showCurrent = gridMode === 'Normal' || gridMode === 'This Room';
   const queueCurrentOk =
     queue.length && queueCurrent < queue.length && queueCurrent >= 0;
   const queueCurrentID = queueCurrentOk ? queue[queueCurrent].nid : 0;
 
   function gridGetClasses(nid) {
     const gridElem = grid.papers[nid];
-    const nonSticky = gridDisplay === 'Stickies' && !gridElem.sticky;
-    const nonFavorite = gridDisplay === 'Favorites' && !favorites.includes(nid);
+    const nonSticky = gridMode === 'Stickies' && !gridElem.sticky;
+    const nonFavorite = gridMode === 'Favorites' && !favorites.includes(nid);
     let className = 'grid-item ' + gridElem.status;
     if (gridElem.sticky) {
       className += ' sticky-border';
@@ -25,15 +25,15 @@ export default function Grid({ isAbove, gridDisplay }) {
     if (nonSticky || nonFavorite) {
       className += ' faded-grid';
     }
-    if (gridDisplay === 'Normal' && gridElem.nid === queueCurrentID) {
+    if (showCurrent && gridElem.nid === queueCurrentID) {
       className += ' Current';
     }
     return className;
   }
 
   return (
-    <div className="Grid grid-container">
-      {idsOrEmpty.map((nid) => {
+    <div className="GridBlock grid-container">
+      {nidList.map((nid) => {
         return (
           <div key={nid} className={gridGetClasses(nid)}>
             <span>{nid}</span>

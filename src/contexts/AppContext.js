@@ -1,37 +1,22 @@
 import moment from 'moment';
-import React, { useState, useContext, useEffect, useCallback } from 'react';
+import {
+  useState,
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+} from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 import { useUser } from './UserContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
+import { useKey } from './KeyContext';
+import { useGrid } from './GridContext';
 
-var CryptoJS = require('crypto-js');
-
-const AppGlobalsContext = React.createContext();
+const AppGlobalsContext = createContext();
 
 const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
 const notSetYetMsg = '(not set)';
-
-function decryptMsgUsingKey(msg, keyStr) {
-  const key = CryptoJS.enc.Utf8.parse(keyStr);
-  const decrypted = CryptoJS.AES.decrypt(msg, key, { mode: CryptoJS.mode.ECB });
-  const utf8 = decrypted.toString(CryptoJS.enc.Utf8);
-  // console.log('\n\nencrypted message: ' + msg)
-  // console.log('decrypted message: ' + utf8)
-  return utf8;
-}
-
-function getTimeInHiddenMessage(msg) {
-  const regexp = /===.*===/g;
-  const matches = msg.match(regexp);
-  if (!matches) return msg;
-  for (const match of matches) {
-    const timeStr = match.replace(/===/g, '');
-    const utcThen = moment(timeStr).format('ddd LT');
-    msg = msg.replace(match, utcThen);
-  }
-  return msg;
-}
 
 export function useAppGlobals() {
   return useContext(AppGlobalsContext);
@@ -41,8 +26,10 @@ export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
   const { socket, socketEmit } = useSocketIO();
   const { revealModalDialog } = useModalDialog();
+  const { decryptObjectOrNull } = useKey();
+  const { user, isAdmin, paperKeys, roomChoice } = useUser();
+  const { grid, gridMode, updateGridEntry } = useGrid();
   const [queue, setQueue] = useState([]);
-  const [grid, setGrid] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
   const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
   const [probeTextMsg, setProbeTextMsg] = useState(notSetYetMsg);
@@ -53,49 +40,11 @@ export default function AppContext({ children }) {
   const [hideQ, setHideQ] = useState(false);
   const [hiddenMsg, setHiddenMsg] = useState('');
 
-  const { user, isAdmin, paperKeys, roomChoice } = useUser();
-
-  const oidIsConflict = useCallback(
-    (oid) => {
-      if (!paperKeys) return true;
-      return !(oid in paperKeys);
-    },
-    [paperKeys],
-  );
-
-  const oidToNid = useCallback(
-    (oid) => {
-      if (oidIsConflict(oid)) return 0;
-      return paperKeys[oid].nid;
-    },
-    [paperKeys, oidIsConflict],
-  );
-
-  const decryptMessageByOid = useCallback(
-    (msg, oid) => {
-      if (oidIsConflict(oid)) return '';
-      const key = paperKeys[oid].key;
-      return decryptMsgUsingKey(msg, key);
-    },
-    [paperKeys, oidIsConflict],
-  );
-
-  const decryptObjectOrNull = useCallback(
-    (obj) => {
-      if (!obj || !obj.oid || oidIsConflict(obj.oid)) return null;
-      const str = decryptMessageByOid(obj.enc, obj.oid);
-      // controlledLog("======= decrypted json: " + str)
-      if (!str) return null;
-      return JSON.parse(str);
-    },
-    [oidIsConflict, decryptMessageByOid],
-  );
-
   const recordGlobsForThisRoom = useCallback(
     (data) => {
       controlledLog('record globs for this room:');
       controlledLog(data);
-      data.message = getTimeInHiddenMessage(data.message);
+      // data.message = getTimeInHiddenMessage(data.message);
       setHideQ(data.hide_queue);
       setHiddenMsg(data.message);
       if ('showAppLogs' in data) {
@@ -127,49 +76,6 @@ export default function AppContext({ children }) {
   }, [roomChoice, controlledLog, socketEmit]);
 
   useEffect(() => {
-    const countConvergedPapersInGrid = (papers) => {
-      let converged = 0;
-      let pending = 0;
-      let tabledStickyCount = 0;
-      const convergedStatuses = ['Journal', 'Conference', 'Reject'];
-      const counts = {};
-      for (const nid in papers) {
-        const paper = papers[nid];
-        const status = paper.status;
-        if (convergedStatuses.includes(status)) {
-          converged++;
-        } else {
-          pending++;
-        }
-        // Tabled-Sticky is a special case
-        if (paper.tabled_sticky) {
-          tabledStickyCount++;
-        } // prevent double counting as Tabled
-        else if (status in counts) {
-          counts[status]++;
-        } else {
-          counts[status] = 1;
-        }
-      }
-      counts['Converged'] = converged;
-      counts['Pending'] = pending;
-      counts['Tabled-Sticky'] = tabledStickyCount;
-      // controlledLog('###### countConvergedPapersInGrid:', counts);
-      return counts;
-    };
-
-    const updateGridEntry = (grid_update) => {
-      const nid = grid_update.nid;
-      if (!nid || !grid || !grid.papers) {
-        controlledLog('*** cannot find grid entry for nid:', nid);
-        return;
-      }
-      grid.papers[nid] = grid_update;
-      const newGrid = { ...grid };
-      newGrid.counts = countConvergedPapersInGrid(newGrid.papers);
-      setGrid(newGrid); // force update
-    };
-
     const updateQueueEntry = (queue_index, status) => {
       if (queue_index < 0 || queue_index >= queue.length) {
         controlledLog('cannot updateQueueEntry at queue_index ', queue_index);
@@ -178,16 +84,6 @@ export default function AppContext({ children }) {
       queue[queue_index].status = status;
       const newQueue = [...queue];
       setQueue(newQueue); // force update
-    };
-
-    const receiveSticky = (encrypted_grid_update) => {
-      const grid_update = decryptObjectOrNull(encrypted_grid_update);
-      if (!grid_update) {
-        controlledLog('received sticky for conflicted paper (ignored)');
-        return;
-      }
-      controlledLog('received sticky grid update: ' + grid_update);
-      updateGridEntry(grid_update);
     };
 
     const receiveGlobs = (data) => {
@@ -234,14 +130,8 @@ export default function AppContext({ children }) {
       controlledLog(data);
       const room = data.globs.room;
       const isTheRoom = room === roomChoice;
-      controlledLog(
-        'receiveQueue compare rooms: ' +
-          room +
-          ' ' +
-          roomChoice +
-          ' ' +
-          isTheRoom,
-      );
+      const msg = `receiveQueue compare rooms: ${room} ${roomChoice} ${isTheRoom}`;
+      controlledLog(msg);
       if (isTheRoom) {
         data.paper_list = decryptPaperQueue(data.paper_list_encrypted);
         setQueue(data.paper_list);
@@ -278,40 +168,6 @@ export default function AppContext({ children }) {
       setProbeTextMsg(msg);
     };
 
-    const oidListToNidList = (oids) => {
-      if (!oids || !oids.length) return null;
-      const nids = oids.map((oid) => oidToNid(oid));
-      const nids_no0 = nids.filter((nid) => nid > 0);
-      return nids_no0;
-    };
-
-    const decodeGridPapers = (arr) => {
-      const dec = arr.map((enc) => decryptObjectOrNull(enc));
-      // returns dictionary indexed by nid
-      const papers = {};
-      for (let i = 0; i < dec.length; i++) {
-        const p = dec[i];
-        if (p) {
-          papers[p.nid] = p;
-        }
-      }
-      return papers;
-    };
-
-    const decodeGridData = (data) => {
-      data.above_nids = oidListToNidList(data.above_oids);
-      data.below_nids = oidListToNidList(data.below_oids);
-      data.papers = decodeGridPapers(data.papers_encrypted);
-      data.counts = countConvergedPapersInGrid(data.papers);
-    };
-
-    const receiveGrid = (data) => {
-      decodeGridData(data);
-      controlledLog('received and decoded grid:');
-      controlledLog(data);
-      setGrid(data);
-    };
-
     const receiveAlert = (data) => {
       if (isAdmin || !data.admin_only) {
         revealModalDialog({ title: data.title, message: data.body });
@@ -324,11 +180,9 @@ export default function AppContext({ children }) {
     };
 
     if (socket && 'on' in socket) {
-      controlledLog('register socket handlers');
+      controlledLog('register socket handlers in AppContext');
       socket.on('server_set_queue', receiveQueue);
-      socket.on('server_set_grid', receiveGrid);
       socket.on('server_set_globs', receiveGlobs);
-      socket.on('server_set_sticky', receiveSticky);
       socket.on('server_send_alert', receiveAlert);
       socket.on('server_probe_count', receiveProbe);
       socket.on('server_probe_text_count', receiveProbeText);
@@ -336,14 +190,11 @@ export default function AppContext({ children }) {
       socket.on('server_reload_user', receiveReload);
     }
 
-    // return from useEffect is function that does cleanup
     return () => {
       if (socket && 'off' in socket) {
-        controlledLog('cleanup socket handlers');
+        controlledLog('cleanup socket handlers in AppContext');
         socket.off('server_set_queue', receiveQueue);
-        socket.off('server_set_grid', receiveGrid);
         socket.off('server_set_globs', receiveGlobs);
-        socket.off('server_set_sticky', receiveSticky);
         socket.off('server_send_alert', receiveAlert);
         socket.off('server_probe_count', receiveProbe);
         socket.off('server_probe_text_count', receiveProbeText);
@@ -352,33 +203,26 @@ export default function AppContext({ children }) {
       }
     };
   }, [
-    queue,
     grid,
+    queue,
     socket,
     isAdmin,
     roomChoice,
+    gridMode,
     user,
     paperKeys,
     controlledLog,
     socketEmit,
     revealModalDialog,
     recordGlobsForThisRoom,
-    oidToNid,
-    oidIsConflict,
-    decryptMessageByOid,
     decryptObjectOrNull,
+    updateGridEntry,
   ]);
-
-  function checkValidNID(nid) {
-    if (!grid || !grid.papers) return false;
-    return nid in grid.papers;
-  }
 
   return (
     <AppGlobalsContext.Provider
       value={{
         queue,
-        grid,
         queueCurrent,
         newStatus,
         setNewStatus,
@@ -393,7 +237,6 @@ export default function AppContext({ children }) {
         hiddenMsg,
         setHiddenMsg,
         statusList,
-        checkValidNID,
       }}
     >
       {children}

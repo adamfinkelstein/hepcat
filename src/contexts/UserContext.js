@@ -1,29 +1,31 @@
 import React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useSocketIO } from './SocketIOContext.js';
 import { useControlledLog } from './ControlledLogContext.js';
 import { useFlasher } from './FlasherContext';
+import { useKey } from './KeyContext';
 
-const userContext = React.createContext();
+const userContext = createContext();
 
 export default function UserContext({ children }) {
   const { socket, socketEmit, socketSetAuthToken } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
+  const { setPaperKeys } = useKey();
 
-  const [user, setUser] = React.useState(undefined);
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [adminKey, setAdminKey] = React.useState('');
-  const [conflictbot, setConflictbot] = React.useState(false);
-  const [paperKeys, setPaperKeys] = React.useState(null);
-  const [allUsers, setAllUsers] = React.useState({});
-  const [allRooms, setAllRooms] = React.useState([]);
-  const [roomCalledTo, setRoomCalledTo] = React.useState('Plenary');
-  const [roomChoice, setRoomChoice] = React.useState('Plenary');
-  const [gitInfo, setGitInfo] = React.useState('');
-  const [showAbstract, setShowAbstract] = React.useState(true);
-  const [showGlobalOps, setShowGlobalOps] = React.useState(false);
+  const [user, setUser] = useState(undefined);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminKey, setAdminKey] = useState(''); // XXX move to KeyContext???
+  const [conflictbot, setConflictbot] = useState(false);
+  const [allUsers, setAllUsers] = useState({});
+  const [allRooms, setAllRooms] = useState([]);
+  const [roomCalledTo, setRoomCalledTo] = useState('Plenary');
+  const [roomChoice, setRoomChoice] = useState('Plenary');
+  const [gitInfo, setGitInfo] = useState('');
+  const [showAbstract, setShowAbstract] = useState(true);
+  const [showGlobalOps, setShowGlobalOps] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!socket) {
       if (user || socket === null) {
         setUser(null);
@@ -136,6 +138,7 @@ export default function UserContext({ children }) {
     user,
     allUsers,
     gitInfo,
+    setPaperKeys,
   ]);
 
   return (
@@ -146,7 +149,6 @@ export default function UserContext({ children }) {
         adminKey,
         gitInfo,
         conflictbot,
-        paperKeys,
         allUsers,
         allRooms,
         roomCalledTo,
@@ -164,5 +166,5 @@ export default function UserContext({ children }) {
 }
 
 export function useUser() {
-  return React.useContext(userContext);
+  return useContext(userContext);
 }

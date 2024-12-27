@@ -69,8 +69,8 @@ export default function HeaderBar() {
                     <NavDropdown.Item as={NavLink} to="/">
                       PC Meeting
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={NavLink} to="about">
-                      About
+                    <NavDropdown.Item as={NavLink} to="guide">
+                      User Guide
                     </NavDropdown.Item>
                     <NavDropdown.Item as={NavLink} to="preferences">
                       Preferences

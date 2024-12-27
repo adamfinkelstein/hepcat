@@ -10,7 +10,7 @@ from ..models.helpers import try_sql_commit
 
 @main.route("/login/")
 @main.route("/forgot_password/")
-@main.route("/about/")
+@main.route("/guide/")
 @main.route("/preferences/")
 @main.route("/uploads/")
 @main.route("/progress/")

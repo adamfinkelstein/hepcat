@@ -17,7 +17,7 @@ export default function ProgressPage() {
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
-  const { roomChoice } = useUser();
+  const { roomChoice, gitInfo } = useUser();
   const { guiBar, setGuiBar } = useAppGlobals();
   const { stats } = useStatsContext();
   const { currentFontStyle } = useFontInfo();
@@ -213,6 +213,8 @@ export default function ProgressPage() {
             </Stack>
           </Stack>
         </Collapse>
+        <hr />
+        {gitInfo && <p>{gitInfo}</p>}
         <p>&nbsp;</p>
       </div>
     </Container>

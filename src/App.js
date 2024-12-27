@@ -6,7 +6,9 @@ import ConfirmationBox from './components/ConfirmationBox';
 import { BrowserRouter } from 'react-router-dom';
 import ControlledLogContext from './contexts/ControlledLogContext';
 import SocketIOContext from './contexts/SocketIOContext';
+import KeyContext from './contexts/KeyContext';
 import UserContext from './contexts/UserContext';
+import GridContext from './contexts/GridContext';
 import AppContext from './contexts/AppContext';
 import FilterContext from './contexts/FilterContext';
 import StatsContext from './contexts/StatsContext';
@@ -24,20 +26,24 @@ export default function App() {
             <ConfirmationBoxContext>
               <FlasherContext>
                 <SocketIOContext>
-                  <UserContext>
-                    <AppContext>
-                      <FilterContext>
-                        <StatsContext>
-                          <PreferencesContext>
-                            <ModalDialog />
-                            <ConfirmationBox />
-                            <HeaderBar />
-                            <AppRoutes />
-                          </PreferencesContext>
-                        </StatsContext>
-                      </FilterContext>
-                    </AppContext>
-                  </UserContext>
+                  <KeyContext>
+                    <UserContext>
+                      <GridContext>
+                        <AppContext>
+                          <FilterContext>
+                            <StatsContext>
+                              <PreferencesContext>
+                                <ModalDialog />
+                                <ConfirmationBox />
+                                <HeaderBar />
+                                <AppRoutes />
+                              </PreferencesContext>
+                            </StatsContext>
+                          </FilterContext>
+                        </AppContext>
+                      </GridContext>
+                    </UserContext>
+                  </KeyContext>
                 </SocketIOContext>
               </FlasherContext>
             </ConfirmationBoxContext>

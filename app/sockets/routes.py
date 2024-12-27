@@ -141,12 +141,15 @@ def get_grid_paper_dump(paper):
         elif h.context_enum >= context_plenary:  # any room
             sticky = False
             status = h.status
-    tabled_sticky = sticky and (status == sticky_status == "Tabled")
+    tabled_sticky = sticky and (sticky_status == "Tabled")
+    paper_room = get_paper_room_name(paper)
     paper_dump = {
         "nid": paper.nid,
+        "below_bar": paper.below_bar,
         "status": status,
         "sticky": sticky,
         "tabled_sticky": tabled_sticky,
+        "paper_room": paper_room,
     }
     return paper_dump
 
@@ -160,23 +163,14 @@ def get_encrypted_grid_entry(paper):
 def get_grid_dump():
     papers = Paper.query.order_by(Paper.sort_score.desc(), Paper.nid).all()
     papers_encrypted = []
-    above_oids = []
-    below_oids = []
     for paper in papers:
         nid = paper.nid
-        oid = paper.oid
         if nid == 9999:  # do not put test paper in grid
             continue
-        if paper.below_bar:
-            below_oids.append(oid)
-        else:
-            above_oids.append(oid)
         paper_enc = get_encrypted_grid_entry(paper)
         papers_encrypted.append(paper_enc)
     grid_dump = {
         "papers_encrypted": papers_encrypted,
-        "above_oids": above_oids,
-        "below_oids": below_oids,
     }
     return grid_dump
 
@@ -305,6 +299,13 @@ def is_paper_unseen(paper):
     if latest:
         return False
     return True
+
+
+def is_paper_accepted(paper):
+    latest = get_latest_room_history_status(paper)
+    if latest == "Journal" or latest == "Conference":
+        return True
+    return False
 
 
 def is_paper_sticky(paper):
@@ -1468,8 +1469,7 @@ def user_set_sticky(data):
     context_sticky = context_str_to_enum("Sticky")
     context = context_sticky  # default (most cases)
     auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
-    # room_status = get_latest_room_history_status(paper)
-    if auto_reject and paper.below_bar and is_reject:
+    if auto_reject and paper.below_bar and is_reject and not is_paper_accepted(paper):
         context = context_plenary  # Mark in Plenary instead of Sticky
     history = History(paper=paper, context_enum=context, status_enum=status_enum)
     db.session.add(history)

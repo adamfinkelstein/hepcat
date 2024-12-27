@@ -1,5 +1,6 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import ReactMarkdown from 'react-markdown';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 
 export default function ConfirmationBox() {
@@ -27,12 +28,21 @@ export default function ConfirmationBox() {
     setShowConfirmation(false);
   };
 
+  const useMarkdown = confirmationBody.startsWith('markdown:');
+  const markdownText = confirmationBody.replace('markdown:', '');
+
   return (
     <Modal show={showConfirmation} onHide={handleCancelButton}>
       <Modal.Header closeButton>
         <Modal.Title>{confirmationTitle}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>{confirmationBody}</Modal.Body>
+      <Modal.Body>
+        {useMarkdown ? (
+          <ReactMarkdown>{markdownText}</ReactMarkdown>
+        ) : (
+          confirmationBody
+        )}
+      </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleCancelButton}>
           Cancel

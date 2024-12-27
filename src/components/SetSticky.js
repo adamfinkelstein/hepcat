@@ -8,28 +8,35 @@ import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useGrid } from '../contexts/GridContext';
+import { useFavorites } from '../contexts/PreferencesContext';
 
 export default function SetSticky() {
   const { socketEmit } = useSocketIO();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
-  const { grid, statusList, checkValidNID } = useAppGlobals();
+  const { statusList } = useAppGlobals();
+  const { grid, checkValidNID } = useGrid();
   const [stickyType, setStickyType] = useState('Tabled');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
+  const favorites = useFavorites();
 
-  const paperHasSticky = (nid) => {
-    // note already called checkValidNID(nid).
-    // so we know there is a valid grid element.
-    const gridElem = grid.papers[nid];
+  const paperHasSticky = (gridElem) => {
     return Boolean(gridElem.sticky);
   };
 
-  const paperGridStatus = (nid) => {
-    // note already called checkValidNID(nid).
-    // so we know there is a valid grid element.
-    const gridElem = grid.papers[nid];
-    return '' + gridElem.status; // force string
+  const paperIsBelowBar = (gridElem) => {
+    return Boolean(gridElem.below_bar);
+  };
+
+  const statusConverged = (status) => {
+    const convergedStatuses = ['Unseen', 'Journal', 'Conference', 'Reject'];
+    return convergedStatuses.includes(status);
+  };
+
+  const paperConverged = (gridElem) => {
+    return statusConverged(gridElem.status);
   };
 
   const sendStickyForNID = (nid, status) => {
@@ -38,89 +45,87 @@ export default function SetSticky() {
     socketEmit('user_set_sticky', data);
   };
 
-  /*
-* Unseen
-    - Tabled - ok
-    - CJR - confirm (because it was presumably converged already on BBS)
-* Tabled
-    - Tabled - already!
-    - CJ - ok
-    - R - above -ok, below warn
-* Tabled-Sticky
-    - Tabled - already!
-    -  CJR - If was tabled, ok; otherwise weird
-* CJR: converged in meeting
-    - Tabled - ok
-    - CJR - weird
-*/
-
-  const checkStickyOnUnseenPaper = (nid, status) => {
-    if (status === 'Tabled') {
-      sendStickyForNID(nid, status);
-      return;
+  const confirmWarningsThenSendSticky = (warnings, nid) => {
+    let text = '';
+    if (warnings.length === 1) {
+      text = warnings[0];
+    } else {
+      text += 'markdown:\n';
+      text += 'There are several potential issues with this sticky:\n';
+      for (let i = 0; i < warnings.length; i++) {
+        text += `${i + 1}. ${warnings[i]}\n`;
+      }
     }
-    let text = `It looks like paper ${nid} already converged on the BBS.`;
-    text += ` Are you sure you want to send a sticky with a possibly new status (${status})?`;
-    revealConfirmationBox('Superfluous Sticky?', text, (confirmed) => {
+    text += '\nContinue with this sticky anyway?';
+    revealConfirmationBox('Confirm Sticky?', text, (confirmed) => {
       if (confirmed) {
-        sendStickyForNID(nid, status);
+        sendStickyForNID(nid, stickyType);
       } else {
         controlledLog('Canceled sticky for paper: ' + nid);
       }
     });
   };
 
-  const warnAboutRejectStickyBelowBar = (nid, status) => {
-    return;
-  };
-
-  const checkStickyOnTabledPaper = (nid, status) => {
-    if (status === 'Tabled') {
-      const text = `Paper ${nid} is already Tabled.`;
-      revealModalDialog({
-        title: 'Duplicate Sticky Error',
-        message: text,
-      });
-      return;
+  /*
+   * These warnings are consistent with the policy in
+   * current_app.config["HEPCAT_AUTO_REJECT"]
+   * -- prob should check it.
+   * Also would be nice to use markdown.
+   */
+  const checkForWarningsThenSendSticky = (nid) => {
+    const gridElem = grid.papers[nid];
+    const warnings = [];
+    if (paperHasSticky(gridElem)) {
+      let text = `Paper ${nid} already has a sticky. `;
+      text += 'This sticky would overwrite/replace it.';
+      warnings.push(text);
     }
-  };
-
-  const confirmStatusOkAndSendSticky = (nid, status) => {
-    const currentStatus = paperGridStatus(nid);
-    const text = `Sticky status ${status} nid ${nid} current status ${currentStatus}`;
-    revealModalDialog({
-      title: 'Warning',
-      message: text,
-    });
-    sendStickyForNID(nid, status);
+    if (paperIsBelowBar(gridElem) && stickyType === 'Reject') {
+      let text = `Paper ${nid} is below the bar. `;
+      const acceptOptions = ['Unseen', 'Journal', 'Conference'];
+      if (acceptOptions.includes(gridElem.status)) {
+        text += 'Since it had previously converged to accept, it must now ';
+        text += 'be discussed in the meeting as a proposed reject.';
+      } else {
+        text += 'This Reject sticky will give it status "presumed reject" -- ';
+        text += 'meaning it may never come up for discussion in the meeting. ';
+      }
+      warnings.push(text);
+    } else if (paperConverged(gridElem) && !paperHasSticky(gridElem)) {
+      let text = '';
+      if (gridElem.status === 'Unseen') {
+        text = `Paper ${nid} already converged on the BBS. `;
+      } else {
+        text = `Paper ${nid} already converged in the meeting. `;
+      }
+      text += `This sticky (${stickyType}) would cause the paper to be re-discussed. `;
+      warnings.push(text);
+    }
+    if (favorites?.length && !favorites.includes(nid)) {
+      let text = 'You have marked one or more favorites and Paper ';
+      text += nid + ' is not among them. ';
+      text += 'Usually stickies are filed for papers you are tracking. ';
+      warnings.push(text);
+    }
+    // now confirm warnings (if any) and send sticky...
+    if (warnings.length) {
+      confirmWarningsThenSendSticky(warnings, nid);
+    } else {
+      sendStickyForNID(nid, stickyType);
+    }
   };
 
   const confirmNIDandSendSticky = () => {
     const nid = parseInt(ID);
-    const status = '' + stickyType; // convert to string
-    // first check to see if nid is valid (not a conflict)
-    if (!checkValidNID(nid)) {
+
+    if (checkValidNID(nid)) {
+      checkForWarningsThenSendSticky(nid);
+    } else {
       revealModalDialog({
-        title: 'Error',
-        message: 'Please choose a valid paper id.',
+        title: 'Sticky Failure',
+        message: ID + ' is not a valid paper id (or possibly a conflict).',
       });
-      return;
     }
-    // next check to see if nid already has a sticky
-    if (paperHasSticky(nid)) {
-      let text = 'Paper ' + nid + ' already has a sticky. ';
-      text += 'Are you sure you want to overwrite it?';
-      revealConfirmationBox('Duplicate Sticky?', text, (confirmed) => {
-        if (confirmed) {
-          confirmStatusOkAndSendSticky(nid, status);
-        } else {
-          controlledLog('Canceled duplicate sticky for paper: ' + nid);
-        }
-      });
-      return;
-    }
-    // nid is valid and has no current sticky so just send it along
-    confirmStatusOkAndSendSticky(nid, status);
   };
 
   return (
