@@ -483,10 +483,7 @@ iframe {
   height: 100vh;
 }
 
-/* csslint chokes when this CSS rule is enabled:
-
 .App:has(.GuidePage) {
   background-color: lightgray;
 }
 
-*/
