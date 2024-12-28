@@ -476,14 +476,17 @@ body {
 
 /*
  * Guide Page
-
-.App:has(.GuidePage) {
-  background-color: lightgray;
-}
+ */
 
 iframe {
   width: 100%;
   height: 100vh;
 }
 
- */
+/* csslint chokes when this CSS rule is enabled:
+
+.App:has(.GuidePage) {
+  background-color: lightgray;
+}
+
+*/
