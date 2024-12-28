@@ -474,13 +474,16 @@ body {
   background-color: darkgray;
 }
 
+/*
+ * Guide Page
+
+.App:has(.GuidePage) {
+  background-color: lightgray;
+}
+
 iframe {
   width: 100%;
   height: 100vh;
 }
 
-/* does not work:
-iframe .doc-content {
-  padding: 4px;
-}
-*/
+ */
