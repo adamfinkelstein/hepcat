@@ -2,6 +2,9 @@ server {
     # listen on port 80 (http)
     listen 80;
     server_name dev.hepcat.app;
+    location ~ /.well-known {
+        root /home/ubuntu/letsencrypt/challenge;
+    }
     location / {
         # redirect any requests to the same URL but on https
         return 301 https://$host$request_uri;
@@ -15,8 +18,8 @@ server {
     index index.html;
 
     # location of the self-signed SSL certificate
-    ssl_certificate /home/ubuntu/hepcat/certs/domain.cert.pem;
-    ssl_certificate_key /home/ubuntu/hepcat/certs/private.key.pem;
+    ssl_certificate /etc/letsencrypt/live/hepcat.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/hepcat.app/privkey.pem;
 
     # write access and error logs to /var/log
     access_log /var/log/hepcat-dev_access.log;
