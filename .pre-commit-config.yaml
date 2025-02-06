@@ -3,7 +3,7 @@
 repos:
   # generic code formatting checkers
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -13,7 +13,7 @@ repos:
 
   # python linter
   - repo: https://github.com/pycqa/flake8
-    rev: '6.1.0'
+    rev: '7.1.1'
     hooks:
       - id: flake8
         args:
@@ -22,7 +22,7 @@ repos:
 
   # python code formatter
   - repo: https://github.com/psf/black
-    rev: '23.7.0'
+    rev: '25.1.0'
     hooks:
       - id: black
         # args:
@@ -30,7 +30,7 @@ repos:
 
   # jinja code formatter
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: 'v1.32.1'
+    rev: 'v1.36.4'
     hooks:
       - id: djlint-reformat
         args:
@@ -38,20 +38,20 @@ repos:
 
   # javascript linter
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v8.47.0'
+    rev: 'v9.19.0'
     hooks:
       - id: eslint
 
   # css linter
   # (issues need to be addressed before enabling this hook)
   - repo: https://github.com/pre-commit/mirrors-csslint
-    rev: ''
+    rev: 'v1.0.5'
     hooks:
       - id: csslint
 
   # javascript/css/markdown code formatter
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: 'v3.0.2'
+    rev: 'v4.0.0-alpha.8'
     hooks:
       - id: prettier
         args:
