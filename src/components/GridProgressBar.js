@@ -1,16 +1,14 @@
 import Stack from 'react-bootstrap/Stack';
 import ProgressBar from 'react-bootstrap/ProgressBar';
+import { useCount } from '../contexts/CountContext';
 
-export default function GridProgressBar({ counts }) {
-  const getCount = (status) => {
-    if (status === 'Conflict') return counts.conflicted;
-    if (!counts.unconflicted || !counts?.hasOwnProperty(status)) return 0;
-    const count = counts[status];
-    return count;
-  };
+export default function GridProgressBar() {
+  const { getGridCount } = useCount();
 
   const countToPercent = (count) => {
-    const percent = (count / counts.total) * 100;
+    const total = getGridCount('total');
+    if (total === 0) return 0;
+    const percent = (count / total) * 100;
     return percent;
   };
 
@@ -26,7 +24,7 @@ export default function GridProgressBar({ counts }) {
   };
 
   const getCounts = (status) => {
-    const count = getCount(status);
+    const count = getGridCount(status);
     const floatPercent = countToPercent(count);
     const percent = fmtPercent(floatPercent);
     const fmt = `${count} (${percent})`;
@@ -41,7 +39,8 @@ export default function GridProgressBar({ counts }) {
     'Tabled',
     'Unseen',
   ];
-  if (counts.conflicted > 0) progressBars.push('Conflict');
+  const conflictCount = getGridCount('Conflict');
+  if (conflictCount) progressBars.push('Conflict');
 
   return (
     <Stack direction="vertical" className="my-0 GridProgressBar" gap={1}>
@@ -49,7 +48,7 @@ export default function GridProgressBar({ counts }) {
       <ProgressBar className="grid-item grid-progress-bar me-3">
         {progressBars.map((status) => {
           const className = 'grid-item ' + status;
-          const count = getCount(status);
+          const count = getGridCount(status);
           const floatPercent = countToPercent(count);
           const showPercent = showCountAndPercent(count, floatPercent);
           return (
@@ -67,13 +66,13 @@ export default function GridProgressBar({ counts }) {
         <div>Converged: {getCounts('Converged')}</div>
         <div>+</div>
         <div>Pending: {getCounts('Pending')}</div>
-        {counts.conflicted > 0 && (
+        {conflictCount && (
           <>
             <div>+</div>
-            <div>Conflicts: {getCounts('Conflict')}</div>
+            <div>Conflicts: {conflictCount}</div>
           </>
         )}
-        <div className="unconflicted-count">= Total: {counts.total}</div>
+        <div className="total-count">= Total: {getCounts('total')}</div>
       </Stack>
       <hr className="horizontal-divider" />
     </Stack>

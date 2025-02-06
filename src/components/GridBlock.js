@@ -3,7 +3,7 @@ import { useFavorites } from '../contexts/PreferencesContext';
 import { useGrid } from '../contexts/GridContext';
 
 export default function GridBlock({ nidList }) {
-  const { gridMode, grid } = useGrid();
+  const { gridMode, gridGetElemByNid } = useGrid();
   const { queue, queueCurrent } = useAppGlobals();
   const favorites = useFavorites();
   const showCurrent = gridMode === 'Normal' || gridMode === 'This Room';
@@ -12,10 +12,14 @@ export default function GridBlock({ nidList }) {
   const queueCurrentID = queueCurrentOk ? queue[queueCurrent].nid : 0;
 
   function gridGetClasses(nid) {
-    const gridElem = grid.papers[nid];
+    let className = 'grid-item ';
+    const gridElem = gridGetElemByNid(nid);
+    if (!gridElem) {
+      return className;
+    }
+    className += gridElem.status;
     const nonSticky = gridMode === 'Stickies' && !gridElem.sticky;
     const nonFavorite = gridMode === 'Favorites' && !favorites.includes(nid);
-    let className = 'grid-item ' + gridElem.status;
     if (gridElem.sticky) {
       className += ' sticky-border';
     }

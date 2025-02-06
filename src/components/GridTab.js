@@ -1,32 +1,40 @@
 import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useGrid } from '../contexts/GridContext';
+import { useCount } from '../contexts/CountContext';
 import ColorLegend from './ColorLegend';
 import GridBlock from './GridBlock.js';
 import GridModeDropdown from './GridModeDropdown.js';
 import GridProgressBar from './GridProgressBar.js';
 import SetSticky from './SetSticky.js';
 
+function CountSpan({ label, count }) {
+  return (
+    <span>
+      {label}:&nbsp;{count}&nbsp;&nbsp;
+    </span>
+  );
+}
+
 export default function GridTab() {
   const { guiBar } = useAppGlobals();
-  const { grid } = useGrid();
-  const pTotal = grid?.counts?.total || 0;
-  const gridNidsAbove = grid?.nidsAbove ? grid.nidsAbove : [];
-  const gridNidsBelow = grid?.nidsBelow ? grid.nidsBelow : [];
-  const gridCountAbove = gridNidsAbove.length;
-  const gridCountBelow = gridNidsBelow.length;
-  const pUnconflicted = gridCountAbove + gridCountBelow;
-  const pConflicted = pTotal - pUnconflicted;
+  const { gridNidsAbove, gridNidsBelow, gridInRoom } = useGrid();
+  const { getGridCount } = useCount();
+  const nTotal = getGridCount('total');
+  const nAbove = getGridCount('above');
+  const nBelow = getGridCount('below');
+  const nConflict = getGridCount('Conflict');
+  const showProgress = nAbove + nBelow > 0;
 
   return (
     <Stack direction="vertical" gap={3} className="GridTab ms-2">
       <Stack direction="horizontal" className="grid-control-bar" gap={3}>
         <div>
-          Bar:&nbsp;{guiBar}
-          &nbsp; Above:&nbsp;{gridCountAbove}
-          &nbsp; Below:&nbsp;{gridCountBelow}
-          &nbsp; Conflicts:&nbsp;{pConflicted}
-          &nbsp; Total:&nbsp;{pTotal}
+          <CountSpan label="Bar" count={guiBar} />
+          <CountSpan label="Above" count={nAbove} />
+          <CountSpan label="Below" count={nBelow} />
+          {!gridInRoom && <CountSpan label="Conflict" count={nConflict} />}
+          <CountSpan label="Total" count={nTotal} />
         </div>
         <GridModeDropdown />
       </Stack>
@@ -35,9 +43,9 @@ export default function GridTab() {
       <hr className="horizontal-divider" />
       <GridBlock nidList={gridNidsBelow} />
 
-      {pUnconflicted > 0 && <GridProgressBar counts={grid.counts} />}
+      {showProgress > 0 && <GridProgressBar />}
       <Stack direction="horizontal" gap={4} className="below-grid">
-        <ColorLegend gridCounts={grid?.counts} />
+        <ColorLegend showCounts={true} />
         <div className="vr" />
         <SetSticky />
       </Stack>

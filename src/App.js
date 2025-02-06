@@ -9,9 +9,9 @@ import SocketIOContext from './contexts/SocketIOContext';
 import KeyContext from './contexts/KeyContext';
 import UserContext from './contexts/UserContext';
 import GridContext from './contexts/GridContext';
+import CountContext from './contexts/CountContext';
 import AppContext from './contexts/AppContext';
 import FilterContext from './contexts/FilterContext';
-import StatsContext from './contexts/StatsContext';
 import PreferencesContext from './contexts/PreferencesContext';
 import FlasherContext from './contexts/FlasherContext';
 import ModalDialogContext from './contexts/ModalDialogContext';
@@ -29,18 +29,18 @@ export default function App() {
                   <KeyContext>
                     <UserContext>
                       <GridContext>
-                        <AppContext>
-                          <FilterContext>
-                            <StatsContext>
+                        <CountContext>
+                          <AppContext>
+                            <FilterContext>
                               <PreferencesContext>
                                 <ModalDialog />
                                 <ConfirmationBox />
                                 <HeaderBar />
                                 <AppRoutes />
                               </PreferencesContext>
-                            </StatsContext>
-                          </FilterContext>
-                        </AppContext>
+                            </FilterContext>
+                          </AppContext>
+                        </CountContext>
                       </GridContext>
                     </UserContext>
                   </KeyContext>

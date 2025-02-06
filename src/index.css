@@ -379,7 +379,7 @@ body {
   align-items: start;
 } */
 
-.GridTab .unconflicted-count {
+.GridTab .total-count {
   margin-left: auto;
 }
 
@@ -478,12 +478,19 @@ body {
  * Guide Page
  */
 
-iframe {
+.LoadingIframe iframe {
   width: 100%;
   height: 100vh;
 }
+
+.LoadingIframe h1 {
+  padding: 40px;
+}
+
+/* csslint chokes when this CSS rule is enabled:
 
 .App:has(.GuidePage) {
   background-color: lightgray;
 }
 
+*/

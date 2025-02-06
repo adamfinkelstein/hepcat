@@ -17,7 +17,7 @@ export default function FavoritePreferences() {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
-  const { checkValidNID } = useGrid();
+  const { gridNidIsValid } = useGrid();
   const favorites = useFavorites();
   const showDeleteAny = favorites && favorites.length > 0;
   const showDeleteAll = favorites && favorites.length > 1;
@@ -43,7 +43,7 @@ export default function FavoritePreferences() {
     ids = ids.replace(/[^\d]/g, ' ').trim().split(/\s+/);
     ids = ids.map((i) => parseInt(i));
     // check for valid IDs
-    const badIDs = ids.filter((v) => !checkValidNID(v));
+    const badIDs = ids.filter((v) => !gridNidIsValid(v));
     if (!badIDs.length) {
       changeFavorites((oldFav) => combineFavorites(oldFav, ids));
       idBox.value = ''; // clear out the box

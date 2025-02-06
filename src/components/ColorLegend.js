@@ -1,13 +1,15 @@
 import Stack from 'react-bootstrap/Stack';
 import { useColors } from '../contexts/PreferencesContext';
+import { useCount } from '../contexts/CountContext';
 import ColorLabel from './ColorLabel';
 
-export default function ColorLegend({ gridCounts, header = 'Plenary Status' }) {
+export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
+  const { getGridCount } = useCount();
   const colors = useColors();
   const colorKeys = Object.keys(colors);
   const keyToCount = (key) => {
-    if (!gridCounts || !gridCounts.hasOwnProperty(key)) return null;
-    const count = gridCounts[key];
+    const count = getGridCount(key);
+    if (!showCounts || !count) return null;
     return '(' + count + ')';
   };
 

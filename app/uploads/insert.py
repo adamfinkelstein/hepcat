@@ -386,12 +386,6 @@ def insert_paper_room_rows(rows):
     return count
 
 
-# def sanitize_room_code(room):
-#     if room.startswith("Room_"):
-#         return room[5:]
-#     return room
-
-
 def encode_room_list(room_list):
     # rooms = [sanitize_room_code(room) for room in room_list]
     rooms = [room for room in room_list if len(room)]  # omit empty
@@ -456,12 +450,13 @@ def insert_chair_score_rows(rows):
         db.session.add(paper)
         # update paper history with new bbs entry
         context_bbs = context_str_to_enum("BBS")
-        consensus_enum = status_str_to_enum(status)
+        status_enum = status_str_to_enum(status)
         history = History(
-            paper=paper, context_enum=context_bbs, status_enum=consensus_enum
+            paper=paper, context_enum=context_bbs, status_enum=status_enum
         )
         db.session.add(history)
         count += 1
+    init_grid_from_bbs()
     return count
 
 

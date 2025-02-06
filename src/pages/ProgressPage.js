@@ -6,9 +6,7 @@ import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
-import { useStatsContext } from '../contexts/StatsContext';
 import { useFontInfo } from '../contexts/PreferencesContext';
-import Stats from '../components/Stats';
 
 export default function ProgressPage() {
   const { conflictbot, showGlobalOps, setShowGlobalOps } = useUser();
@@ -19,19 +17,8 @@ export default function ProgressPage() {
   const { socketEmit } = useSocketIO();
   const { roomChoice, gitInfo } = useUser();
   const { guiBar, setGuiBar } = useAppGlobals();
-  const { stats } = useStatsContext();
   const { currentFontStyle } = useFontInfo();
   const guiBarString = guiBar + '';
-  const statsHeader = stats ? stats.header : [];
-  const statsRows = stats ? stats.rows : [];
-  const statsWhen = stats ? stats.when : '';
-
-  function handleRequestStats() {
-    socketEmit('admin_get_stats');
-    const msg = 'Sent request update stats.';
-    controlledLog(msg);
-    flash(msg, 'success');
-  }
 
   function handleRefreshConflictbot(inAllRooms) {
     // This function is only used in online meetings.
@@ -116,19 +103,6 @@ export default function ProgressPage() {
         <Stack direction="horizontal">
           <h1>Progress Page</h1>
         </Stack>
-        <hr />
-        <Stack direction="horizontal" className="mb-4">
-          <h2>Stats&nbsp;&nbsp;</h2>
-          <Button variant="primary" onClick={handleRequestStats}>
-            Refresh
-          </Button>
-          {<div>&nbsp;&nbsp;{statsWhen}</div>}
-        </Stack>
-        {stats ? (
-          <Stats header={statsHeader} rows={statsRows} />
-        ) : (
-          <div>Click "Refresh" button above to get stats.</div>
-        )}
         <hr />
         <Stack direction="horizontal" className="my-2">
           <h2>Global Operations (use with care)&nbsp;&nbsp;</h2>

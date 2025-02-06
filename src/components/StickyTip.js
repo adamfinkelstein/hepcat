@@ -19,7 +19,11 @@ export default function StickyTip() {
           </li>
           <li>
             <strong>Reject, Conference</strong> or
-            <strong> Journal</strong> &mdash; Paper has converged.
+            <strong> Journal:</strong>
+            <ul>
+              <li>Paper has converged.</li>
+              <li>Usually filed by Primary.</li>
+            </ul>
           </li>
         </ul>
       </div>

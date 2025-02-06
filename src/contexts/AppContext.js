@@ -28,7 +28,7 @@ export default function AppContext({ children }) {
   const { revealModalDialog } = useModalDialog();
   const { decryptObjectOrNull } = useKey();
   const { user, isAdmin, paperKeys, roomChoice } = useUser();
-  const { grid, gridMode, updateGridEntry } = useGrid();
+  const { updateGridEntry } = useGrid();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
   const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
@@ -203,12 +203,10 @@ export default function AppContext({ children }) {
       }
     };
   }, [
-    grid,
     queue,
     socket,
     isAdmin,
     roomChoice,
-    gridMode,
     user,
     paperKeys,
     controlledLog,

@@ -16,7 +16,7 @@ export default function SetSticky() {
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
   const { statusList } = useAppGlobals();
-  const { grid, checkValidNID } = useGrid();
+  const { gridGetElemByNid, gridNidIsValid } = useGrid();
   const [stickyType, setStickyType] = useState('Tabled');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
@@ -66,14 +66,14 @@ export default function SetSticky() {
     });
   };
 
-  /*
+  /* We already know nid is valid, so we can skip that check.
    * These warnings are consistent with the policy in
    * current_app.config["HEPCAT_AUTO_REJECT"]
    * -- prob should check it.
    * Also would be nice to use markdown.
    */
   const checkForWarningsThenSendSticky = (nid) => {
-    const gridElem = grid.papers[nid];
+    const gridElem = gridGetElemByNid(nid);
     const warnings = [];
     if (paperHasSticky(gridElem)) {
       let text = `Paper ${nid} already has a sticky. `;
@@ -84,8 +84,8 @@ export default function SetSticky() {
       let text = `Paper ${nid} is below the bar. `;
       const acceptOptions = ['Unseen', 'Journal', 'Conference'];
       if (acceptOptions.includes(gridElem.status)) {
-        text += 'Since it had previously converged to accept, it must now ';
-        text += 'be discussed in the meeting as a proposed reject.';
+        text += 'Since it had previously converged to Accept, it must now ';
+        text += 'be discussed in the meeting as a proposed Reject.';
       } else {
         text += 'This Reject sticky will give it status "presumed reject" -- ';
         text += 'meaning it may never come up for discussion in the meeting. ';
@@ -102,7 +102,7 @@ export default function SetSticky() {
       warnings.push(text);
     }
     if (favorites?.length && !favorites.includes(nid)) {
-      let text = 'You have marked one or more favorites and Paper ';
+      let text = 'You have marked one or more favorites, and Paper ';
       text += nid + ' is not among them. ';
       text += 'Usually stickies are filed for papers you are tracking. ';
       warnings.push(text);
@@ -118,7 +118,7 @@ export default function SetSticky() {
   const confirmNIDandSendSticky = () => {
     const nid = parseInt(ID);
 
-    if (checkValidNID(nid)) {
+    if (gridNidIsValid(nid)) {
       checkForWarningsThenSendSticky(nid);
     } else {
       revealModalDialog({

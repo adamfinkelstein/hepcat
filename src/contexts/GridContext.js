@@ -12,123 +12,120 @@ import { useKey } from './KeyContext';
 
 const gridContext = createContext();
 
-const getBasicCountsInGrid = (gridData) => {
-  const counts = {};
-  const total = gridData.papers_encrypted.length;
-  const above = gridData.nidsAbove.length;
-  const below = gridData.nidsBelow.length;
-  const unconflicted = above + below;
-  const conflicted = total - unconflicted;
-  counts.total = total;
-  counts.above = above;
-  counts.below = below;
-  counts.unconflicted = unconflicted;
-  counts.conflicted = conflicted;
-  return counts;
-};
-
-const countPaperStatusInGrid = (gridData) => {
-  const convergedStatuses = ['Journal', 'Conference', 'Reject'];
-  const papers = gridData.papers;
-  const counts = getBasicCountsInGrid(gridData);
-  let converged = 0;
-  let pending = 0;
-  let tabledStickyCount = 0;
-  for (const nid in papers) {
-    const paper = papers[nid];
-    const status = paper.status;
-    if (convergedStatuses.includes(status)) {
-      converged++;
-    } else {
-      pending++;
-    }
-    // Tabled-Sticky is a special case
-    if (paper.tabled_sticky) {
-      tabledStickyCount++;
-    } // prevent double counting as Tabled
-    else if (status in counts) {
-      counts[status]++;
-    } else {
-      counts[status] = 1;
-    }
-  }
-  counts['Converged'] = converged;
-  counts['Pending'] = pending;
-  counts['Tabled-Sticky'] = tabledStickyCount;
-  gridData.counts = counts;
-};
-
 export default function GridContext({ children }) {
-  const { socket, socketEmit } = useSocketIO();
+  const { socket } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { roomChoice } = useUser();
   const { decryptObjectOrNull } = useKey();
 
-  const [grid, setGrid] = useState(null);
   const [gridMode, setGridMode] = useState('Normal');
+  const [gridInRoom, setGridInRoom] = useState(false);
+  const [gridPapers, setGridPapers] = useState({});
+  const [gridNidsInOrder, setGridNidsInOrder] = useState([]);
+  const [gridNidsAbove, setGridNidsAbove] = useState([]);
+  const [gridNidsBelow, setGridNidsBelow] = useState([]);
+  const [gridConflicts, setGridConflicts] = useState(0);
+
+  const gridNidIsValid = useCallback(
+    (nid) => {
+      return gridPapers.hasOwnProperty(nid);
+    },
+    [gridPapers],
+  );
+
+  const gridGetElemByNid = useCallback(
+    (nid) => {
+      if (!gridNidIsValid(nid)) return null;
+      return gridPapers[nid];
+    },
+    [gridPapers, gridNidIsValid],
+  );
 
   const sortGridPapers = useCallback(
-    (data) => {
-      const nidsAbove = [];
-      const nidsBelow = [];
-      for (const nid of data.nidsInOrder) {
-        const p = data.papers[nid];
-        if (gridMode === 'This Room' && p.paper_room !== roomChoice) continue; // skip papers for other rooms?
+    (papers, nidsInOrder) => {
+      const above = [];
+      const below = [];
+      for (const nid of nidsInOrder) {
+        if (!papers.hasOwnProperty(nid)) {
+          // this should not happen, and is just here for a sanity check.
+          controlledLog('*** cannot find grid entry for nid:', nid);
+          continue;
+        }
+        const p = papers[nid];
+        if (gridInRoom && p.paper_room !== roomChoice) continue; // skip papers for other rooms?
         if (p.below_bar) {
-          nidsBelow.push(nid);
+          below.push(nid);
         } else {
-          nidsAbove.push(nid);
+          above.push(nid);
         }
       }
-      data.nidsAbove = nidsAbove;
-      data.nidsBelow = nidsBelow;
+      return { above, below };
     },
-    [gridMode, roomChoice],
+    [gridInRoom, roomChoice, controlledLog],
   );
 
-  const forceGridUpdate = useCallback(
-    (data) => {
-      const newGrid = { ...data };
-      sortGridPapers(newGrid);
-      countPaperStatusInGrid(newGrid);
-      setGrid(newGrid); // force update to grid variable
-    },
-    [setGrid, sortGridPapers],
-  );
-
+  // called due to sticky or queue update
   const updateGridEntry = useCallback(
     (grid_update) => {
       const nid = grid_update.nid;
-      if (!nid || !grid || !grid.papers) {
+      if (!nid || !gridPapers.hasOwnProperty(nid)) {
         controlledLog('*** cannot find grid entry for nid:', nid);
         return;
       }
-      grid.papers[nid] = grid_update;
-      forceGridUpdate(grid);
+      const newGridPapers = { ...gridPapers };
+      newGridPapers[nid] = grid_update;
+      setGridPapers(newGridPapers); // force update to papers variable
     },
-    [grid, forceGridUpdate, controlledLog],
+    [gridPapers, setGridPapers, controlledLog],
   );
 
-  useEffect(() => {
-    const decodeGridPapers = (data) => {
+  const decryptGridPapers = useCallback(
+    (encryptedPapers) => {
       const papers = {}; // dictionary indexed by nid
       const nidsInOrder = [];
-      const enc = data.papers_encrypted;
-      for (let i = 0; i < enc.length; i++) {
-        const p = decryptObjectOrNull(enc[i]);
-        if (!p) continue; // skip conflicted papers
+      const nEnc = encryptedPapers.length;
+      let nConflicts = 0;
+      for (let i = 0; i < nEnc; i++) {
+        const paperEnc = encryptedPapers[i];
+        const p = decryptObjectOrNull(paperEnc);
+        if (!p) {
+          nConflicts++;
+          continue; // skip conflicted papers
+        }
         papers[p.nid] = p;
         nidsInOrder.push(p.nid);
       }
-      data.papers = papers;
-      data.nidsInOrder = nidsInOrder;
-    };
+      setGridConflicts(nConflicts);
+      setGridNidsInOrder(nidsInOrder);
+      setGridPapers(papers);
+    },
+    [decryptObjectOrNull, setGridPapers, setGridNidsInOrder, setGridConflicts],
+  );
 
+  useEffect(() => {
+    const inRoom = gridMode === 'This Room';
+    setGridInRoom(inRoom);
+  }, [gridMode, setGridInRoom]);
+
+  // sort grid papers into above and below.
+  // this happens whenever grid changes.
+  // also happens when grid mode changes because of sortGridPapers.
+  useEffect(() => {
+    const { above, below } = sortGridPapers(gridPapers, gridNidsInOrder);
+    setGridNidsAbove(above);
+    setGridNidsBelow(below);
+  }, [
+    gridPapers,
+    gridNidsInOrder,
+    sortGridPapers,
+    setGridNidsAbove,
+    setGridNidsBelow,
+  ]);
+
+  useEffect(() => {
     const receiveGrid = (data) => {
-      decodeGridPapers(data);
-      forceGridUpdate(data);
-      controlledLog('received and decoded grid:');
-      controlledLog(data);
+      decryptGridPapers(data.papers_encrypted);
+      controlledLog('received and decoded grid data');
     };
 
     const receiveSticky = (encrypted_grid_update) => {
@@ -156,29 +153,26 @@ export default function GridContext({ children }) {
       }
     };
   }, [
-    grid,
     socket,
-    gridMode,
     controlledLog,
-    roomChoice,
-    socketEmit,
     decryptObjectOrNull,
-    forceGridUpdate,
     updateGridEntry,
+    decryptGridPapers,
   ]);
-
-  function checkValidNID(nid) {
-    if (!grid || !grid.papers) return false;
-    return nid in grid.papers;
-  }
 
   return (
     <gridContext.Provider
       value={{
-        grid,
         gridMode,
         setGridMode,
-        checkValidNID,
+        gridInRoom,
+        gridPapers,
+        gridNidsInOrder,
+        gridNidsAbove,
+        gridNidsBelow,
+        gridConflicts,
+        gridNidIsValid,
+        gridGetElemByNid,
         updateGridEntry,
       }}
     >

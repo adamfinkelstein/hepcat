@@ -78,6 +78,7 @@ export default function SetQueue() {
     'This Room Only',
     'Sticky Only',
     'Unseen Only',
+    'No Presumed-R',
     'Dual Only',
     'Journal Only',
     'No Clusters',

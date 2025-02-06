@@ -1,13 +1,13 @@
 import Container from 'react-bootstrap/Container';
 import Badge from 'react-bootstrap/Badge';
+import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useFontInfo } from '../contexts/PreferencesContext';
-import Button from 'react-bootstrap/Button';
-import Table from 'react-bootstrap/Table';
 
 /*
 import moment from 'moment';
@@ -60,7 +60,7 @@ export default function UsersPage() {
       <div className={currentFontStyle}>
         <Container fluid className="mt-3">
           <h1>All Users</h1>
-          <Table striped bordered hover className="stats-table">
+          <Table striped bordered hover>
             <thead>
               <tr>
                 <th>Switch</th>
