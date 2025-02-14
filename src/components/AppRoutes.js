@@ -40,7 +40,7 @@ export default function AppRoutes() {
           {isAdmin && (
             <>
               <Route path="/uploads" element={<UploadsPage />} />
-              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/danger" element={<ProgressPage />} />
               <Route path="/users" element={<UsersPage />} />
             </>
           )}

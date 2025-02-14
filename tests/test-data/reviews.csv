@@ -1,751 +1,1107 @@
-Submission ID,Role,Conference Score,Journal Score,Expertise,Final Recommendation
-papers_101,Technical Papers Committee Member (lead),0,-1,99,2,
-papers_101,Technical Papers Committee Member,0,3,99,2,
-papers_101,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_101,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_101,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_102,Technical Papers Committee Member (lead),-1,1,99,1,
-papers_102,Technical Papers Committee Member,3,3,99,1,
-papers_102,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_102,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_102,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_103,Technical Papers Committee Member (lead),-1,-1,99,0,
-papers_103,Technical Papers Committee Member,1,-1,99,0,
-papers_103,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_103,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_103,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_104,Technical Papers Committee Member (lead),-3,5,99,1,
-papers_104,Technical Papers Committee Member,-1,-1,99,1,
-papers_104,Technical Papers Tertiary Reviewer,-1,5,99,,
-papers_104,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_104,Technical Papers Tertiary Reviewer,-1,5,99,,
-papers_105,Technical Papers Committee Member (lead),0,1,99,0,
-papers_105,Technical Papers Committee Member,0,1,99,0,
-papers_105,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_105,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_105,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_106,Technical Papers Committee Member (lead),-1,3,99,0,
-papers_106,Technical Papers Committee Member,-3,1,99,0,
-papers_106,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_106,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_106,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_107,Technical Papers Committee Member (lead),0,-3,99,0,
-papers_107,Technical Papers Committee Member,0,1,99,0,
-papers_107,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_107,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_107,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_108,Technical Papers Committee Member (lead),0,3,99,1,
-papers_108,Technical Papers Committee Member,0,5,99,1,
-papers_108,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_108,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_108,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_109,Technical Papers Committee Member (lead),0,1,99,0,
-papers_109,Technical Papers Committee Member,0,-1,99,0,
-papers_109,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_109,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_109,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_110,Technical Papers Committee Member (lead),0,3,99,1,
-papers_110,Technical Papers Committee Member,0,5,99,1,
-papers_110,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_110,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_110,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_111,Technical Papers Committee Member (lead),0,-1,99,-1,
-papers_111,Technical Papers Committee Member,0,1,99,-1,
-papers_111,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_111,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_111,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_112,Technical Papers Committee Member (lead),1,1,99,2,
-papers_112,Technical Papers Committee Member,3,1,99,2,
-papers_112,Technical Papers Tertiary Reviewer,5,5,99,,
-papers_112,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_112,Technical Papers Tertiary Reviewer,3,5,99,,
-papers_113,Technical Papers Committee Member (lead),-1,-3,99,0,
-papers_113,Technical Papers Committee Member,3,1,99,0,
-papers_113,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_113,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_113,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_114,Technical Papers Committee Member (lead),1,1,99,-1,
-papers_114,Technical Papers Committee Member,3,-5,99,-1,
-papers_114,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_114,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_114,Technical Papers Tertiary Reviewer,1,-5,99,,
-papers_115,Technical Papers Committee Member (lead),3,1,99,0,
-papers_115,Technical Papers Committee Member,5,1,99,0,
-papers_115,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_115,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_115,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_116,Technical Papers Committee Member (lead),0,5,99,1,
-papers_116,Technical Papers Committee Member,0,3,99,1,
-papers_116,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_116,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_116,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_117,Technical Papers Committee Member (lead),-1,-3,99,-1,
-papers_117,Technical Papers Committee Member,3,-1,99,-1,
-papers_117,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_117,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_117,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_118,Technical Papers Committee Member (lead),3,1,99,0,
-papers_118,Technical Papers Committee Member,1,3,99,0,
-papers_118,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_118,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_118,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_119,Technical Papers Committee Member (lead),0,3,99,0,
-papers_119,Technical Papers Committee Member,0,1,99,0,
-papers_119,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_119,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_119,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_120,Technical Papers Committee Member (lead),0,-5,99,-1,
-papers_120,Technical Papers Committee Member,0,-3,99,-1,
-papers_120,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_120,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_120,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_121,Technical Papers Committee Member (lead),0,1,99,0,
-papers_121,Technical Papers Committee Member,0,1,99,0,
-papers_121,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_121,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_121,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_122,Technical Papers Committee Member (lead),0,-3,99,0,
-papers_122,Technical Papers Committee Member,0,1,99,0,
-papers_122,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_122,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_122,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_123,Technical Papers Committee Member (lead),0,1,99,0,
-papers_123,Technical Papers Committee Member,0,-1,99,0,
-papers_123,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_123,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_123,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_124,Technical Papers Committee Member (lead),-3,-1,99,0,
-papers_124,Technical Papers Committee Member,-3,1,99,0,
-papers_124,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_124,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_124,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_125,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_125,Technical Papers Committee Member,0,1,99,0,
-papers_125,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_125,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_125,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_126,Technical Papers Committee Member (lead),-3,5,99,0,
-papers_126,Technical Papers Committee Member,-5,1,99,0,
-papers_126,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_126,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_126,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_127,Technical Papers Committee Member (lead),5,-3,99,-1,
-papers_127,Technical Papers Committee Member,5,-1,99,-1,
-papers_127,Technical Papers Tertiary Reviewer,1,-5,99,,
-papers_127,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_127,Technical Papers Tertiary Reviewer,-3,-5,99,,
-papers_128,Technical Papers Committee Member (lead),1,-1,99,-1,
-papers_128,Technical Papers Committee Member,-1,-3,99,-1,
-papers_128,Technical Papers Tertiary Reviewer,-3,-5,99,,
-papers_128,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_128,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_129,Technical Papers Committee Member (lead),0,5,99,2,
-papers_129,Technical Papers Committee Member,0,1,99,2,
-papers_129,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_129,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_129,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_130,Technical Papers Committee Member (lead),0,3,99,1,
-papers_130,Technical Papers Committee Member,0,-1,99,1,
-papers_130,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_130,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_130,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_131,Technical Papers Committee Member (lead),1,1,99,0,
-papers_131,Technical Papers Committee Member,3,3,99,0,
-papers_131,Technical Papers Tertiary Reviewer,5,-3,99,,
-papers_131,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_131,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_132,Technical Papers Committee Member (lead),-3,-1,99,-1,
-papers_132,Technical Papers Committee Member,1,-1,99,-1,
-papers_132,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_132,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_132,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_133,Technical Papers Committee Member (lead),-5,-1,99,-1,
-papers_133,Technical Papers Committee Member,1,-1,99,-1,
-papers_133,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_133,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_133,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_134,Technical Papers Committee Member (lead),-1,-1,99,0,
-papers_134,Technical Papers Committee Member,-3,-1,99,0,
-papers_134,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_134,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_134,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_135,Technical Papers Committee Member (lead),0,1,99,0,
-papers_135,Technical Papers Committee Member,0,-1,99,0,
-papers_135,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_135,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_135,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_136,Technical Papers Committee Member (lead),-1,-1,99,-1,
-papers_136,Technical Papers Committee Member,-1,-3,99,-1,
-papers_136,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_136,Technical Papers Tertiary Reviewer,-5,-3,99,,
-papers_136,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_137,Technical Papers Committee Member (lead),-3,-1,99,0,
-papers_137,Technical Papers Committee Member,1,-1,99,0,
-papers_137,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_137,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_137,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_138,Technical Papers Committee Member (lead),0,-3,99,0,
-papers_138,Technical Papers Committee Member,0,-1,99,0,
-papers_138,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_138,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_138,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_139,Technical Papers Committee Member (lead),0,3,99,2,
-papers_139,Technical Papers Committee Member,0,1,99,2,
-papers_139,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_139,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_139,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_140,Technical Papers Committee Member (lead),0,1,99,0,
-papers_140,Technical Papers Committee Member,0,1,99,0,
-papers_140,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_140,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_140,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_141,Technical Papers Committee Member (lead),0,5,99,2,
-papers_141,Technical Papers Committee Member,0,3,99,2,
-papers_141,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_141,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_141,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_142,Technical Papers Committee Member (lead),0,3,99,0,
-papers_142,Technical Papers Committee Member,0,1,99,0,
-papers_142,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_142,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_142,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_143,Technical Papers Committee Member (lead),-1,3,99,1,
-papers_143,Technical Papers Committee Member,1,3,99,1,
-papers_143,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_143,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_143,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_144,Technical Papers Committee Member (lead),0,1,99,2,
-papers_144,Technical Papers Committee Member,0,5,99,2,
-papers_144,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_144,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_144,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_145,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_145,Technical Papers Committee Member,0,-1,99,0,
-papers_145,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_145,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_145,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_146,Technical Papers Committee Member (lead),-5,3,99,0,
-papers_146,Technical Papers Committee Member,-3,1,99,0,
-papers_146,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_146,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_146,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_147,Technical Papers Committee Member (lead),0,3,99,0,
-papers_147,Technical Papers Committee Member,0,1,99,0,
-papers_147,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_147,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_147,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_148,Technical Papers Committee Member (lead),3,1,99,1,
-papers_148,Technical Papers Committee Member,3,3,99,1,
-papers_148,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_148,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_148,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_149,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_149,Technical Papers Committee Member,0,1,99,0,
-papers_149,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_149,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_149,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_150,Technical Papers Committee Member (lead),-1,-1,99,0,
-papers_150,Technical Papers Committee Member,-3,-1,99,0,
-papers_150,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_150,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_150,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_151,Technical Papers Committee Member (lead),0,-1,99,-1,
-papers_151,Technical Papers Committee Member,0,-1,99,-1,
-papers_151,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_151,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_151,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_152,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_152,Technical Papers Committee Member,0,-1,99,0,
-papers_152,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_152,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_152,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_153,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_153,Technical Papers Committee Member,0,-3,99,-1,
-papers_153,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_153,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_153,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_154,Technical Papers Committee Member (lead),0,3,99,2,
-papers_154,Technical Papers Committee Member,0,1,99,2,
-papers_154,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_154,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_154,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_155,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_155,Technical Papers Committee Member,0,-5,99,-1,
-papers_155,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_155,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_155,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_156,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_156,Technical Papers Committee Member,0,1,99,-1,
-papers_156,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_156,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_156,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_157,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_157,Technical Papers Committee Member,0,-1,99,0,
-papers_157,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_157,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_157,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_158,Technical Papers Committee Member (lead),-1,-3,99,0,
-papers_158,Technical Papers Committee Member,3,-1,99,0,
-papers_158,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_158,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_158,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_159,Technical Papers Committee Member (lead),3,5,99,0,
-papers_159,Technical Papers Committee Member,1,-1,99,0,
-papers_159,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_159,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_159,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_160,Technical Papers Committee Member (lead),0,3,99,2,
-papers_160,Technical Papers Committee Member,0,5,99,2,
-papers_160,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_160,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_160,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_161,Technical Papers Committee Member (lead),0,3,99,2,
-papers_161,Technical Papers Committee Member,0,-1,99,2,
-papers_161,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_161,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_161,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_162,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_162,Technical Papers Committee Member,0,-3,99,-1,
-papers_162,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_162,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_162,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_163,Technical Papers Committee Member (lead),0,1,99,1,
-papers_163,Technical Papers Committee Member,0,3,99,1,
-papers_163,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_163,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_163,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_164,Technical Papers Committee Member (lead),-3,1,99,0,
-papers_164,Technical Papers Committee Member,-3,1,99,0,
-papers_164,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_164,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_164,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_165,Technical Papers Committee Member (lead),0,1,99,0,
-papers_165,Technical Papers Committee Member,0,-1,99,0,
-papers_165,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_165,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_165,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_166,Technical Papers Committee Member (lead),-3,-1,99,0,
-papers_166,Technical Papers Committee Member,1,1,99,0,
-papers_166,Technical Papers Tertiary Reviewer,-3,3,99,,
-papers_166,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_166,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_167,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_167,Technical Papers Committee Member,0,-1,99,0,
-papers_167,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_167,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_167,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_168,Technical Papers Committee Member (lead),-1,-1,99,-1,
-papers_168,Technical Papers Committee Member,5,1,99,-1,
-papers_168,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_168,Technical Papers Tertiary Reviewer,5,-3,99,,
-papers_168,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_169,Technical Papers Committee Member (lead),1,1,99,0,
-papers_169,Technical Papers Committee Member,1,3,99,0,
-papers_169,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_169,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_169,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_170,Technical Papers Committee Member (lead),0,5,99,2,
-papers_170,Technical Papers Committee Member,0,5,99,2,
-papers_170,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_170,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_170,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_171,Technical Papers Committee Member (lead),-3,1,99,0,
-papers_171,Technical Papers Committee Member,1,-1,99,0,
-papers_171,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_171,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_171,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_172,Technical Papers Committee Member (lead),1,3,99,2,
-papers_172,Technical Papers Committee Member,1,3,99,2,
-papers_172,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_172,Technical Papers Tertiary Reviewer,5,5,99,,
-papers_172,Technical Papers Tertiary Reviewer,5,1,99,,
-papers_173,Technical Papers Committee Member (lead),-1,3,99,2,
-papers_173,Technical Papers Committee Member,-1,1,99,2,
-papers_173,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_173,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_173,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_174,Technical Papers Committee Member (lead),0,3,99,2,
-papers_174,Technical Papers Committee Member,0,1,99,2,
-papers_174,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_174,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_174,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_175,Technical Papers Committee Member (lead),1,-1,99,-1,
-papers_175,Technical Papers Committee Member,-1,1,99,-1,
-papers_175,Technical Papers Tertiary Reviewer,1,-5,99,,
-papers_175,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_175,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_176,Technical Papers Committee Member (lead),3,-1,99,-1,
-papers_176,Technical Papers Committee Member,3,-3,99,-1,
-papers_176,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_176,Technical Papers Tertiary Reviewer,5,-5,99,,
-papers_176,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_177,Technical Papers Committee Member (lead),0,1,99,0,
-papers_177,Technical Papers Committee Member,0,1,99,0,
-papers_177,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_177,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_177,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_178,Technical Papers Committee Member (lead),3,1,99,0,
-papers_178,Technical Papers Committee Member,3,-1,99,0,
-papers_178,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_178,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_178,Technical Papers Tertiary Reviewer,5,-3,99,,
-papers_179,Technical Papers Committee Member (lead),0,-5,99,-1,
-papers_179,Technical Papers Committee Member,0,-3,99,-1,
-papers_179,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_179,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_179,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_180,Technical Papers Committee Member (lead),0,5,99,2,
-papers_180,Technical Papers Committee Member,0,1,99,2,
-papers_180,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_180,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_180,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_181,Technical Papers Committee Member (lead),0,5,99,2,
-papers_181,Technical Papers Committee Member,0,3,99,2,
-papers_181,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_181,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_181,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_182,Technical Papers Committee Member (lead),1,1,99,1,
-papers_182,Technical Papers Committee Member,1,3,99,1,
-papers_182,Technical Papers Tertiary Reviewer,5,3,99,,
-papers_182,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_182,Technical Papers Tertiary Reviewer,-3,3,99,,
-papers_183,Technical Papers Committee Member (lead),-5,-1,99,0,
-papers_183,Technical Papers Committee Member,-3,1,99,0,
-papers_183,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_183,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_183,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_184,Technical Papers Committee Member (lead),0,-3,99,0,
-papers_184,Technical Papers Committee Member,0,-3,99,0,
-papers_184,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_184,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_184,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_185,Technical Papers Committee Member (lead),-1,-3,99,0,
-papers_185,Technical Papers Committee Member,-1,1,99,0,
-papers_185,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_185,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_185,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_186,Technical Papers Committee Member (lead),-1,3,99,0,
-papers_186,Technical Papers Committee Member,-3,1,99,0,
-papers_186,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_186,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_186,Technical Papers Tertiary Reviewer,-3,-3,99,,
-papers_187,Technical Papers Committee Member (lead),0,-5,99,-1,
-papers_187,Technical Papers Committee Member,0,-5,99,-1,
-papers_187,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_187,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_187,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_188,Technical Papers Committee Member (lead),0,-5,99,-1,
-papers_188,Technical Papers Committee Member,0,1,99,-1,
-papers_188,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_188,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_188,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_189,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_189,Technical Papers Committee Member,0,-3,99,-1,
-papers_189,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_189,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_189,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_190,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_190,Technical Papers Committee Member,0,1,99,0,
-papers_190,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_190,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_190,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_191,Technical Papers Committee Member (lead),3,3,99,0,
-papers_191,Technical Papers Committee Member,1,1,99,0,
-papers_191,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_191,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_191,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_192,Technical Papers Committee Member (lead),0,1,99,0,
-papers_192,Technical Papers Committee Member,0,-1,99,0,
-papers_192,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_192,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_192,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_193,Technical Papers Committee Member (lead),1,-1,99,-1,
-papers_193,Technical Papers Committee Member,-3,-1,99,-1,
-papers_193,Technical Papers Tertiary Reviewer,-3,-3,99,,
-papers_193,Technical Papers Tertiary Reviewer,-1,-5,99,,
-papers_193,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_194,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_194,Technical Papers Committee Member,0,-1,99,-1,
-papers_194,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_194,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_194,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_195,Technical Papers Committee Member (lead),-5,-3,99,0,
-papers_195,Technical Papers Committee Member,-1,5,99,0,
-papers_195,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_195,Technical Papers Tertiary Reviewer,-5,3,99,,
-papers_195,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_196,Technical Papers Committee Member (lead),0,-1,99,-1,
-papers_196,Technical Papers Committee Member,0,-3,99,-1,
-papers_196,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_196,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_196,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_197,Technical Papers Committee Member (lead),3,1,99,0,
-papers_197,Technical Papers Committee Member,-1,-3,99,0,
-papers_197,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_197,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_197,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_198,Technical Papers Committee Member (lead),-5,-1,99,0,
-papers_198,Technical Papers Committee Member,-1,1,99,0,
-papers_198,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_198,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_198,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_199,Technical Papers Committee Member (lead),5,3,99,1,
-papers_199,Technical Papers Committee Member,1,1,99,1,
-papers_199,Technical Papers Tertiary Reviewer,5,1,99,,
-papers_199,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_199,Technical Papers Tertiary Reviewer,5,3,99,,
-papers_200,Technical Papers Committee Member (lead),-1,1,99,0,
-papers_200,Technical Papers Committee Member,3,-1,99,0,
-papers_200,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_200,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_200,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_201,Technical Papers Committee Member (lead),0,5,99,2,
-papers_201,Technical Papers Committee Member,0,3,99,2,
-papers_201,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_201,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_201,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_202,Technical Papers Committee Member (lead),0,3,99,0,
-papers_202,Technical Papers Committee Member,0,1,99,0,
-papers_202,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_202,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_202,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_203,Technical Papers Committee Member (lead),5,-3,99,0,
-papers_203,Technical Papers Committee Member,3,-1,99,0,
-papers_203,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_203,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_203,Technical Papers Tertiary Reviewer,5,1,99,,
-papers_204,Technical Papers Committee Member (lead),-3,-3,99,0,
-papers_204,Technical Papers Committee Member,1,-1,99,0,
-papers_204,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_204,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_204,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_205,Technical Papers Committee Member (lead),-3,1,99,1,
-papers_205,Technical Papers Committee Member,-1,3,99,1,
-papers_205,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_205,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_205,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_206,Technical Papers Committee Member (lead),3,-1,99,0,
-papers_206,Technical Papers Committee Member,5,1,99,0,
-papers_206,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_206,Technical Papers Tertiary Reviewer,5,-1,99,,
-papers_206,Technical Papers Tertiary Reviewer,5,3,99,,
-papers_207,Technical Papers Committee Member (lead),3,1,99,2,
-papers_207,Technical Papers Committee Member,3,5,99,2,
-papers_207,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_207,Technical Papers Tertiary Reviewer,3,-1,99,,
-papers_207,Technical Papers Tertiary Reviewer,3,3,99,,
-papers_208,Technical Papers Committee Member (lead),1,1,99,1,
-papers_208,Technical Papers Committee Member,1,1,99,1,
-papers_208,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_208,Technical Papers Tertiary Reviewer,1,5,99,,
-papers_208,Technical Papers Tertiary Reviewer,1,3,99,,
-papers_209,Technical Papers Committee Member (lead),1,-5,99,-1,
-papers_209,Technical Papers Committee Member,-3,-5,99,-1,
-papers_209,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_209,Technical Papers Tertiary Reviewer,3,-3,99,,
-papers_209,Technical Papers Tertiary Reviewer,-3,-3,99,,
-papers_210,Technical Papers Committee Member (lead),0,3,99,2,
-papers_210,Technical Papers Committee Member,0,3,99,2,
-papers_210,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_210,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_210,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_211,Technical Papers Committee Member (lead),0,1,99,0,
-papers_211,Technical Papers Committee Member,0,-1,99,0,
-papers_211,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_211,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_211,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_212,Technical Papers Committee Member (lead),-5,5,99,2,
-papers_212,Technical Papers Committee Member,-5,1,99,2,
-papers_212,Technical Papers Tertiary Reviewer,-3,3,99,,
-papers_212,Technical Papers Tertiary Reviewer,-3,3,99,,
-papers_212,Technical Papers Tertiary Reviewer,-5,3,99,,
-papers_213,Technical Papers Committee Member (lead),-1,1,99,0,
-papers_213,Technical Papers Committee Member,-1,1,99,0,
-papers_213,Technical Papers Tertiary Reviewer,-3,-3,99,,
-papers_213,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_213,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_214,Technical Papers Committee Member (lead),-1,-3,99,-1,
-papers_214,Technical Papers Committee Member,-1,-3,99,-1,
-papers_214,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_214,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_214,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_215,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_215,Technical Papers Committee Member,0,3,99,-1,
-papers_215,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_215,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_215,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_216,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_216,Technical Papers Committee Member,0,1,99,0,
-papers_216,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_216,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_216,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_217,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_217,Technical Papers Committee Member,0,-1,99,-1,
-papers_217,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_217,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_217,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_218,Technical Papers Committee Member (lead),1,-1,99,0,
-papers_218,Technical Papers Committee Member,1,1,99,0,
-papers_218,Technical Papers Tertiary Reviewer,-1,-3,99,,
-papers_218,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_218,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_219,Technical Papers Committee Member (lead),3,1,99,0,
-papers_219,Technical Papers Committee Member,1,3,99,0,
-papers_219,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_219,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_219,Technical Papers Tertiary Reviewer,3,1,99,,
-papers_220,Technical Papers Committee Member (lead),0,1,99,0,
-papers_220,Technical Papers Committee Member,0,-1,99,0,
-papers_220,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_220,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_220,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_221,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_221,Technical Papers Committee Member,0,3,99,0,
-papers_221,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_221,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_221,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_222,Technical Papers Committee Member (lead),0,3,99,0,
-papers_222,Technical Papers Committee Member,0,-1,99,0,
-papers_222,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_222,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_222,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_223,Technical Papers Committee Member (lead),0,3,99,0,
-papers_223,Technical Papers Committee Member,0,1,99,0,
-papers_223,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_223,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_223,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_224,Technical Papers Committee Member (lead),0,1,99,1,
-papers_224,Technical Papers Committee Member,0,1,99,1,
-papers_224,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_224,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_224,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_225,Technical Papers Committee Member (lead),-3,5,99,2,
-papers_225,Technical Papers Committee Member,5,1,99,2,
-papers_225,Technical Papers Tertiary Reviewer,-5,1,99,,
-papers_225,Technical Papers Tertiary Reviewer,-1,3,99,,
-papers_225,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_226,Technical Papers Committee Member (lead),0,1,99,0,
-papers_226,Technical Papers Committee Member,0,-1,99,0,
-papers_226,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_226,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_226,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_227,Technical Papers Committee Member (lead),0,-1,99,2,
-papers_227,Technical Papers Committee Member,0,1,99,2,
-papers_227,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_227,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_227,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_228,Technical Papers Committee Member (lead),0,1,99,0,
-papers_228,Technical Papers Committee Member,0,-1,99,0,
-papers_228,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_228,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_228,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_229,Technical Papers Committee Member (lead),0,-3,99,-1,
-papers_229,Technical Papers Committee Member,0,-3,99,-1,
-papers_229,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_229,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_229,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_230,Technical Papers Committee Member (lead),1,-1,99,-1,
-papers_230,Technical Papers Committee Member,-1,1,99,-1,
-papers_230,Technical Papers Tertiary Reviewer,5,-3,99,,
-papers_230,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_230,Technical Papers Tertiary Reviewer,1,-3,99,,
-papers_231,Technical Papers Committee Member (lead),0,1,99,0,
-papers_231,Technical Papers Committee Member,0,1,99,0,
-papers_231,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_231,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_231,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_232,Technical Papers Committee Member (lead),0,3,99,0,
-papers_232,Technical Papers Committee Member,0,-5,99,0,
-papers_232,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_232,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_232,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_233,Technical Papers Committee Member (lead),0,1,99,0,
-papers_233,Technical Papers Committee Member,0,1,99,0,
-papers_233,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_233,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_233,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_234,Technical Papers Committee Member (lead),1,-1,99,-1,
-papers_234,Technical Papers Committee Member,1,-5,99,-1,
-papers_234,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_234,Technical Papers Tertiary Reviewer,-5,-1,99,,
-papers_234,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_235,Technical Papers Committee Member (lead),-1,3,99,0,
-papers_235,Technical Papers Committee Member,1,3,99,0,
-papers_235,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_235,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_235,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_236,Technical Papers Committee Member (lead),0,5,99,1,
-papers_236,Technical Papers Committee Member,0,3,99,1,
-papers_236,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_236,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_236,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_237,Technical Papers Committee Member (lead),0,1,99,0,
-papers_237,Technical Papers Committee Member,0,-3,99,0,
-papers_237,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_237,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_237,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_238,Technical Papers Committee Member (lead),-5,3,99,1,
-papers_238,Technical Papers Committee Member,-1,3,99,1,
-papers_238,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_238,Technical Papers Tertiary Reviewer,-5,-1,99,,
-papers_238,Technical Papers Tertiary Reviewer,-5,5,99,,
-papers_239,Technical Papers Committee Member (lead),-3,1,99,0,
-papers_239,Technical Papers Committee Member,1,-3,99,0,
-papers_239,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_239,Technical Papers Tertiary Reviewer,-3,3,99,,
-papers_239,Technical Papers Tertiary Reviewer,-1,-1,99,,
-papers_240,Technical Papers Committee Member (lead),1,-1,99,1,
-papers_240,Technical Papers Committee Member,-1,3,99,1,
-papers_240,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_240,Technical Papers Tertiary Reviewer,-3,5,99,,
-papers_240,Technical Papers Tertiary Reviewer,1,1,99,,
-papers_241,Technical Papers Committee Member (lead),0,1,99,-1,
-papers_241,Technical Papers Committee Member,0,-1,99,-1,
-papers_241,Technical Papers Tertiary Reviewer,0,-5,99,,
-papers_241,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_241,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_242,Technical Papers Committee Member (lead),0,-5,99,-1,
-papers_242,Technical Papers Committee Member,0,-3,99,-1,
-papers_242,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_242,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_242,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_243,Technical Papers Committee Member (lead),0,-1,99,0,
-papers_243,Technical Papers Committee Member,0,5,99,0,
-papers_243,Technical Papers Tertiary Reviewer,0,-1,99,,
-papers_243,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_243,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_244,Technical Papers Committee Member (lead),0,3,99,0,
-papers_244,Technical Papers Committee Member,0,3,99,0,
-papers_244,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_244,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_244,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_245,Technical Papers Committee Member (lead),0,3,99,1,
-papers_245,Technical Papers Committee Member,0,5,99,1,
-papers_245,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_245,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_245,Technical Papers Tertiary Reviewer,0,3,99,,
-papers_246,Technical Papers Committee Member (lead),1,-1,99,0,
-papers_246,Technical Papers Committee Member,-3,3,99,0,
-papers_246,Technical Papers Tertiary Reviewer,-3,-1,99,,
-papers_246,Technical Papers Tertiary Reviewer,-1,1,99,,
-papers_246,Technical Papers Tertiary Reviewer,-3,-3,99,,
-papers_247,Technical Papers Committee Member (lead),0,-1,99,-1,
-papers_247,Technical Papers Committee Member,0,-1,99,-1,
-papers_247,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_247,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_247,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_248,Technical Papers Committee Member (lead),0,3,99,2,
-papers_248,Technical Papers Committee Member,0,5,99,2,
-papers_248,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_248,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_248,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_249,Technical Papers Committee Member (lead),0,1,99,0,
-papers_249,Technical Papers Committee Member,0,1,99,0,
-papers_249,Technical Papers Tertiary Reviewer,0,1,99,,
-papers_249,Technical Papers Tertiary Reviewer,0,5,99,,
-papers_249,Technical Papers Tertiary Reviewer,0,-3,99,,
-papers_250,Technical Papers Committee Member (lead),-3,1,99,0,
-papers_250,Technical Papers Committee Member,-1,-1,99,0,
-papers_250,Technical Papers Tertiary Reviewer,-3,1,99,,
-papers_250,Technical Papers Tertiary Reviewer,1,-1,99,,
-papers_250,Technical Papers Tertiary Reviewer,-1,-1,99,,
+Submission ID,Role,Score,Conf/Journal Rec,Expertise,Final Recommendation,Top 10%
+papers_101,Technical Papers Committee Member (lead),3,-3,4,2,0
+papers_101,Technical Papers Committee Member,-1,2,4,2,0
+papers_101,Technical Papers Tertiary Reviewer,1,-2,3,,0
+papers_101,Technical Papers Tertiary Reviewer,5,1,4,,0
+papers_101,Technical Papers Tertiary Reviewer,1,-2,5,,0
+papers_101,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_102,Technical Papers Committee Member (lead),3,-1,3,1,0
+papers_102,Technical Papers Committee Member,1,-1,5,1,0
+papers_102,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_102,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_102,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_102,Technical Papers PC Extra Reviewer,1,-3,3,,0
+papers_103,Technical Papers Committee Member (lead),-3,-2,5,0,0
+papers_103,Technical Papers Committee Member,3,-1,4,0,0
+papers_103,Technical Papers Tertiary Reviewer,1,1,4,,0
+papers_103,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_103,Technical Papers Tertiary Reviewer,3,-1,4,,0
+papers_103,Technical Papers Tertiary Reviewer,1,-2,3,,0
+papers_104,Technical Papers Committee Member (lead),1,-2,3,-1,0
+papers_104,Technical Papers Committee Member,-1,-1,4,-1,0
+papers_104,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_104,Technical Papers Tertiary Reviewer,3,-1,3,,0
+papers_104,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_104,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_105,Technical Papers Committee Member (lead),-1,-2,5,-1,0
+papers_105,Technical Papers Committee Member,1,2,5,-1,0
+papers_105,Technical Papers Tertiary Reviewer,-3,2,3,,0
+papers_105,Technical Papers Tertiary Reviewer,-5,-2,3,,0
+papers_105,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_105,Technical Papers PC Extra Reviewer,-1,-3,4,,0
+papers_106,Technical Papers Committee Member (lead),-1,-3,4,1,0
+papers_106,Technical Papers Committee Member,1,-3,4,1,0
+papers_106,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_106,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_106,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_107,Technical Papers Committee Member (lead),1,-3,5,0,0
+papers_107,Technical Papers Committee Member,3,-3,4,0,0
+papers_107,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_107,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_107,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_108,Technical Papers Committee Member (lead),1,-3,4,2,0
+papers_108,Technical Papers Committee Member,3,-3,4,2,0
+papers_108,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_108,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_108,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_108,Technical Papers PC Extra Reviewer,1,-3,4,,0
+papers_109,Technical Papers Committee Member (lead),-1,-3,4,2,0
+papers_109,Technical Papers Committee Member,3,-3,3,2,0
+papers_109,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_109,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_109,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_109,Technical Papers PC Extra Reviewer,3,-3,3,,0
+papers_110,Technical Papers Committee Member (lead),-3,-3,5,0,0
+papers_110,Technical Papers Committee Member,-1,-3,5,0,0
+papers_110,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_110,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_110,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_110,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_111,Technical Papers Committee Member (lead),1,-2,4,1,0
+papers_111,Technical Papers Committee Member,5,-1,4,1,0
+papers_111,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_111,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_111,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_111,Technical Papers Tertiary Reviewer,3,-2,3,,0
+papers_112,Technical Papers Committee Member (lead),1,-3,3,2,0
+papers_112,Technical Papers Committee Member,1,-3,5,2,0
+papers_112,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_112,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_112,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_112,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_113,Technical Papers Committee Member (lead),1,-3,4,-1,0
+papers_113,Technical Papers Committee Member,5,-3,3,-1,0
+papers_113,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_113,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_113,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_113,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_114,Technical Papers Committee Member (lead),-5,-3,4,-1,0
+papers_114,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_114,Technical Papers Tertiary Reviewer,-3,-1,4,,0
+papers_114,Technical Papers Tertiary Reviewer,-1,2,3,,0
+papers_114,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_114,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_115,Technical Papers Committee Member (lead),1,-3,5,2,0
+papers_115,Technical Papers Committee Member,1,-3,4,2,0
+papers_115,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_115,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_115,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_115,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_116,Technical Papers Committee Member (lead),5,2,5,1,0
+papers_116,Technical Papers Committee Member,3,1,5,1,0
+papers_116,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_116,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_116,Technical Papers Tertiary Reviewer,3,1,5,,0
+papers_117,Technical Papers Committee Member (lead),-1,-2,5,0,0
+papers_117,Technical Papers Committee Member,5,-3,4,0,0
+papers_117,Technical Papers Tertiary Reviewer,3,1,5,,0
+papers_117,Technical Papers Tertiary Reviewer,1,-1,5,,0
+papers_117,Technical Papers Tertiary Reviewer,3,-1,5,,0
+papers_118,Technical Papers Committee Member (lead),-3,1,3,-1,0
+papers_118,Technical Papers Committee Member,-3,2,3,-1,0
+papers_118,Technical Papers Tertiary Reviewer,-5,1,4,,0
+papers_118,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_118,Technical Papers Tertiary Reviewer,-3,-1,5,,0
+papers_119,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_119,Technical Papers Committee Member,-1,2,4,-1,0
+papers_119,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_119,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_119,Technical Papers Tertiary Reviewer,-3,1,5,,0
+papers_119,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_120,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_120,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_120,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_120,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_120,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_121,Technical Papers Committee Member (lead),-1,-3,4,0,0
+papers_121,Technical Papers Committee Member,1,-3,3,0,0
+papers_121,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_121,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_121,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_121,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_122,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_122,Technical Papers Committee Member,-1,-3,3,0,0
+papers_122,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_122,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_122,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_122,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_123,Technical Papers Committee Member (lead),-1,-3,5,1,0
+papers_123,Technical Papers Committee Member,5,-3,3,1,0
+papers_123,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_123,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_123,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_124,Technical Papers Committee Member (lead),-3,-2,5,-1,0
+papers_124,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_124,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_124,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_124,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_125,Technical Papers Committee Member (lead),1,-3,4,1,0
+papers_125,Technical Papers Committee Member,1,-3,3,1,0
+papers_125,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_125,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_125,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_125,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_126,Technical Papers Committee Member (lead),1,-3,4,2,0
+papers_126,Technical Papers Committee Member,1,-3,3,2,0
+papers_126,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_126,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_126,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_126,Technical Papers PC Extra Reviewer,-3,-3,4,,0
+papers_127,Technical Papers Committee Member (lead),-1,2,3,0,0
+papers_127,Technical Papers Committee Member,-1,-1,3,0,0
+papers_127,Technical Papers Tertiary Reviewer,-5,-2,4,,0
+papers_127,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_127,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_127,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_128,Technical Papers Committee Member (lead),5,-3,5,2,0
+papers_128,Technical Papers Committee Member,3,-3,5,2,0
+papers_128,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_128,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_128,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_129,Technical Papers Committee Member (lead),-3,-1,3,0,0
+papers_129,Technical Papers Committee Member,3,2,3,0,0
+papers_129,Technical Papers Tertiary Reviewer,1,-1,5,,0
+papers_129,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_129,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_130,Technical Papers Committee Member (lead),-3,2,4,-1,0
+papers_130,Technical Papers Committee Member,-3,-1,4,-1,0
+papers_130,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_130,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_130,Technical Papers Tertiary Reviewer,-3,1,3,,0
+papers_130,Technical Papers PC Extra Reviewer,-3,-3,3,,0
+papers_131,Technical Papers Committee Member (lead),1,-1,3,0,0
+papers_131,Technical Papers Committee Member,1,-3,4,0,0
+papers_131,Technical Papers Tertiary Reviewer,5,1,3,,0
+papers_131,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_131,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_132,Technical Papers Committee Member (lead),1,2,5,0,0
+papers_132,Technical Papers Committee Member,3,2,5,0,0
+papers_132,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_132,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_132,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_133,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_133,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_133,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_133,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_133,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_134,Technical Papers Committee Member (lead),3,2,3,-1,0
+papers_134,Technical Papers Committee Member,1,-2,4,-1,0
+papers_134,Technical Papers Tertiary Reviewer,3,-2,3,,0
+papers_134,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_134,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_134,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_135,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_135,Technical Papers Committee Member,1,-3,3,-1,0
+papers_135,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_135,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_135,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_135,Technical Papers PC Extra Reviewer,5,-3,5,,0
+papers_136,Technical Papers Committee Member (lead),3,-3,5,2,0
+papers_136,Technical Papers Committee Member,-1,-3,5,2,0
+papers_136,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_136,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_136,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_136,Technical Papers PC Extra Reviewer,5,-3,4,,0
+papers_137,Technical Papers Committee Member (lead),-3,-3,5,0,0
+papers_137,Technical Papers Committee Member,3,-3,4,0,0
+papers_137,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_137,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_137,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_137,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_138,Technical Papers Committee Member (lead),1,2,4,2,0
+papers_138,Technical Papers Committee Member,1,-3,5,2,0
+papers_138,Technical Papers Tertiary Reviewer,5,2,5,,0
+papers_138,Technical Papers Tertiary Reviewer,3,-1,4,,0
+papers_138,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_139,Technical Papers Committee Member (lead),1,-2,3,0,0
+papers_139,Technical Papers Committee Member,1,-2,3,0,0
+papers_139,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_139,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_139,Technical Papers Tertiary Reviewer,5,-2,5,,0
+papers_140,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_140,Technical Papers Committee Member,-3,-3,5,0,0
+papers_140,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_140,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_140,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_141,Technical Papers Committee Member (lead),1,-3,5,0,0
+papers_141,Technical Papers Committee Member,3,-3,3,0,0
+papers_141,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_141,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_141,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_141,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_142,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_142,Technical Papers Committee Member,-5,-3,4,-1,0
+papers_142,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_142,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_142,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_142,Technical Papers PC Extra Reviewer,-5,-3,4,,0
+papers_143,Technical Papers Committee Member (lead),-1,-3,4,0,0
+papers_143,Technical Papers Committee Member,-1,-3,3,0,0
+papers_143,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_143,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_143,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_143,Technical Papers PC Extra Reviewer,1,-3,4,,0
+papers_144,Technical Papers Committee Member (lead),1,-3,5,2,0
+papers_144,Technical Papers Committee Member,5,-3,4,2,0
+papers_144,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_144,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_144,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_145,Technical Papers Committee Member (lead),-3,2,4,0,0
+papers_145,Technical Papers Committee Member,1,-2,3,0,0
+papers_145,Technical Papers Tertiary Reviewer,-1,2,3,,0
+papers_145,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_145,Technical Papers Tertiary Reviewer,-3,-2,3,,0
+papers_146,Technical Papers Committee Member (lead),1,-1,3,-1,0
+papers_146,Technical Papers Committee Member,1,-3,5,-1,0
+papers_146,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_146,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_146,Technical Papers Tertiary Reviewer,-3,-1,5,,0
+papers_146,Technical Papers PC Extra Reviewer,-3,-2,4,,0
+papers_147,Technical Papers Committee Member (lead),1,-3,3,0,0
+papers_147,Technical Papers Committee Member,-1,-3,4,0,0
+papers_147,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_147,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_147,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_148,Technical Papers Committee Member (lead),-1,-2,4,-1,0
+papers_148,Technical Papers Committee Member,-1,-3,5,-1,0
+papers_148,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_148,Technical Papers Tertiary Reviewer,-5,-2,5,,0
+papers_148,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_148,Technical Papers PC Extra Reviewer,1,-2,5,,0
+papers_149,Technical Papers Committee Member (lead),3,-3,4,2,0
+papers_149,Technical Papers Committee Member,3,-3,4,2,0
+papers_149,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_149,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_149,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_149,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_150,Technical Papers Committee Member (lead),3,-3,5,1,0
+papers_150,Technical Papers Committee Member,-1,-3,4,1,0
+papers_150,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_150,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_150,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_150,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_151,Technical Papers Committee Member (lead),-1,-2,5,-1,0
+papers_151,Technical Papers Committee Member,-5,2,5,-1,0
+papers_151,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_151,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_151,Technical Papers Tertiary Reviewer,-3,1,5,,0
+papers_151,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_152,Technical Papers Committee Member (lead),3,-3,5,0,0
+papers_152,Technical Papers Committee Member,-1,-3,3,0,0
+papers_152,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_152,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_152,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_152,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_153,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_153,Technical Papers Committee Member,-1,-3,5,0,0
+papers_153,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_153,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_153,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_154,Technical Papers Committee Member (lead),-3,-1,5,0,0
+papers_154,Technical Papers Committee Member,1,-1,3,0,0
+papers_154,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_154,Technical Papers Tertiary Reviewer,1,-2,3,,0
+papers_154,Technical Papers Tertiary Reviewer,1,2,4,,0
+papers_155,Technical Papers Committee Member (lead),1,-2,4,1,0
+papers_155,Technical Papers Committee Member,5,-2,4,1,0
+papers_155,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_155,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_155,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_156,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_156,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_156,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_156,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_156,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_157,Technical Papers Committee Member (lead),-3,2,5,0,0
+papers_157,Technical Papers Committee Member,-1,-1,3,0,0
+papers_157,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_157,Technical Papers Tertiary Reviewer,-3,-1,3,,0
+papers_157,Technical Papers Tertiary Reviewer,-5,-1,3,,0
+papers_158,Technical Papers Committee Member (lead),-1,1,5,-1,0
+papers_158,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_158,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_158,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_158,Technical Papers Tertiary Reviewer,-1,-2,4,,0
+papers_159,Technical Papers Committee Member (lead),1,-3,5,2,0
+papers_159,Technical Papers Committee Member,3,-3,3,2,0
+papers_159,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_159,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_159,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_159,Technical Papers PC Extra Reviewer,1,-3,3,,0
+papers_160,Technical Papers Committee Member (lead),-3,-2,4,0,0
+papers_160,Technical Papers Committee Member,-1,2,4,0,0
+papers_160,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_160,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_160,Technical Papers Tertiary Reviewer,3,2,5,,0
+papers_161,Technical Papers Committee Member (lead),-5,-3,5,-1,0
+papers_161,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_161,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_161,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_161,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_162,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_162,Technical Papers Committee Member,-1,-3,5,-1,0
+papers_162,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_162,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_162,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_163,Technical Papers Committee Member (lead),-3,1,3,-1,0
+papers_163,Technical Papers Committee Member,-3,-2,3,-1,0
+papers_163,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_163,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_163,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_163,Technical Papers Tertiary Reviewer,-3,-1,3,,0
+papers_164,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_164,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_164,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_164,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_164,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_164,Technical Papers PC Extra Reviewer,1,-3,3,,0
+papers_165,Technical Papers Committee Member (lead),3,-3,5,1,0
+papers_165,Technical Papers Committee Member,1,-3,5,1,0
+papers_165,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_165,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_165,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_166,Technical Papers Committee Member (lead),-1,2,3,2,0
+papers_166,Technical Papers Committee Member,1,-2,3,2,0
+papers_166,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_166,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_166,Technical Papers Tertiary Reviewer,3,2,3,,0
+papers_166,Technical Papers PC Extra Reviewer,1,-1,5,,0
+papers_167,Technical Papers Committee Member (lead),-3,-1,3,0,0
+papers_167,Technical Papers Committee Member,1,-1,5,0,0
+papers_167,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_167,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_167,Technical Papers Tertiary Reviewer,3,-2,4,,0
+papers_168,Technical Papers Committee Member (lead),-1,1,3,-1,0
+papers_168,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_168,Technical Papers Tertiary Reviewer,-3,1,5,,0
+papers_168,Technical Papers Tertiary Reviewer,-3,-2,3,,0
+papers_168,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_168,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_169,Technical Papers Committee Member (lead),-1,-3,4,0,0
+papers_169,Technical Papers Committee Member,3,-3,4,0,0
+papers_169,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_169,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_169,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_169,Technical Papers PC Extra Reviewer,1,-3,3,,0
+papers_170,Technical Papers Committee Member (lead),-1,-3,3,2,0
+papers_170,Technical Papers Committee Member,1,-3,4,2,0
+papers_170,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_170,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_170,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_170,Technical Papers PC Extra Reviewer,-1,-3,4,,0
+papers_171,Technical Papers Committee Member (lead),-3,-3,3,0,0
+papers_171,Technical Papers Committee Member,-1,-3,3,0,0
+papers_171,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_171,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_171,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_172,Technical Papers Committee Member (lead),-1,-3,4,1,0
+papers_172,Technical Papers Committee Member,1,-3,5,1,0
+papers_172,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_172,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_172,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_172,Technical Papers PC Extra Reviewer,5,-3,5,,0
+papers_173,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_173,Technical Papers Committee Member,-5,-3,4,-1,0
+papers_173,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_173,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_173,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_174,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_174,Technical Papers Committee Member,1,-3,3,-1,0
+papers_174,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_174,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_174,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_174,Technical Papers PC Extra Reviewer,1,-3,5,,0
+papers_175,Technical Papers Committee Member (lead),3,-3,3,2,0
+papers_175,Technical Papers Committee Member,3,-3,3,2,0
+papers_175,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_175,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_175,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_175,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_176,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_176,Technical Papers Committee Member,3,-3,4,-1,0
+papers_176,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_176,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_176,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_177,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_177,Technical Papers Committee Member,1,1,3,0,0
+papers_177,Technical Papers Tertiary Reviewer,3,-2,4,,0
+papers_177,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_177,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_178,Technical Papers Committee Member (lead),5,-1,4,2,0
+papers_178,Technical Papers Committee Member,1,-3,5,2,0
+papers_178,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_178,Technical Papers Tertiary Reviewer,5,1,3,,0
+papers_178,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_178,Technical Papers PC Extra Reviewer,5,-3,5,,0
+papers_179,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_179,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_179,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_179,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_179,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_179,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_180,Technical Papers Committee Member (lead),-1,-3,4,1,0
+papers_180,Technical Papers Committee Member,1,-3,5,1,0
+papers_180,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_180,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_180,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_181,Technical Papers Committee Member (lead),-1,-1,3,1,0
+papers_181,Technical Papers Committee Member,1,-1,4,1,0
+papers_181,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_181,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_181,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_181,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_182,Technical Papers Committee Member (lead),-3,-3,4,0,0
+papers_182,Technical Papers Committee Member,-5,-2,5,0,0
+papers_182,Technical Papers Tertiary Reviewer,-3,-1,5,,0
+papers_182,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_182,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_183,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_183,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_183,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_183,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_183,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_184,Technical Papers Committee Member (lead),5,-3,5,0,0
+papers_184,Technical Papers Committee Member,-1,-3,5,0,0
+papers_184,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_184,Technical Papers Tertiary Reviewer,5,-3,4,,0
+papers_184,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_184,Technical Papers PC Extra Reviewer,5,-3,5,,0
+papers_185,Technical Papers Committee Member (lead),-5,-3,4,-1,0
+papers_185,Technical Papers Committee Member,-1,-3,5,-1,0
+papers_185,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_185,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_185,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_186,Technical Papers Committee Member (lead),1,2,4,0,0
+papers_186,Technical Papers Committee Member,1,-1,5,0,0
+papers_186,Technical Papers Tertiary Reviewer,3,-2,5,,0
+papers_186,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_186,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_186,Technical Papers PC Extra Reviewer,3,-1,5,,0
+papers_187,Technical Papers Committee Member (lead),-3,-3,4,0,0
+papers_187,Technical Papers Committee Member,-5,-3,3,0,0
+papers_187,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_187,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_187,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_188,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_188,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_188,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_188,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_188,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_188,Technical Papers PC Extra Reviewer,-5,-3,5,,0
+papers_189,Technical Papers Committee Member (lead),1,-3,3,2,0
+papers_189,Technical Papers Committee Member,3,-3,4,2,0
+papers_189,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_189,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_189,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_189,Technical Papers PC Extra Reviewer,3,-3,5,,0
+papers_190,Technical Papers Committee Member (lead),3,-3,3,-1,0
+papers_190,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_190,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_190,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_190,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_191,Technical Papers Committee Member (lead),-3,-1,5,1,0
+papers_191,Technical Papers Committee Member,1,2,3,1,0
+papers_191,Technical Papers Tertiary Reviewer,5,1,3,,0
+papers_191,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_191,Technical Papers Tertiary Reviewer,3,-1,5,,0
+papers_191,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_192,Technical Papers Committee Member (lead),-3,-3,4,0,0
+papers_192,Technical Papers Committee Member,-5,-3,3,0,0
+papers_192,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_192,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_192,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_193,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_193,Technical Papers Committee Member,-3,-3,5,-1,0
+papers_193,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_193,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_193,Technical Papers Tertiary Reviewer,1,-2,3,,0
+papers_193,Technical Papers PC Extra Reviewer,-3,-3,3,,0
+papers_194,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_194,Technical Papers Committee Member,1,-3,4,0,0
+papers_194,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_194,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_194,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_194,Technical Papers PC Extra Reviewer,-5,-3,4,,0
+papers_195,Technical Papers Committee Member (lead),3,2,5,1,0
+papers_195,Technical Papers Committee Member,3,-2,3,1,0
+papers_195,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_195,Technical Papers Tertiary Reviewer,3,2,5,,0
+papers_195,Technical Papers Tertiary Reviewer,5,1,3,,0
+papers_195,Technical Papers PC Extra Reviewer,3,-1,5,,0
+papers_196,Technical Papers Committee Member (lead),-5,-3,5,-1,0
+papers_196,Technical Papers Committee Member,-5,-3,3,-1,0
+papers_196,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_196,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_196,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_196,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_197,Technical Papers Committee Member (lead),-1,2,5,1,0
+papers_197,Technical Papers Committee Member,-3,1,3,1,0
+papers_197,Technical Papers Tertiary Reviewer,-3,-2,4,,0
+papers_197,Technical Papers Tertiary Reviewer,-1,-1,3,,0
+papers_197,Technical Papers Tertiary Reviewer,-1,1,3,,0
+papers_197,Technical Papers PC Extra Reviewer,-1,-2,4,,0
+papers_198,Technical Papers Committee Member (lead),1,-2,5,0,0
+papers_198,Technical Papers Committee Member,5,1,3,0,0
+papers_198,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_198,Technical Papers Tertiary Reviewer,3,-2,3,,0
+papers_198,Technical Papers Tertiary Reviewer,1,1,4,,0
+papers_198,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_199,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_199,Technical Papers Committee Member,-1,-3,5,-1,0
+papers_199,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_199,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_199,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_200,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_200,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_200,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_200,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_200,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_201,Technical Papers Committee Member (lead),-1,1,5,0,0
+papers_201,Technical Papers Committee Member,1,-1,4,0,0
+papers_201,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_201,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_201,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_202,Technical Papers Committee Member (lead),-1,-3,5,1,0
+papers_202,Technical Papers Committee Member,5,-3,5,1,0
+papers_202,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_202,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_202,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_202,Technical Papers PC Extra Reviewer,1,-3,3,,0
+papers_203,Technical Papers Committee Member (lead),3,1,4,2,0
+papers_203,Technical Papers Committee Member,5,-3,4,2,0
+papers_203,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_203,Technical Papers Tertiary Reviewer,5,-1,4,,0
+papers_203,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_204,Technical Papers Committee Member (lead),-3,-3,4,0,0
+papers_204,Technical Papers Committee Member,-3,-3,4,0,0
+papers_204,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_204,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_204,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_204,Technical Papers PC Extra Reviewer,-3,-3,4,,0
+papers_205,Technical Papers Committee Member (lead),1,-2,3,-1,0
+papers_205,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_205,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_205,Technical Papers Tertiary Reviewer,-1,-1,3,,0
+papers_205,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_206,Technical Papers Committee Member (lead),-1,-3,4,2,0
+papers_206,Technical Papers Committee Member,3,-3,3,2,0
+papers_206,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_206,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_206,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_206,Technical Papers PC Extra Reviewer,3,-3,5,,0
+papers_207,Technical Papers Committee Member (lead),-1,-2,3,1,0
+papers_207,Technical Papers Committee Member,1,2,5,1,0
+papers_207,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_207,Technical Papers Tertiary Reviewer,1,-2,5,,0
+papers_207,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_208,Technical Papers Committee Member (lead),1,-3,3,-1,0
+papers_208,Technical Papers Committee Member,-3,-1,3,-1,0
+papers_208,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_208,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_208,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_208,Technical Papers PC Extra Reviewer,-3,-1,4,,0
+papers_209,Technical Papers Committee Member (lead),1,-3,4,2,0
+papers_209,Technical Papers Committee Member,5,-3,5,2,0
+papers_209,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_209,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_209,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_209,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_210,Technical Papers Committee Member (lead),1,-3,3,1,0
+papers_210,Technical Papers Committee Member,3,-3,5,1,0
+papers_210,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_210,Technical Papers Tertiary Reviewer,5,-3,5,,0
+papers_210,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_211,Technical Papers Committee Member (lead),3,-1,5,2,0
+papers_211,Technical Papers Committee Member,1,1,3,2,0
+papers_211,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_211,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_211,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_211,Technical Papers PC Extra Reviewer,-3,1,5,,0
+papers_212,Technical Papers Committee Member (lead),5,-1,3,0,0
+papers_212,Technical Papers Committee Member,3,-2,5,0,0
+papers_212,Technical Papers Tertiary Reviewer,3,-2,3,,0
+papers_212,Technical Papers Tertiary Reviewer,3,-2,4,,0
+papers_212,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_213,Technical Papers Committee Member (lead),-1,-1,4,-1,0
+papers_213,Technical Papers Committee Member,-1,-1,4,-1,0
+papers_213,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_213,Technical Papers Tertiary Reviewer,-5,-2,3,,0
+papers_213,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_214,Technical Papers Committee Member (lead),-3,1,3,-1,0
+papers_214,Technical Papers Committee Member,-1,-2,3,-1,0
+papers_214,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_214,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_214,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_214,Technical Papers PC Extra Reviewer,-1,1,5,,0
+papers_215,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_215,Technical Papers Committee Member,-3,-2,4,-1,0
+papers_215,Technical Papers Tertiary Reviewer,-3,1,5,,0
+papers_215,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_215,Technical Papers Tertiary Reviewer,-3,-1,3,,0
+papers_215,Technical Papers PC Extra Reviewer,-3,-3,5,,0
+papers_216,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_216,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_216,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_216,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_216,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_217,Technical Papers Committee Member (lead),-5,-1,5,-1,0
+papers_217,Technical Papers Committee Member,-1,-1,4,-1,0
+papers_217,Technical Papers Tertiary Reviewer,-3,1,3,,0
+papers_217,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_217,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_218,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_218,Technical Papers Committee Member,1,-3,4,-1,0
+papers_218,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_218,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_218,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_219,Technical Papers Committee Member (lead),-3,-3,5,-1,0
+papers_219,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_219,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_219,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_219,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_219,Technical Papers PC Extra Reviewer,-1,-3,4,,0
+papers_220,Technical Papers Committee Member (lead),-1,-3,5,-1,0
+papers_220,Technical Papers Committee Member,-5,-3,5,-1,0
+papers_220,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_220,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_220,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_220,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_221,Technical Papers Committee Member (lead),1,-3,5,-1,0
+papers_221,Technical Papers Committee Member,1,-3,3,-1,0
+papers_221,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_221,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_221,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_222,Technical Papers Committee Member (lead),-1,-3,5,0,0
+papers_222,Technical Papers Committee Member,1,-3,3,0,0
+papers_222,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_222,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_222,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_223,Technical Papers Committee Member (lead),1,-3,5,-1,0
+papers_223,Technical Papers Committee Member,-3,-3,4,-1,0
+papers_223,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_223,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_223,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_224,Technical Papers Committee Member (lead),3,-3,4,-1,0
+papers_224,Technical Papers Committee Member,1,-3,3,-1,0
+papers_224,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_224,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_224,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_225,Technical Papers Committee Member (lead),-5,1,5,0,0
+papers_225,Technical Papers Committee Member,1,-1,5,0,0
+papers_225,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_225,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_225,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_225,Technical Papers PC Extra Reviewer,-3,2,5,,0
+papers_226,Technical Papers Committee Member (lead),-1,2,3,-1,0
+papers_226,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_226,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_226,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_226,Technical Papers Tertiary Reviewer,-5,2,5,,0
+papers_226,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_227,Technical Papers Committee Member (lead),-1,-2,5,-1,0
+papers_227,Technical Papers Committee Member,-1,-2,3,-1,0
+papers_227,Technical Papers Tertiary Reviewer,-3,-2,4,,0
+papers_227,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_227,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_227,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_228,Technical Papers Committee Member (lead),-1,-1,3,0,0
+papers_228,Technical Papers Committee Member,-1,2,3,0,0
+papers_228,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_228,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_228,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_228,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_229,Technical Papers Committee Member (lead),1,-3,4,-1,0
+papers_229,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_229,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_229,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_229,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_229,Technical Papers PC Extra Reviewer,-5,-3,4,,0
+papers_230,Technical Papers Committee Member (lead),5,-3,4,2,0
+papers_230,Technical Papers Committee Member,1,-3,3,2,0
+papers_230,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_230,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_230,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_231,Technical Papers Committee Member (lead),3,-3,5,0,0
+papers_231,Technical Papers Committee Member,-1,-3,5,0,0
+papers_231,Technical Papers Tertiary Reviewer,5,-3,4,,0
+papers_231,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_231,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_231,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_232,Technical Papers Committee Member (lead),-3,1,4,0,0
+papers_232,Technical Papers Committee Member,-1,-2,3,0,0
+papers_232,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_232,Technical Papers Tertiary Reviewer,-3,1,5,,0
+papers_232,Technical Papers Tertiary Reviewer,-3,2,3,,0
+papers_232,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_233,Technical Papers Committee Member (lead),-3,-3,4,0,0
+papers_233,Technical Papers Committee Member,-1,-2,5,0,0
+papers_233,Technical Papers Tertiary Reviewer,1,-2,5,,0
+papers_233,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_233,Technical Papers Tertiary Reviewer,-3,-2,5,,0
+papers_233,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_234,Technical Papers Committee Member (lead),3,-3,3,2,0
+papers_234,Technical Papers Committee Member,1,-3,5,2,0
+papers_234,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_234,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_234,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_235,Technical Papers Committee Member (lead),-1,-1,4,0,0
+papers_235,Technical Papers Committee Member,3,-3,5,0,0
+papers_235,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_235,Technical Papers Tertiary Reviewer,1,-1,5,,0
+papers_235,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_235,Technical Papers Tertiary Reviewer,5,-1,4,,0
+papers_236,Technical Papers Committee Member (lead),-3,-1,5,1,0
+papers_236,Technical Papers Committee Member,-3,-3,4,1,0
+papers_236,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_236,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_236,Technical Papers Tertiary Reviewer,1,1,4,,0
+papers_237,Technical Papers Committee Member (lead),1,-1,4,2,0
+papers_237,Technical Papers Committee Member,-3,1,5,2,0
+papers_237,Technical Papers Tertiary Reviewer,1,-1,5,,0
+papers_237,Technical Papers Tertiary Reviewer,3,-2,4,,0
+papers_237,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_238,Technical Papers Committee Member (lead),-1,-1,4,-1,0
+papers_238,Technical Papers Committee Member,1,-1,4,-1,0
+papers_238,Technical Papers Tertiary Reviewer,-3,-2,4,,0
+papers_238,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_238,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_239,Technical Papers Committee Member (lead),-3,-3,3,1,0
+papers_239,Technical Papers Committee Member,-1,-3,4,1,0
+papers_239,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_239,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_239,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_239,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_240,Technical Papers Committee Member (lead),-1,-1,4,0,0
+papers_240,Technical Papers Committee Member,-5,-3,5,0,0
+papers_240,Technical Papers Tertiary Reviewer,-1,1,3,,0
+papers_240,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_240,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_240,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_241,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_241,Technical Papers Committee Member,-3,2,5,-1,0
+papers_241,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_241,Technical Papers Tertiary Reviewer,-1,1,3,,0
+papers_241,Technical Papers Tertiary Reviewer,-3,1,4,,0
+papers_242,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_242,Technical Papers Committee Member,-5,-3,3,-1,0
+papers_242,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_242,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_242,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_243,Technical Papers Committee Member (lead),-1,-3,5,2,0
+papers_243,Technical Papers Committee Member,3,-3,3,2,0
+papers_243,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_243,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_243,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_244,Technical Papers Committee Member (lead),-3,-1,3,1,0
+papers_244,Technical Papers Committee Member,-3,-1,4,1,0
+papers_244,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_244,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_244,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_244,Technical Papers Tertiary Reviewer,1,-2,3,,0
+papers_245,Technical Papers Committee Member (lead),3,-3,4,2,0
+papers_245,Technical Papers Committee Member,5,-3,5,2,0
+papers_245,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_245,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_245,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_246,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_246,Technical Papers Committee Member,-3,-3,4,-1,0
+papers_246,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_246,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_246,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_247,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_247,Technical Papers Committee Member,-3,-3,4,-1,0
+papers_247,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_247,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_247,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_247,Technical Papers PC Extra Reviewer,-3,-3,5,,0
+papers_248,Technical Papers Committee Member (lead),3,-3,4,2,0
+papers_248,Technical Papers Committee Member,3,2,4,2,0
+papers_248,Technical Papers Tertiary Reviewer,5,-2,3,,0
+papers_248,Technical Papers Tertiary Reviewer,3,2,5,,0
+papers_248,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_249,Technical Papers Committee Member (lead),-3,-2,4,0,0
+papers_249,Technical Papers Committee Member,3,-1,5,0,0
+papers_249,Technical Papers Tertiary Reviewer,-3,2,5,,0
+papers_249,Technical Papers Tertiary Reviewer,-1,-2,4,,0
+papers_249,Technical Papers Tertiary Reviewer,1,-1,4,,0
+papers_249,Technical Papers PC Extra Reviewer,1,2,5,,0
+papers_250,Technical Papers Committee Member (lead),-3,-1,4,-1,0
+papers_250,Technical Papers Committee Member,-3,-2,5,-1,0
+papers_250,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_250,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_250,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_251,Technical Papers Committee Member (lead),3,-3,5,2,0
+papers_251,Technical Papers Committee Member,-1,-1,4,2,0
+papers_251,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_251,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_251,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_252,Technical Papers Committee Member (lead),1,-3,4,0,0
+papers_252,Technical Papers Committee Member,-1,-3,4,0,0
+papers_252,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_252,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_252,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_252,Technical Papers Tertiary Reviewer,5,-3,3,,0
+papers_253,Technical Papers Committee Member (lead),5,-3,5,2,0
+papers_253,Technical Papers Committee Member,5,-3,5,2,0
+papers_253,Technical Papers Tertiary Reviewer,5,-3,4,,0
+papers_253,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_253,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_254,Technical Papers Committee Member (lead),1,-3,3,-1,0
+papers_254,Technical Papers Committee Member,1,-3,5,-1,0
+papers_254,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_254,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_254,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_254,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_255,Technical Papers Committee Member (lead),-1,-3,4,2,0
+papers_255,Technical Papers Committee Member,1,-3,5,2,0
+papers_255,Technical Papers Tertiary Reviewer,-1,1,3,,0
+papers_255,Technical Papers Tertiary Reviewer,3,-1,5,,0
+papers_255,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_256,Technical Papers Committee Member (lead),1,1,3,1,0
+papers_256,Technical Papers Committee Member,1,-3,3,1,0
+papers_256,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_256,Technical Papers Tertiary Reviewer,-3,-1,5,,0
+papers_256,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_256,Technical Papers Tertiary Reviewer,5,1,4,,0
+papers_257,Technical Papers Committee Member (lead),3,-3,5,2,0
+papers_257,Technical Papers Committee Member,3,-3,3,2,0
+papers_257,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_257,Technical Papers Tertiary Reviewer,5,-3,3,,0
+papers_257,Technical Papers Tertiary Reviewer,5,-3,4,,0
+papers_257,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_258,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_258,Technical Papers Committee Member,-5,-3,5,-1,0
+papers_258,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_258,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_258,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_258,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_259,Technical Papers Committee Member (lead),-1,-3,5,0,0
+papers_259,Technical Papers Committee Member,3,-3,5,0,0
+papers_259,Technical Papers Tertiary Reviewer,-5,-3,4,,0
+papers_259,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_259,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_260,Technical Papers Committee Member (lead),3,-3,4,1,0
+papers_260,Technical Papers Committee Member,1,-3,5,1,0
+papers_260,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_260,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_260,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_261,Technical Papers Committee Member (lead),1,1,3,1,0
+papers_261,Technical Papers Committee Member,-3,1,3,1,0
+papers_261,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_261,Technical Papers Tertiary Reviewer,-1,-2,5,,0
+papers_261,Technical Papers Tertiary Reviewer,3,-2,5,,0
+papers_261,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_262,Technical Papers Committee Member (lead),1,-3,5,-1,0
+papers_262,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_262,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_262,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_262,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_262,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_263,Technical Papers Committee Member (lead),1,-3,4,-1,0
+papers_263,Technical Papers Committee Member,1,-3,3,-1,0
+papers_263,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_263,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_263,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_263,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_264,Technical Papers Committee Member (lead),3,-2,5,0,0
+papers_264,Technical Papers Committee Member,1,2,3,0,0
+papers_264,Technical Papers Tertiary Reviewer,3,1,5,,0
+papers_264,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_264,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_265,Technical Papers Committee Member (lead),3,-3,3,0,0
+papers_265,Technical Papers Committee Member,-1,-2,3,0,0
+papers_265,Technical Papers Tertiary Reviewer,1,-2,4,,0
+papers_265,Technical Papers Tertiary Reviewer,1,2,4,,0
+papers_265,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_265,Technical Papers PC Extra Reviewer,3,-2,3,,0
+papers_266,Technical Papers Committee Member (lead),3,2,4,2,0
+papers_266,Technical Papers Committee Member,-3,1,5,2,0
+papers_266,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_266,Technical Papers Tertiary Reviewer,3,-2,5,,0
+papers_266,Technical Papers Tertiary Reviewer,3,-2,4,,0
+papers_267,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_267,Technical Papers Committee Member,-5,-3,4,-1,0
+papers_267,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_267,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_267,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_268,Technical Papers Committee Member (lead),1,-1,3,2,0
+papers_268,Technical Papers Committee Member,3,2,5,2,0
+papers_268,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_268,Technical Papers Tertiary Reviewer,3,2,5,,0
+papers_268,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_268,Technical Papers PC Extra Reviewer,3,1,5,,0
+papers_269,Technical Papers Committee Member (lead),3,-3,3,2,0
+papers_269,Technical Papers Committee Member,1,-3,5,2,0
+papers_269,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_269,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_269,Technical Papers Tertiary Reviewer,5,-3,4,,0
+papers_270,Technical Papers Committee Member (lead),3,-3,3,2,0
+papers_270,Technical Papers Committee Member,-1,-3,5,2,0
+papers_270,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_270,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_270,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_271,Technical Papers Committee Member (lead),-3,-3,5,0,0
+papers_271,Technical Papers Committee Member,-3,-3,5,0,0
+papers_271,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_271,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_271,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_272,Technical Papers Committee Member (lead),1,-3,4,2,0
+papers_272,Technical Papers Committee Member,1,-3,5,2,0
+papers_272,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_272,Technical Papers Tertiary Reviewer,5,-3,3,,0
+papers_272,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_272,Technical Papers PC Extra Reviewer,-3,-3,4,,0
+papers_273,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_273,Technical Papers Committee Member,-5,-3,4,-1,0
+papers_273,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_273,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_273,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_273,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_274,Technical Papers Committee Member (lead),3,-3,5,1,0
+papers_274,Technical Papers Committee Member,1,-3,3,1,0
+papers_274,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_274,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_274,Technical Papers Tertiary Reviewer,3,-3,3,,0
+papers_275,Technical Papers Committee Member (lead),-1,-3,3,0,0
+papers_275,Technical Papers Committee Member,-1,-3,4,0,0
+papers_275,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_275,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_275,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_275,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_276,Technical Papers Committee Member (lead),-1,-3,5,1,0
+papers_276,Technical Papers Committee Member,1,-1,3,1,0
+papers_276,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_276,Technical Papers Tertiary Reviewer,3,1,5,,0
+papers_276,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_277,Technical Papers Committee Member (lead),-1,-3,4,-1,0
+papers_277,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_277,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_277,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_277,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_277,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_278,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_278,Technical Papers Committee Member,-3,-3,3,-1,0
+papers_278,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_278,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_278,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_279,Technical Papers Committee Member (lead),-1,-3,4,0,0
+papers_279,Technical Papers Committee Member,-3,-3,5,0,0
+papers_279,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_279,Technical Papers Tertiary Reviewer,-1,-2,4,,0
+papers_279,Technical Papers Tertiary Reviewer,-1,1,5,,0
+papers_280,Technical Papers Committee Member (lead),-3,-3,3,-1,0
+papers_280,Technical Papers Committee Member,-3,-3,4,-1,0
+papers_280,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_280,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_280,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_281,Technical Papers Committee Member (lead),1,-2,3,-1,0
+papers_281,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_281,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_281,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_281,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_282,Technical Papers Committee Member (lead),-1,-3,3,-1,0
+papers_282,Technical Papers Committee Member,-3,-3,5,-1,0
+papers_282,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_282,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_282,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_282,Technical Papers PC Extra Reviewer,-3,-3,5,,0
+papers_283,Technical Papers Committee Member (lead),5,-1,3,2,0
+papers_283,Technical Papers Committee Member,1,-2,4,2,0
+papers_283,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_283,Technical Papers Tertiary Reviewer,1,1,4,,0
+papers_283,Technical Papers Tertiary Reviewer,1,1,4,,0
+papers_283,Technical Papers PC Extra Reviewer,5,1,4,,0
+papers_284,Technical Papers Committee Member (lead),-3,-3,4,-1,0
+papers_284,Technical Papers Committee Member,-1,-3,4,-1,0
+papers_284,Technical Papers Tertiary Reviewer,-5,-3,5,,0
+papers_284,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_284,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_285,Technical Papers Committee Member (lead),-1,2,3,0,0
+papers_285,Technical Papers Committee Member,-1,-1,3,0,0
+papers_285,Technical Papers Tertiary Reviewer,1,-1,5,,0
+papers_285,Technical Papers Tertiary Reviewer,3,2,5,,0
+papers_285,Technical Papers Tertiary Reviewer,3,1,5,,0
+papers_285,Technical Papers Tertiary Reviewer,5,1,4,,0
+papers_286,Technical Papers Committee Member (lead),1,-2,5,0,0
+papers_286,Technical Papers Committee Member,1,-3,4,0,0
+papers_286,Technical Papers Tertiary Reviewer,-1,-1,4,,0
+papers_286,Technical Papers Tertiary Reviewer,1,2,3,,0
+papers_286,Technical Papers Tertiary Reviewer,1,1,3,,0
+papers_286,Technical Papers PC Extra Reviewer,1,-3,5,,0
+papers_287,Technical Papers Committee Member (lead),3,1,5,0,0
+papers_287,Technical Papers Committee Member,3,-2,3,0,0
+papers_287,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_287,Technical Papers Tertiary Reviewer,-3,1,3,,0
+papers_287,Technical Papers Tertiary Reviewer,-1,1,3,,0
+papers_288,Technical Papers Committee Member (lead),-1,-3,4,0,0
+papers_288,Technical Papers Committee Member,-1,-3,3,0,0
+papers_288,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_288,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_288,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_288,Technical Papers Tertiary Reviewer,1,-3,3,,0
+papers_289,Technical Papers Committee Member (lead),-5,-3,5,0,0
+papers_289,Technical Papers Committee Member,-3,-3,5,0,0
+papers_289,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_289,Technical Papers Tertiary Reviewer,-3,-3,5,,0
+papers_289,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_289,Technical Papers PC Extra Reviewer,-1,-3,5,,0
+papers_290,Technical Papers Committee Member (lead),3,2,4,0,0
+papers_290,Technical Papers Committee Member,5,2,3,0,0
+papers_290,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_290,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_290,Technical Papers Tertiary Reviewer,5,2,5,,0
+papers_291,Technical Papers Committee Member (lead),1,-2,3,0,0
+papers_291,Technical Papers Committee Member,1,-1,4,0,0
+papers_291,Technical Papers Tertiary Reviewer,1,-3,5,,0
+papers_291,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_291,Technical Papers Tertiary Reviewer,1,-1,3,,0
+papers_292,Technical Papers Committee Member (lead),1,1,3,-1,0
+papers_292,Technical Papers Committee Member,-3,1,3,-1,0
+papers_292,Technical Papers Tertiary Reviewer,-5,-1,5,,0
+papers_292,Technical Papers Tertiary Reviewer,-5,2,3,,0
+papers_292,Technical Papers Tertiary Reviewer,-1,2,5,,0
+papers_292,Technical Papers Tertiary Reviewer,-3,-2,5,,0
+papers_293,Technical Papers Committee Member (lead),-1,1,4,1,0
+papers_293,Technical Papers Committee Member,1,1,4,1,0
+papers_293,Technical Papers Tertiary Reviewer,-3,-1,4,,0
+papers_293,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_293,Technical Papers Tertiary Reviewer,3,2,4,,0
+papers_294,Technical Papers Committee Member (lead),1,-1,5,-1,0
+papers_294,Technical Papers Committee Member,-1,-1,3,-1,0
+papers_294,Technical Papers Tertiary Reviewer,-1,-3,5,,0
+papers_294,Technical Papers Tertiary Reviewer,1,2,5,,0
+papers_294,Technical Papers Tertiary Reviewer,-3,2,4,,0
+papers_295,Technical Papers Committee Member (lead),-1,-1,3,-1,0
+papers_295,Technical Papers Committee Member,-5,2,4,-1,0
+papers_295,Technical Papers Tertiary Reviewer,-1,1,4,,0
+papers_295,Technical Papers Tertiary Reviewer,1,1,5,,0
+papers_295,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_295,Technical Papers Tertiary Reviewer,-1,-2,3,,0
+papers_296,Technical Papers Committee Member (lead),3,-2,3,2,0
+papers_296,Technical Papers Committee Member,5,-2,3,2,0
+papers_296,Technical Papers Tertiary Reviewer,3,-1,5,,0
+papers_296,Technical Papers Tertiary Reviewer,3,1,4,,0
+papers_296,Technical Papers Tertiary Reviewer,3,2,3,,0
+papers_297,Technical Papers Committee Member (lead),-3,-2,3,0,0
+papers_297,Technical Papers Committee Member,1,-2,5,0,0
+papers_297,Technical Papers Tertiary Reviewer,-1,2,4,,0
+papers_297,Technical Papers Tertiary Reviewer,-1,-1,5,,0
+papers_297,Technical Papers Tertiary Reviewer,3,-3,4,,0
+papers_298,Technical Papers Committee Member (lead),1,-3,5,-1,0
+papers_298,Technical Papers Committee Member,-1,-3,3,-1,0
+papers_298,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_298,Technical Papers Tertiary Reviewer,-1,-3,4,,0
+papers_298,Technical Papers Tertiary Reviewer,-5,-3,3,,0
+papers_298,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_299,Technical Papers Committee Member (lead),-1,-3,5,0,0
+papers_299,Technical Papers Committee Member,1,-3,3,0,0
+papers_299,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_299,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_299,Technical Papers Tertiary Reviewer,-1,-3,3,,0
+papers_299,Technical Papers Tertiary Reviewer,-3,-3,3,,0
+papers_300,Technical Papers Committee Member (lead),1,-3,3,0,0
+papers_300,Technical Papers Committee Member,1,-3,3,0,0
+papers_300,Technical Papers Tertiary Reviewer,-3,-3,4,,0
+papers_300,Technical Papers Tertiary Reviewer,1,-3,4,,0
+papers_300,Technical Papers Tertiary Reviewer,3,-3,5,,0
+papers_300,Technical Papers Tertiary Reviewer,-1,-3,4,,0

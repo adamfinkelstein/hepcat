@@ -19,8 +19,6 @@ class HepcatTestCase(unittest.TestCase):
         read_csv("tests/test-data/papers.csv")
         read_csv("tests/test-data/conflicts.csv")
         read_csv("tests/test-data/clusters.csv")
-        read_csv("tests/test-data/paper_rooms.csv")
-        read_csv("tests/test-data/people_rooms.csv")
         read_csv("tests/test-data/chair.csv")
         read_csv("tests/test-data/history.csv")
 

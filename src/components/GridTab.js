@@ -17,7 +17,7 @@ function CountSpan({ label, count }) {
 }
 
 export default function GridTab() {
-  const { guiBar } = useAppGlobals();
+  const { appBar } = useAppGlobals();
   const { gridNidsAbove, gridNidsBelow, gridInRoom } = useGrid();
   const { getGridCount } = useCount();
   const nTotal = getGridCount('total');
@@ -30,7 +30,7 @@ export default function GridTab() {
     <Stack direction="vertical" gap={3} className="GridTab ms-2">
       <Stack direction="horizontal" className="grid-control-bar" gap={3}>
         <div>
-          <CountSpan label="Bar" count={guiBar} />
+          <CountSpan label="Bar" count={appBar} />
           <CountSpan label="Above" count={nAbove} />
           <CountSpan label="Below" count={nBelow} />
           {!gridInRoom && <CountSpan label="Conflict" count={nConflict} />}

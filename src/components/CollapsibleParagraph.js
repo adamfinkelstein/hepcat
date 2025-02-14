@@ -6,7 +6,7 @@ export default function CollapsibleParagraph({ title, text }) {
   const checkLabel = 'Show ' + title;
   const content = showAbstract ? text : '';
   return (
-    <p className="CollapsibleParagraph">
+    <div className="CollapsibleParagraph">
       <Form.Check
         className="paper-par-header"
         label={checkLabel}
@@ -17,6 +17,6 @@ export default function CollapsibleParagraph({ title, text }) {
         }}
       />
       <span>{content}</span>
-    </p>
+    </div>
   );
 }

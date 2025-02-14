@@ -5,9 +5,12 @@ from .tables import History, context_str_to_enum
 # EXPORTED FUNCTIONS on paper history.
 #
 # These four functions are related but distinct:
+#
 # * get_latest_history - considers all history for this paper.
+# * get_latest_history_status - status from above.
+#
 # * get_latest_room_history - only history set in a meeting room.
-# ... and then the next pair of functions return the actual status
+# * get_latest_room_history_status - status from above.
 #
 ######################
 
@@ -32,7 +35,7 @@ def get_latest_room_history(paper):
     return latest_history
 
 
-# only history set in bbs or meeting room XXX???
+# only history set in bbs or meeting room???
 # Maybe only need to check if paper is reject or tabled?
 # def get_latest_bbs_or_room_history(paper):
 #     context_plenary = context_str_to_enum("Plenary")

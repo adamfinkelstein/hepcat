@@ -37,7 +37,7 @@ export default function GridProgressBar() {
     'Reject',
     'Tabled-Sticky',
     'Tabled',
-    'Unseen',
+    'Ready',
   ];
   const conflictCount = getGridCount('Conflict');
   if (conflictCount) progressBars.push('Conflict');

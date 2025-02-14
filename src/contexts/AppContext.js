@@ -36,7 +36,8 @@ export default function AppContext({ children }) {
   const [fileUploads, setFileUploads] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null);
   const [newStatus, setNewStatus] = useState('Tabled');
-  const [guiBar, setGuiBar] = useState('');
+  const [appBar, setAppBar] = useState(''); // actual bar value
+  const [guiBar, setGuiBar] = useState(''); // value in set bar input text box
   const [hideQ, setHideQ] = useState(false);
   const [hiddenMsg, setHiddenMsg] = useState('');
 
@@ -111,6 +112,7 @@ export default function AppContext({ children }) {
       }
       // bar is same for all rooms
       const barString = data.bar + '';
+      setAppBar(barString);
       setGuiBar(barString);
       // controlledLog('set bar to:', barString);
     };
@@ -228,6 +230,7 @@ export default function AppContext({ children }) {
         probeGUIMsg,
         probeTextMsg,
         fileUploads,
+        appBar,
         guiBar,
         setGuiBar,
         hideQ,

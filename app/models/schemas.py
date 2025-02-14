@@ -31,6 +31,7 @@ class PaperSchema(ma.Schema):
             "title",
             "abstract",
             "summary",
+            "exception",
         )
 
 

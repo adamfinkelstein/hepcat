@@ -6,7 +6,7 @@ export default function GridModeDropdown() {
   const { gridMode, setGridMode } = useGrid();
   const gridModes = ['Normal', 'Stickies', 'Favorites', 'This Room'];
   const isThisRoom = gridMode === 'This Room';
-  const buttonVariant = isThisRoom ? 'warning' : 'secondary';
+  const buttonVariant = isThisRoom ? 'info' : 'secondary';
 
   return (
     <DropdownButton

@@ -37,6 +37,7 @@ source venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
+nvm use 20.14.0
 npm install (one time, to set up build directory etc)
 npm run build
 ```
@@ -89,6 +90,8 @@ python hepcat.py
 # no longer needed:
 # export HOST="http://127.0.0.1"
 # export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"
+# but possibly needed:
+unset HOST
 
 # optional, to show logs in console
 export REACT_APP_SHOW_LOGS=True

@@ -31,7 +31,7 @@ export default function SetSticky() {
   };
 
   const statusConverged = (status) => {
-    const convergedStatuses = ['Unseen', 'Journal', 'Conference', 'Reject'];
+    const convergedStatuses = ['Ready', 'Journal', 'Conference', 'Reject'];
     return convergedStatuses.includes(status);
   };
 
@@ -82,7 +82,7 @@ export default function SetSticky() {
     }
     if (paperIsBelowBar(gridElem) && stickyType === 'Reject') {
       let text = `Paper ${nid} is below the bar. `;
-      const acceptOptions = ['Unseen', 'Journal', 'Conference'];
+      const acceptOptions = ['Ready', 'Journal', 'Conference'];
       if (acceptOptions.includes(gridElem.status)) {
         text += 'Since it had previously converged to Accept, it must now ';
         text += 'be discussed in the meeting as a proposed Reject.';
@@ -93,7 +93,7 @@ export default function SetSticky() {
       warnings.push(text);
     } else if (paperConverged(gridElem) && !paperHasSticky(gridElem)) {
       let text = '';
-      if (gridElem.status === 'Unseen') {
+      if (gridElem.status === 'Ready') {
         text = `Paper ${nid} already converged on the BBS. `;
       } else {
         text = `Paper ${nid} already converged in the meeting. `;

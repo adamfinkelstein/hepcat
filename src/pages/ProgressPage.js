@@ -16,9 +16,8 @@ export default function ProgressPage() {
   const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
   const { roomChoice, gitInfo } = useUser();
-  const { guiBar, setGuiBar } = useAppGlobals();
+  const { appBar, guiBar, setGuiBar } = useAppGlobals();
   const { currentFontStyle } = useFontInfo();
-  const guiBarString = guiBar + '';
 
   function handleRefreshConflictbot(inAllRooms) {
     // This function is only used in online meetings.
@@ -40,8 +39,18 @@ export default function ProgressPage() {
   }
 
   function handleSetBarButton() {
-    controlledLog('bar set:', guiBarString);
-    socketEmit('admin_set_bar', guiBarString);
+    const text =
+      'Are you really sure you want to update the bar?' +
+      ' This would wipe out any meeting progress before now.';
+    revealConfirmationBox('Please Confirm', text, (confirmed) => {
+      if (confirmed) {
+        controlledLog('confirmed bar update:', guiBar);
+        socketEmit('admin_set_bar', guiBar);
+      } else {
+        setGuiBar(appBar); // set box back to current bar
+        controlledLog('canceled bar update');
+      }
+    });
   }
 
   function handleBulkActionButton(isQueueNotBar) {
@@ -63,22 +72,22 @@ export default function ProgressPage() {
     });
   }
 
-  function handleInitGridButton() {
-    controlledLog('Init Grid button pressed.');
-    let text = 'Are you sure you want to initialize the grid?';
-    revealConfirmationBox('Please Confirm', text, (confirmed) => {
-      if (confirmed) {
-        const msg = 'Initializing grid.';
-        controlledLog(msg);
-        flash(msg, 'success');
-        socketEmit('admin_init_grid');
-      } else {
-        const msg = 'Canceled initializing grid.';
-        controlledLog(msg);
-        // flash(msg, 'warning'); // bad UX to flash on cancel
-      }
-    });
-  }
+  // function handleInitGridButton() {
+  //   controlledLog('Init Grid button pressed.');
+  //   let text = 'Are you sure you want to initialize the grid?';
+  //   revealConfirmationBox('Please Confirm', text, (confirmed) => {
+  //     if (confirmed) {
+  //       const msg = 'Initializing grid.';
+  //       controlledLog(msg);
+  //       flash(msg, 'success');
+  //       socketEmit('admin_init_grid');
+  //     } else {
+  //       const msg = 'Canceled initializing grid.';
+  //       controlledLog(msg);
+  //       // flash(msg, 'warning'); // bad UX to flash on cancel
+  //     }
+  //   });
+  // }
 
   function handleClearStickiesButton() {
     controlledLog('Clear stickies button pressed.');
@@ -101,11 +110,11 @@ export default function ProgressPage() {
     <Container className="ProgressPage mt-3">
       <div className={currentFontStyle}>
         <Stack direction="horizontal">
-          <h1>Progress Page</h1>
+          <h1>Warning - use caution here!</h1>
         </Stack>
         <hr />
         <Stack direction="horizontal" className="my-2">
-          <h2>Global Operations (use with care)&nbsp;&nbsp;</h2>
+          <h2>Dangerous Operations&nbsp;&nbsp;</h2>
           <Button
             variant="secondary"
             onClick={() => setShowGlobalOps(!showGlobalOps)}
@@ -143,25 +152,26 @@ export default function ProgressPage() {
               </Button>
               <input
                 name="bar"
-                value={guiBarString}
+                value={guiBar}
                 onChange={(e) => setGuiBar(e.target.value)}
               />
             </Stack>
-            <Stack direction="horizontal" gap={2}>
+            {/* <Stack direction="horizontal" gap={2}>
               <Button variant="danger" onClick={handleInitGridButton}>
                 Initialize Grid
               </Button>
               <div className="button-desc">
-                Initialize grid based on BBS discussions.
+                Initialize grid based on BBS discussions (helpful after changing
+                bar).
               </div>
-            </Stack>
+            </Stack> */}
             <Stack direction="horizontal" gap={2}>
               <Button variant="danger" onClick={handleClearStickiesButton}>
                 Clear Stickies
               </Button>
               <div className="button-desc">Clear all stickies.</div>
             </Stack>
-            <Stack direction="horizontal" gap={2}>
+            {/* <Stack direction="horizontal" gap={2}>
               <Button
                 variant="danger"
                 onClick={() => handleBulkActionButton(false)}
@@ -169,10 +179,10 @@ export default function ProgressPage() {
                 Bulk&nbsp;Reject Below&nbsp;Bar
               </Button>
               <div className="button-desc">
-                Mark status of all unseen reject papers below bar as now
+                Mark status of all ready reject papers below bar as now
                 discussed.
               </div>
-            </Stack>
+            </Stack> */}
             <Stack direction="horizontal" gap={2}>
               <Button
                 variant="danger"
@@ -181,7 +191,7 @@ export default function ProgressPage() {
                 Bulk&nbsp;Confirm in&nbsp;Queue
               </Button>
               <div className="button-desc">
-                Mark status of all unseen papers in PLENARY queue as now
+                Mark status of all "Ready" papers in PLENARY queue as now
                 discussed.
               </div>
             </Stack>

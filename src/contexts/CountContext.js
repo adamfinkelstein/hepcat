@@ -27,7 +27,7 @@ const getBasicCountsInGrid = (inRoom, conf, nidsAbove, nidsBelow) => {
 
 const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
   const convergedStatuses = ['Journal', 'Conference', 'Reject'];
-  const otherStatuses = ['Unseen', 'Tabled', 'Tabled-Sticky'];
+  const otherStatuses = ['Ready', 'Tabled', 'Tabled-Sticky'];
   const allStatuses = [...convergedStatuses, ...otherStatuses];
   const allInGrid = [...nidsAbove, ...nidsBelow];
   const counts = getBasicCountsInGrid(inRoom, conf, nidsAbove, nidsBelow);

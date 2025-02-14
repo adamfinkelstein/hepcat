@@ -128,7 +128,7 @@ def count_papers_in_all_queues():
 
 
 def get_grid_paper_dump(paper):
-    status = "Unseen"
+    status = "Ready"  # default
     sticky_status = None
     sticky = False
     history = list(paper.history)
@@ -158,6 +158,27 @@ def get_grid_paper_dump(paper):
         "paper_room": paper_room,
     }
     return paper_dump
+
+
+# This is not efficient but ok for now.
+def get_paper_grid_status(paper):
+    dump = get_grid_paper_dump(paper)
+    status = dump["status"]
+    tabled_sticky = dump["tabled_sticky"]
+    if tabled_sticky:
+        status = "Tabled_Sticky"
+    return status
+
+
+# Used for text filter like "BBS:Tabled" or "BBS:Reject".
+# In principle, every paper should have a single BBS status.
+def get_paper_bbs_status(paper):
+    history = list(paper.history)
+    context_bbs = context_str_to_enum("BBS")
+    for h in history:
+        if h.context_enum == context_bbs:
+            return h.status
+    return "Tabled"
 
 
 def get_encrypted_grid_entry(paper):
@@ -280,29 +301,29 @@ def get_paper_history_dump(paper):
 
 
 def get_paper_tag_labels(paper):
-    result = []
+    bar_type = "Bar"
+    bar_enum = label_str_to_enum(bar_type)
+    bar_name = "Below" if paper.below_bar else "Above"
+    bar_tuple = (-bar_enum, bar_name, bar_type)
+    all_tups = [bar_tuple]
     labels = paper.tag_labels
-    paper_room = None
     for label in labels:
-        if label.is_cluster:  # do not show clusters
-            continue
-        if label.is_room:
-            paper_room = "Room:" + label.name
-        else:
-            fmt = f"{label.label_type}:{label.name}"
-            result.append(fmt)
-    result.sort()
-    bar_status = "Bar:Below" if paper.below_bar else "Bar:Above"
-    result = [bar_status] + result
-    if paper_room:  # put room at beginning of list
-        result = [paper_room] + result
-    result = (", ").join(result)
-    return result
+        if not label.is_cluster:  # do not show clusters
+            # fmt = f"{label.label_type}:{label.name}" # now done after sort
+            tuple = (-label.type_enum, label.name, label.label_type)
+            all_tups.append(tuple)
+    all_tups.sort()  # descending order of type_enum and then ascending by name
+    all_tags = [f"{tup[2]}:{tup[1]}" for tup in all_tups]
+    all_tags = (", ").join(all_tags)
+    return all_tags
 
 
-def is_paper_unseen(paper):
+def is_paper_ready(paper):
     latest = get_latest_room_history_status(paper)
-    if latest:
+    if latest:  # marked in meeting room (includes presumed-R)
+        return False
+    bbs = get_paper_bbs_status(paper)
+    if bbs == "Tabled":
         return False
     return True
 
@@ -393,6 +414,31 @@ def sanitize_paper_filters(filters):
     return sanitized
 
 
+# includes all GUI checkboxes for filtering papers except for "this room only"
+paper_check_functions = {
+    "Sticky Only": (is_paper_sticky, True),
+    "Ready Only": (is_paper_ready, True),
+    "No Presumed Rej": (is_paper_presumed, False),
+    "No Clusters": (is_in_cluster, False),
+    "No Chair Conf": (has_chair_conflict, False),
+    "Only Chair Conf": (has_chair_conflict, True),
+    "Journal Only": (lambda p: p.journal_only, True),
+    "Dual Only": (lambda p: p.journal_only, False),
+    "No Exceptions": (lambda p: p.has_exception, False),
+    "Below Bar": (lambda p: p.below_bar, True),
+    "Above Bar": (lambda p: p.below_bar, False),
+}
+
+
+def checked_filters_allow_paper(paper, filter_only):
+    for filter_label in paper_check_functions:
+        if filter_label in filter_only:
+            check_func, expected_bool = paper_check_functions[filter_label]
+            if check_func(paper) != expected_bool:
+                return False
+    return True
+
+
 def filters_allow_paper(paper, filters):
     # note that filters have been sanitized by calling the function above.
     sort_score = paper.sort_score
@@ -412,35 +458,18 @@ def filters_allow_paper(paper, filters):
     status = get_latest_history_status(paper)
     if status not in filter_statuses:
         return False
+    # "This Room Only" is a special case handled here because it needs room name.
     if "This Room Only" in filter_only and not paper_in_room(paper, current_room):
         return False
-    if "Sticky Only" in filter_only and not is_paper_sticky(paper):
-        return False
-    if "Unseen Only" in filter_only and not is_paper_unseen(paper):
-        return False
-    if "No Presumed-R" in filter_only and is_paper_presumed(paper):
-        return False
-    if "Dual Only" in filter_only and paper.journal_only:
-        return False
-    if "Journal Only" in filter_only and not paper.journal_only:
-        return False
-    if "No Clusters" in filter_only and is_in_cluster(paper):
-        return False
-    if "No Admin Conf" in filter_only and has_chair_conflict(paper):
-        return False
-    if "Only Admin Conf" in filter_only and not has_chair_conflict(paper):
-        return False
-    if "Below Bar" in filter_only and not paper.below_bar:
-        return False
-    if "Above Bar" in filter_only and paper.below_bar:
-        return False
-    return True
+    # handle all other "filter_only" GUI checkbox filters here
+    allow = checked_filters_allow_paper(paper, filter_only)
+    return allow
 
 
-def paper_is_unseen_reject_below_bar(paper):
+def paper_is_ready_reject_below_bar(paper):
     if not paper.below_bar:
         return False
-    if not is_paper_unseen(paper):
+    if not is_paper_ready(paper):
         return False
     status = get_latest_history_status(paper)
     if status != "Reject":
@@ -451,7 +480,7 @@ def paper_is_unseen_reject_below_bar(paper):
 def bulk_reject_below_bar():
     papers = Paper.query.all()
     papers = list(papers)
-    papers = [p for p in papers if paper_is_unseen_reject_below_bar(p)]
+    papers = [p for p in papers if paper_is_ready_reject_below_bar(p)]
     plenary = context_str_to_enum("Plenary")
     reject = status_str_to_enum("Reject")
     for paper in papers:
@@ -460,19 +489,28 @@ def bulk_reject_below_bar():
 
 
 def bulk_confirm_in_queue():
-    # for all papers in queue that are unseen...
+    # for all papers in queue that are ready...
     # ...mark as "seen" with current status.
     gq = get_or_create_gq("Plenary")
     papers = Paper.query.filter_by(queue_id=gq.id).all()
     papers = list(papers)
-    papers = [p for p in papers if is_paper_unseen(p)]
+    # papers = [p for p in papers if is_paper_ready(p)] all in queue
+    sticky = context_str_to_enum("Sticky")
     plenary = context_str_to_enum("Plenary")
     tabled = status_str_to_enum("Tabled")
+    count = 0
     for paper in papers:
         prev_history = get_latest_history(paper)
-        status = prev_history.status_enum if prev_history else tabled
+        if not prev_history:  # just in case
+            continue
+        # only consider stickies that mark as converged
+        status = prev_history.status_enum
+        if prev_history.context_enum != sticky or status == tabled:
+            continue
         history = History(paper=paper, context_enum=plenary, status_enum=status)
         db.session.add(history)
+        count += 1
+    log_print(f"bulk_confirm_in_queue: {count} stickies confirmed.")
 
 
 def zero_or_inc_current_index(room, zero_or_inc):
@@ -626,28 +664,64 @@ def get_id_set_from_papers_string(papers_string):
     return ids
 
 
-def get_id_set_per_bar(above_or_below):
-    want_below = above_or_below.lower() == "below"
+def get_id_set_by_check_filter(filter_label):
+    filter_label = filter_label.replace("_", " ")
+    # print(f"get_id_set_by_check_filter: {filter_label}")
     papers = Paper.query.all()
-    ids = [p.nid for p in papers if p.below_bar == want_below]
+    if filter_label in paper_check_functions:  # otherwise silent fail
+        check_func, expected_bool = paper_check_functions[filter_label]
+        papers = [p for p in papers if check_func(p) == expected_bool]
+    ids = [p.nid for p in papers]
     ids = set(ids)
     return ids
+
+
+def get_id_set_by_status_type(status, get_status_func):
+    papers = Paper.query.all()
+    papers = [p for p in papers if get_status_func(p) == status]
+    ids = [p.nid for p in papers]
+    ids = set(ids)
+    return ids
+
+
+def get_id_set_by_status(status):
+    return get_id_set_by_status_type(status, get_latest_history_status)
+
+
+def get_id_set_by_grid_status(status):
+    return get_id_set_by_status_type(status, get_paper_grid_status)
+
+
+def get_id_set_by_bbs_status(status):
+    return get_id_set_by_status_type(status, get_paper_bbs_status)
 
 
 def set_op_leaf_filter(name, room):
     log_print(f"set_op_leaf_filter: {name} (room {room})")
     # Possible types:
     # 1) Papers:101_102_103
-    # 2) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
-    # 3) Bar:Below or Bar:Above
-    # 4) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    # 2) Status:Type (like 'Status:Reject')
+    # 3) Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Sticky')
+    # 4) BBS:Type (like 'BBS:Tabled' or 'BBS:Reject')
+    # 5) Check:Filter_Name (like 'Check:Sticky_Only')
+    # 6) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    # 7) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
     label_type, label_name = get_filter_parts(name)
     print(f"{label_type} : {label_name}")
     if label_type == "Papers":
         ids = get_id_set_from_papers_string(label_name)
         return ids
-    if label_type == "Bar":
-        ids = get_id_set_per_bar(label_name)
+    if label_type == "Status":
+        ids = get_id_set_by_status(label_name)
+        return ids
+    if label_type == "Grid":
+        ids = get_id_set_by_grid_status(label_name)
+        return ids
+    if label_type == "BBS":
+        ids = get_id_set_by_bbs_status(label_name)
+        return ids
+    if label_type == "Check":
+        ids = get_id_set_by_check_filter(label_name)
         return ids
     if label_type == "Filter" or not hasattr(LabelType, label_type):
         ids = get_ids_matching_filter(label_name, room)
@@ -1248,6 +1322,7 @@ def admin_set_bar(bar):
     log_print(f"admin request set bar to {bar}")
     bar = set_bar(bar)  # converts to float
     update_all_paper_bar_status(bar)
+    init_grid_from_bbs()
     try_sql_commit()
     globs, _ = get_globs_dump_with_status("Plenary")
     emit("server_set_globs", globs, broadcast=True)  # bar is in globs
@@ -1263,6 +1338,7 @@ def admin_set_bar(bar):
 def admin_init_grid():
     msg = "got request admin_init_grid"
     log_print(msg)
+    # print(current_app.config) # debugging
     if count_papers_in_all_queues() > 0:
         msg = "Cannot initialize grid when queues are not empty."
         log_print(msg)
@@ -1522,11 +1598,11 @@ def admin_upload_file(contents):
         msg = "Unable to read the uploaded CSV. Perhaps the header is wrong?"
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
-    emit_admin_uploads(True)
-    emit_admin_filters(True)
     if header_type == "users":
         disconnect_all_users()
-        return
+        return  # logging out all users, so no need to send updates
+    emit_admin_uploads(True)
+    emit_admin_filters(True)
     if header_type in ["chair", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)

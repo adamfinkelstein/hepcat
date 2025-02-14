@@ -38,7 +38,7 @@ export default function SetQueue() {
     setHideQ,
     hiddenMsg,
     setHiddenMsg,
-    setGuiBar,
+    // setGuiBar,
     probeGUIMsg,
     probeTextMsg,
     statusList,
@@ -76,21 +76,23 @@ export default function SetQueue() {
 
   const filterList = [
     'This Room Only',
+    'Ready Only',
     'Sticky Only',
-    'Unseen Only',
-    'No Presumed-R',
+    'No Presumed Rej',
     'Dual Only',
     'Journal Only',
     'No Clusters',
-    'No Admin Conf',
-    'Only Admin Conf',
+    'No Exceptions',
+    'No Chair Conf',
+    'Only Chair Conf',
     'Above Bar',
     'Below Bar',
   ];
 
   const mutuallyExclusive = [
+    ['Ready Only', 'Sticky Only'],
     ['Dual Only', 'Journal Only'],
-    ['No Admin Conf', 'Only Admin Conf'],
+    ['No Chair Conf', 'Only Chair Conf'],
     ['Below Bar', 'Above Bar'],
   ];
 
@@ -292,7 +294,7 @@ export default function SetQueue() {
     const value = target.value;
     if (name === 'message') setHiddenMsg(value);
     else if (name === 'textFilterBox') setTextFilterBox(value);
-    else if (name === 'bar') setGuiBar(value);
+    // else if (name === 'bar') setGuiBar(value);
     else if (name === 'guiFilterName') setGuiFilterName(value);
     else if (name === 'textFilterName') setTextFilterName(value);
   }
@@ -513,12 +515,11 @@ export default function SetQueue() {
         <Stack direction="vertical" gap={2}>
           <Container fluid>
             <ul className="text-filter-instructions">
+              <li>101 / 101,103,105,107</li>
               <li>
-                Room:{roomChoice} / Area:Geometry / Cluster:A / Bar:Above /
-                Filter:
+                Room:{roomChoice} / Area:Geometry / Cluster:A / Filter:
                 {exampleFilter}
               </li>
-              <li>101 / 101,103,105,107</li>
               <li>
                 AND( OR(Room:Room_A, NOT(Area:Geometry)), {exampleFilter})
               </li>

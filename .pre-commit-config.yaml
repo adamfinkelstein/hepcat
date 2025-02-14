@@ -37,17 +37,26 @@ repos:
           - --profile=jinja
 
   # javascript linter
+  # Note tried to update to 9.19.0 2025-10-06 but it gave errors
+  # on missing config file that I don't know how to set up.
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v9.19.0'
+    rev: 'v8.47.0'
     hooks:
       - id: eslint
 
   # css linter
   # (issues need to be addressed before enabling this hook)
-  - repo: https://github.com/pre-commit/mirrors-csslint
-    rev: 'v1.0.5'
+  # - repo: https://github.com/pre-commit/mirrors-csslint
+  #   rev: 'v1.0.5'
+  #   hooks:
+  #     - id: csslint
+
+  # css linter (better?)
+  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
+    rev: 'v16.14.1'
     hooks:
-      - id: csslint
+      - id: stylelint
+        args: [--fix]
 
   # javascript/css/markdown code formatter
   - repo: https://github.com/pre-commit/mirrors-prettier

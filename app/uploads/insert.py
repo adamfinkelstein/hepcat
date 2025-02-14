@@ -126,7 +126,7 @@ def domain_from_email(email):
     return parts[1]
 
 
-# Email,First Name,Last Name,Role,Password
+# Email,First Name,Last Name,Rooms,Role,Password
 def insert_user_rows(rows, hash_cache):
     ok_roles = "Admin,Chair,Backup,Screen,Outside".split(",")
     omit_domains = current_app.config["OMIT_USER_DOMAINS"]
@@ -134,7 +134,9 @@ def insert_user_rows(rows, hash_cache):
     hash_count = 0
     rows = keep_rows_with_unique_lowercase_emails(rows)
     for row in rows:
-        email, first_name, last_name, role_name, password = row
+        email, first_name, last_name, rooms, role_name, password = row
+        rooms = rooms.split(";")
+        rooms = encode_room_list(rooms)
         domain = domain_from_email(email)
         if domain and omit_domains and domain in omit_domains:
             log_print(f"omit domain {domain} user {email}")
@@ -143,6 +145,7 @@ def insert_user_rows(rows, hash_cache):
             email=email,
             first_name=first_name,
             last_name=last_name,
+            rooms=rooms,
         )
         if password:
             user.password = password
@@ -166,8 +169,8 @@ def insert_user_rows(rows, hash_cache):
     return count
 
 
-def journal_only_from_dual(dual):
-    return dual != "yes"
+def journal_only_from_track(track):
+    return track == "Journal Only Track"
 
 
 def gen_random_key(max_chars):
@@ -229,19 +232,34 @@ def insert_test_paper_conflicts():
     return count
 
 
+def get_or_insert_label(label_type, label_name):
+    label = (
+        Label.query.filter_by(type_enum=label_type).filter_by(name=label_name).first()
+    )
+    if not label:
+        label = Label(type_enum=label_type, name=label_name)
+        db.session.add(label)
+    return label
+
+
+# 2025: Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 # Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
 def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
+    exception_type = int(LabelType.Exception)
     n = len(rows)
     oids = gen_unique_keys(n, 8)
     keys = gen_unique_keys(n, 16)
     count = 0
+    paper_room_rows = []
     for row in rows:
-        sid, thumbnail, title, areas, dual, abstract = row
-        journal_only = journal_only_from_dual(dual)
+        sid, exception, thumbnail, title, areas, track, room, abstract = row
+        journal_only = journal_only_from_track(track)
         nid = sid_to_num(sid)
         oid = oids.pop(0)
         key = keys.pop(0)
+        paper_room_row = (sid, room)  # shoehorn 2025 format into earlier implementation
+        paper_room_rows.append(paper_room_row)
         paper = Paper(
             nid=nid,
             sid=sid,
@@ -251,23 +269,21 @@ def insert_paper_rows(rows):
             title=title,
             journal_only=journal_only,
             abstract=abstract,
+            exception=exception,
         )
-        db.session.add(paper)
-        count += 1
         label_names = areas_to_label_names(areas)
         for label_name in label_names:
-            label = Label.query.filter(Label.is_area).filter_by(name=label_name).first()
-            if not label:
-                label = Label(type_enum=area_type, name=label_name)
-                db.session.add(label)
-            if label and paper:
-                paper.tag_labels.append(label)
-                db.session.add(paper)
+            label = get_or_insert_label(area_type, label_name)
+            paper.tag_labels.append(label)
+        if exception:
+            label = get_or_insert_label(exception_type, exception)
+            paper.tag_labels.append(label)
+        db.session.add(paper)
+        count += 1
     if current_app.config["MEETING_IS_ONLINE"]:
         insert_test_paper()
         log_print("inserted test paper")
-    else:
-        log_print("no test paper for online meeting")
+    insert_paper_room_rows(paper_room_rows)  # now insert room assignments
     return count
 
 
@@ -394,31 +410,6 @@ def encode_room_list(room_list):
     return rooms
 
 
-# Email,Room
-def insert_people_room_rows(rows):
-    users_by_email = get_users_by_email()
-    email_to_room_list = {}
-    # gather rooms by person
-    for row in rows:
-        email, room = row
-        email = email.lower()  # ensure emails are all lower case
-        if email not in users_by_email:
-            continue
-        if email not in email_to_room_list:
-            email_to_room_list[email] = []
-        email_to_room_list[email].append(room)
-    count = 0
-    # loop over people adding rooms
-    for email in email_to_room_list:
-        person = users_by_email[email]
-        room_list = email_to_room_list[email]
-        rooms = encode_room_list(room_list)
-        person.rooms = rooms
-        db.session.add(person)
-        count += 1
-    return count
-
-
 def areas_to_label_names(areas_string):
     areas = areas_string.split("/")
     labels = [area.strip() for area in areas]
@@ -432,9 +423,17 @@ def review_str_to_float(s):
     return 0
 
 
+def check_for_test_bar_and_get_bar():
+    test_bar = current_app.config["HEPCAT_TEST_BAR"]
+    if test_bar:
+        set_bar(test_bar)
+        return test_bar
+    return get_bar()
+
+
 def insert_chair_score_rows(rows):
     count = 0
-    bar = get_bar()
+    bar = check_for_test_bar_and_get_bar()
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews
         sid, chair_score, status, reviews = row
@@ -473,8 +472,10 @@ def sticky_context_maybe_below_bar(paper, status_str):
 # At the start of the meeting, initialize the grid from BBS.
 # It works as follows:
 #   1. Tabled papers: no action.
-#   2. Below-bar reject: set to reject (plenary).
+#   2. Below-bar reject: set to reject (in plenary).
 #   3. Everything else: set a sticky.
+# Note that bbs-tabled papers w no other history show up yellow in the grid.
+# We cannot set a sticky for them here because T-sticky means "needs help".
 def init_grid_from_bbs():
     delete_non_bbs_history()  # just in case...
     papers = Paper.query.all()
@@ -501,14 +502,14 @@ def init_grid_from_bbs():
 # This is just for testing purposes. It inserts fake history.
 # Submission ID,When,Context,Status
 def insert_history_rows(rows):
-    test_bar = current_app.config["HEPCAT_TEST_BAR"]
-    if test_bar:
-        set_bar(test_bar)
-    if current_app.config["HEPCAT_TEST_AUTO_INIT"]:
-        init_grid_from_bbs()
+    # if current_app.config["HEPCAT_TEST_AUTO_INIT"]:
+    #     init_grid_from_bbs()
+    # this is now done in insert_chair_score_rows
     count = 0
     max_count = current_app.config["HEPCAT_TEST_HISTORY"]
     for row in rows:
+        if count >= max_count:
+            break
         sid, _, context, status = row
         if not context or context == "BBS":
             # No context if downloading paper with no history.
@@ -533,8 +534,6 @@ def insert_history_rows(rows):
         )
         db.session.add(history)
         count += 1
-        if count >= max_count:
-            break
     return count
 
 
@@ -542,6 +541,8 @@ def insert_actions_rows(rows):
     count = 0
     max_count = current_app.config["HEPCAT_TEST_ACTIONS"]
     for row in rows:
+        if count >= max_count:
+            break
         email, _, func_name, args_json = row  # ignore when
         args_json = single_quote_to_double(args_json)
         action = Action(func_name=func_name, args_json=args_json)
@@ -549,8 +550,6 @@ def insert_actions_rows(rows):
             action.email = email
         db.session.add(action)
         count += 1
-        if count >= max_count:
-            break
     return count
 
 
@@ -561,10 +560,8 @@ csvHeaders = {
     "conflicts": "Submission ID,Email",
     "filters": "Name,GUI,Filter",
     "history": "Submission ID,When,Context,Status",
-    "paper_rooms": "Submission ID,Room",
-    "papers": "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract",
-    "people_rooms": "Email,Room",
-    "users": "Email,First Name,Last Name,Role,Password",
+    "papers": "Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract",
+    "users": "Email,First Name,Last Name,Rooms,Role,Password",
 }
 
 
@@ -574,9 +571,7 @@ csvInsertFunctions = {
     "conflicts": insert_conflict_rows,
     "history": insert_history_rows,
     "actions": insert_actions_rows,
-    "paper_rooms": insert_paper_room_rows,
     "papers": insert_paper_rows,
-    "people_rooms": insert_people_room_rows,
     "filters": insert_filter_rows,
     "users": insert_user_rows,
 }
@@ -617,11 +612,12 @@ def read_csv(filename):
         hash_cache = None
     # first delete old database info
     timer_end(f"finished reading {header_type} csv", True)
-    dump_users_papers_and_conflicts(f"Before deleting {header_type}")
-    deletion_func = csvDeleteFunctions[header_type]
-    deletion_func()
-    dump_users_papers_and_conflicts(f"After deleting {header_type}")
-    timer_end(f"finished delete {header_type} data", True)
+    if header_type in csvDeleteFunctions:
+        dump_users_papers_and_conflicts(f"Before deleting {header_type}")
+        deletion_func = csvDeleteFunctions[header_type]
+        deletion_func()
+        dump_users_papers_and_conflicts(f"After deleting {header_type}")
+        timer_end(f"finished delete {header_type} data", True)
     # next insert new rows
     if is_users:
         count = insert_user_rows(rows, hash_cache)
@@ -634,7 +630,7 @@ def read_csv(filename):
     return header_type
 
 
-csvLinklings = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
+csvLinklings = "users,papers,conflicts,clusters,chair"
 csvLinklings = csvLinklings.split(",")
 
 
@@ -661,7 +657,7 @@ def read_test_csv_files():
     folder = current_app.config["HEPCAT_TEST_UPLOAD"]
     include_history = current_app.config["HEPCAT_TEST_HISTORY"]
     include_actions = current_app.config["HEPCAT_TEST_ACTIONS"]
-    csv_order = "users,papers,conflicts,clusters,paper_rooms,people_rooms,chair"
+    csv_order = "users,papers,conflicts,clusters,chair"
     csv_order = csv_order.split(",")
     if include_history:
         csv_order.append("history")

@@ -164,9 +164,9 @@ export default function UploadsPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Download Queries
+                Download Filters
               </a>
-              &nbsp;&nbsp;Download a CSV with current filters.
+              &nbsp;&nbsp;Download a CSV containing all current filters.
             </Stack>
             <Stack direction="horizontal">
               <a

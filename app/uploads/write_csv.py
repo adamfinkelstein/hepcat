@@ -179,6 +179,8 @@ def get_when_chair_file_was_uploaded():
     return when
 
 
+# AF2025-02-10: what is the purpose of this action? Do we still need it?
+# I think it is to combine the history and actions into one file for testing.
 def get_combined_as_rows():
     history = get_history_as_rows()
     actions = get_actions_as_rows()
@@ -207,49 +209,25 @@ def get_users_as_rows():
     return rows
 
 
-def get_people_rooms_as_rows():
-    users = User.query.order_by(User.email).all()
-    header = "Email,Room"
-    rows = [header]
-    for u in users:
-        if not u.rooms:
-            continue
-        rooms = u.rooms
-        rooms = rooms.split()
-        for room in rooms:
-            if room:
-                row = f"{u.email},{room}"
-                rows.append(row)
-    return rows
-
-
+# 2025: Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def get_papers_as_rows():
     papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract"
+    header = "Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract"
     rows = [header]
     for p in papers:
         if paper_is_test(p):
             continue
-        dual = "no" if p.journal_only else "yes"
-        areas = get_paper_areas_string(p)
+        track = "Journal Only Track" if p.journal_only else "Dual Track"
+        area = get_paper_areas_string(p)
         title = double_quote_text_for_csv(p.title)
         abstract = double_quote_text_for_csv(p.abstract)
-        row = f"{p.sid},{p.thumbnail},{title},{areas},{dual},{abstract}"
-        rows.append(row)
-    return rows
-
-
-def get_paper_rooms_as_rows():
-    papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Room"
-    rows = [header]
-    for p in papers:
-        if paper_is_test(p):
-            continue
         room = get_paper_room_name_or_none(p)
-        if room:
-            row = f"{p.sid},{room}"
-            rows.append(row)
+        if room is None:
+            room = ""
+        part1 = f"{p.sid},{p.exception},{p.thumbnail},"
+        part2 = f"{title},{area},{track},{room},{abstract}"
+        row = part1 + part2
+        rows.append(row)
     return rows
 
 
@@ -313,9 +291,7 @@ csvExtractFunctions = {
     "clusters": get_clusters_as_rows,
     "conflicts": get_conflicts_as_rows,
     "history": get_history_as_rows,
-    "paper_rooms": get_paper_rooms_as_rows,
     "papers": get_papers_as_rows,
-    "people_rooms": get_people_rooms_as_rows,
     "filters": get_filters_as_rows,
     "users": get_users_as_rows,
     # "results" download is unlike any uploadable file above

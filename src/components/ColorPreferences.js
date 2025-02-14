@@ -22,7 +22,7 @@ export default function ColorPreferences() {
   const { defaultColors, changeToDefaultColors } = useDefaultColors();
   const defaultColorVals = Object.values(defaultColors);
   const changeTextColors = useChangeTextColors();
-  const [selectedColorKey, setSelectedColorKey] = useState('Unseen');
+  const [selectedColorKey, setSelectedColorKey] = useState('Ready');
 
   const { flash } = useFlasher();
 

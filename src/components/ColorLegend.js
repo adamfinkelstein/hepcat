@@ -12,6 +12,9 @@ export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
     if (!showCounts || !count) return null;
     return '(' + count + ')';
   };
+  const mapReady = (key) => {
+    return key === 'Ready' ? 'Ready/bbs' : key;
+  };
 
   return (
     <div className="ColorLegend">
@@ -19,8 +22,9 @@ export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
       <Stack className="mt-1" direction="vertical" gap={1}>
         {colorKeys.map((key) => {
           const count = keyToCount(key);
+          const label = mapReady(key);
           return (
-            <ColorLabel key={key} rectClass={key} label={key} extra={count} />
+            <ColorLabel key={key} rectClass={key} label={label} extra={count} />
           );
         })}
       </Stack>

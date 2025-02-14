@@ -151,7 +151,6 @@ class User(db.Model):
         return "<User %r>" % self.full_name
 
 
-# initially: Submission ID,Thumbnail URL,Title,Abstract
 class Paper(db.Model):
     __tablename__ = "papers"
     id = db.Column(db.Integer, primary_key=True)
@@ -168,6 +167,7 @@ class Paper(db.Model):
     all_scores = db.Column(db.String(256))
     journal_only = db.Column(db.Boolean, default=False)
     below_bar = db.Column(db.Boolean, default=False)
+    exception = db.Column(db.String(64), default="")  # e.g. Withdrawn
     conf_users = db.relationship(
         "User",
         secondary=conflicts,
@@ -185,6 +185,10 @@ class Paper(db.Model):
     history = db.relationship(
         "History", backref="paper", lazy="dynamic", order_by="History.id"
     )
+
+    @hybrid_property
+    def has_exception(self):
+        return len(self.exception) > 0
 
     def __repr__(self):
         return "<Paper %r>" % self.nid
@@ -231,6 +235,10 @@ class Label(db.Model):
     @hybrid_property
     def is_room(self):
         return self.type_enum == int(LabelType.Room)
+
+    @hybrid_property
+    def is_exception(self):
+        return self.type_enum == int(LabelType.Exception)
 
     def __repr__(self):
         return "<Label %r>" % self.name

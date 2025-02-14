@@ -28,6 +28,7 @@ def delete_all_users():
 
 
 def delete_all_papers():
+    set_all_users_to_be_in_plenary()
     drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues")
     ensure_all_gqs()
 
@@ -49,7 +50,9 @@ def delete_all_clusters():
     log_print(f"delete {num_deleted} cluster labels.")
 
 
-# this function mimics delete_all_clusters above
+# This function is never called to clean up, but could be.
+# This function mimics delete_all_clusters above.
+# (could use common code and pass the function label.is_room as arg. ???)
 def delete_all_paper_rooms():
     delete_non_bbs_history()  # must delete room history because of room deletion
     papers = Paper.query.all()
@@ -137,9 +140,7 @@ csvDeleteFunctions = {
     "conflicts": delete_all_conflicts,
     "history": delete_non_bbs_history,
     "actions": delete_actions,
-    "paper_rooms": delete_all_paper_rooms,
     "papers": delete_all_papers,
-    "people_rooms": set_all_users_to_be_in_plenary,
     "filters": delete_all_filters,
     "users": delete_all_users,
 }
@@ -150,11 +151,9 @@ csvDependence = {
         "conflicts",
         "history",
         "clusters",
-        "paper_rooms",
         "chair",
     ],
-    "paper_rooms": ["people_rooms", "history"],
-    "users": ["conflicts", "people_rooms"],
+    "users": ["conflicts"],
 }
 
 

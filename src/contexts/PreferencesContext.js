@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 
 const defaultColors = {
-  Unseen: '#F4F4F4',
+  Ready: '#F4F4F4',
   Tabled: '#E8F77D',
   'Tabled-Sticky': '#FFC65E',
   Reject: '#F3A8C0',
@@ -12,7 +12,7 @@ const defaultColors = {
 };
 
 const defaultTextBlackOrWhite = {
-  Unseen: true,
+  Ready: true,
   Tabled: true,
   'Tabled-Sticky': true,
   Reject: true,

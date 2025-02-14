@@ -1,10 +1,8 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap');
-
 body {
+  font-family: 'Open Sans', Arial, sans-serif;
+  margin: 0;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-family: 'Open Sans', 'Arial';
-  margin: 0;
 }
 
 .bigger-font {
@@ -102,7 +100,7 @@ body {
 .LoginPage .Auth-form {
   background-color: white;
   border-radius: 8px;
-  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
   padding-bottom: 20px;
   padding-top: 30px;
   width: 420px;
@@ -188,14 +186,14 @@ body {
 .Body .left-panel,
 .Body .right-panel {
   overflow-y: auto;
-  padding-top: 15px;
   padding-bottom: 100px;
+  padding-top: 15px;
 }
 
 .Body .queue-message,
 .Body .paper-message {
-  border-radius: 6px;
   border: 1px dashed purple;
+  border-radius: 6px;
   color: purple;
   font-size: 20px;
   font-style: italic;
@@ -210,8 +208,8 @@ body {
 
 /* gap below room menu applies for both admin and others */
 .Body .room-choice-menu {
+  padding-bottom: 0;
   padding-left: 12px;
-  padding-bottom: 0px;
 }
 
 .AdminQueueControls .btn-light {
@@ -248,8 +246,8 @@ body {
 }
 
 .Queue ul li {
-  padding: 5px;
   overflow: hidden;
+  padding: 5px;
 }
 
 .Queue .q-entry {
@@ -261,10 +259,10 @@ body {
 }
 
 .Queue .q-entry.past-entry {
+  border-bottom: 0;
   border-left: 1px solid black;
   border-right: 1px solid black;
   border-top: 1px solid black;
-  border-bottom: 0;
 }
 
 .Queue .q-entry.Current {
@@ -291,13 +289,13 @@ body {
 }
 
 .Queue .queue-hidden-for-non {
-  font-style: italic;
-  color: purple;
   border: 1px dashed purple;
   border-radius: 5px;
+  color: purple;
+  font-style: italic;
   font-weight: bold;
-  padding: 8px;
   margin: 15px;
+  padding: 8px;
 }
 
 /*
@@ -305,16 +303,16 @@ body {
 */
 
 .Paper .paper-timer {
-  font-family: 'Courier New';
-  font-weight: bold;
-  color: purple;
   background-color: #ddd;
+  border-radius: 5px;
+  color: purple;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  padding: 0 8px;
   position: absolute;
+  right: 16px;
   text-align: left;
   top: 22px;
-  right: 16px;
-  border-radius: 5px;
-  padding: 0px 8px;
 }
 
 .Paper .paper-par-header {
@@ -363,7 +361,7 @@ body {
 }
 
 /* remove thin line from rightmost items in progress bar */
-.GridTab .Unseen.progress-bar,
+.GridTab .Ready.progress-bar,
 .GridTab .Conflict.progress-bar {
   border-right: 0;
 }
@@ -392,7 +390,7 @@ body {
 }
 
 .SetQueue .gui-filters {
-  align-items: start;
+  align-items: flex-start;
 }
 
 .SetQueue .score-box {
@@ -400,17 +398,18 @@ body {
 }
 
 .SetQueue .text-filter-input {
-  width: 550px;
   margin-bottom: 20px;
+  width: 550px;
 }
 
 .SetQueue .dropdown-item {
+  background-color: rgb(39, 87, 195);
   background-color: rgba(39, 87, 195, 0.1);
 }
 
 .SetQueue .dropdown-item:hover {
-  color: white;
   background-color: rgb(39, 87, 195);
+  color: white;
 }
 
 /*
@@ -436,8 +435,8 @@ body {
   border-radius: 4px;
   display: inline-block;
   height: 15px;
-  width: 15px;
   margin-right: 0.1em;
+  width: 15px;
 }
 
 .ChooseStatusDropdown {
@@ -470,8 +469,8 @@ body {
 }
 
 .sticky-popover {
-  color: white;
   background-color: darkgray;
+  color: white;
 }
 
 /*
@@ -479,18 +478,14 @@ body {
  */
 
 .LoadingIframe iframe {
-  width: 100%;
   height: 100vh;
+  width: 100%;
 }
 
-.LoadingIframe h1 {
+/* .LoadingIframe h1 {
   padding: 40px;
+} */
+
+.App:has(.LoadingIframe) {
+  background-color: #f0f0f0;
 }
-
-/* csslint chokes when this CSS rule is enabled:
-
-.App:has(.GuidePage) {
-  background-color: lightgray;
-}
-
-*/
