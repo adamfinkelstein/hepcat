@@ -433,7 +433,7 @@ def check_for_test_bar_and_get_bar():
 
 def insert_chair_score_rows(rows):
     count = 0
-    bar = check_for_test_bar_and_get_bar()
+    bar = check_for_test_bar_and_get_bar()  # get bar (if local test, first set it)
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews
         sid, chair_score, status, reviews = row

@@ -39,6 +39,14 @@ tags = db.Table(
 ######################
 
 
+class Setting(db.Model):
+    __tablename__ = "settings"
+    id = db.Column(db.Integer, primary_key=True)
+    admin_only = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(64), unique=True)
+    value = db.Column(db.String, default="")  # encoded as string/JSON
+
+
 class Role(db.Model):
     __tablename__ = "roles"
     id = db.Column(db.Integer, primary_key=True)

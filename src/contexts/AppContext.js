@@ -87,6 +87,8 @@ export default function AppContext({ children }) {
       setQueue(newQueue); // force update
     };
 
+    // called on receiving data from either:
+    //   server_set_queue or server_set_globs
     const receiveGlobs = (data) => {
       if (!data) {
         controlledLog('WARNING! received globs with empty data');
@@ -110,11 +112,13 @@ export default function AppContext({ children }) {
       if (data.update) {
         updateGridEntry(data.update.grid_update);
       }
-      // bar is same for all rooms
-      const barString = data.bar + '';
-      setAppBar(barString);
-      setGuiBar(barString);
-      // controlledLog('set bar to:', barString);
+      if ('bar' in data) {
+        // bar is same for all rooms
+        const barString = data.bar + '';
+        setAppBar(barString);
+        setGuiBar(barString);
+        controlledLog('set bar to:', barString);
+      }
     };
 
     const decryptPaperQueue = (arr) => {

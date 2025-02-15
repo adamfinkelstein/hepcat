@@ -489,3 +489,31 @@ body {
 .App:has(.LoadingIframe) {
   background-color: #f0f0f0;
 }
+
+/* Bar SEPARATOR between Grid Sections */
+/* https://stackoverflow.com/questions/2812770/add-centered-text-to-the-middle-of-a-horizontal-rule */
+
+.GridBar {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.GridBar::before,
+.GridBar::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dashed #000;
+}
+
+.GridBar:not(:empty)::before {
+  margin-right: 0.25em;
+}
+
+.GridBar:not(:empty)::after {
+  margin-left: 0.25em;
+}
+
+.GridBar .barText {
+  font-weight: bold;
+}

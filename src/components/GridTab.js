@@ -1,8 +1,8 @@
 import Stack from 'react-bootstrap/Stack';
-import { useAppGlobals } from '../contexts/AppContext';
 import { useGrid } from '../contexts/GridContext';
 import { useCount } from '../contexts/CountContext';
 import ColorLegend from './ColorLegend';
+import GridBar from './GridBar.js';
 import GridBlock from './GridBlock.js';
 import GridModeDropdown from './GridModeDropdown.js';
 import GridProgressBar from './GridProgressBar.js';
@@ -17,30 +17,25 @@ function CountSpan({ label, count }) {
 }
 
 export default function GridTab() {
-  const { appBar } = useAppGlobals();
   const { gridNidsAbove, gridNidsBelow, gridInRoom } = useGrid();
   const { getGridCount } = useCount();
   const nTotal = getGridCount('total');
-  const nAbove = getGridCount('above');
-  const nBelow = getGridCount('below');
   const nConflict = getGridCount('Conflict');
-  const showProgress = nAbove + nBelow > 0;
+  const nonConflict = nTotal - nConflict;
+  const showProgress = nonConflict > 0;
 
   return (
     <Stack direction="vertical" gap={3} className="GridTab ms-2">
       <Stack direction="horizontal" className="grid-control-bar" gap={3}>
         <div>
-          <CountSpan label="Bar" count={appBar} />
-          <CountSpan label="Above" count={nAbove} />
-          <CountSpan label="Below" count={nBelow} />
-          {!gridInRoom && <CountSpan label="Conflict" count={nConflict} />}
           <CountSpan label="Total" count={nTotal} />
+          {!gridInRoom && <CountSpan label="Conflict" count={nConflict} />}
         </div>
         <GridModeDropdown />
       </Stack>
 
       <GridBlock nidList={gridNidsAbove} />
-      <hr className="horizontal-divider" />
+      <GridBar />
       <GridBlock nidList={gridNidsBelow} />
 
       {showProgress > 0 && <GridProgressBar />}

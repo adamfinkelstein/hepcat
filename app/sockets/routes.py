@@ -44,7 +44,7 @@ from ..util import (
     invalidate_cache_var,
     invalidate_cache_all,
 )
-from ..models.bar import set_bar
+from ..models.bar import set_bar, get_bar
 from ..models.history_util import (
     get_latest_history,
     get_latest_history_status,
@@ -853,6 +853,8 @@ def get_paper_at_queue_index(room, index):
 # def shows status and history for current paper when revealed
 def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
+    bar = get_bar()
+    globs["bar"] = bar
     show_logs = current_app.config["REACT_APP_SHOW_LOGS"]
     if show_logs is not None:
         globs["showAppLogs"] = show_logs
