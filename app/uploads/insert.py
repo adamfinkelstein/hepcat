@@ -232,12 +232,10 @@ def insert_test_paper_conflicts():
     return count
 
 
-def get_or_insert_label(label_type, label_name):
-    label = (
-        Label.query.filter_by(type_enum=label_type).filter_by(name=label_name).first()
-    )
+def ensure_label(label_type, name):
+    label = Label.query.filter_by(type_enum=label_type).filter_by(name=name).first()
     if not label:
-        label = Label(type_enum=label_type, name=label_name)
+        label = Label(type_enum=label_type, name=name)
         db.session.add(label)
     return label
 
@@ -273,10 +271,10 @@ def insert_paper_rows(rows):
         )
         label_names = areas_to_label_names(areas)
         for label_name in label_names:
-            label = get_or_insert_label(area_type, label_name)
+            label = ensure_label(area_type, label_name)
             paper.tag_labels.append(label)
         if exception:
-            label = get_or_insert_label(exception_type, exception)
+            label = ensure_label(exception_type, exception)
             paper.tag_labels.append(label)
         db.session.add(paper)
         count += 1
@@ -342,14 +340,6 @@ def rows_to_unique_labels(rows):
     labels = [row[1] for row in rows]
     labels = list(set(labels))
     return labels
-
-
-def ensure_label(label_type, name):
-    label = Label.query.filter_by(type_enum=label_type).filter_by(name=name).first()
-    if not label:
-        label = Label(type_enum=label_type, name=name)
-        db.session.add(label)
-    return label
 
 
 def ensure_labels_exist_dict(label_type, label_names):
@@ -431,12 +421,28 @@ def check_for_test_bar_and_get_bar():
     return get_bar()
 
 
+def add_bbs_history_to_paper(paper, status):
+    context_bbs = context_str_to_enum("BBS")
+    status_enum = status_str_to_enum(status)
+    history = History(paper=paper, context_enum=context_bbs, status_enum=status_enum)
+    db.session.add(history)
+
+
+def add_tags_to_paper(paper, tags):
+    tags = tags.split(" ")
+    tag_type = int(LabelType.Tag)
+    for tag in tags:
+        label = ensure_label(tag_type, tag)
+        paper.tag_labels.append(label)
+    db.session.add(paper)
+
+
 def insert_chair_score_rows(rows):
     count = 0
     bar = check_for_test_bar_and_get_bar()  # get bar (if local test, first set it)
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews
-        sid, chair_score, status, reviews = row
+        sid, chair_score, status, reviews, tags = row
         paper = Paper.query.filter_by(sid=sid).first()
         if not paper:
             continue
@@ -447,13 +453,9 @@ def insert_chair_score_rows(rows):
         paper.all_scores = reviews
         paper.below_bar = below_bar
         db.session.add(paper)
-        # update paper history with new bbs entry
-        context_bbs = context_str_to_enum("BBS")
-        status_enum = status_str_to_enum(status)
-        history = History(
-            paper=paper, context_enum=context_bbs, status_enum=status_enum
-        )
-        db.session.add(history)
+        add_bbs_history_to_paper(paper, status)
+        if tags:
+            add_tags_to_paper(paper, tags)
         count += 1
     init_grid_from_bbs()
     return count
@@ -555,7 +557,7 @@ def insert_actions_rows(rows):
 
 csvHeaders = {
     "actions": "Email,When,Action,Args",
-    "chair": "Submission ID,Sort Score,Status,Reviews",
+    "chair": "Submission ID,Sort Score,Status,Reviews,Tags",
     "clusters": "Submission ID,Cluster",
     "conflicts": "Submission ID,Email",
     "filters": "Name,GUI,Filter",

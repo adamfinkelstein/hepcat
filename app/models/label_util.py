@@ -11,8 +11,9 @@ class LabelType(IntEnum):
     Area = 0
     Cluster = 1
     Room = 2
-    Bar = 3  # not actually used, except to sort tags for GUI
+    Bar = 3  # not actually used, except to sort labels for GUI
     Exception = 4
+    Tag = 5
 
 
 def label_str_to_enum(str):

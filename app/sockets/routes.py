@@ -1326,6 +1326,7 @@ def admin_set_bar(bar):
     update_all_paper_bar_status(bar)
     init_grid_from_bbs()
     try_sql_commit()
+    invalidate_cache_all()  # room queues contain the bar and the grids
     globs, _ = get_globs_dump_with_status("Plenary")
     emit("server_set_globs", globs, broadcast=True)  # bar is in globs
     grid_dump = get_grid_dump_cached(True)

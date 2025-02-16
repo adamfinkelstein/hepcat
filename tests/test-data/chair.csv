@@ -1,201 +1,201 @@
-Submission ID,Sort Score,Status,Reviews
-papers_101,-6,Reject,"Exception: Withdrawn"
-papers_102,1.333,Conference,"(c, c, x, x, C, x) [A, a, a, A, r, a]"
-papers_103,0.667,Tabled,"(C, c, j, J, c, C) [R, A, a, r, A, a]"
-papers_104,0.667,Reject,"(C, c, C, c, J, j) [a, r, r, A, a, a]"
-papers_105,-2.333,Reject,"(C, J, J, C, x, x) [r, a, R, R!, R!, r]"
-papers_106,1.0,Conference,"(J only) [r, a, a, A, a]"
-papers_107,1.4,Tabled,"(J only) [a, A, a, A, r]"
-papers_108,1.333,Journal,"(J only) [a, A, r, a, A, a]"
-papers_109,1.333,Journal,"(J only) [r, A, a, a, a, A]"
-papers_110,-2.333,Tabled,"(J only) [R, r, r, R!, r, R]"
-papers_111,2.0,Conference,"(C, c, x, J, x, C) [a, A!, a, a, a, A]"
-papers_112,1.333,Journal,"(J only) [a, a, a, a, a, A]"
-papers_113,1.667,Reject,"(J only) [a, A!, r, a, A, a]"
-papers_114,-2.333,Reject,"(x, x, c, J, x, x) [R!, R, R, r, r, r]"
-papers_115,1.0,Journal,"(J only) [a, a, a, r, a, A]"
-papers_116,3.0,Conference,"(J, j, j, x, j) [A!, A, a, A, A]"
-papers_117,2.2,Tabled,"(C, x, j, c, c) [r, A!, A, a, A]"
-papers_118,-3.8,Reject,"(j, J, j, x, c) [R, R, R!, R!, R]"
-papers_119,-1.0,Reject,"(x, J, j, j, j, J) [r, r, r, r, R, a]"
-papers_120,-3.0,Reject,"(J only) [r, R, R!, r, R!]"
-papers_121,0.333,Tabled,"(J only) [r, a, r, a, r, A]"
-papers_122,-1.667,Tabled,"(J only) [r, r, r, R, r, R]"
-papers_123,1.0,Conference,"(J only) [r, A!, a, r, a]"
-papers_124,-0.2,Reject,"(C, x, C, C, C) [R, r, a, a, a]"
-papers_125,1.0,Conference,"(J only) [a, a, a, r, a, A]"
-papers_126,0.0,Journal,"(J only) [a, a, a, R, A, R]"
-papers_127,-1.667,Tabled,"(J, c, C, x, J, C) [r, r, R!, R, a, r]"
-papers_128,3.4,Journal,"(J only) [A!, A, A!, a, A]"
-papers_129,-0.2,Tabled,"(c, J, c, j, j) [R, A, a, r, r]"
-papers_130,-2.667,Reject,"(J, c, x, x, j, x) [R, R, r, R, R, R]"
-papers_131,2.2,Tabled,"(c, x, j, j, x) [a, a, A!, a, A]"
-papers_132,0.2,Tabled,"(J, J, j, C, c) [a, A, r, r, r]"
-papers_133,-2.2,Reject,"(J only) [r, r, R!, a, R!]"
-papers_134,1.0,Reject,"(J, C, C, x, J, c) [A, a, A, r, r, a]"
-papers_135,1.333,Reject,"(J only) [r, a, A!, r, r, A!]"
-papers_136,1.667,Journal,"(J only) [A, r, a, A, r, A!]"
-papers_137,0.333,Tabled,"(J only) [R, A, A, a, R, a]"
-papers_138,2.6,Journal,"(J, x, J, c, x) [a, a, A!, A, A]"
-papers_139,2.2,Tabled,"(C, C, j, J, C) [a, a, a, A, A!]"
-papers_140,-1.8,Tabled,"(J only) [r, R, R!, r, a]"
-papers_141,1.0,Tabled,"(J only) [a, A, r, A, a, r]"
-papers_142,-3.667,Reject,"(J only) [r, R!, R!, r, R!, R!]"
-papers_143,0.0,Tabled,"(J only) [r, r, a, a, r, a]"
-papers_144,2.6,Journal,"(J only) [a, A!, A!, r, A]"
-papers_145,-1.8,Tabled,"(J, C, J, j, C) [R, a, r, R, R]"
-papers_146,-0.667,Reject,"(c, x, c, C, c, C) [a, a, a, r, R, R]"
-papers_147,0.6,Tabled,"(J only) [a, r, a, A, r]"
-papers_148,-1.0,Reject,"(C, x, J, C, x, C) [r, r, a, R!, r, a]"
-papers_149,2.333,Journal,"(J only) [A, A, a, a, A, A]"
-papers_150,1.0,Conference,"(J only) [A, r, a, a, A, r]"
-papers_151,-1.667,Reject,"(C, J, j, c, j, x) [r, R!, a, a, R, R]"
-papers_152,1.667,Tabled,"(J only) [A, r, a, A, A, a]"
-papers_153,-0.6,Tabled,"(J only) [r, r, r, r, a]"
-papers_154,0.2,Tabled,"(c, c, J, C, J) [R, a, a, a, a]"
-papers_155,1.0,Conference,"(C, C, x, x, c) [a, A!, r, a, r]"
-papers_156,-3.0,Reject,"(J only) [R, R, r, R, R!]"
-papers_157,-3.0,Tabled,"(J, c, j, c, c) [R, r, R, R, R!]"
-papers_158,-2.6,Reject,"(j, x, x, x, C) [r, R, R, R!, r]"
-papers_159,2.0,Journal,"(J only) [a, A, A, A, a, a]"
-papers_160,-0.2,Tabled,"(C, J, J, c, J) [R, r, r, a, A]"
-papers_161,-3.8,Reject,"(J only) [R!, R, R, R, R!]"
-papers_162,-1.8,Reject,"(J only) [R, r, r, r, R]"
-papers_163,-2.0,Reject,"(j, C, x, j, C, c) [R, R, r, r, r, R]"
-papers_164,-2.0,Reject,"(J only) [R, r, R, r, R!, a]"
-papers_165,1.8,Conference,"(J only) [A, a, A, a, a]"
-papers_166,1.0,Journal,"(J, C, c, J, J, c) [r, a, a, a, A, a]"
-papers_167,0.2,Tabled,"(c, c, j, c, C) [R, a, r, a, A]"
-papers_168,-2.0,Reject,"(j, x, j, C, J, c) [r, R, R, R, r, r]"
-papers_169,0.667,Tabled,"(J only) [r, A, a, a, r, a]"
-papers_170,-0.667,Journal,"(J only) [r, a, R, r, a, r]"
-papers_171,-1.0,Tabled,"(J only) [R, r, a, r, r]"
-papers_172,1.667,Conference,"(J only) [r, a, a, a, A, A!]"
-papers_173,-3.8,Reject,"(J only) [r, R!, R, R!, R!]"
-papers_174,-0.333,Reject,"(J only) [r, a, R, a, r, a]"
-papers_175,2.333,Journal,"(J only) [A, A, r, a, A, A!]"
-papers_176,-0.2,Reject,"(J only) [r, A, r, r, r]"
-papers_177,1.0,Tabled,"(x, j, C, C, j) [r, a, A, a, a]"
-papers_178,2.667,Journal,"(c, x, c, j, x, x) [A!, a, r, A!, a, A!]"
-papers_179,-1.667,Reject,"(J only) [r, r, R!, R, a, r]"
-papers_180,-0.2,Conference,"(J only) [r, a, a, r, r]"
-papers_181,0.333,Conference,"(c, c, J, J, c, x) [r, a, r, r, a, A]"
-papers_182,-3.0,Tabled,"(x, C, c, c, J) [R, R!, R, r, R]"
-papers_183,-2.2,Reject,"(J only) [R, r, r, R, R]"
-papers_184,3.0,Tabled,"(J only) [A!, r, a, A!, A, A!]"
-papers_185,-2.6,Reject,"(J only) [R!, r, R!, a, R]"
-papers_186,1.333,Tabled,"(J, c, C, j, J, c) [a, a, A, a, r, A]"
-papers_187,-1.8,Tabled,"(J only) [R, R!, a, r, r]"
-papers_188,-1.667,Reject,"(J only) [r, R, A, R, r, R!]"
-papers_189,2.0,Journal,"(J only) [a, A, A, A, r, A]"
-papers_190,-0.6,Reject,"(J only) [A, r, R, A, R!]"
-papers_191,1.667,Conference,"(c, J, j, x, c, x) [R, a, A!, A, A, a]"
-papers_192,-1.4,Tabled,"(J only) [R, R!, a, a, r]"
-papers_193,-1.333,Reject,"(x, x, c, c, C, x) [r, R, r, r, a, R]"
-papers_194,-1.667,Tabled,"(x, x, x, x, j, x) [r, a, r, R, r, R!]"
-papers_195,2.667,Conference,"(J, C, x, J, j, c) [A, A, r, A, A!, A]"
-papers_196,-4.0,Reject,"(J only) [R!, R!, R, R!, R, R]"
-papers_197,-1.667,Conference,"(J, j, C, c, j, C) [r, R, R, r, r, r]"
-papers_198,2.0,Tabled,"(C, j, j, C, j, j) [a, A!, a, A, a, a]"
-papers_199,-1.8,Reject,"(J only) [r, r, r, R, R]"
-papers_200,-2.2,Reject,"(J only) [R, r, R, r, R]"
-papers_201,-0.2,Tabled,"(j, c, J, x, x) [r, a, A, R, r]"
-papers_202,1.0,Conference,"(J only) [r, A!, a, r, a, a]"
-papers_203,3.4,Journal,"(j, x, x, c, x) [A, A!, A, A!, a]"
-papers_204,-2.0,Tabled,"(J only) [R, R, A, r, R!, R]"
-papers_205,0.6,Reject,"(C, x, x, c, x) [a, r, a, r, A]"
-papers_206,2.0,Journal,"(J only) [r, A, r, A!, A, A]"
-papers_207,-0.2,Conference,"(C, J, c, C, c) [r, a, r, a, r]"
-papers_208,-2.333,Reject,"(x, c, x, j, J, c) [a, R, R!, R, r, R]"
-papers_209,2.667,Journal,"(J only) [a, A!, a, a, A, A!]"
-papers_210,1.4,Conference,"(J only) [a, A, r, A!, r]"
-papers_211,0.667,Journal,"(c, j, j, c, x, j) [A, a, r, a, A, R]"
-papers_212,3.0,Tabled,"(c, C, C, C, J) [A!, A, A, A, a]"
-papers_213,-1.8,Reject,"(c, c, J, C, J) [r, r, R, R!, a]"
-papers_214,-0.667,Reject,"(j, C, C, x, J, j) [R, r, a, a, r, r]"
-papers_215,-3.0,Reject,"(x, C, j, j, c, x) [R, R, R, R, R, R]"
-papers_216,-2.6,Reject,"(J only) [r, R, R, R!, r]"
-papers_217,-2.6,Reject,"(c, c, j, c, j) [R!, r, R, r, R]"
-papers_218,-1.4,Reject,"(J only) [r, a, r, R, R]"
-papers_219,-2.667,Reject,"(J only) [R, r, R, R!, R, r]"
-papers_220,-2.333,Reject,"(J only) [r, R!, a, R, R!, r]"
-papers_221,-0.2,Reject,"(J only) [a, a, a, r, R]"
-papers_222,0.6,Tabled,"(J only) [r, a, r, A, a]"
-papers_223,-1.4,Reject,"(J only) [a, R, r, a, R!]"
-papers_224,0.2,Reject,"(J only) [A, a, a, R, r]"
-papers_225,-1.333,Tabled,"(j, c, c, J, J, J) [R!, a, r, a, r, R]"
-papers_226,-1.667,Reject,"(J, x, x, x, J, c) [r, r, r, r, R!, r]"
-papers_227,-1.667,Reject,"(C, C, C, x, J, C) [r, r, R, r, R, r]"
-papers_228,-2.333,Tabled,"(c, J, x, J, J, x) [r, r, R, R, R, R]"
-papers_229,-1.0,Reject,"(J only) [a, R, a, r, a, R!]"
-papers_230,2.2,Journal,"(J only) [A!, a, A, r, A]"
-papers_231,1.0,Tabled,"(J only) [A, r, A!, R, r, A]"
-papers_232,-2.333,Tabled,"(j, C, x, j, J, C) [R, r, R, R, R, r]"
-papers_233,-1.333,Tabled,"(x, C, C, x, C, x) [R, r, a, r, R, r]"
-papers_234,2.2,Journal,"(J only) [A, a, A, A, a]"
-papers_235,1.333,Tabled,"(c, x, j, c, j, c) [r, A, r, a, a, A!]"
-papers_236,-1.8,Conference,"(c, x, C, J, j) [R, R, r, R, a]"
-papers_237,0.6,Journal,"(c, j, c, C, x) [a, R, a, A, a]"
-papers_238,-0.6,Reject,"(c, c, C, x, C) [r, a, R, a, r]"
-papers_239,-1.333,Conference,"(J only) [R, r, r, r, a, R]"
-papers_240,-1.667,Tabled,"(c, x, j, x, J, c) [r, R!, r, R, a, r]"
-papers_241,-1.8,Reject,"(x, J, x, j, j) [R, R, a, r, R]"
-papers_242,-2.6,Reject,"(J only) [R, R!, R!, r, a]"
-papers_243,0.2,Journal,"(J only) [r, A, r, a, r]"
-papers_244,-1.667,Conference,"(c, c, x, c, x, C) [R, R, R, a, R, a]"
-papers_245,3.0,Journal,"(J only) [A, A!, A, a, A]"
-papers_246,-1.8,Reject,"(J only) [r, R, r, r, R]"
-papers_247,-2.667,Reject,"(J only) [R, R, r, R!, r, R]"
-papers_248,3.4,Journal,"(x, J, C, J, J) [A, A, A!, A, A]"
-papers_249,-0.333,Tabled,"(C, c, J, C, c, J) [R, A, R, r, a, a]"
-papers_250,-3.8,Reject,"(c, C, J, x, x) [R, R, R, R!, R!]"
-papers_251,-0.2,Journal,"(x, c, x, C, j) [A, r, R, r, a]"
-papers_252,1.667,Tabled,"(J only) [a, r, A, a, a, A!]"
-papers_253,3.8,Journal,"(J only) [A!, A!, A!, A, a]"
-papers_254,0.0,Reject,"(J only) [a, a, R, r, A, r]"
-papers_255,0.2,Journal,"(x, x, j, c, J) [r, a, r, A, r]"
-papers_256,0.667,Conference,"(j, x, C, c, c, j) [a, a, a, R, r, A!]"
-papers_257,3.333,Journal,"(J only) [A, A, a, A!, A!, A]"
-papers_258,-2.0,Reject,"(J only) [R, R!, r, a, r, R]"
-papers_259,-0.2,Tabled,"(J only) [r, A, R!, a, a]"
-papers_260,0.6,Conference,"(J only) [A, a, r, r, a]"
-papers_261,0.0,Conference,"(j, j, J, C, C, x) [a, R, r, r, A, a]"
-papers_262,-1.333,Reject,"(J only) [a, r, r, R, r, R]"
-papers_263,0.0,Reject,"(J only) [a, a, R, r, a, a]"
-papers_264,1.4,Tabled,"(C, J, j, J, c) [A, a, A, a, r]"
-papers_265,1.333,Tabled,"(x, C, C, J, x, C) [A, r, a, a, a, A]"
-papers_266,1.0,Journal,"(J, j, x, C, C) [A, R, r, A, A]"
-papers_267,-3.4,Reject,"(J only) [R, R!, r, R, R!]"
-papers_268,2.0,Journal,"(c, J, J, J, j, j) [a, A, A, A, r, A]"
-papers_269,3.0,Journal,"(J only) [A, a, A, A, A!]"
-papers_270,1.8,Journal,"(J only) [A, r, a, A, A]"
-papers_271,-2.2,Tabled,"(J only) [R, R, a, R, R]"
-papers_272,1.0,Journal,"(J only) [a, a, a, A!, a, R]"
-papers_273,-3.0,Reject,"(J only) [R, R!, R, r, R!, r]"
-papers_274,2.6,Conference,"(J only) [A, a, A, A, A]"
-papers_275,-0.333,Tabled,"(J only) [r, r, r, r, a, a]"
-papers_276,1.0,Conference,"(x, c, j, j, x) [r, a, a, A, a]"
-papers_277,-1.667,Reject,"(J only) [r, r, r, r, r, R!]"
-papers_278,-2.6,Reject,"(J only) [r, R, R, r, R!]"
-papers_279,-1.0,Tabled,"(x, x, J, C, j) [r, R, a, r, r]"
-papers_280,-2.6,Reject,"(J only) [R, R, r, R, R]"
-papers_281,-0.2,Reject,"(C, x, x, J, x) [a, r, r, r, a]"
-papers_282,-2.0,Reject,"(J only) [r, R, A, R!, R, R]"
-papers_283,2.333,Journal,"(c, C, x, j, j, j) [A!, a, a, a, a, A!]"
-papers_284,-1.8,Reject,"(J only) [R, r, R!, r, a]"
-papers_285,1.667,Tabled,"(J, c, c, J, j, j) [r, r, a, A, A, A!]"
-papers_286,0.667,Tabled,"(C, x, c, J, j, x) [a, a, r, a, a, a]"
-papers_287,0.2,Tabled,"(j, C, c, j, j) [A, A, r, R, r]"
-papers_288,-0.333,Tabled,"(J only) [r, r, a, R, a, a]"
-papers_289,-3.0,Tabled,"(J only) [R!, R, R, R, R, r]"
-papers_290,3.0,Tabled,"(J, J, J, x, J) [A, A!, A, r, A!]"
-papers_291,1.0,Tabled,"(C, c, x, c, c) [a, a, a, a, a]"
-papers_292,-2.667,Reject,"(j, j, c, J, J, C) [a, R, R!, R!, r, R]"
-papers_293,-0.2,Conference,"(j, j, c, c, J) [r, a, R, r, A]"
-papers_294,-0.6,Reject,"(c, c, x, J, J) [a, r, r, a, R]"
-papers_295,-1.333,Reject,"(c, J, j, j, x, C) [r, R!, r, a, r, r]"
-papers_296,3.4,Journal,"(C, C, c, j, J) [A, A!, A, A, A]"
-papers_297,-0.2,Tabled,"(C, C, J, c, x) [R, a, r, r, A]"
-papers_298,-1.0,Reject,"(J only) [a, r, a, r, R!, r]"
-papers_299,-1.0,Tabled,"(J only) [r, a, a, R, r, R]"
-papers_300,0.333,Tabled,"(J only) [a, a, R, a, A, r]"
+Submission ID,Sort Score,Status,Reviews,Tags
+papers_101,-6,Reject,"Exception: Withdrawn,"
+papers_102,3.667,Journal,"(J only) [a, A, A!, A, A!, A!] bbs:Journal",
+papers_103,1.0,Conference,"(J only) [a, a, a, A, a, r] bbs:Conference",
+papers_104,-1.667,Reject,"(J only) [r, r, R, R, r, r] bbs:Reject",
+papers_105,-2.2,Tabled,"(j, c, c, j, c) [R, r, R, r, R] bbs:Tabled",
+papers_106,-1.0,Reject,"(J only) [r, r, R, r, a] bbs:Reject",
+papers_107,0.333,Tabled,"(J only) [R, A, R, a, a, A] bbs:Tabled",
+papers_108,-3.667,Reject,"(J only) [R!, R, R!, R!, R, r] bbs:Reject",
+papers_109,-1.4,Reject,"(c, J, J, J, J) [R, r, r, a, R] bbs:Reject",
+papers_110,-2.333,Reject,"(c, J, C, c, J, x) [R, R, R, r, r, R] bbs:Reject",
+papers_111,-1.0,Conference,"(j, c, C, J, x) [r, r, r, r, r] bbs:Conference",
+papers_112,-3.667,Reject,"(J only) [R!, R, R, R, R, R!] bbs:Reject",
+papers_113,-1.4,Reject,"(J only) [r, r, r, r, R] bbs:Reject",
+papers_114,-1.4,Tabled,"(J, c, C, x, c) [r, r, R!, A, R] bbs:Tabled",
+papers_115,0.0,Conference,"(J only) [a, a, r, r, r, a] bbs:Conference",
+papers_116,-1.333,Reject,"(c, C, C, x, C, j) [R, r, R, r, A, R] bbs:Reject",
+papers_117,1.0,Journal,"(J only) [r, A, r, a, A] bbs:Journal",
+papers_118,0.6,Tabled,"(J only) [r, a, A, r, a] bbs:Tabled",
+papers_119,-0.667,Tabled,"(x, j, J, x, C, C) [r, a, R, r, a, r] bbs:Tabled",
+papers_120,1.4,Conference,"(C, c, C, J, x) [a, A, r, A, a] bbs:Conference",
+papers_121,3.0,Journal,"(J only) [A, A, a, A!, A, A] bbs:Journal",
+papers_122,1.4,Tabled,"(J only) [a, a, a, A, a] bbs:Tabled",
+papers_123,-1.0,Tabled,"(J only) [R, a, r, R!, a, a] bbs:Tabled",
+papers_124,-2.6,Reject,"(x, j, C, j, x) [R, r, R, R, R] bbs:Reject",
+papers_125,-1.0,Tabled,"(C, x, C, j, C, x) [r, R, a, a, R, r] bbs:Tabled",
+papers_126,-0.333,Journal,"(J only) [r, r, a, r, r, a] bbs:Journal",
+papers_127,-2.333,Reject,"(J only) [a, R, R!, R, R, r] bbs:Reject",
+papers_128,-0.333,Reject,"(J only) [R, a, r, r, A, r] bbs:Reject",
+papers_129,-1.0,Tabled,"(x, x, x, j, C) [r, r, a, r, R] bbs:Tabled",
+papers_130,-2.2,Reject,"(J only) [a, R, R, R, R] bbs:Reject",
+papers_131,1.0,Conference,"(J only) [A, a, r, a, r, A] bbs:Conference",
+papers_132,-3.8,Reject,"(J, j, j, j, x) [R!, R!, R, R!, r] bbs:Reject",
+papers_133,1.0,Tabled,"(J only) [r, A, a, A, r] bbs:Tabled",
+papers_134,3.333,Journal,"(j, x, x, j, c, j) [A!, A, A!, A, A, a] bbs:Journal",
+papers_135,2.667,Journal,"(J only) [A, A, a, A, A, A] bbs:Journal",
+papers_136,-1.667,Tabled,"(c, C, C, j, x, x) [R, r, R, R, a, r] bbs:Tabled",
+papers_137,1.8,Journal,"(c, j, C, x, j) [A, A, r, A, a] bbs:Journal",Top
+papers_138,-1.0,Tabled,"(C, x, C, x, c, c) [a, R, R!, A, r, r] bbs:Tabled",
+papers_139,0.6,Tabled,"(J only) [a, a, A, r, r] bbs:Tabled",
+papers_140,-1.667,Tabled,"(j, j, C, J, x, j) [r, r, R, a, R, R] bbs:Tabled",
+papers_141,-1.333,Tabled,"(J only) [r, R, r, a, R, r] bbs:Tabled",
+papers_142,0.333,Tabled,"(J, x, c, x, J, x) [R, A, r, a, r, A] bbs:Tabled",
+papers_143,-1.333,Reject,"(C, c, j, x, j, j) [R, R!, a, R, r, A] bbs:Reject",
+papers_144,1.8,Journal,"(C, J, C, J, j) [a, r, A, A, A] bbs:Journal",
+papers_145,0.0,Reject,"(J only) [R, a, a, a, a, r] bbs:Reject",
+papers_146,1.333,Tabled,"(J only) [A, A, a, r, a, a] bbs:Tabled",
+papers_147,0.2,Tabled,"(J, c, C, C, x) [r, a, a, a, r] bbs:Tabled",
+papers_148,-3.0,Reject,"(j, x, J, C, C, C) [R!, R!, R, R, a, R] bbs:Reject",
+papers_149,-0.333,Conference,"(J only) [R, r, a, r, a, a] bbs:Conference",
+papers_150,1.8,Journal,"(x, x, C, j, x) [A, A, a, a, a] bbs:Journal",Top
+papers_151,0.6,Tabled,"(J only) [a, a, r, A, r] bbs:Tabled",
+papers_152,-1.333,Reject,"(x, C, J, j, J, c) [R, r, a, r, R!, a] bbs:Reject",
+papers_153,-2.6,Reject,"(j, j, C, j, x) [r, r, R, R, R!] bbs:Reject",
+papers_154,-1.8,Reject,"(J only) [R, R, R, r, a] bbs:Reject",
+papers_155,-3.333,Reject,"(c, x, J, c, x, x) [R!, r, R!, R, R, R] bbs:Reject",
+papers_156,-0.6,Reject,"(C, C, C, C, j) [a, r, R, a, r] bbs:Reject",
+papers_157,3.4,Journal,"(J only) [A!, A, a, A!, A] bbs:Journal",
+papers_158,-1.4,Tabled,"(J only) [R, r, r, R, a] bbs:Tabled",
+papers_159,0.0,Reject,"(J only) [a, a, a, r, R, a] bbs:Reject",
+papers_160,-0.6,Tabled,"(J only) [r, a, r, R, a] bbs:Tabled",
+papers_161,-2.333,Reject,"(x, c, J, C, C, j) [r, r, R, R, R, R] bbs:Reject",
+papers_162,2.2,Tabled,"(J only) [A!, a, A, r, A] bbs:Tabled",
+papers_163,0.2,Reject,"(C, J, C, J, J) [r, r, a, a, a] bbs:Reject",
+papers_164,2.0,Conference,"(J only) [A, A, a, a, A, a] bbs:Conference",
+papers_165,0.6,Conference,"(j, x, j, x, J) [R!, A, a, a, A] bbs:Conference",
+papers_166,-2.2,Reject,"(J only) [R, R, r, R, r] bbs:Reject",
+papers_167,-1.0,Tabled,"(J, c, x, c, c) [r, R, a, R, a] bbs:Tabled",
+papers_168,-2.6,Reject,"(J only) [R!, a, R, R, R] bbs:Reject",
+papers_169,1.333,Conference,"(J only) [r, a, a, a, A, A] bbs:Conference",
+papers_170,-1.4,Tabled,"(J only) [r, r, r, R, r] bbs:Tabled",
+papers_171,1.0,Conference,"(C, J, x, x, C) [r, r, r, A, A!] bbs:Conference",
+papers_172,-1.4,Reject,"(J, x, c, J, x) [r, r, R!, r, a] bbs:Reject",
+papers_173,-1.333,Reject,"(J only) [a, r, R, R, R, a] bbs:Reject",
+papers_174,1.333,Journal,"(c, j, J, x, J, x) [a, A, A, A!, r, R] bbs:Journal",
+papers_175,-0.2,Journal,"(J only) [R, a, A, r, r] bbs:Journal",Top
+papers_176,2.333,Journal,"(J only) [A!, A, a, a, A!, r] bbs:Journal",
+papers_177,3.0,Journal,"(J only) [a, a, A, A!, A!] bbs:Journal",
+papers_178,-3.0,Reject,"(J only) [R!, r, R, r, R!] bbs:Reject",
+papers_179,2.0,Tabled,"(J only) [r, A, A, r, A, A!] bbs:Tabled",
+papers_180,2.667,Tabled,"(J, x, c, c, x, j) [a, A!, A, a, a, A!] bbs:Tabled",
+papers_181,2.0,Tabled,"(c, C, j, x, j, x) [a, A, A!, a, a, a] bbs:Tabled",
+papers_182,-0.333,Tabled,"(c, C, J, c, j, C) [a, R, a, R, a, a] bbs:Tabled",
+papers_183,-0.6,Conference,"(J, c, J, C, x) [r, R, R, A, a] bbs:Conference",
+papers_184,1.667,Conference,"(J only) [A, A!, a, r, r, A] bbs:Conference",
+papers_185,-2.2,Reject,"(x, C, J, x, J) [R!, R, R, a, r] bbs:Reject",
+papers_186,-1.4,Conference,"(J only) [a, a, r, R!, R] bbs:Conference",
+papers_187,0.667,Conference,"(x, x, j, x, x, x) [A, r, a, a, r, a] bbs:Conference",
+papers_188,-0.2,Tabled,"(J only) [r, r, a, a, r] bbs:Tabled",
+papers_189,-0.333,Tabled,"(J only) [r, A, r, R!, r, A] bbs:Tabled",
+papers_190,-0.333,Reject,"(J only) [A, a, r, a, R, R] bbs:Reject",
+papers_191,-1.8,Reject,"(J only) [r, R, r, a, R!] bbs:Reject",
+papers_192,0.0,Reject,"(J only) [A, r, a, a, R, r] bbs:Reject",
+papers_193,-1.4,Tabled,"(j, J, c, C, x) [r, r, r, r, R] bbs:Tabled",
+papers_194,0.2,Tabled,"(J only) [A, R, r, a, a] bbs:Tabled",
+papers_195,-0.333,Tabled,"(J only) [a, r, r, r, a, r] bbs:Tabled",
+papers_196,-0.333,Tabled,"(J only) [a, r, a, a, r, R] bbs:Tabled",
+papers_197,1.0,Journal,"(J only) [a, A, a, a, r] bbs:Journal",
+papers_198,1.8,Journal,"(c, x, x, j, j) [A!, A, a, a, r] bbs:Journal",
+papers_199,1.0,Journal,"(J, j, j, j, c) [A, A, r, a, r] bbs:Journal",
+papers_200,1.4,Journal,"(J only) [r, A!, a, a, a] bbs:Journal",Top
+papers_201,1.8,Journal,"(x, C, c, j, x) [a, a, a, A, A] bbs:Journal",
+papers_202,-2.667,Reject,"(J, C, x, C, x, C) [R, R!, r, r, r, R!] bbs:Reject",
+papers_203,-1.8,Reject,"(J, j, J, c, c) [R!, r, r, R, a] bbs:Reject",
+papers_204,1.8,Conference,"(C, J, j, j, C) [A, r, A, A, a] bbs:Conference",
+papers_205,-0.667,Tabled,"(J only) [r, a, R, a, r, r] bbs:Tabled",
+papers_206,-1.0,Reject,"(J, x, J, C, c) [r, r, R, r, a] bbs:Reject",
+papers_207,-1.667,Tabled,"(J only) [a, R, R, R, r, r] bbs:Tabled",
+papers_208,-1.0,Reject,"(J only) [R, r, a, R, a, r] bbs:Reject",
+papers_209,1.333,Tabled,"(J only) [a, a, a, A, a, a] bbs:Tabled",
+papers_210,-0.333,Tabled,"(j, j, j, x, J, x) [a, r, r, a, r, r] bbs:Tabled",
+papers_211,-1.4,Reject,"(x, j, c, j, x) [a, R, a, R, R] bbs:Reject",
+papers_212,1.333,Journal,"(x, j, c, c, j, J) [r, A!, a, A!, a, R] bbs:Journal",
+papers_213,-2.2,Reject,"(J only) [r, r, R!, a, R!] bbs:Reject",
+papers_214,3.333,Journal,"(j, J, x, j, x, C) [A!, a, A, A, A, A!] bbs:Journal",
+papers_215,-1.8,Conference,"(J only) [r, r, R, r, R] bbs:Conference",
+papers_216,2.333,Journal,"(J only) [A, a, A!, A, r, A] bbs:Journal",Top
+papers_217,1.0,Reject,"(J only) [r, a, a, A, a] bbs:Reject",
+papers_218,0.667,Reject,"(J, C, x, c, c, j) [a, r, A, r, R, A!] bbs:Reject",
+papers_219,-5.0,Reject,"(C, c, j, C, j, j) [R!, R!, R!, R!, R!, R!] bbs:Reject",
+papers_220,3.0,Journal,"(J only) [A, a, A!, A!, a] bbs:Journal",Top
+papers_221,0.333,Tabled,"(C, c, J, x, J, c) [A!, r, a, r, a, R] bbs:Tabled",
+papers_222,0.333,Journal,"(j, j, x, x, C, x) [A, A, a, R, r, r] bbs:Journal",
+papers_223,-0.333,Tabled,"(J only) [a, r, r, r, a, r] bbs:Tabled",
+papers_224,-0.6,Conference,"(C, x, J, x, c) [a, a, A, R, R!] bbs:Conference",
+papers_225,2.6,Journal,"(C, x, c, C, J) [r, A!, a, A, A!] bbs:Journal",
+papers_226,-1.667,Tabled,"(J only) [r, r, r, a, R!, R] bbs:Tabled",
+papers_227,0.667,Tabled,"(J only) [r, r, a, a, a, A] bbs:Tabled",
+papers_228,2.333,Journal,"(j, c, x, c, J, J) [a, A, a, A, a, A!] bbs:Journal",Top
+papers_229,2.333,Journal,"(J only) [a, r, A, A!, a, A!] bbs:Journal",
+papers_230,-2.333,Conference,"(x, C, x, j, x, j) [a, R!, R!, r, R, r] bbs:Conference",
+papers_231,-3.0,Tabled,"(j, j, J, C, J, J) [R!, R!, r, R, R, r] bbs:Tabled",
+papers_232,1.0,Journal,"(J only) [a, a, a, A, a, r] bbs:Journal",
+papers_233,-1.333,Reject,"(J only) [r, R, a, r, R, r] bbs:Reject",
+papers_234,2.6,Journal,"(x, j, J, C, c) [A, A, A, A, a] bbs:Journal",
+papers_235,1.8,Tabled,"(C, j, j, x, j) [a, a, A, A, a] bbs:Tabled",
+papers_236,-1.333,Tabled,"(J only) [R, R, a, r, R, a] bbs:Tabled",
+papers_237,0.2,Conference,"(J only) [r, R, A, r, A] bbs:Conference",
+papers_238,0.2,Tabled,"(J only) [a, a, r, a, r] bbs:Tabled",
+papers_239,-2.2,Reject,"(x, x, x, c, C) [R, r, R!, R, a] bbs:Reject",
+papers_240,1.0,Tabled,"(J only) [a, r, A, A, r] bbs:Tabled",
+papers_241,-0.6,Tabled,"(J only) [a, r, r, r, r] bbs:Tabled",
+papers_242,-1.4,Reject,"(J only) [a, R!, R, r, a] bbs:Reject",
+papers_243,-1.8,Reject,"(j, C, C, J, C) [r, R, R, a, R] bbs:Reject",
+papers_244,-1.8,Reject,"(J only) [r, R, R, a, R] bbs:Reject",
+papers_245,2.0,Tabled,"(C, x, c, C, x, c) [A, r, A, A, A!, r] bbs:Tabled",
+papers_246,1.8,Journal,"(c, c, j, x, j) [A, a, a, A, a] bbs:Journal",Top
+papers_247,-2.0,Reject,"(J only) [R, R!, R, a, r, r] bbs:Reject",
+papers_248,1.0,Conference,"(J only) [r, a, a, a, A, a] bbs:Conference",
+papers_249,-3.0,Reject,"(C, C, J, J, x, J) [R, r, R, R!, R!, r] bbs:Reject",
+papers_250,-1.8,Tabled,"(J only) [R!, r, a, r, R] bbs:Tabled",
+papers_251,-1.0,Reject,"(J only) [a, a, r, R, R] bbs:Reject",
+papers_252,-1.333,Tabled,"(J only) [r, R, R, r, a, r] bbs:Tabled",
+papers_253,2.333,Journal,"(J only) [a, a, A, a, A!, A] bbs:Journal",
+papers_254,1.333,Tabled,"(J, x, C, C, x, J) [A, r, a, a, a, A] bbs:Tabled",
+papers_255,-1.0,Reject,"(J only) [r, R, a, r, r, r] bbs:Reject",
+papers_256,-0.2,Tabled,"(j, J, x, x, J) [r, A, r, r, r] bbs:Tabled",
+papers_257,1.333,Tabled,"(J only) [a, A, a, r, a, A] bbs:Tabled",
+papers_258,2.0,Conference,"(J only) [A, r, a, A, A!, a] bbs:Conference",
+papers_259,-0.333,Journal,"(j, j, j, c, J, c) [a, r, r, r, R, A] bbs:Journal",
+papers_260,1.333,Journal,"(x, c, J, x, C, x) [a, A, a, r, a, A] bbs:Journal",
+papers_261,2.2,Journal,"(J only) [r, A!, a, a, A!] bbs:Journal",
+papers_262,1.0,Journal,"(J only) [r, A, A, r, a] bbs:Journal",Top
+papers_263,2.667,Journal,"(j, x, x, j, j, C) [a, A, A!, A, a, A] bbs:Journal",
+papers_264,1.333,Tabled,"(J only) [A, A, a, a, r, a] bbs:Tabled",
+papers_265,-1.667,Reject,"(c, x, C, c, C, c) [R, R!, r, r, a, r] bbs:Reject",
+papers_266,-0.333,Tabled,"(J only) [a, a, a, a, R!, r] bbs:Tabled",
+papers_267,1.4,Tabled,"(J, C, c, C, x) [a, a, a, A, a] bbs:Tabled",
+papers_268,-0.2,Journal,"(J only) [r, a, r, r, a] bbs:Journal",
+papers_269,0.6,Tabled,"(J only) [r, R, a, A!, a] bbs:Tabled",
+papers_270,-0.2,Conference,"(J, x, c, C, C) [r, r, r, A!, R] bbs:Conference",
+papers_271,-3.4,Reject,"(J only) [R, R!, R, R!, r] bbs:Reject",
+papers_272,-3.0,Reject,"(J only) [r, R, R, R, R!] bbs:Reject",
+papers_273,-3.0,Reject,"(C, c, j, J, j) [R, R, a, R!, R!] bbs:Reject",
+papers_274,2.6,Journal,"(J only) [A, a, A!, a, A] bbs:Journal",Top
+papers_275,3.8,Journal,"(J only) [A!, A, A!, A, A] bbs:Journal",Top
+papers_276,-1.8,Tabled,"(c, C, J, x, c) [R, R, r, r, r] bbs:Tabled",
+papers_277,-2.333,Reject,"(x, x, c, J, J, j) [r, r, R!, a, R!, R] bbs:Reject",
+papers_278,1.0,Tabled,"(C, x, C, C, x) [r, A, a, a, a] bbs:Tabled",
+papers_279,0.2,Reject,"(J only) [R, A, r, a, a] bbs:Reject",
+papers_280,0.667,Reject,"(c, C, c, x, x, J) [a, a, A, r, a, r] bbs:Reject",
+papers_281,1.0,Conference,"(C, c, c, j, x, x) [r, A, r, a, a, A] bbs:Conference",
+papers_282,-1.333,Tabled,"(J only) [R, r, R, R, A, r] bbs:Tabled",
+papers_283,3.0,Conference,"(C, c, c, x, x) [A!, A, A!, A, r] bbs:Conference",
+papers_284,2.2,Tabled,"(j, J, x, x, x) [A, A, a, A, a] bbs:Tabled",
+papers_285,0.667,Tabled,"(J only) [a, a, a, a, a, r] bbs:Tabled",
+papers_286,-2.0,Reject,"(J, x, C, c, c, c) [R, a, R, R!, r, r] bbs:Reject",
+papers_287,-0.667,Conference,"(j, x, c, j, J, C) [r, a, a, r, r, R] bbs:Conference",
+papers_288,-2.0,Reject,"(J only) [r, r, R!, R, R, a] bbs:Reject",
+papers_289,-0.667,Reject,"(c, x, c, J, c, J) [r, A!, a, R, R, R] bbs:Reject",
+papers_290,0.0,Tabled,"(J only) [A, r, r, r, r, a] bbs:Tabled",
+papers_291,-1.4,Tabled,"(J only) [R!, r, r, r, a] bbs:Tabled",
+papers_292,-3.8,Reject,"(J, c, x, x, c) [R, R!, R!, R, R] bbs:Reject",
+papers_293,-1.0,Reject,"(J only) [r, r, a, r, R] bbs:Reject",
+papers_294,0.667,Tabled,"(J only) [a, A, r, A, r, r] bbs:Tabled",
+papers_295,0.0,Journal,"(J only) [r, a, r, r, a, a] bbs:Journal",
+papers_296,-2.0,Reject,"(J only) [R, r, r, R, R, r] bbs:Reject",
+papers_297,-3.4,Reject,"(x, c, J, C, j) [a, R!, R!, R!, R] bbs:Reject",
+papers_298,-0.2,Journal,"(x, x, J, c, C) [r, A, R, r, a] bbs:Journal",
+papers_299,-0.667,Tabled,"(x, C, j, c, j, j) [a, r, r, r, r, r] bbs:Tabled",
+papers_300,-2.667,Reject,"(J, C, x, c, c, J) [R!, r, r, R, R, R] bbs:Reject",

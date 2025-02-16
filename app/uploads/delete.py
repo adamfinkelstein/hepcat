@@ -22,6 +22,8 @@ from ..models.helpers import (
 #
 ###############################################
 
+# does anything need to be done for settings?
+
 
 def delete_all_users():
     drop_and_rebuild_tables("conflicts,users,roles")
@@ -29,7 +31,7 @@ def delete_all_users():
 
 def delete_all_papers():
     set_all_users_to_be_in_plenary()
-    drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues")
+    drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues,actions")
     ensure_all_gqs()
 
 

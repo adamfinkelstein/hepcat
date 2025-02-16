@@ -47,7 +47,7 @@ export default function ProgressPage() {
         controlledLog('confirmed bar update:', guiBar);
         socketEmit('admin_set_bar', guiBar);
       } else {
-        setGuiBar(appBar); // set box back to current bar
+        setGuiBar(appBar); // reset box back to current bar value
         controlledLog('canceled bar update');
       }
     });

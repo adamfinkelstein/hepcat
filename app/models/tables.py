@@ -248,6 +248,10 @@ class Label(db.Model):
     def is_exception(self):
         return self.type_enum == int(LabelType.Exception)
 
+    @hybrid_property
+    def is_tag(self):
+        return self.type_enum == int(LabelType.Tag)
+
     def __repr__(self):
         return "<Label %r>" % self.name
 

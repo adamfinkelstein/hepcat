@@ -114,7 +114,8 @@ export default function AppContext({ children }) {
       }
       if ('bar' in data) {
         // bar is same for all rooms
-        const barString = data.bar + '';
+        const barNum = data.bar;
+        const barString = barNum.toString();
         setAppBar(barString);
         setGuiBar(barString);
         controlledLog('set bar to:', barString);
