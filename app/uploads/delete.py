@@ -140,7 +140,7 @@ csvDeleteFunctions = {
     "chair": delete_all_chair_scores,
     "clusters": delete_all_clusters,
     "conflicts": delete_all_conflicts,
-    "history": delete_non_bbs_history,
+    # "history": delete_non_bbs_history, # would remove auto-stickies
     "actions": delete_actions,
     "papers": delete_all_papers,
     "filters": delete_all_filters,

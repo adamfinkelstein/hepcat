@@ -7,7 +7,7 @@ class TestApp(HepcatTestCase):
     def test_database(self):
         assert User.query.count() == 61  # 51 users in test-data/users.csv + 10 rooms
         assert Paper.query.count() == 200
-        assert History.query.count() == 199
+        assert History.query.count() == 331
         assert db.session.query(conflicts).count() == 592
         clusters = [
             cluster.name
