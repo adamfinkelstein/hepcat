@@ -10,7 +10,7 @@ leaf_expr: LEAF -> leaf_expr
 and_expr: "AND" "(" one_expr ("," one_expr)* ")" -> and_expr
 or_expr:  "OR"  "(" one_expr ("," one_expr)* ")" -> or_expr
 not_expr: "NOT" "(" one_expr ("," one_expr)* ")" -> not_expr
-LEAF: /[A-Za-z][A-Za-z0-9:_]*/
+LEAF: /[A-Za-z][A-Za-z0-9:_.-]*/
 %ignore " "
 """
 

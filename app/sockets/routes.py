@@ -696,6 +696,26 @@ def get_id_set_by_bbs_status(status):
     return get_id_set_by_status_type(status, get_paper_bbs_status)
 
 
+def paper_score_above(paper, score):
+    return paper.sort_score >= score
+
+
+def paper_score_below(paper, score):
+    return paper.sort_score < score
+
+
+# get papers by testing against a given score,
+#   using one of the two preceding test functions (above or below)
+def get_id_set_by_score(score, score_test):
+    score = float(score)
+    print("testing against score:", score)
+    papers = Paper.query.all()
+    papers = [p for p in papers if score_test(p, score)]
+    ids = [p.nid for p in papers]
+    ids = set(ids)
+    return ids
+
+
 def set_op_leaf_filter(name, room):
     log_print(f"set_op_leaf_filter: {name} (room {room})")
     # Possible types:
@@ -704,8 +724,9 @@ def set_op_leaf_filter(name, room):
     # 3) Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Sticky')
     # 4) BBS:Type (like 'BBS:Tabled' or 'BBS:Reject')
     # 5) Check:Filter_Name (like 'Check:Sticky_Only')
-    # 6) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
-    # 7) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
+    # 6) Above:score or Below:score
+    # 7) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    # 8) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
     label_type, label_name = get_filter_parts(name)
     print(f"{label_type} : {label_name}")
     if label_type == "Papers":
@@ -722,6 +743,12 @@ def set_op_leaf_filter(name, room):
         return ids
     if label_type == "Check":
         ids = get_id_set_by_check_filter(label_name)
+        return ids
+    if label_type == "Above":
+        ids = get_id_set_by_score(label_name, paper_score_above)
+        return ids
+    if label_type == "Below":
+        ids = get_id_set_by_score(label_name, paper_score_below)
         return ids
     if label_type == "Filter" or not hasattr(LabelType, label_type):
         ids = get_ids_matching_filter(label_name, room)
