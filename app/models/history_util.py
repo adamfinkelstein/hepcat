@@ -35,6 +35,16 @@ def get_latest_room_history(paper):
     return latest_history
 
 
+def get_room_history_count(paper):
+    context_plenary = context_str_to_enum("Plenary")
+    n = (
+        History.query.filter_by(paper_id=paper.id)
+        .filter(History.context_enum >= context_plenary)
+        .count()
+    )
+    return n
+
+
 # only history set in bbs or meeting room???
 # Maybe only need to check if paper is reject or tabled?
 # def get_latest_bbs_or_room_history(paper):

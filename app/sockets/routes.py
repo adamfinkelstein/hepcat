@@ -49,6 +49,7 @@ from ..models.history_util import (
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
+    get_room_history_count,
 )
 from ..models.tables import (
     User,
@@ -698,6 +699,15 @@ def get_id_set_by_bbs_status(status):
     return get_id_set_by_status_type(status, get_paper_bbs_status)
 
 
+def get_id_set_by_seen_count(count):
+    count = int(count)
+    papers = Paper.query.all()
+    papers = [p for p in papers if get_room_history_count(p) >= count]
+    ids = [p.nid for p in papers]
+    ids = set(ids)
+    return ids
+
+
 def paper_score_above(paper, score):
     return paper.sort_score >= score
 
@@ -729,14 +739,15 @@ def get_id_set_by_score(score, score_test):
 def set_op_leaf_filter(name, room):
     log_print(f"set_op_leaf_filter: {name} (room {room})")
     # Possible types:
-    # 1) Papers:101_102_103
-    # 2) Status:Type (like 'Status:Reject')
-    # 3) Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Sticky')
-    # 4) BBS:Type (like 'BBS:Tabled' or 'BBS:Reject')
-    # 5) Check:Filter_Name (like 'Check:Sticky_Only')
-    # 6) Above:score or Below:score
-    # 7) Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
-    # 8) Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
+    # - Papers:101_102_103
+    # = Status:Type (like 'Status:Reject')
+    # - Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Sticky')
+    # - BBS:Type (like 'BBS:Tabled' or 'BBS:Reject')
+    # - Check:Filter_Name (like 'Check:Sticky_Only')
+    # - Marked:n (like 'Marked:2')
+    # - Above:score or Below:score
+    # - Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    # - Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
     label_type, label_name = get_filter_parts(name)
     print(f"{label_type} : {label_name}")
     if label_type == "Papers":
@@ -753,6 +764,9 @@ def set_op_leaf_filter(name, room):
         return ids
     if label_type == "Check":
         ids = get_id_set_by_check_filter(label_name)
+        return ids
+    if label_type == "Marked":
+        ids = get_id_set_by_seen_count(label_name)
         return ids
     if label_type == "Above":
         ids = get_id_set_by_score(label_name, paper_score_above)
