@@ -4,14 +4,15 @@ from lark.exceptions import LarkError
 
 def get_set_op_grammar():
     return """
+%import common.WS
+%ignore WS
 start: one_expr
 one_expr: leaf_expr | and_expr | or_expr | not_expr -> one_expr
 leaf_expr: LEAF -> leaf_expr
 and_expr: "AND" "(" one_expr ("," one_expr)* ")" -> and_expr
 or_expr:  "OR"  "(" one_expr ("," one_expr)* ")" -> or_expr
-not_expr: "NOT" "(" one_expr ("," one_expr)* ")" -> not_expr
+not_expr: "NOT" "(" one_expr ")" -> not_expr
 LEAF: /[A-Za-z][A-Za-z0-9:_.-]*/
-%ignore " "
 """
 
 
@@ -19,7 +20,7 @@ class SetOpTransformer(Transformer):
     def __init__(self, set_universe, set_filter, extra_arg=None):
         self.set_universe = set_universe  # set containing all items
         self.set_filter = set_filter  # function to filter a set by string
-        self.extra_arg = extra_arg
+        self.extra_arg = extra_arg  # extra arg used now for room
 
     def one_expr(self, args):
         return args[0]
@@ -34,14 +35,16 @@ class SetOpTransformer(Transformer):
         return result
 
     def and_expr(self, args):
-        result = self.set_universe.copy()
-        for arg in args:
+        result = args[0]
+        other_args = args[1:]
+        for arg in other_args:
             result = result & arg
         return result
 
     def or_expr(self, args):
-        result = set()  # start with empty set
-        for arg in args:
+        result = args[0]
+        other_args = args[1:]
+        for arg in other_args:
             result = result | arg
         return result
 
@@ -57,6 +60,8 @@ class SetOpTransformer(Transformer):
 ##############################
 
 
+# extra_arg is used to pass the room if applicable.
+#   probably should be a dict, allowing for multiple args.
 def set_op_make_parser(set_universe, set_filter, extra_arg=None):
     x_form = SetOpTransformer(set_universe, set_filter, extra_arg)
     grammar = get_set_op_grammar()

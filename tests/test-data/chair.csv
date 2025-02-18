@@ -1,5 +1,5 @@
 Submission ID,Sort Score,Status,Reviews,Tags
-papers_101,-6,Reject,"Exception: Withdrawn,"
+papers_101,-6,Reject,"Exception: Withdrawn",
 papers_102,3.667,Journal,"(J only) [a, A, A!, A, A!, A!] bbs:Journal",
 papers_103,1.0,Conference,"(J only) [a, a, a, A, a, r] bbs:Conference",
 papers_104,-1.667,Reject,"(J only) [r, r, R, R, r, r] bbs:Reject",

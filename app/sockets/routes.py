@@ -652,6 +652,8 @@ def get_ids_matching_filter(name, room):
         # This is essentially a recursive call on text filters.
         expr = filter.text
         ids = get_ids_by_set_op(room, expr)
+        if ids is None:
+            ids = []  # silent fail if parsing saved filter
     return ids
 
 
@@ -704,6 +706,13 @@ def paper_score_below(paper, score):
     return paper.sort_score < score
 
 
+def debug_print_paper_id_set(ids):
+    debug = list(ids)
+    debug = [str(id) for id in debug]
+    debug = ", ".join(debug)
+    print(debug)
+
+
 # get papers by testing against a given score,
 #   using one of the two preceding test functions (above or below)
 def get_id_set_by_score(score, score_test):
@@ -713,6 +722,7 @@ def get_id_set_by_score(score, score_test):
     papers = [p for p in papers if score_test(p, score)]
     ids = [p.nid for p in papers]
     ids = set(ids)
+    # debug_print_paper_id_set(ids)
     return ids
 
 
@@ -752,7 +762,9 @@ def set_op_leaf_filter(name, room):
         return ids
     if label_type == "Filter" or not hasattr(LabelType, label_type):
         ids = get_ids_matching_filter(label_name, room)
-        return set(ids)
+        ids = set(ids)
+        # debug_print_paper_id_set(ids)
+        return ids
     if label_type == "Room" and label_name == "This":
         label_name = room
     label_enum = label_str_to_enum(label_type)
@@ -798,6 +810,9 @@ def get_nid_list(exp):
     return nids
 
 
+PARSE_ERR_MSG = "Failed to parse expression in text filter."
+
+
 def parse_explicit_queue(room, exp):
     exp = remove_all_whitespace(exp)
     if not exp:
@@ -809,7 +824,7 @@ def parse_explicit_queue(room, exp):
         solve_tsp = True
         nids = get_ids_by_set_op(room, exp)
         if nids is None:
-            return None, solve_tsp, "Failed to parse expression for explicit queue."
+            return None, solve_tsp, PARSE_ERR_MSG
     p_list = get_papers_with_ids(nids)
     return p_list, solve_tsp, ""
 
@@ -817,7 +832,7 @@ def parse_explicit_queue(room, exp):
 def set_queue_explicit(room, exp, no_tsp):
     filter_papers, solve_tsp, msg = parse_explicit_queue(room, exp)
     if filter_papers is None:
-        return msg  # XXX this is actually ignored!
+        return msg
     if no_tsp:
         solve_tsp = False
     msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
@@ -826,6 +841,8 @@ def set_queue_explicit(room, exp, no_tsp):
 
 def probe_queue_explicit(room, exp):
     filter_papers, _, _ = parse_explicit_queue(room, exp)
+    if filter_papers is None:
+        return PARSE_ERR_MSG
     msg = get_probe_counts_msg(filter_papers)
     return msg
 
