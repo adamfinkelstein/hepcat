@@ -736,6 +736,23 @@ def get_id_set_by_score(score, score_test):
     return ids
 
 
+# Area, Cluster, Room, Exception, Tag
+def get_id_set_by_label(label_type, label_name, room):
+    if label_type == "Room" and label_name == "This":
+        label_name = room
+    label_enum = label_str_to_enum(label_type)
+    label = (
+        Label.query.filter_by(type_enum=label_enum).filter_by(name=label_name).first()
+    )
+    if not label:
+        msg = f"No label with type '{label_type}' and name '{label_name}'."
+        log_print(msg)
+        return set()
+    p_list = list(label.tag_papers)
+    ids = [p.nid for p in p_list]
+    return set(ids)
+
+
 def set_op_leaf_filter(name, room):
     log_print(f"set_op_leaf_filter: {name} (room {room})")
     # Possible types:
@@ -747,6 +764,7 @@ def set_op_leaf_filter(name, room):
     # - Marked:n (like 'Marked:2')
     # - Above:score or Below:score
     # - Type:Name (like 'Room:Room_1A' or 'Area:Geometry')
+    #    o Area, Cluster, Room, Exception, Tag
     # - Filter (like 'Filter:MyGreatFilter' or just 'MyGreatFilter')
     label_type, label_name = get_filter_parts(name)
     print(f"{label_type} : {label_name}")
@@ -774,23 +792,15 @@ def set_op_leaf_filter(name, room):
     if label_type == "Below":
         ids = get_id_set_by_score(label_name, paper_score_below)
         return ids
-    if label_type == "Filter" or not hasattr(LabelType, label_type):
-        ids = get_ids_matching_filter(label_name, room)
-        ids = set(ids)
-        # debug_print_paper_id_set(ids)
+    if hasattr(LabelType, label_type):  # Area, Cluster, Room, Exception, Tag
+        ids = get_id_set_by_label(label_type, label_name, room)
         return ids
-    if label_type == "Room" and label_name == "This":
-        label_name = room
-    label_enum = label_str_to_enum(label_type)
-    label = (
-        Label.query.filter_by(type_enum=label_enum).filter_by(name=label_name).first()
-    )
-    if not label:
-        msg = f"No label with type '{label_type}' and name '{label_name}'."
-        log_print(msg)
+    # at this point, label_type should be "Filter", but check anyway:
+    if label_type != "Filter" or label_name == "None":
         return set()
-    p_list = list(label.tag_papers)
-    ids = [p.nid for p in p_list]
+    if label_name == "All":
+        return get_set_of_all_paper_ids()
+    ids = get_ids_matching_filter(label_name, room)
     return set(ids)
 
 
