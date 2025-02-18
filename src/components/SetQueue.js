@@ -185,9 +185,10 @@ export default function SetQueue() {
       (o) => 'Check:' + o.replace(/[^a-zA-Z]+/g, '_'),
     );
     if (statuses.length === 0) {
-      return 'No status options selected.';
+      return 'None';
     }
-    const statusClause = statuses.length === 1 ? statuses[0] : statusOr;
+    const statusOrClause = statuses.length === 1 ? statuses[0] : statusOr;
+    const statusClause = statuses.length === 4 ? 'All' : statusOrClause;
     const topAnds = [statusClause];
     if (thisRoom) {
       topAnds.push('Room:This');
@@ -200,6 +201,9 @@ export default function SetQueue() {
     }
     if (useBelowScore) {
       topAnds.push('Below:' + belowScore);
+    }
+    if (topAnds.length > 1 && topAnds[0] === 'All') {
+      topAnds.shift(); // remove statuses if all four selected
     }
     if (topAnds.length === 1) {
       return topAnds[0];
