@@ -175,6 +175,45 @@ export default function SetQueue() {
     return data;
   }
 
+  function guiSettingsAsText() {
+    const statuses = statusCheckbox.map((s) => 'Status:' + s);
+    const statusOr = 'OR( ' + statuses.join(', ') + ' )';
+    const roomText = 'This Room Only';
+    const thisRoom = onlyCheckbox.includes(roomText);
+    const onlyNoRoom = onlyCheckbox.filter((o) => o !== roomText);
+    const only = onlyNoRoom.map(
+      (o) => 'Check:' + o.replace(/[^a-zA-Z]+/g, '_'),
+    );
+    if (statuses.length === 0) {
+      return 'No status options selected.';
+    }
+    const statusClause = statuses.length === 1 ? statuses[0] : statusOr;
+    const topAnds = [statusClause];
+    if (thisRoom) {
+      topAnds.push('Room:This');
+    }
+    if (only.length) {
+      topAnds.push(...only);
+    }
+    if (useAboveScore) {
+      topAnds.push('Above:' + aboveScore);
+    }
+    if (useBelowScore) {
+      topAnds.push('Below:' + belowScore);
+    }
+    if (topAnds.length === 1) {
+      return topAnds[0];
+    }
+    const filterText = 'AND( ' + topAnds.join(', ') + ' )';
+    // controlledLog('gui filter text:', filterText);
+    return filterText;
+  }
+
+  function handleGetTextFilterButton() {
+    const msg = guiSettingsAsText();
+    revealModalDialog({ title: 'Equivalent Text Filter', message: msg });
+  }
+
   function emitAdminFilterMsg(msgToEmit) {
     const data = gatherGuiFilterSettings();
     controlledLog('sending filter info for ' + msgToEmit);
@@ -193,6 +232,7 @@ export default function SetQueue() {
   }
 
   function handleGetFilteredCount() {
+    guiSettingsAsText();
     emitAdminFilterMsg('admin_probe_queue');
   }
 
@@ -471,7 +511,7 @@ export default function SetQueue() {
           </Stack>
           <Stack
             direction="horizontal"
-            gap={2}
+            gap={3}
             className="set-filtered-queue-stack"
           >
             <Button
@@ -487,6 +527,9 @@ export default function SetQueue() {
               onClick={handleClearQueueButton}
             >
               Clear Queue
+            </Button>
+            <Button variant="secondary" onClick={handleGetTextFilterButton}>
+              Get Text Filter
             </Button>
           </Stack>
         </Stack>
