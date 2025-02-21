@@ -21,6 +21,7 @@ from .decorators import (
 )
 from .. import db, socketio, log_print
 from ..order import order_q, get_enter_leave_conf_sets
+from ..uploads import remove_upload_folder
 from ..uploads.insert import (
     save_and_read_csv,
     pending_uploads,
@@ -46,6 +47,7 @@ from ..util import (
 )
 from ..models.bar import set_bar, get_bar
 from ..models.history_util import (
+    get_paper_bbs_status,
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
@@ -169,17 +171,6 @@ def get_paper_grid_status(paper):
     if tabled_sticky:
         status = "Tabled_Sticky"
     return status
-
-
-# Used for text filter like "BBS:Tabled" or "BBS:Reject".
-# In principle, every paper should have a single BBS status.
-def get_paper_bbs_status(paper):
-    history = list(paper.history)
-    context_bbs = context_str_to_enum("BBS")
-    for h in history:
-        if h.context_enum == context_bbs:
-            return h.status
-    return "Tabled"
 
 
 def get_encrypted_grid_entry(paper):
@@ -1688,6 +1679,7 @@ def wipe_db_and_disconnect_all():
     invalidate_cache_all()
     disconnect_all_users()  # do this first because users in db
     wipe_db_clean()
+    remove_upload_folder()  # clean up any files
 
 
 @socketio.on("admin_wipe_database")

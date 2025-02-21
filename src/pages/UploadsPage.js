@@ -11,16 +11,18 @@ import { useUser } from '../contexts/UserContext';
 import { useFontInfo } from '../contexts/PreferencesContext';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import { useFilterContext } from '../contexts/FilterContext';
 
 export default function UploadsPage() {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
-
   const { controlledLog } = useControlledLog();
   const { socketEmit, socketLogout } = useSocketIO();
   const { user, adminKey, conflictbot } = useUser();
   const { currentFontStyle } = useFontInfo();
+  const { allGuiFilterNames, allTextFilterNames } = useFilterContext();
+  const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
   const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
@@ -64,10 +66,12 @@ export default function UploadsPage() {
 
   function handleWipeDBButton(isLoad) {
     const verb = isLoad ? 'load' : 'wipe';
-    const text =
-      'Are you really, Really, REALLY sure you want to ' +
-      verb +
-      ' the database?';
+    let text = `Are you really, Really, REALLY sure you want to ${verb} the database?`;
+    if (numFilters > 2) {
+      text +=
+        ` You have ${numFilters} saved filters, and they would be forgotten.` +
+        ' You may wish to save a copy first.';
+    }
     controlledLog(verb + ' DB button pressed.');
     const socketMsg = 'admin_' + verb + '_database';
     revealConfirmationBox('Please Confirm', text, (confirmed) => {

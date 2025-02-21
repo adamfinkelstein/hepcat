@@ -62,6 +62,11 @@ def timer_end(msg="", reset=False):
 #######################
 
 
+def remove_folder_tree_if_exists(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+
 def make_path_if_needed(path):
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)

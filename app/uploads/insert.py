@@ -1,4 +1,5 @@
 import os
+import shutil
 import csv
 import uuid
 from .. import db, log_print, current_app
@@ -32,6 +33,7 @@ from . import (
     single_quote_to_double,
     get_paper_room_name_or_none,
     get_or_make_upload_folder,
+    file_upload_name,
 )
 from .delete import delete_prev_file_uploads, delete_non_bbs_history, csvDeleteFunctions
 
@@ -135,8 +137,7 @@ def insert_user_rows(rows, hash_cache):
     rows = keep_rows_with_unique_lowercase_emails(rows)
     for row in rows:
         email, first_name, last_name, rooms, role_name, password = row
-        rooms = rooms.split(";")
-        rooms = encode_room_list(rooms)
+        rooms = decode_room_list(rooms)
         domain = domain_from_email(email)
         if domain and omit_domains and domain in omit_domains:
             log_print(f"omit domain {domain} user {email}")
@@ -240,8 +241,7 @@ def ensure_label(label_type, name):
     return label
 
 
-# 2025: Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
-# Submission ID,Thumbnail URL,Title,Area,Dual Track,Abstract
+# Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
     exception_type = int(LabelType.Exception)
@@ -392,9 +392,12 @@ def insert_paper_room_rows(rows):
     return count
 
 
-def encode_room_list(room_list):
+# accept string with semicolon separated list of rooms.
+# return sorted list as string with spaces separating rooms.
+def decode_room_list(rooms_str):
+    rooms = rooms_str.split(";")
     # rooms = [sanitize_room_code(room) for room in room_list]
-    rooms = [room for room in room_list if len(room)]  # omit empty
+    rooms = [room for room in rooms if len(room)]  # omit empty
     rooms.sort()
     rooms = " ".join(rooms)
     return rooms
@@ -441,7 +444,7 @@ def insert_chair_score_rows(rows):
     count = 0
     bar = check_for_test_bar_and_get_bar()  # get bar (if local test, first set it)
     for row in rows:
-        # Submission ID,Sort Score,Status,Reviews
+        # Submission ID,Sort Score,Status,Reviews,Tags
         sid, chair_score, status, reviews, tags = row
         paper = Paper.query.filter_by(sid=sid).first()
         if not paper:
@@ -649,17 +652,24 @@ def save_and_read_csv(data):
     write_data_to_file(data, tmp_path)
     header_type = read_csv(tmp_path)
     if header_type:
-        save_file = f"upload_{header_type}.csv"
+        save_file = file_upload_name(header_type)
         save_path = os.path.join(folder, save_file)
         os.rename(tmp_path, save_path)
     return header_type
+
+
+def copy_file_to_upload_folder(fullpath, header_type):
+    filename = file_upload_name(header_type)
+    folder = get_or_make_upload_folder()
+    full_dest = os.path.join(folder, filename)
+    shutil.copyfile(fullpath, full_dest)
 
 
 def read_test_csv_files():
     folder = current_app.config["HEPCAT_TEST_UPLOAD"]
     include_history = current_app.config["HEPCAT_TEST_HISTORY"]
     include_actions = current_app.config["HEPCAT_TEST_ACTIONS"]
-    csv_order = "users,papers,conflicts,clusters,chair"
+    csv_order = "users,papers,conflicts,clusters,chair,filters"
     csv_order = csv_order.split(",")
     if include_history:
         csv_order.append("history")
@@ -672,7 +682,9 @@ def read_test_csv_files():
         header_type = read_csv(fullpath)
         if not header_type:
             log_print(f"failed to read csv: {fullpath}")
-        elif not try_sql_commit():
+            return
+        copy_file_to_upload_folder(fullpath, header_type)
+        if not try_sql_commit():
             log_print(f"failed sql commit: {csv_type}")
         elif header_type != csv_type:  # just a sanity check
             log_print(f"warning: csv type mismatch: {header_type} {csv_type}")

@@ -12,11 +12,12 @@ from ..models.tables import (
     FileUpload,
     Filter,
 )
-from ..models.history_util import get_latest_room_history
+from ..models.history_util import get_latest_room_history, get_paper_bbs_status
 from . import (
     double_quote_to_single,
     get_paper_room_name_or_none,
     get_or_make_upload_folder,
+    file_is_upload,
 )
 
 
@@ -51,10 +52,25 @@ def get_paper_areas(paper):
     return paper_areas
 
 
+def get_paper_tags(paper):
+    labels = paper.tag_labels
+    paper_tags = []
+    for label in labels:
+        if label.is_tag:
+            paper_tags.append(label.name)
+    return paper_tags
+
+
 def get_paper_areas_string(paper):
     paper_areas = get_paper_areas(paper)
     paper_areas = "/".join(paper_areas)
     return paper_areas
+
+
+def get_paper_tags_string(paper):
+    paper_tags = get_paper_tags(paper)
+    paper_tags = " ".join(paper_tags)
+    return paper_tags
 
 
 # double all double quotes then add surrounding double quotes
@@ -179,23 +195,24 @@ def get_when_chair_file_was_uploaded():
     return when
 
 
-# AF2025-02-10: what is the purpose of this action? Do we still need it?
-# I think it is to combine the history and actions into one file for testing.
-def get_combined_as_rows():
-    history = get_history_as_rows()
-    actions = get_actions_as_rows()
-    header = actions.pop(0)
-    history = extract_stickies_from_history_as_actions(history)
-    history = make_tuple_array_from_rows(history)
-    actions = make_tuple_array_from_rows(actions)
-    starting = get_when_chair_file_was_uploaded()
-    actions = combine_rows_by_when(header, history, actions, starting)
-    return actions
+# AF2025-02-10: what is the purpose of this file type? Do we still need it?
+# It might be to combine the history and actions into one file for testing.
+# def get_combined_as_rows():
+#     history = get_history_as_rows()
+#     actions = get_actions_as_rows()
+#     header = actions.pop(0)
+#     history = extract_stickies_from_history_as_actions(history)
+#     history = make_tuple_array_from_rows(history)
+#     actions = make_tuple_array_from_rows(actions)
+#     starting = get_when_chair_file_was_uploaded()
+#     actions = combine_rows_by_when(header, history, actions, starting)
+#     return actions
 
 
+# Email,First Name,Last Name,Rooms,Role,Password
 def get_users_as_rows():
     users = User.query.order_by(User.role_id, User.full_name).all()
-    header = "Email,First Name,Last Name,Role,Password"
+    header = "Email,First Name,Last Name,Rooms,Role,Password"
     rows = [header]
     empty = ""
     auto_roles = "Super,Screen,Outside".split(",")
@@ -204,12 +221,13 @@ def get_users_as_rows():
         if role in auto_roles:
             # these are created automatically
             continue
-        row = f"{u.email},{u.first_name},{u.last_name},{role},{empty}"
+        rooms = u.rooms.replace(" ", ";")
+        row = f"{u.email},{u.first_name},{u.last_name},{rooms},{role},{empty}"
         rows.append(row)
     return rows
 
 
-# 2025: Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
+# Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def get_papers_as_rows():
     papers = Paper.query.order_by(Paper.nid).all()
     header = "Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract"
@@ -231,9 +249,10 @@ def get_papers_as_rows():
     return rows
 
 
+# Submission ID,Sort Score,Status,Reviews,Tags
 def get_chair_scores_as_rows():
     papers = Paper.query.order_by(Paper.nid).all()
-    header = "Submission ID,Sort Score,Status,Reviews"
+    header = "Submission ID,Sort Score,Status,Reviews,Tags"
     rows = [header]
     for p in papers:
         if paper_is_test(p):
@@ -241,9 +260,10 @@ def get_chair_scores_as_rows():
         bbs = ""
         scores = p.all_scores
         if scores:
-            bbs = scores.split()[-1]  # a little hacky
+            bbs = get_paper_bbs_status(p)
             scores = double_quote_text_for_csv(scores)
-        row = f"{p.sid},{p.sort_score},{bbs},{scores}"
+        tags = get_paper_tags_string(p)
+        row = f"{p.sid},{p.sort_score},{bbs},{scores},{tags}"
         rows.append(row)
     return rows
 
@@ -297,45 +317,60 @@ csvExtractFunctions = {
     # "results" download is unlike any uploadable file above
     "results": get_results_as_rows,
     "actions": get_actions_as_rows,
-    "combined": get_combined_as_rows,
+    # "combined": get_combined_as_rows,
 }
 
 
 def write_kind_of_csv(kind):
     csv_kinds = csvExtractFunctions.keys()
     if kind not in csv_kinds:
-        return None
+        return None, None
     filename = f"hepcat_{kind}.csv"
     func = csvExtractFunctions[kind]
     rows = func()
     fullpath = write_csv_path(filename, rows)
-    return fullpath
+    return filename, fullpath
 
 
 def write_all_csvs():
     csv_kinds = csvExtractFunctions.keys()
     paths = []
     for kind in csv_kinds:
-        fullpath = write_kind_of_csv(kind)
-        paths.append(fullpath)
+        filename, fullpath = write_kind_of_csv(kind)
+        if filename and fullpath:
+            paths.append(filename)
     return paths
 
 
+def names_of_input_files(folder):
+    dir = os.scandir(folder)
+    names = [file.name for file in dir if file.is_file()]
+    names = [name for name in names if file_is_upload(name)]
+    names = " ".join(names)
+    # print(names)
+    return names
+
+
 def write_zip_of_all_csvs():
-    csv_paths = write_all_csvs()
-    csv_paths = " ".join(csv_paths)
+    original_directory = os.getcwd()
     folder = get_or_make_upload_folder()
+    os.chdir(folder)
+    wrote_csv_files = write_all_csvs()
+    wrote_csv_files = " ".join(wrote_csv_files)
+    input_csvs = names_of_input_files(folder)
+    csv_paths = wrote_csv_files + " " + input_csvs
     zipfile = "hepcat_data.zip"
-    zipfile_path = os.path.join(folder, zipfile)
     # First remove the zip file if it exists (to avoid adding to it).
-    if os.path.exists(zipfile_path):
-        os.remove(zipfile_path)
+    if os.path.exists(zipfile):
+        os.remove(zipfile)
     # The -j option avoids writing full paths into the zip file.
-    cmd = f"/usr/bin/zip -j {zipfile_path} {csv_paths}"
+    cmd = f"/usr/bin/zip -j {zipfile} {csv_paths}"
     log_print(cmd)
     ok, output = run_cmd(cmd, False)
+    os.chdir(original_directory)
     if ok:
         log_print("zip claimed ok")
+        zipfile_path = os.path.join(folder, zipfile)
         return zipfile_path
     else:
         log_print(f"zip claimed error -- output:\n{output}")

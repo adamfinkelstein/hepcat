@@ -72,3 +72,15 @@ def get_latest_room_history_status(paper):
     if latest:
         return latest.status
     return None
+
+
+# Used for text filter like "BBS:Tabled" or "BBS:Reject".
+# Also used in writing out chair file in zip.
+# In principle, every paper should have a single BBS status.
+def get_paper_bbs_status(paper):
+    history = list(paper.history)
+    context_bbs = context_str_to_enum("BBS")
+    for h in history:
+        if h.context_enum == context_bbs:
+            return h.status
+    return "Tabled"

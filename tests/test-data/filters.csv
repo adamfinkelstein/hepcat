@@ -1,0 +1,3 @@
+Name,GUI,Filter
+"Ready",True,"{'roomChoice': 'Plenary', 'statuses': ['Reject', 'Conference', 'Journal'], 'only': ['Ready Only'], 'useAboveScore': false, 'useBelowScore': false, 'aboveScore': -9, 'belowScore': 9, 'filterName': 'Ready'}"
+"ReadyText",False,"AND( OR( Status:Reject, Status:Conference, Status:Journal ), Check:Ready_Only )"

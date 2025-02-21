@@ -15,8 +15,8 @@ def download_results_csv(kind, key):
     inst = current_app.config["INSTANCE"]
     if key == inst:
         log_print(f"getting {kind} csv...")
-        fullpath = write_kind_of_csv(kind)
-        if fullpath:
+        filename, fullpath = write_kind_of_csv(kind)
+        if filename and fullpath:
             return send_file(fullpath, as_attachment=True)
     msg = "Sorry -- something is wrong. Try logging back in."
     flash(msg)
