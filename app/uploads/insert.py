@@ -393,10 +393,10 @@ def insert_paper_room_rows(rows):
 
 
 # accept string with semicolon separated list of rooms.
-# return sorted list as string with spaces separating rooms.
+# return sorted list as string, with spaces separating rooms.
 def decode_room_list(rooms_str):
     rooms = rooms_str.split(";")
-    # rooms = [sanitize_room_code(room) for room in room_list]
+    rooms = [room.strip() for room in rooms]  # trim whitespace
     rooms = [room for room in rooms if len(room)]  # omit empty
     rooms.sort()
     rooms = " ".join(rooms)
