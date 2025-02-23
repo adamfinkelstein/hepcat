@@ -361,13 +361,13 @@ body {
 }
 
 /* remove thin line from rightmost items in progress bar */
-.GridTab .Ready.progress-bar,
+.GridTab .Tabled.progress-bar,
 .GridTab .Conflict.progress-bar {
   border-right: 0;
 }
 
 /* thick line between different sections of progress bar */
-.GridTab .Tabled-Sticky.progress-bar,
+.GridTab .Ready.progress-bar,
 .GridTab .Conflict.progress-bar {
   border-left: 5px solid black;
 }

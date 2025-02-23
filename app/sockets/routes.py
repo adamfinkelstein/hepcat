@@ -131,7 +131,7 @@ def count_papers_in_all_queues():
 
 
 def get_grid_paper_dump(paper):
-    status = "Ready"  # default
+    status = "Ready"  # default should not actually happen
     sticky_status = None
     sticky = False
     history = list(paper.history)
@@ -148,9 +148,13 @@ def get_grid_paper_dump(paper):
             sticky = True
             sticky_status = h.status
         elif h.context_enum >= context_plenary:  # any room
+            # Are there any other contexts after sticky?
+            # Could this just be "else"?
             sticky = False
             status = h.status
     tabled_sticky = sticky and (sticky_status == "Tabled")
+    if sticky and not tabled_sticky:
+        status = "Ready"
     paper_room = get_paper_room_name(paper)
     paper_dump = {
         "nid": paper.nid,

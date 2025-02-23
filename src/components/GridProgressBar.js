@@ -23,6 +23,13 @@ export default function GridProgressBar() {
     return count + ' (' + fmtPercent(floatPercent) + ')';
   };
 
+  const progressConverged = ['Journal', 'Conference', 'Reject'];
+
+  const showLabel = (status) => {
+    const converged = progressConverged.includes(status);
+    return !converged;
+  };
+
   const getCounts = (status) => {
     const count = getGridCount(status);
     const floatPercent = countToPercent(count);
@@ -35,9 +42,9 @@ export default function GridProgressBar() {
     'Journal',
     'Conference',
     'Reject',
+    'Ready',
     'Tabled-Sticky',
     'Tabled',
-    'Ready',
   ];
   const conflictCount = getGridCount('Conflict');
   if (conflictCount) progressBars.push('Conflict');
@@ -51,11 +58,12 @@ export default function GridProgressBar() {
           const count = getGridCount(status);
           const floatPercent = countToPercent(count);
           const showPercent = showCountAndPercent(count, floatPercent);
+          const label = showLabel(status) ? showPercent : '';
           return (
             <ProgressBar
               key={status}
               now={floatPercent}
-              label={showPercent}
+              label={label}
               className={className}
             />
           );

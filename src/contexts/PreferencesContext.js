@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 
 const defaultColors = {
-  Ready: '#F4F4F4',
   Tabled: '#E8F77D',
   'Tabled-Sticky': '#FFC65E',
+  Ready: '#F4F4F4',
   Reject: '#F3A8C0',
   Conference: '#628BF0',
   Journal: '#288D0C',
@@ -12,9 +12,9 @@ const defaultColors = {
 };
 
 const defaultTextBlackOrWhite = {
-  Ready: true,
   Tabled: true,
   'Tabled-Sticky': true,
+  Ready: true,
   Reject: true,
   Conference: false,
   Journal: false,

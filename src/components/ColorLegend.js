@@ -8,12 +8,10 @@ export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
   const colors = useColors();
   const colorKeys = Object.keys(colors);
   const keyToCount = (key) => {
+    if (1) return null; // hide all counts for now
     const count = getGridCount(key);
     if (!showCounts || !count) return null;
     return '(' + count + ')';
-  };
-  const mapReady = (key) => {
-    return key === 'Ready' ? 'Ready/bbs' : key;
   };
 
   return (
@@ -22,9 +20,8 @@ export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
       <Stack className="mt-1" direction="vertical" gap={1}>
         {colorKeys.map((key) => {
           const count = keyToCount(key);
-          const label = mapReady(key);
           return (
-            <ColorLabel key={key} rectClass={key} label={label} extra={count} />
+            <ColorLabel key={key} rectClass={key} label={key} extra={count} />
           );
         })}
       </Stack>
