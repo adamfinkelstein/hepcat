@@ -33,7 +33,7 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
   const counts = getBasicCountsInGrid(inRoom, conf, nidsAbove, nidsBelow);
   let converged = 0;
   let pending = 0;
-  let tabledStickyCount = 0;
+  // let tabledStickyCount = 0;
   for (const status of allStatuses) {
     counts[status] = 0;
   }

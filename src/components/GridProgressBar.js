@@ -18,7 +18,7 @@ export default function GridProgressBar() {
   };
 
   const showCountAndPercent = (count, floatPercent) => {
-    if (floatPercent < 5) return '';
+    if (floatPercent < 1) return '';
     if (floatPercent < 10) return '' + count;
     return count + ' (' + fmtPercent(floatPercent) + ')';
   };
