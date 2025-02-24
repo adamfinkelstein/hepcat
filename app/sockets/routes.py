@@ -130,38 +130,41 @@ def count_papers_in_all_queues():
     return count
 
 
+def tabled_or_ready(status):
+    if status == "Tabled":
+        return "Tabled"
+    return "Ready"
+
+
+def tabled_sticky_or_ready(status):
+    if status == "Tabled":
+        return "Tabled-Sticky"
+    return "Ready"
+
+
 def get_grid_paper_dump(paper):
-    status = "Ready"  # default should not actually happen
-    sticky_status = None
-    sticky = False
     history = list(paper.history)
     below_bar = paper.below_bar
+    paper_room = get_paper_room_name(paper)
     context_bbs = context_str_to_enum("BBS")
     context_sticky = context_str_to_enum("Sticky")
-    context_plenary = context_str_to_enum("Plenary")
+    # context_plenary = context_str_to_enum("Plenary")
+    status = None  # should be overwritten
     for h in history:
-        if h.context_enum == context_bbs and h.status == "Tabled":
+        # And sticky reject below bar causes same.
+        if h.context_enum == context_bbs:
             # Start meeting showing BBS Tabled.
-            # Note "presumed reject" set in Plenary by init_grid_from_bbs().
-            status = h.status
+            status = tabled_or_ready(h.status)
         elif h.context_enum == context_sticky:
-            sticky = True
-            sticky_status = h.status
-        elif h.context_enum >= context_plenary:  # any room
-            # Are there any other contexts after sticky?
-            # Could this just be "else"?
-            sticky = False
-            status = h.status
-    tabled_sticky = sticky and (sticky_status == "Tabled")
-    if sticky and not tabled_sticky:
-        status = "Ready"
-    paper_room = get_paper_room_name(paper)
+            status = tabled_sticky_or_ready(h.status)
+        else:  # h.context_enum >= context_plenary:  # any room
+            # "BBS", "Sticky", "Plenary", "Room..."
+            # Or "presumed reject" in Plenary set by init_grid_from_bbs().
+            status = h.status  # C,J,R,T
     paper_dump = {
         "nid": paper.nid,
         "below_bar": below_bar,
         "status": status,
-        "sticky": sticky,
-        "tabled_sticky": tabled_sticky,
         "paper_room": paper_room,
     }
     return paper_dump

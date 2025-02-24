@@ -18,19 +18,16 @@ export default function GridBlock({ nidList }) {
       return className;
     }
     className += gridElem.status;
-    const nonSticky = gridMode === 'Stickies' && !gridElem.sticky;
+    // const nonSticky = gridMode === 'Stickies' && !gridElem.sticky;
     const nonFavorite = gridMode === 'Favorites' && !favorites.includes(nid);
     // if (gridElem.sticky) {
     //   className += ' sticky-border'; // no thick border now
     // }
-    if (gridElem.tabled_sticky) {
-      className += ' Tabled-Sticky';
-    }
-    // else if (gridElem.sticky) { AF added but not needed
-    //   // sticky but not tabled
-    //   className += ' Ready';
+    // if (gridElem.tabled_sticky) {
+    //   className += ' Tabled-Sticky';
     // }
-    if (nonSticky || nonFavorite) {
+    // if (nonSticky || nonFavorite) {
+    if (nonFavorite) {
       className += ' faded-grid';
     }
     if (showCurrent && gridElem.nid === queueCurrentID) {

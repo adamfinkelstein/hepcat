@@ -134,7 +134,7 @@ export default function GridContext({ children }) {
         controlledLog('received sticky for conflicted paper (ignored)');
         return;
       }
-      controlledLog('received sticky grid update: ' + grid_update);
+      controlledLog('received sticky grid update: ', grid_update);
       updateGridEntry(grid_update);
     };
 

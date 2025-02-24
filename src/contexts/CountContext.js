@@ -52,11 +52,7 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
     } else {
       pending++;
     }
-    // Tabled-Sticky is a special case
-    if (paper.tabled_sticky) {
-      tabledStickyCount++;
-    } // prevent double counting as Tabled
-    else if (status in counts) {
+    if (status in counts) {
       counts[status]++;
     } else {
       counts[status] = 1;
@@ -64,7 +60,6 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
   }
   counts['Converged'] = converged;
   counts['Pending'] = pending;
-  counts['Tabled-Sticky'] = tabledStickyCount;
   return counts;
 };
 
