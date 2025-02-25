@@ -25,10 +25,20 @@ const getBasicCountsInGrid = (inRoom, conf, nidsAbove, nidsBelow) => {
   return counts;
 };
 
+const allStatuses = [
+  'Tabled',
+  'Tabled-Sticky',
+  'Ready',
+  'Reject',
+  'Conference',
+  'Journal',
+];
+const colorKeys = [...allStatuses, 'Current', 'Conflict'];
+
 const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
   const convergedStatuses = ['Journal', 'Conference', 'Reject'];
-  const otherStatuses = ['Ready', 'Tabled', 'Tabled-Sticky'];
-  const allStatuses = [...convergedStatuses, ...otherStatuses];
+  // const otherStatuses = ['Ready', 'Tabled', 'Tabled-Sticky'];
+  // const allStatuses = [...convergedStatuses, ...otherStatuses];
   const allInGrid = [...nidsAbove, ...nidsBelow];
   const counts = getBasicCountsInGrid(inRoom, conf, nidsAbove, nidsBelow);
   let converged = 0;
@@ -113,6 +123,8 @@ export default function CountContext({ children }) {
       value={{
         gridCounts,
         getGridCount,
+        allStatuses,
+        colorKeys,
       }}
     >
       {children}

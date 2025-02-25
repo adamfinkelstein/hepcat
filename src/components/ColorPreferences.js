@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
+import { useCount } from '../contexts/CountContext';
 import {
   useColors,
   useChangeColor,
@@ -17,12 +18,12 @@ import ColorLegend from './ColorLegend';
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
   const colors = useColors();
-  const colorKeys = Object.keys(colors);
+  const { colorKeys } = useCount();
   const changeColor = useChangeColor();
   const { defaultColors, changeToDefaultColors } = useDefaultColors();
   const defaultColorVals = Object.values(defaultColors);
   const changeTextColors = useChangeTextColors();
-  const [selectedColorKey, setSelectedColorKey] = useState('Ready');
+  const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
 
   const { flash } = useFlasher();
 

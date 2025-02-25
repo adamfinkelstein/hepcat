@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useCount } from './CountContext';
 
 const defaultColors = {
   Tabled: '#E8F77D',
@@ -92,6 +93,7 @@ export function useChangeSplitWidth() {
 }
 
 export default function PreferencesContext({ children }) {
+  const { colorKeys } = useCount();
   const [colors, setColors] = useState(defaultColors);
   const [textBlackOrWhite, setTextBlackOrWhite] = useState(
     defaultTextBlackOrWhite,
@@ -152,7 +154,7 @@ export default function PreferencesContext({ children }) {
   // Is that too often??? Maybe.
   useEffect(() => {
     const cssStyle = document.createElement('style');
-    const colorKeys = Object.keys(colors);
+    // const colorKeys = Object.keys(colors);
     colorKeys.forEach((colorKey) => {
       const textBG = colors[colorKey];
       const textColor = textBlackOrWhite[colorKey] ? '#000' : '#fff';

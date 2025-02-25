@@ -1,12 +1,10 @@
 import Stack from 'react-bootstrap/Stack';
-import { useColors } from '../contexts/PreferencesContext';
 import { useCount } from '../contexts/CountContext';
 import ColorLabel from './ColorLabel';
 
 export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
-  const { getGridCount } = useCount();
-  const colors = useColors();
-  const colorKeys = Object.keys(colors);
+  const { getGridCount, colorKeys } = useCount();
+
   const keyToCount = (key) => {
     if (1) return null; // hide all counts for now
     const count = getGridCount(key);

@@ -151,15 +151,14 @@ def get_grid_paper_dump(paper):
     # context_plenary = context_str_to_enum("Plenary")
     status = None  # should be overwritten
     for h in history:
-        # And sticky reject below bar causes same.
+        # contexts: "BBS", "Sticky", "Plenary", "Room..."
         if h.context_enum == context_bbs:
             # Start meeting showing BBS Tabled.
             status = tabled_or_ready(h.status)
         elif h.context_enum == context_sticky:
             status = tabled_sticky_or_ready(h.status)
-        else:  # h.context_enum >= context_plenary:  # any room
-            # "BBS", "Sticky", "Plenary", "Room..."
-            # Or "presumed reject" in Plenary set by init_grid_from_bbs().
+        else:  # h.context_enum >= context_plenary:  # must be a room
+            # Note "presumed reject" set in Plenary by init_grid_from_bbs().
             status = h.status  # C,J,R,T
     paper_dump = {
         "nid": paper.nid,

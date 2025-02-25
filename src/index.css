@@ -341,10 +341,12 @@ body {
   border-radius: 4px;
 }
 
+/* no longer used
 .GridBlock .sticky-border {
   border: 2.5px solid black;
   border-radius: 8px;
 }
+*/
 
 .GridBlock .faded-grid {
   opacity: 0.2;

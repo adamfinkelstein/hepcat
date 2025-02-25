@@ -74,6 +74,17 @@ export default function SetQueue() {
 
   const showQMessageTime = false;
 
+  // const gridStatusList = [
+  //   'Tabled',
+  //   'Tabled-Sticky',
+  //   'Ready',
+  //   'Reject',
+  //   'Conference',
+  //   'Journal',
+  // ];
+  // const gridStatusListLabels = gridStatusList.map((status) => 'G:' + status);
+  // const allStatuses = [...statusList, ...gridStatusListLabels];
+
   const filterList = [
     'This Room Only',
     'Ready Only',
@@ -440,7 +451,9 @@ export default function SetQueue() {
           <div>
             <span className="underline bigger-font">Union</span>:
             <br />
-            <div className="mb-4">
+            {/* <div className="mb-4"> */}
+            <Form.Group className="mb-4">
+              {/* <Form.Label>Choose an option:</Form.Label> */}
               {statusList.map((label) => {
                 const checked = statusCheckbox.includes(label);
                 const id = checkLabelToId(label);
@@ -455,7 +468,7 @@ export default function SetQueue() {
                   />
                 );
               })}
-            </div>
+            </Form.Group>
           </div>
           <div className="vr" />
           <div>
