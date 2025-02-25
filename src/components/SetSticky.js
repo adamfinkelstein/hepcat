@@ -22,21 +22,29 @@ export default function SetSticky() {
   const { controlledLog } = useControlledLog();
   const favorites = useFavorites();
 
-  const paperHasSticky = (gridElem) => {
-    return Boolean(gridElem.sticky);
+  const stickyStatuses = ['Ready', 'Tabled-Sticky'];
+  const doneStatuses = ['Journal', 'Conference', 'Reject'];
+  const convergedStatuses = ['Ready', 'Journal', 'Conference', 'Reject'];
+  const acceptStatuses = ['Journal', 'Conference'];
+
+  const statusIsSticky = (status) => {
+    return stickyStatuses.includes(status);
+  };
+
+  const statusIsDone = (status) => {
+    return doneStatuses.includes(status);
+  };
+
+  const statusIsConverged = (status) => {
+    return convergedStatuses.includes(status);
+  };
+
+  const statusIsAccept = (status) => {
+    return acceptStatuses.includes(status);
   };
 
   const paperIsBelowBar = (gridElem) => {
     return Boolean(gridElem.below_bar);
-  };
-
-  const statusConverged = (status) => {
-    const convergedStatuses = ['Ready', 'Journal', 'Conference', 'Reject'];
-    return convergedStatuses.includes(status);
-  };
-
-  const paperConverged = (gridElem) => {
-    return statusConverged(gridElem.status);
   };
 
   const sendStickyForNID = (nid, status) => {
@@ -67,23 +75,21 @@ export default function SetSticky() {
   };
 
   /* We already know nid is valid, so we can skip that check.
-   * These warnings are consistent with the policy in
+   * These warnings should be consistent with the policy in
    * current_app.config["HEPCAT_AUTO_REJECT"]
-   * -- prob should check it.
-   * Also would be nice to use markdown.
    */
   const checkForWarningsThenSendSticky = (nid) => {
     const gridElem = gridGetElemByNid(nid);
+    const gridStatus = gridElem.status;
     const warnings = [];
-    if (paperHasSticky(gridElem)) {
+    if (statusIsSticky(gridStatus)) {
       let text = `Paper ${nid} already has a sticky. `;
       text += 'This sticky would overwrite/replace it.';
       warnings.push(text);
     }
     if (paperIsBelowBar(gridElem) && stickyType === 'Reject') {
       let text = `Paper ${nid} is below the bar. `;
-      const acceptOptions = ['Ready', 'Journal', 'Conference'];
-      if (acceptOptions.includes(gridElem.status)) {
+      if (statusIsAccept(gridStatus)) {
         text += 'Since it had previously converged to Accept, it must now ';
         text += 'be discussed in the meeting as a proposed Reject.';
       } else {
@@ -91,19 +97,14 @@ export default function SetSticky() {
         text += 'meaning it may never come up for discussion in the meeting. ';
       }
       warnings.push(text);
-    } else if (paperConverged(gridElem) && !paperHasSticky(gridElem)) {
-      let text = '';
-      if (gridElem.status === 'Ready') {
-        text = `Paper ${nid} already converged on the BBS. `;
-      } else {
-        text = `Paper ${nid} already converged in the meeting. `;
-      }
+    } else if (statusIsDone(gridStatus)) {
+      let text = `Paper ${nid} already converged in the meeting (to ${gridStatus}). `;
       text += `This sticky (${stickyType}) would cause the paper to be re-discussed. `;
       warnings.push(text);
     }
     if (favorites?.length && !favorites.includes(nid)) {
-      let text = 'You have marked one or more favorites, and Paper ';
-      text += nid + ' is not among them. ';
+      let text = 'You have marked one or more favorites, ';
+      text += `but Paper ${nid} is not among them. `;
       text += 'Usually stickies are filed for papers you are tracking. ';
       warnings.push(text);
     }
