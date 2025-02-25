@@ -1,9 +1,11 @@
 import Stack from 'react-bootstrap/Stack';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useCount } from '../contexts/CountContext';
+import { useUser } from '../contexts/UserContext';
 
 export default function GridProgressBar() {
-  const { getGridCount } = useCount();
+  const { user } = useUser();
+  const { getGridCount, allStatuses } = useCount();
 
   const countToPercent = (count) => {
     const total = getGridCount('total');
@@ -27,7 +29,7 @@ export default function GridProgressBar() {
 
   const showLabel = (status) => {
     const converged = progressConverged.includes(status);
-    return !converged;
+    return !converged || user?.role_is_admin;
   };
 
   const getCounts = (status) => {
@@ -38,14 +40,8 @@ export default function GridProgressBar() {
     return fmt;
   };
 
-  let progressBars = [
-    'Journal',
-    'Conference',
-    'Reject',
-    'Ready',
-    'Tabled-Sticky',
-    'Tabled',
-  ];
+  const progressBars = [...allStatuses]; // copy and then reverse...
+  progressBars.reverse();
   const conflictCount = getGridCount('Conflict');
   if (conflictCount) progressBars.push('Conflict');
 

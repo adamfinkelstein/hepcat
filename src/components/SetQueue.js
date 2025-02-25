@@ -11,6 +11,7 @@ import { useAppGlobals } from '../contexts/AppContext';
 import { useFilterContext } from '../contexts/FilterContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
+import { useCount } from '../contexts/CountContext';
 import SaveFilters from './SaveFilters';
 import ScoreFilter from './ScoreFilter';
 import CheckGroup from './CheckGroup';
@@ -34,6 +35,7 @@ export default function SetQueue() {
   const { revealModalDialog } = useModalDialog();
   const { roomChoice } = useUser();
   const { flash } = useFlasher();
+  const { allStatuses } = useCount();
   const {
     hideQ,
     setHideQ,
@@ -42,7 +44,7 @@ export default function SetQueue() {
     // setGuiBar,
     probeGUIMsg,
     probeTextMsg,
-    statusList,
+    // statusList,
   } = useAppGlobals();
   const {
     allGuiFilterNames,
@@ -75,21 +77,10 @@ export default function SetQueue() {
 
   const showQMessageTime = false;
 
-  // const gridStatusList = [
-  //   'Tabled',
-  //   'Tabled-Sticky',
-  //   'Ready',
-  //   'Reject',
-  //   'Conference',
-  //   'Journal',
-  // ];
-  // const gridStatusListLabels = gridStatusList.map((status) => 'G:' + status);
-  // const allStatuses = [...statusList, ...gridStatusListLabels];
-
   const filterList = [
     'This Room Only',
-    'Ready Only',
-    'Sticky Only',
+    // 'Ready Only',
+    // 'Sticky Only',
     'No Presumed Rej',
     'Dual Only',
     'Journal Only',
@@ -138,7 +129,7 @@ export default function SetQueue() {
   }
 
   function handleStatusCheckClick() {
-    const checked = getCheckedBoxes(statusList, null);
+    const checked = getCheckedBoxes(allStatuses, null);
     setStatusCheckbox(checked);
     controlledLog('checked:', checked);
   }
@@ -188,7 +179,7 @@ export default function SetQueue() {
   }
 
   function guiSettingsAsText() {
-    const statuses = statusCheckbox.map((s) => 'Status:' + s);
+    const statuses = statusCheckbox.map((s) => 'Grid:' + s);
     const statusOr = 'OR( ' + statuses.join(', ') + ' )';
     const roomText = 'This Room Only';
     const thisRoom = onlyCheckbox.includes(roomText);
@@ -200,7 +191,8 @@ export default function SetQueue() {
       return 'None';
     }
     const statusOrClause = statuses.length === 1 ? statuses[0] : statusOr;
-    const statusClause = statuses.length === 4 ? 'All' : statusOrClause;
+    const allStatusesChecked = statuses.length === allStatuses.length;
+    const statusClause = allStatusesChecked ? 'All' : statusOrClause;
     const topAnds = [statusClause];
     if (thisRoom) {
       topAnds.push('Room:This');
@@ -450,10 +442,10 @@ export default function SetQueue() {
         />
         <Stack direction="horizontal" gap={4} className="gui-filters my-4 mx-3">
           <div>
-            <span className="underline bigger-font">Union</span>:
+            <span className="underline bigger-font">Grid Status</span>:
             <br />
             <CheckGroup
-              checkLabels={statusList}
+              checkLabels={allStatuses}
               alreadyCheckedList={statusCheckbox}
               checkLabelToId={checkLabelToId}
               handleCheckClick={handleStatusCheckClick}

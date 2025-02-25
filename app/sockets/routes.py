@@ -173,9 +173,6 @@ def get_grid_paper_dump(paper):
 def get_paper_grid_status(paper):
     dump = get_grid_paper_dump(paper)
     status = dump["status"]
-    tabled_sticky = dump["tabled_sticky"]
-    if tabled_sticky:
-        status = "Tabled_Sticky"
     return status
 
 
@@ -343,12 +340,12 @@ def is_paper_accepted(paper):
     return False
 
 
-def is_paper_sticky(paper):
-    context_sticky = context_str_to_enum("Sticky")
-    latest = get_latest_history(paper)
-    if not latest or latest.context_enum != context_sticky:
-        return False
-    return True
+# def is_paper_sticky(paper):
+#     context_sticky = context_str_to_enum("Sticky")
+#     latest = get_latest_history(paper)
+#     if not latest or latest.context_enum != context_sticky:
+#         return False
+#     return True
 
 
 def is_in_cluster(paper):
@@ -414,8 +411,8 @@ def sanitize_paper_filters(filters):
 
 # includes all GUI checkboxes for filtering papers except for "this room only"
 paper_check_functions = {
-    "Sticky Only": (is_paper_sticky, True),
-    "Ready Only": (is_paper_ready, True),
+    # "Sticky Only": (is_paper_sticky, True),
+    # "Ready Only": (is_paper_ready, True),
     "No Presumed Rej": (is_paper_presumed, False),
     "No Clusters": (is_in_cluster, False),
     "No Chair Conf": (has_chair_conflict, False),
@@ -453,7 +450,8 @@ def filters_allow_paper(paper, filters):
         return False
     if use_below_score and sort_score >= below_score:
         return False
-    status = get_latest_history_status(paper)
+    # status = get_latest_history_status(paper)  # old status checkboxes
+    status = get_paper_grid_status(paper)
     if status not in filter_statuses:
         return False
     # "This Room Only" is a special case handled here because it needs room name.

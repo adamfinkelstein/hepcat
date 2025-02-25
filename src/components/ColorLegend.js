@@ -1,12 +1,14 @@
 import Stack from 'react-bootstrap/Stack';
 import { useCount } from '../contexts/CountContext';
+import { useUser } from '../contexts/UserContext';
 import ColorLabel from './ColorLabel';
 
 export default function ColorLegend({ showCounts, header = 'Plenary Status' }) {
   const { getGridCount, colorKeys } = useCount();
+  const { user } = useUser();
 
   const keyToCount = (key) => {
-    if (1) return null; // hide all counts for now
+    if (!user || !user.role_is_admin) return null; // hide all counts for now
     const count = getGridCount(key);
     if (!showCounts || !count) return null;
     return '(' + count + ')';

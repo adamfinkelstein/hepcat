@@ -10,7 +10,7 @@ export default function CheckGroup({
 }) {
   return (
     <Form.Group className="mb-4">
-      {header && <Form.Label>{header}</Form.Label>}
+      {header && <Form.Label className="mb-1">{header}</Form.Label>}
       {checkLabels.map((label) => {
         const checked = alreadyCheckedList.includes(label);
         const id = checkLabelToId(label);
