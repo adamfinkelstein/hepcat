@@ -13,6 +13,7 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import SaveFilters from './SaveFilters';
 import ScoreFilter from './ScoreFilter';
+import CheckGroup from './CheckGroup';
 
 const replaceBreakingSpaces = (str) => {
   // replace all spaces with non-breaking spaces
@@ -256,7 +257,7 @@ export default function SetQueue() {
     flash('Sent queue request.', 'success');
   }
 
-  function handleSaveGuiFilter() {
+  function handleGuiFilterSave() {
     const problem = filterNameNotOK(guiFilterName);
     if (problem) {
       const msg = 'Bad filter name (' + guiFilterName + ') -- ' + problem;
@@ -275,7 +276,7 @@ export default function SetQueue() {
     emitAdminFilterMsg('admin_save_filter');
   }
 
-  function handleSaveTextFilter() {
+  function handleTextFilterSave() {
     const problem = filterNameNotOK(textFilterName);
     if (problem) {
       const msg = 'Bad filter name (' + textFilterName + ') -- ' + problem;
@@ -303,25 +304,25 @@ export default function SetQueue() {
     // flash('Sent request for paper count.', 'success');
   }
 
-  function handleDeleteGuiFilter() {
+  function handleGuiFilterDelete() {
     controlledLog('delete named filter: ' + guiFilterName);
     socketEmit('admin_delete_filter', guiFilterName);
     setGuiFilterName('');
   }
 
-  function handleDeleteTextFilter() {
+  function handleTextFilterDelete() {
     controlledLog('delete named filter: ' + textFilterName);
     socketEmit('admin_delete_filter', textFilterName);
     setTextFilterName('');
   }
 
-  function handleLoadGuiFilter(name) {
+  function handleGuiFilterLoad(name) {
     controlledLog('load gui filter: ' + name);
     setGuiFilterName(name);
     socketEmit('admin_load_filter', name);
   }
 
-  function handleLoadTextFilter(name) {
+  function handleTextFilterLoad(name) {
     controlledLog('load text filter: ' + name);
     setTextFilterName(name);
     socketEmit('admin_load_filter', name);
@@ -442,54 +443,32 @@ export default function SetQueue() {
           inputBoxName={'guiFilterName'}
           filterName={guiFilterName}
           allFilterNames={allGuiFilterNames}
-          handleLoadFilter={handleLoadGuiFilter}
-          handleSaveFilter={handleSaveGuiFilter}
-          handleDeleteFilter={handleDeleteGuiFilter}
+          handleLoadFilter={handleGuiFilterLoad}
+          handleSaveFilter={handleGuiFilterSave}
+          handleDeleteFilter={handleGuiFilterDelete}
           handleInputChange={handleInputChange}
         />
         <Stack direction="horizontal" gap={4} className="gui-filters my-4 mx-3">
           <div>
             <span className="underline bigger-font">Union</span>:
             <br />
-            {/* <div className="mb-4"> */}
-            <Form.Group className="mb-4">
-              {/* <Form.Label>Choose an option:</Form.Label> */}
-              {statusList.map((label) => {
-                const checked = statusCheckbox.includes(label);
-                const id = checkLabelToId(label);
-                return (
-                  <Form.Check
-                    key={id}
-                    id={id}
-                    label={label}
-                    type="checkbox"
-                    checked={checked}
-                    onChange={handleStatusCheckClick}
-                  />
-                );
-              })}
-            </Form.Group>
+            <CheckGroup
+              checkLabels={statusList}
+              alreadyCheckedList={statusCheckbox}
+              checkLabelToId={checkLabelToId}
+              handleCheckClick={handleStatusCheckClick}
+            />
           </div>
           <div className="vr" />
           <div>
             <span className="underline bigger-font">Intersection</span>:
             <br />
-            <div className="mb-0">
-              {filterList.map((label) => {
-                const checked = onlyCheckbox.includes(label);
-                const id = checkLabelToId(label);
-                return (
-                  <Form.Check
-                    key={id}
-                    id={id}
-                    label={formatCheckboxLabel(label)}
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => handleOnlyCheckClick(label, !checked)}
-                  />
-                );
-              })}
-            </div>
+            <CheckGroup
+              checkLabels={filterList}
+              alreadyCheckedList={onlyCheckbox}
+              checkLabelToId={checkLabelToId}
+              handleCheckClick={handleOnlyCheckClick}
+            />
           </div>
           <div className="vr" />
           <div>
@@ -559,9 +538,9 @@ export default function SetQueue() {
           inputBoxName={'textFilterName'}
           filterName={textFilterName}
           allFilterNames={allTextFilterNames}
-          handleLoadFilter={handleLoadTextFilter}
-          handleSaveFilter={handleSaveTextFilter}
-          handleDeleteFilter={handleDeleteTextFilter}
+          handleLoadFilter={handleTextFilterLoad}
+          handleSaveFilter={handleTextFilterSave}
+          handleDeleteFilter={handleTextFilterDelete}
           handleInputChange={handleInputChange}
         />
         <br />
