@@ -8,7 +8,6 @@ import GuidePage from '../pages/GuidePage';
 import LoginPage from '../pages/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import UploadsPage from '../pages/UploadsPage';
-import ProgressPage from '../pages/ProgressPage';
 import UsersPage from '../pages/UsersPage';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 
@@ -40,7 +39,6 @@ export default function AppRoutes() {
           {isAdmin && (
             <>
               <Route path="/uploads" element={<UploadsPage />} />
-              <Route path="/danger" element={<ProgressPage />} />
               <Route path="/users" element={<UsersPage />} />
             </>
           )}

@@ -80,9 +80,6 @@ export default function HeaderBar() {
                         <NavDropdown.Item as={NavLink} to="uploads">
                           Upload Files
                         </NavDropdown.Item>
-                        <NavDropdown.Item as={NavLink} to="danger">
-                          Operations
-                        </NavDropdown.Item>
                         <NavDropdown.Item as={NavLink} to="users">
                           Users
                         </NavDropdown.Item>

@@ -4,26 +4,20 @@ import Stack from 'react-bootstrap/Stack';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
-import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFontInfo } from '../contexts/PreferencesContext';
 import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import { useFilterContext } from '../contexts/FilterContext';
+import DangerousOps from '../components/DangerousOps';
 
 export default function UploadsPage() {
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
-  const { revealConfirmationBox } = useConfirmationBox();
   const { controlledLog } = useControlledLog();
-  const { socketEmit, socketLogout } = useSocketIO();
-  const { user, adminKey, conflictbot } = useUser();
+  const { socketEmit } = useSocketIO();
+  const { adminKey } = useUser();
   const { currentFontStyle } = useFontInfo();
-  const { allGuiFilterNames, allTextFilterNames } = useFilterContext();
-  const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
-  const isSuper = user && user.role_name === 'Super';
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
   const uploadList = fileUploads ? fileUploads.uploads : [];
@@ -62,29 +56,6 @@ export default function UploadsPage() {
     const when = moment.utc(upload.when).local().format('llll');
     const fmt = upload.file + ' (' + upload.count + ' uploaded ' + when + ')';
     return fmt;
-  }
-
-  function handleWipeDBButton(isLoad) {
-    const verb = isLoad ? 'load' : 'wipe';
-    let text = `Are you really, Really, REALLY sure you want to ${verb} the database?`;
-    if (numFilters > 2) {
-      text +=
-        ` You have ${numFilters} saved filters, and they would be forgotten.` +
-        ' You may wish to save a copy first.';
-    }
-    controlledLog(verb + ' DB button pressed.');
-    const socketMsg = 'admin_' + verb + '_database';
-    revealConfirmationBox('Please Confirm', text, (confirmed) => {
-      if (confirmed) {
-        controlledLog('confirmed: ' + socketMsg);
-        socketEmit(socketMsg);
-        socketLogout(true);
-      } else {
-        controlledLog('canceled: ' + socketMsg);
-        // const msg = 'Button canceled.';
-        // flash(msg, 'warning'); // bad UX to flash on cancel
-      }
-    });
   }
 
   return (
@@ -135,32 +106,6 @@ export default function UploadsPage() {
             <h2>Extra Admin Functions</h2>
           </div>
           <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
-            {conflictbot && (
-              <Stack direction="horizontal">
-                <a
-                  className="btn btn-primary"
-                  href={'/admin/conflictbot3/' + adminKey}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  New Conflictbot3
-                </a>
-                &nbsp;&nbsp;Open Zoom Conflictbot3 in new tab.
-              </Stack>
-            )}
-            {conflictbot && (
-              <Stack direction="horizontal">
-                <a
-                  className="btn btn-primary"
-                  href={'/admin/old_zoom_conflictbot/' + adminKey}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Old Zoom Conflictbot
-                </a>
-                &nbsp;&nbsp;Open Old Zoom Conflictbot in new tab.
-              </Stack>
-            )}
             <Stack direction="horizontal">
               <a
                 className="btn btn-primary"
@@ -194,28 +139,7 @@ export default function UploadsPage() {
               </a>
               &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
             </Stack>
-            {isSuper && (
-              <>
-                <Stack direction="horizontal">
-                  <Button
-                    variant="danger"
-                    onClick={() => handleWipeDBButton(true)}
-                  >
-                    Load Test Database
-                  </Button>
-                  &nbsp;&nbsp;This loads a clean test database.
-                </Stack>
-                <Stack direction="horizontal">
-                  <Button
-                    variant="danger"
-                    onClick={() => handleWipeDBButton(false)}
-                  >
-                    Wipe Database Clean
-                  </Button>
-                  &nbsp;&nbsp;This removes ALL data from the database!
-                </Stack>
-              </>
-            )}
+            <DangerousOps />
           </Stack>
         </Container>
       </div>

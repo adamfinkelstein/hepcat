@@ -13,7 +13,6 @@ from ..models.helpers import try_sql_commit
 @main.route("/guide/")
 @main.route("/preferences/")
 @main.route("/uploads/")
-@main.route("/danger/")
 @main.route("/users/")
 @main.route("/change_password/")
 @main.route("/")
