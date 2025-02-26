@@ -7,7 +7,6 @@ import { useSocketIO } from '../contexts/SocketIOContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
-import { useAppGlobals } from '../contexts/AppContext';
 import { useGrid } from '../contexts/GridContext';
 import { useFavorites } from '../contexts/PreferencesContext';
 
@@ -15,16 +14,15 @@ export default function SetSticky() {
   const { socketEmit } = useSocketIO();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
-  const { statusList } = useAppGlobals();
   const { gridGetElemByNid, gridNidIsValid } = useGrid();
-  const [stickyType, setStickyType] = useState('Tabled');
+  const [stickyType, setStickyType] = useState('Tabled-Discuss');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
   const favorites = useFavorites();
 
-  const stickyStatuses = ['Ready', 'Tabled-Sticky'];
+  const stickyOptions = ['Tabled-Discuss', 'Reject', 'Conference', 'Journal'];
+  const stickyStatuses = ['Ready', 'Tabled-Discuss'];
   const doneStatuses = ['Journal', 'Conference', 'Reject'];
-  const convergedStatuses = ['Ready', 'Journal', 'Conference', 'Reject'];
   const acceptStatuses = ['Journal', 'Conference'];
 
   const statusIsSticky = (status) => {
@@ -33,10 +31,6 @@ export default function SetSticky() {
 
   const statusIsDone = (status) => {
     return doneStatuses.includes(status);
-  };
-
-  const statusIsConverged = (status) => {
-    return convergedStatuses.includes(status);
   };
 
   const statusIsAccept = (status) => {
@@ -141,10 +135,9 @@ export default function SetSticky() {
       </Stack>
       <Stack direction="horizontal">
         <ChooseStatusDropdown
-          choiceList={statusList}
+          choiceList={stickyOptions}
           currentChoice={stickyType}
           setValue={setStickyType}
-          renameTabledEntry="Tabled-Sticky"
         />
         <div />
       </Stack>

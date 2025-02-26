@@ -138,7 +138,7 @@ def tabled_or_ready(status):
 
 def tabled_sticky_or_ready(status):
     if status == "Tabled":
-        return "Tabled-Sticky"
+        return "Tabled-Discuss"
     return "Ready"
 
 
@@ -753,7 +753,7 @@ def set_op_leaf_filter(name, room):
     # Possible types:
     # - Papers:101_102_103
     # = Status:Type (like 'Status:Reject')
-    # - Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Sticky')
+    # - Grid:Type (like 'Grid:Tabled' or 'Grid:Tabled-Discuss')
     # - BBS:Type (like 'BBS:Tabled' or 'BBS:Reject')
     # - Check:Filter_Name (like 'Check:Sticky_Only')
     # - Marked:n (like 'Marked:2')
@@ -1478,12 +1478,15 @@ def user_set_sticky(data):
         return
     log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
-    status = data["status"]
-    playback = "playback" in data
     paper = Paper.query.filter_by(nid=nid).first()
     if not paper:
         return  # should never happen because it is now checked at the client
+    status_data = data["status"]
+    status = status_data
+    if status == "Tabled-Discuss":
+        status = "Tabled"
     is_reject = status == "Reject"
+    playback = "playback" in data
     status_enum = status_str_to_enum(status)
     context_plenary = context_str_to_enum("Plenary")
     context_sticky = context_str_to_enum("Sticky")
@@ -1498,11 +1501,11 @@ def user_set_sticky(data):
         grid_update = get_encrypted_grid_entry(paper)
         emit("server_set_sticky", grid_update, broadcast=True)
         if not playback:
-            message = f"Sticky received for paper {nid} ({status})."
+            message = f"Sticky received for paper {nid} ({status_data})."
             data = {"message": message, "type": "success"}
             emit("server_send_flasher", data)
     else:
-        msg = f"Failed attempt to file sticky for paper {nid} ({status})."
+        msg = f"Failed attempt to file sticky for paper {nid} ({status_data})."
         log_print(msg)
         broadcast_admin_alert("Server Error", msg)
 

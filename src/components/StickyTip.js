@@ -11,7 +11,7 @@ export default function StickyTip() {
         Signal the Chair that a paper is ready for public discussion:
         <ul>
           <li>
-            <strong>Tabled-Sticky</strong> &mdash; Either:
+            <strong>Tabled-Discuss</strong> &mdash; Either:
             <ol>
               <li>Primary wants help/advice from the PC, or</li>
               <li>A PC member wants to revisit a paper discussion.</li>

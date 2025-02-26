@@ -27,7 +27,7 @@ const getBasicCountsInGrid = (inRoom, conf, nidsAbove, nidsBelow) => {
 
 const allStatuses = [
   'Tabled',
-  'Tabled-Sticky',
+  'Tabled-Discuss',
   'Ready',
   'Reject',
   'Conference',

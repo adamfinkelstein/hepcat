@@ -3,7 +3,7 @@ import { useCount } from './CountContext';
 
 const defaultColors = {
   Tabled: '#E8F77D',
-  'Tabled-Sticky': '#FFC65E',
+  'Tabled-Discuss': '#FFC65E',
   Ready: '#F4F4F4',
   Reject: '#F3A8C0',
   Conference: '#628BF0',
@@ -14,7 +14,7 @@ const defaultColors = {
 
 const defaultTextBlackOrWhite = {
   Tabled: true,
-  'Tabled-Sticky': true,
+  'Tabled-Discuss': true,
   Ready: true,
   Reject: true,
   Conference: false,
