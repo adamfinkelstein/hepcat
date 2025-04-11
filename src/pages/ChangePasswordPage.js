@@ -34,7 +34,7 @@ export default function ChangePasswordPage() {
   let [isForOther, setIsForOther] = useState(false);
 
   const allowSetOthers = user && isAdmin;
-  const oldPassNeeded = user && !isForOther;
+  const oldPassNeeded = false; // was: user && !isForOther;
 
   const url = new URL(window.location.href);
   const token = url.searchParams.get('token');
@@ -115,108 +115,113 @@ export default function ChangePasswordPage() {
       <div className={currentFontStyle}>
         <Stack direction="vertical" className="mt-3" gap={3}>
           <h1>Change Password</h1>
-          <Stack direction="vertical" className="mt-4" gap={2}>
-            {allowSetOthers && (
-              <Stack direction="horizontal" className="password-switch-stack">
-                <Form.Check
-                  type="switch"
-                  defaultChecked={isForOther}
-                  className="password-switch"
-                  onChange={() => setIsForOther(!isForOther)}
-                />
-                <span>Change for someone else</span>
-                {isForOther && (
-                  <>
-                    <span>&nbsp;&mdash;&nbsp;</span>
-                    <DropdownButton
-                      title={forWho}
-                      type="button"
-                      variant="secondary"
-                      className="select-user-dropdown"
-                    >
-                      {usersArr.map((user, index) => {
-                        return (
-                          <Dropdown.Item
-                            key={index}
-                            as="button"
-                            onClick={() => handleSetFor(user)}
-                          >
-                            {user.full_name}
-                          </Dropdown.Item>
-                        );
-                      })}
-                    </DropdownButton>
-                  </>
-                )}
-              </Stack>
-            )}
+          <Stack direction="horizontal" className="mt-3" gap={3}>
+            <Stack direction="vertical" className="mt-4" gap={2}>
+              {allowSetOthers && (
+                <Stack direction="horizontal" className="password-switch-stack">
+                  <Form.Check
+                    type="switch"
+                    defaultChecked={isForOther}
+                    className="password-switch"
+                    onChange={() => setIsForOther(!isForOther)}
+                  />
+                  <span>Change for someone</span>
+                  <></>
+                </Stack>
+              )}
 
-            {oldPassNeeded && (
-              <div>
-                <div className="reset-password-row">
-                  <label>Current Password:</label>
-                  <input
-                    name="oldPassword"
+              {oldPassNeeded && (
+                <div>
+                  <div className="reset-password-row">
+                    <label>Current Password:</label>
+                    <input
+                      name="oldPassword"
+                      value={oldPassword}
+                      type="password"
+                      disabled={isForOther}
+                      onChange={handlePasswordChange}
+                      style={{ marginLeft: '15px' }}
+                    />
+                  </div>
+                  <PasswordChecklist
+                    rules={['minLength']}
+                    minLength={1}
                     value={oldPassword}
-                    type="password"
-                    disabled={isForOther}
-                    onChange={handlePasswordChange}
-                    style={{ marginLeft: '15px' }}
+                    messages={{
+                      minLength:
+                        'Current password is required to set new password.',
+                    }}
                   />
                 </div>
-                <PasswordChecklist
-                  rules={['minLength']}
-                  minLength={1}
-                  value={oldPassword}
-                  messages={{
-                    minLength:
-                      'Current password is required to set new password.',
-                  }}
+              )}
+              <div className="reset-password-row mt-2">
+                <label>New Password:</label>
+                <br />
+                <input
+                  name="password"
+                  value={password}
+                  type="password"
+                  onChange={handlePasswordChange}
+                  style={{ marginLeft: '15px' }}
                 />
               </div>
-            )}
-            <div className="reset-password-row">
-              <label>New Password:</label>
-              <input
-                name="password"
-                value={password}
-                type="password"
-                onChange={handlePasswordChange}
-                style={{ marginLeft: '15px' }}
-              />
-            </div>
-            <div className="reset-password-row">
-              <label>Repeat New Password:</label>
-              <input
-                name="passwordAgain"
-                value={passwordAgain}
-                type="password"
-                onChange={handlePasswordChange}
-                style={{ marginLeft: '15px' }}
-              />
-            </div>
-            <div>
-              <PasswordChecklist
-                rules={rules}
-                minLength={minLen}
-                value={password}
-                valueAgain={passwordAgain}
-                onChange={handleChecklist}
-              />
-            </div>
-            <Stack direction="horizontal">
-              <div>
-                <button
-                  type="submit"
-                  disabled={!enableSubmit}
-                  className="btn btn-primary reset-password-button"
-                  onClick={() => handleSubmit()}
-                  style={{ marginTop: '15px' }}
-                >
-                  Reset Password
-                </button>
+              <div className="reset-password-row">
+                <label>Repeat New Password:</label>
+                <br />
+                <input
+                  name="passwordAgain"
+                  value={passwordAgain}
+                  type="password"
+                  onChange={handlePasswordChange}
+                  style={{ marginLeft: '15px' }}
+                />
               </div>
+              <div>
+                <PasswordChecklist
+                  rules={rules}
+                  minLength={minLen}
+                  value={password}
+                  valueAgain={passwordAgain}
+                  onChange={handleChecklist}
+                />
+              </div>
+              <Stack direction="horizontal">
+                <div>
+                  <button
+                    type="submit"
+                    disabled={!enableSubmit}
+                    className="btn btn-primary reset-password-button"
+                    onClick={() => handleSubmit()}
+                    style={{ marginTop: '15px' }}
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </Stack>
             </Stack>
+            {isForOther && (
+              <>
+                <DropdownButton
+                  title={forWho}
+                  type="button"
+                  variant="secondary"
+                  className="select-user-dropdown mt-3"
+                >
+                  {usersArr.map((user, index) => {
+                    return (
+                      <Dropdown.Item
+                        key={index}
+                        as="button"
+                        onClick={() => handleSetFor(user)}
+                      >
+                        {user.full_name}
+                      </Dropdown.Item>
+                    );
+                  })}
+                </DropdownButton>
+              </>
+            )}
+            <div className="d-flex">&nbsp;</div>
           </Stack>
         </Stack>
       </div>

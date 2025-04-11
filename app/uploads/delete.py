@@ -6,6 +6,7 @@ from ..models.tables import (
     Label,
     FileUpload,
     Filter,
+    Setting,
     context_str_to_enum,
 )
 from ..models.helpers import (
@@ -26,13 +27,17 @@ from ..models.helpers import (
 
 
 def delete_all_users():
-    drop_and_rebuild_tables("conflicts,users,roles")
+    # drop_and_rebuild_tables("conflicts,users,roles") # old version just this
+    drop_and_rebuild_tables(
+        "history,conflicts,tags,labels,papers,glob_queues,actions,users,roles"
+    )
+    ensure_all_gqs()  # GQs were wiped, now needed
 
 
 def delete_all_papers():
     set_all_users_to_be_in_plenary()
     drop_and_rebuild_tables("history,conflicts,tags,labels,papers,glob_queues,actions")
-    ensure_all_gqs()
+    ensure_all_gqs()  # GQs were wiped
 
 
 def delete_all_conflicts():
@@ -136,6 +141,11 @@ def delete_all_filters():
     log_print(f"Deleted {num_deleted} filters.")
 
 
+def delete_all_settings():
+    num_deleted = Setting.query.delete()
+    log_print(f"Deleted {num_deleted} settings.")
+
+
 csvDeleteFunctions = {
     "chair": delete_all_chair_scores,
     "clusters": delete_all_clusters,
@@ -144,6 +154,7 @@ csvDeleteFunctions = {
     "actions": delete_actions,
     "papers": delete_all_papers,
     "filters": delete_all_filters,
+    "settings": delete_all_settings,
     "users": delete_all_users,
 }
 
@@ -155,7 +166,14 @@ csvDependence = {
         "clusters",
         "chair",
     ],
-    "users": ["conflicts"],
+    "users": [
+        "papers",
+        "conflicts",
+        "history",
+        "clusters",
+        "chair",
+    ],
+    # "users": ["conflicts"], # old version: users only wipe conflicts
 }
 
 

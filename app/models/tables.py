@@ -42,9 +42,11 @@ tags = db.Table(
 class Setting(db.Model):
     __tablename__ = "settings"
     id = db.Column(db.Integer, primary_key=True)
-    admin_only = db.Column(db.Boolean, default=False)
+    # admin_only = db.Column(db.Boolean, default=False) # only visible to admin
     name = db.Column(db.String(64), unique=True)
-    value = db.Column(db.String, default="")  # encoded as string/JSON
+    is_num = db.Column(db.Boolean, default=True)
+    num_value = db.Column(db.Float, default=0.0)
+    str_value = db.Column(db.String, default="")  # encoded as string/JSON
 
 
 class Role(db.Model):

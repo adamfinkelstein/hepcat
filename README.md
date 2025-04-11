@@ -87,6 +87,7 @@ python hepcat.py
 - In another terminal run React server:
 
 ```
+nvm use 20.14.0 (from above)
 # no longer needed:
 # export HOST="http://127.0.0.1"
 # export REACT_APP_SOCKET_ENDPOINT="http://127.0.0.1:5000/"

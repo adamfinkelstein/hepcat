@@ -36,36 +36,37 @@ def setting_dict_set(name, value):
     val_json = json.dumps(value)
     print(f"setting_set: {name} = {value} = json: {val_json}")
     if setting:
-        setting.value = val_json
+        setting.is_num = False
+        setting.str_value = val_json
     else:
-        setting = Setting(name=name, value=val_json)
+        setting = Setting(name=name, is_num=False, str_value=val_json)
     db.session.add(setting)
 
 
 def setting_dict_get(name):
     setting = Setting.query.filter_by(name=name).first()
     if setting:
-        value = json.loads(setting.value)
+        value = json.loads(setting.str_value)
         return value
     return None
 
 
 def setting_float_set(name, value):
     setting = Setting.query.filter_by(name=name).first()
-    val_str = str(value)
+    # val_str = str(value)
     # print(f"setting_set: {name} = {value} = str: {val_str}")
     if setting:
-        setting.value = val_str
+        setting.is_num = True
+        setting.num_value = value
     else:
-        setting = Setting(name=name, value=val_str)
+        setting = Setting(name=name, is_num=True, num_value=value)
     db.session.add(setting)
 
 
 def setting_float_get(name):
     setting = Setting.query.filter_by(name=name).first()
-    if setting:
-        value = float(setting.value)
-        return value
+    if setting and setting.is_num:
+        return setting.num_value
     return None
 
 
@@ -165,7 +166,7 @@ def ensure_supers():
 
 def ensure_screens():
     passwd = current_app.config["HEPCAT_SCREEN_PASSWD"]
-    log_print(f"ensure_screens: passwd={passwd}")
+    # log_print(f"ensure_screens: passwd={passwd}")
     rooms = get_all_rooms()
     for room in rooms:
         lower = room.lower()

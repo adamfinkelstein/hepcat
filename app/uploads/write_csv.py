@@ -11,6 +11,7 @@ from ..models.tables import (
     Action,
     FileUpload,
     Filter,
+    Setting,
 )
 from ..models.history_util import get_latest_room_history, get_paper_bbs_status
 from . import (
@@ -124,6 +125,26 @@ def get_filters_as_rows():
         json_quote = double_quote_to_single(filter.text)
         json_quote = double_quote_text_for_csv(json_quote)
         row = f"{filter_name},{is_gui},{json_quote}"
+        rows.append(row)
+    return rows
+
+
+def get_settings_as_rows():
+    settings = Setting.query.all()
+    header = "Name,Is Num,Num Val,Str Val"
+    rows = [header]
+    for setting in settings:
+        # in CSV, double quotes in JSON are replaced w single
+        if setting.is_num:
+            is_num = "True"
+            num_val = str(setting.num_value)
+            str_val = ""
+        else:
+            is_num = "False"
+            num_val = ""
+            str_val = double_quote_to_single(setting.str_value)
+            str_val = double_quote_text_for_csv(str_val)
+        row = f"{setting.name},{is_num},{num_val},{str_val}"
         rows.append(row)
     return rows
 
@@ -310,6 +331,7 @@ csvExtractFunctions = {
     "chair": get_chair_scores_as_rows,
     "clusters": get_clusters_as_rows,
     "conflicts": get_conflicts_as_rows,
+    "settings": get_settings_as_rows,
     "history": get_history_as_rows,
     "papers": get_papers_as_rows,
     "filters": get_filters_as_rows,

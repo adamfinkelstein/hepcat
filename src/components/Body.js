@@ -57,6 +57,8 @@ export default function Body() {
     room === 'Plenary' || user?.rooms?.includes(room);
 
   const userRooms = allRooms.filter(
+    // XXX Later make this configurable whether everyone can
+    // go in any room.
     (room) => isAdmin || conflictbot || userBelongsInRoom(room),
   );
 

@@ -33,8 +33,8 @@ export default function Paper() {
   const hideMessage = isConflict
     ? 'CONFLICT'
     : !isPaper
-    ? 'No current paper.'
-    : 'In session.';
+      ? 'No current paper.'
+      : 'In session.';
 
   function userBelongsInRoom(user, room) {
     const rooms = user.rooms;
@@ -141,12 +141,13 @@ export default function Paper() {
     const sec1 = dateToSecs(currentStart);
     const sec2 = dateToSecs(date);
     const diff = sec2 - sec1;
-    const oneHour = 60 * 60;
-    const msDiff = Math.max(0, diff) * 1000;
-    const format = moment.utc(msDiff).format('mm:ss');
-    if (diff >= oneHour) {
-      return '--:--';
+    if (diff < 0) {
+      return '00:00';
+    } else if (diff >= 3600) {
+      return '> 1hr';
     }
+    const msDiff = diff * 1000;
+    const format = moment.utc(msDiff).format('mm:ss');
     return format;
   }
 

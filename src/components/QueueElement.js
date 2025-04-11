@@ -24,9 +24,12 @@ export default function QueueElement({ paper, showConflicts, showStars }) {
   const possibleStar = isFavorite && showStars ? starSymbol : '';
   const suffixSym = isConflict ? confSymbol : possibleStar;
   const nid = paper.nid;
-  const prefix = nid ? `Q${paper.queue_order} (${nid}):` : '';
+  const qid = paper.queue_order;
+  const qidStr = qid ? 'Q' + qid : '';
+  const prefix = qidStr + (nid && !isScreen ? ` (${nid}):` : '');
   const title = isPast ? status : paper.title;
-  const showTitle = isConflict ? 'CONFLICT' : title;
+  const screenTitle = isScreen ? '-' : title;
+  const showTitle = isConflict ? 'CONFLICT' : screenTitle;
   const qEntryClass = isConflict ? 'bigger-font mx-auto' : '';
 
   return (

@@ -13,6 +13,7 @@ from ..models.tables import (
     Label,
     FileUpload,
     Filter,
+    Setting,
     context_str_to_enum,
     status_str_to_enum,
     fill_history_context_tables_and_room_list,
@@ -28,7 +29,7 @@ from ..models.helpers import (
     ensure_screens,
 )
 from ..models.history_util import get_latest_history
-from ..models.bar import set_bar, get_bar
+from ..models.bar import get_bar
 from . import (
     single_quote_to_double,
     get_paper_room_name_or_none,
@@ -100,6 +101,23 @@ def insert_filter_rows(rows):
         double_quote = single_quote_to_double(text)
         filter = Filter(name=name, is_gui=is_gui, text=double_quote)
         db.session.add(filter)
+        count += 1
+    return count
+
+
+# Name,Is Num,Num Val,Str Val
+def insert_setting_rows(rows):
+    count = 0
+    for row in rows:
+        name, is_num, num_val, str_val = row
+        is_num = True if is_num == "True" else False
+        if is_num:
+            num_val = float(num_val)
+            setting = Setting(name=name, is_num=True, num_value=num_val)
+        else:
+            quoted = single_quote_to_double(str_val)
+            setting = Setting(name=name, is_num=False, str_value=quoted)
+        db.session.add(setting)
         count += 1
     return count
 
@@ -244,6 +262,7 @@ def ensure_label(label_type, name):
 # Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
+    omit_exceptions = current_app.config["HEPCAT_OMIT_EXCEPTIONS"]
     exception_type = int(LabelType.Exception)
     n = len(rows)
     oids = gen_unique_keys(n, 8)
@@ -252,6 +271,8 @@ def insert_paper_rows(rows):
     paper_room_rows = []
     for row in rows:
         sid, exception, thumbnail, title, areas, track, room, abstract = row
+        if exception and omit_exceptions:
+            continue  # omit any papers with exceptions
         journal_only = journal_only_from_track(track)
         nid = sid_to_num(sid)
         oid = oids.pop(0)
@@ -370,6 +391,7 @@ def assign_papers_without_rooms_to_plenary(plenary):
     log_print(f"assigned {count} papers without rooms to Plenary room")
 
 
+# Now in 2025 format, this is called by insert_paper_rows().
 # Submission ID,Room
 def insert_paper_room_rows(rows):
     room_type = int(LabelType.Room)
@@ -416,12 +438,13 @@ def review_str_to_float(s):
     return 0
 
 
-def check_for_test_bar_and_get_bar():
-    test_bar = current_app.config["HEPCAT_TEST_BAR"]
-    if test_bar:
-        set_bar(test_bar)
-        return test_bar
-    return get_bar()
+# no longer needed after settings file is read
+# def check_for_test_bar_and_get_bar():
+#     test_bar = current_app.config["HEPCAT_TEST_BAR"]
+#     if test_bar:
+#         set_bar(test_bar)
+#         return test_bar
+#     return get_bar()
 
 
 def add_bbs_history_to_paper(paper, status):
@@ -442,7 +465,7 @@ def add_tags_to_paper(paper, tags):
 
 def insert_chair_score_rows(rows):
     count = 0
-    bar = check_for_test_bar_and_get_bar()  # get bar (if local test, first set it)
+    bar = get_bar()
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews,Tags
         sid, chair_score, status, reviews, tags = row
@@ -567,6 +590,7 @@ csvHeaders = {
     "history": "Submission ID,When,Context,Status",
     "papers": "Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract",
     "users": "Email,First Name,Last Name,Rooms,Role,Password",
+    "settings": "Name,Is Num,Num Val,Str Val",
 }
 
 
@@ -578,6 +602,7 @@ csvInsertFunctions = {
     "actions": insert_actions_rows,
     "papers": insert_paper_rows,
     "filters": insert_filter_rows,
+    "settings": insert_setting_rows,
     "users": insert_user_rows,
 }
 
@@ -635,7 +660,7 @@ def read_csv(filename):
     return header_type
 
 
-csvLinklings = "users,papers,conflicts,clusters,chair"
+csvLinklings = "users,papers,conflicts,clusters,settings,chair"
 csvLinklings = csvLinklings.split(",")
 
 
@@ -669,7 +694,7 @@ def read_test_csv_files():
     folder = current_app.config["HEPCAT_TEST_UPLOAD"]
     include_history = current_app.config["HEPCAT_TEST_HISTORY"]
     include_actions = current_app.config["HEPCAT_TEST_ACTIONS"]
-    csv_order = "users,papers,conflicts,clusters,chair,filters"
+    csv_order = "users,papers,conflicts,clusters,settings,chair,filters"
     csv_order = csv_order.split(",")
     if include_history:
         csv_order.append("history")
@@ -682,7 +707,7 @@ def read_test_csv_files():
         header_type = read_csv(fullpath)
         if not header_type:
             log_print(f"failed to read csv: {fullpath}")
-            return
+            continue
         copy_file_to_upload_folder(fullpath, header_type)
         if not try_sql_commit():
             log_print(f"failed sql commit: {csv_type}")

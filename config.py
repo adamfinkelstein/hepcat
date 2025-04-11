@@ -78,12 +78,13 @@ class Config:
     HEPCAT_SHOW_TIMERS = env_get_bool("HEPCAT_SHOW_TIMERS", False)
     HEPCAT_TSP_DISABLED = env_get_bool("HEPCAT_TSP_DISABLED", False)
     HEPCAT_USE_ORTOOLS = env_get_bool("HEPCAT_USE_ORTOOLS", False)
+    HEPCAT_OMIT_EXCEPTIONS = env_get_bool("HEPCAT_OMIT_EXCEPTIONS", True)
     HEPCAT_TSP_MAX = env_get_int("HEPCAT_TSP_MAX", 60)
     HEPCAT_TEST_UPLOAD = env_get_str("HEPCAT_TEST_UPLOAD", "./tests/test-data")
     HEPCAT_TEST_HISTORY = env_get_int("HEPCAT_TEST_HISTORY", 0)  # 0=none
     HEPCAT_TEST_ACTIONS = env_get_int("HEPCAT_TEST_ACTIONS", 0)  # 0=none
     HEPCAT_TEST_AUTO_INIT = env_get_bool("HEPCAT_TEST_AUTO_INIT", True)
-    HEPCAT_TEST_BAR = env_get_float("HEPCAT_TEST_BAR", None)
+    # HEPCAT_TEST_BAR = env_get_float("HEPCAT_TEST_BAR", None)
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
     HEPCAT_AUTO_REJECT = env_get_bool("HEPCAT_AUTO_REJECT", True)
     HEPCAT_CACHE_NAME = env_get_str("HEPCAT_CACHE_NAME", "cache")  # or "" for no cache
