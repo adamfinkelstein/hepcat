@@ -3,22 +3,22 @@ import Button from 'react-bootstrap/Button';
 import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import StickyTip from './StickyTip.js';
 import { useState } from 'react';
-import { useSocketIO } from '../contexts/SocketIOContext';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useGrid } from '../contexts/GridContext';
-import { useFavorites } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
+import { useSticky } from '../contexts/StickyContext';
 
 export default function SetSticky() {
-  const { socketEmit } = useSocketIO();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
   const { gridGetElemByNid, gridNidIsValid } = useGrid();
   const [stickyType, setStickyType] = useState('Tabled-Discuss');
   const [ID, setID] = useState('');
   const { controlledLog } = useControlledLog();
-  const favorites = useFavorites();
+  const { favorites } = usePreferences();
+  const { sendSticky } = useSticky();
 
   const stickyOptions = ['Tabled-Discuss', 'Reject', 'Conference', 'Journal'];
   const stickyStatuses = ['Ready', 'Tabled-Discuss'];
@@ -41,12 +41,6 @@ export default function SetSticky() {
     return Boolean(gridElem.below_bar);
   };
 
-  const sendStickyForNID = (nid, status) => {
-    const data = { status, nid };
-    controlledLog('Send sticky ' + status + ' for paper: ' + nid);
-    socketEmit('user_set_sticky', data);
-  };
-
   const confirmWarningsThenSendSticky = (warnings, nid) => {
     let text = '';
     if (warnings.length === 1) {
@@ -61,7 +55,7 @@ export default function SetSticky() {
     text += '\nContinue with this sticky anyway?';
     revealConfirmationBox('Confirm Sticky?', text, (confirmed) => {
       if (confirmed) {
-        sendStickyForNID(nid, stickyType);
+        sendSticky(nid, stickyType);
       } else {
         controlledLog('Canceled sticky for paper: ' + nid);
       }
@@ -106,7 +100,7 @@ export default function SetSticky() {
     if (warnings.length) {
       confirmWarningsThenSendSticky(warnings, nid);
     } else {
-      sendStickyForNID(nid, stickyType);
+      sendSticky(nid, stickyType);
     }
   };
 

@@ -1,11 +1,11 @@
 import { useAppGlobals } from '../contexts/AppContext';
-import { useFavorites } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import { useGrid } from '../contexts/GridContext';
 
 export default function GridBlock({ nidList }) {
   const { gridMode, gridGetElemByNid } = useGrid();
   const { queue, queueCurrent } = useAppGlobals();
-  const favorites = useFavorites();
+  const { favorites } = usePreferences();
   const showCurrent = gridMode === 'Normal' || gridMode === 'This Room';
   const queueCurrentOk =
     queue.length && queueCurrent < queue.length && queueCurrent >= 0;

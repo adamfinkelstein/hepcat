@@ -6,19 +6,15 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useGrid } from '../contexts/GridContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
-import {
-  useChangeFavorites,
-  useFavorites,
-} from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function FavoritePreferences() {
   const { controlledLog } = useControlledLog();
-  const changeFavorites = useChangeFavorites();
+  const { favorites, setFavorites } = usePreferences();
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
   const { revealConfirmationBox } = useConfirmationBox();
   const { gridNidIsValid } = useGrid();
-  const favorites = useFavorites();
   const showDeleteAny = favorites && favorites.length > 0;
   const showDeleteAll = favorites && favorites.length > 1;
   const deleteMsg = showDeleteAny
@@ -45,7 +41,7 @@ export default function FavoritePreferences() {
     // check for valid IDs
     const badIDs = ids.filter((v) => !gridNidIsValid(v));
     if (!badIDs.length) {
-      changeFavorites((oldFav) => combineFavorites(oldFav, ids));
+      setFavorites((oldFav) => combineFavorites(oldFav, ids));
       idBox.value = ''; // clear out the box
       flash('Favorites are updated.', 'success');
     } else {
@@ -64,10 +60,10 @@ export default function FavoritePreferences() {
         let msg = 'All favorites removed.';
         if (removeID) {
           msg = 'Favorite ' + removeID + ' removed.';
-          changeFavorites((oldFav) => oldFav.filter((id) => id !== removeID));
+          setFavorites((oldFav) => oldFav.filter((id) => id !== removeID));
         } else {
           // remove all
-          changeFavorites([]);
+          setFavorites([]);
         }
         controlledLog(msg);
         flash(msg, 'success');

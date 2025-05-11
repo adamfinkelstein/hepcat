@@ -241,11 +241,11 @@ export default function SetQueue() {
 
   function handleGetFilteredCount() {
     guiSettingsAsText();
-    emitAdminFilterMsg('admin_probe_queue');
+    emitAdminFilterMsg('admin_probe_by_gui');
   }
 
   function handleSetQueueButton() {
-    emitAdminFilterMsg('admin_set_queue');
+    emitAdminFilterMsg('admin_set_queue_by_gui');
     flash('Sent queue request.', 'success');
   }
 
@@ -292,7 +292,7 @@ export default function SetQueue() {
     controlledLog('sending probe queue request: ' + textFilterBox);
     const explicit = textFilterBox;
     const data = { roomChoice, explicit };
-    socketEmit('admin_probe_text', data);
+    socketEmit('admin_probe_by_text', data);
     // flash('Sent request for paper count.', 'success');
   }
 
@@ -324,7 +324,7 @@ export default function SetQueue() {
     controlledLog('sending clear queue request');
     const explicit = '';
     const data = { roomChoice, explicit };
-    socketEmit('admin_set_text_filter', data);
+    socketEmit('admin_set_queue_by_text', data);
     flash('Sent clear queue request.', 'success');
   }
 
@@ -332,7 +332,7 @@ export default function SetQueue() {
     controlledLog('sending explicit queue request: ' + textFilterBox);
     const explicit = textFilterBox;
     const data = { roomChoice, explicit, noTSP };
-    socketEmit('admin_set_text_filter', data);
+    socketEmit('admin_set_queue_by_text', data);
     flash('Sent queue request.', 'success');
   }
 

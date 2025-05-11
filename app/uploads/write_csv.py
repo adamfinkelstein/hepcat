@@ -131,20 +131,19 @@ def get_filters_as_rows():
 
 def get_settings_as_rows():
     settings = Setting.query.all()
-    header = "Name,Is Num,Num Val,Str Val"
+    header = "Name,Type,Value"
     rows = [header]
     for setting in settings:
-        # in CSV, double quotes in JSON are replaced w single
-        if setting.is_num:
-            is_num = "True"
-            num_val = str(setting.num_value)
-            str_val = ""
-        else:
-            is_num = "False"
-            num_val = ""
-            str_val = double_quote_to_single(setting.str_value)
-            str_val = double_quote_text_for_csv(str_val)
-        row = f"{setting.name},{is_num},{num_val},{str_val}"
+        val_type = setting.type
+        val_str = setting.json
+        if val_type == "dict":
+            # in CSV, double quotes in JSON are replaced w single
+            val_str = double_quote_to_single(val_str)
+        if val_type == "dict" or val_type == "str":
+            val_str = double_quote_text_for_csv(val_str)
+        elif val_type == "bool":
+            val_str = "TRUE" if val_str.lower() == "true" else "FALSE"
+        row = f"{setting.name},{setting.type},{val_str}"
         rows.append(row)
     return rows
 

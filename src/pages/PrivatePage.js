@@ -1,19 +1,19 @@
-import TextPreferences from '../components/TextPreferences';
-import ColorPreferences from '../components/ColorPreferences';
+import FavoritePreferences from '../components/FavoritePreferences';
+import RevokeStickies from '../components/RevokeStickies';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { usePreferences } from '../contexts/PreferencesContext';
 
-export default function PreferencesPage() {
+export default function PrivatePage() {
   const { fontPref } = usePreferences();
   return (
-    <Container className="PreferencesPage mt-3">
+    <Container className="PrivatePage mt-3">
       <div className={fontPref}>
-        <h1>Preferences</h1>
+        <h1>Private Settings</h1>
         <Stack direction="vertical" gap={2}>
-          <TextPreferences />
+          <FavoritePreferences />
           <hr className="horizontal-divider" />
-          <ColorPreferences />
+          <RevokeStickies />
         </Stack>
       </div>
     </Container>

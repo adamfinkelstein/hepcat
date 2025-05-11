@@ -9,11 +9,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
-import {
-  useSplitWidth,
-  useChangeSplitWidth,
-  useFontInfo,
-} from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import Queue from './Queue';
 import Paper from './Paper';
 import GridTab from './GridTab';
@@ -29,17 +25,13 @@ export default function Body() {
     roomCalledTo,
     roomChoice,
     setRoomChoice,
+    isScreenOrOutside,
   } = useUser();
   const { queue, serverGlobs } = useAppGlobals();
-  const splitWidth = useSplitWidth();
-  const changeSplitWidth = useChangeSplitWidth();
-  const { currentFontStyle } = useFontInfo();
+  const { splitWidth, setSplitWidth, fontPref } = usePreferences();
   const showRoomWarning =
     !isAdmin && conflictbot && roomCalledTo !== roomChoice;
-  const isScreenRole = user?.role_name === 'Screen';
-  const isOutsideRole = user?.role_name === 'Outside';
-  const isScreen = isScreenRole || isOutsideRole;
-  const showGrid = !isScreen;
+  const showGrid = !isScreenOrOutside();
   const hideQueue = !isAdmin && serverGlobs?.hide_queue;
   const hideMessage =
     serverGlobs && serverGlobs.message
@@ -62,7 +54,7 @@ export default function Body() {
     (room) => isAdmin || conflictbot || userBelongsInRoom(room),
   );
 
-  const handleDragEnd = (sizes) => changeSplitWidth(sizes);
+  const handleDragEnd = (sizes) => setSplitWidth(sizes);
 
   const handleBringButton = () => {
     if (!conflictbot) return;
@@ -73,18 +65,18 @@ export default function Body() {
   return (
     <Container fluid className="Body">
       {!user ? (
-        <p id="waiting-for-server">Waiting for server connection...</p>
+        <p>Waiting for server connection...</p>
       ) : (
         <Split
           direction="horizontal"
           className="split"
           sizes={[splitWidth[0], splitWidth[1]]}
           cursor="col-resize"
-          minSize={[500, 550]}
+          minSize={[300, 500]}
           onDragEnd={handleDragEnd}
         >
           <Container fluid className="left-panel">
-            <div className={currentFontStyle}>
+            <div className={fontPref}>
               <Stack
                 direction="horizontal"
                 gap={4}
@@ -122,7 +114,7 @@ export default function Body() {
             </div>
           </Container>
           <Container fluid className="right-panel">
-            <div className={currentFontStyle}>
+            <div className={fontPref}>
               <Tabs
                 defaultActiveKey="paper"
                 id="paper-tabs"

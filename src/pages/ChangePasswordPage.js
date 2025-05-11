@@ -6,7 +6,7 @@ import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
-import { useFontInfo } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
@@ -18,7 +18,7 @@ export default function ChangePasswordPage() {
   const { socketEmit } = useSocketIO();
   const { flash } = useFlasher();
   const { user, isAdmin, allUsers } = useUser();
-  const { currentFontStyle } = useFontInfo();
+  const { fontPref } = usePreferences();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
@@ -112,17 +112,16 @@ export default function ChangePasswordPage() {
 
   return (
     <Container className="ChangePasswordPage">
-      <div className={currentFontStyle}>
+      <div className={fontPref}>
         <Stack direction="vertical" className="mt-3" gap={3}>
           <h1>Change Password</h1>
           <Stack direction="horizontal" className="mt-3" gap={3}>
             <Stack direction="vertical" className="mt-4" gap={2}>
               {allowSetOthers && (
-                <Stack direction="horizontal" className="password-switch-stack">
+                <Stack direction="horizontal">
                   <Form.Check
                     type="switch"
-                    defaultChecked={isForOther}
-                    className="password-switch"
+                    checked={isForOther}
                     onChange={() => setIsForOther(!isForOther)}
                   />
                   <span>Change for someone</span>
@@ -132,7 +131,7 @@ export default function ChangePasswordPage() {
 
               {oldPassNeeded && (
                 <div>
-                  <div className="reset-password-row">
+                  <div>
                     <label>Current Password:</label>
                     <input
                       name="oldPassword"
@@ -154,7 +153,7 @@ export default function ChangePasswordPage() {
                   />
                 </div>
               )}
-              <div className="reset-password-row mt-2">
+              <div className="mt-2">
                 <label>New Password:</label>
                 <br />
                 <input
@@ -165,7 +164,7 @@ export default function ChangePasswordPage() {
                   style={{ marginLeft: '15px' }}
                 />
               </div>
-              <div className="reset-password-row">
+              <div>
                 <label>Repeat New Password:</label>
                 <br />
                 <input

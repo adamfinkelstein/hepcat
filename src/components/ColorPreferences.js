@@ -7,32 +7,21 @@ import ChooseStatusDropdown from './ChooseStatusDropdown.js';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useCount } from '../contexts/CountContext';
-import {
-  useColors,
-  useChangeColor,
-  useDefaultColors,
-  useChangeTextColors,
-} from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import ColorLegend from './ColorLegend';
 
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
-  const colors = useColors();
+  const { colors, changeColor, defaultColors, changeToDefaultColors } =
+    usePreferences();
   const { colorKeys } = useCount();
-  const changeColor = useChangeColor();
-  const { defaultColors, changeToDefaultColors } = useDefaultColors();
   const defaultColorVals = Object.values(defaultColors);
-  const changeTextColors = useChangeTextColors();
   const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
 
   const { flash } = useFlasher();
 
   let handleChangeColor = (type, color) => {
-    controlledLog(color);
-    const colorLightness = color.hsl.l;
-    const blackWhiteThresh = 0.65; // threshold between black or white text
-    const textBlack = colorLightness > blackWhiteThresh;
-    changeTextColors(type, textBlack);
+    controlledLog('change color', type, color);
     changeColor(type, color.hex);
   };
 
@@ -65,7 +54,7 @@ export default function ColorPreferences() {
             <div />
           </Stack>
           <ColorLegend header="Color Codes" />
-          <Stack className="mt-2" direction="horizontal" gap={5}>
+          <Stack className="mt-2 mb-5" direction="horizontal" gap={5}>
             <Button variant="secondary" onClick={handleDefaultColorButton}>
               Reset to Defaults
             </Button>

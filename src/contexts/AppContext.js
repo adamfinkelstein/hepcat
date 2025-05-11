@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
+import { useFlasher } from './FlasherContext';
 import { useUser } from './UserContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useKey } from './KeyContext';
@@ -24,18 +25,19 @@ export function useAppGlobals() {
 
 export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
+  const { user, isAdmin, roomChoice } = useUser();
   const { socket, socketEmit } = useSocketIO();
   const { revealModalDialog } = useModalDialog();
   const { decryptObjectOrNull } = useKey();
-  const { user, isAdmin, paperKeys, roomChoice } = useUser();
   const { updateGridEntry } = useGrid();
+  const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
   const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
   const [probeTextMsg, setProbeTextMsg] = useState(notSetYetMsg);
   const [fileUploads, setFileUploads] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null);
-  const [newStatus, setNewStatus] = useState('Tabled');
+  const [updateStatus, setUpdateStatus] = useState('Tabled');
   const [appBar, setAppBar] = useState(''); // actual bar value
   const [guiBar, setGuiBar] = useState(''); // value in set bar input text box
   const [hideQ, setHideQ] = useState(false);
@@ -57,7 +59,7 @@ export default function AppContext({ children }) {
       const status = data ? data.current_status : null;
       setQueueCurrent(curr);
       if (status) {
-        setNewStatus(status);
+        setUpdateStatus(status);
       }
     },
     [
@@ -65,7 +67,7 @@ export default function AppContext({ children }) {
       setShowLogs,
       setServerGlobs,
       setQueueCurrent,
-      setNewStatus,
+      setUpdateStatus,
       setHideQ,
       setHiddenMsg,
     ],
@@ -99,14 +101,18 @@ export default function AppContext({ children }) {
       // if there was an update, it was encrypted, so get it...
       if (data.update_encrypted) {
         data.update = decryptObjectOrNull(data.update_encrypted);
-        controlledLog('decrypt update:');
-        controlledLog(data.update);
+        controlledLog('decrypt update:', data.update);
       }
       const isTheRoom = data.room === roomChoice;
       if (isTheRoom) {
         recordGlobsForThisRoom(data);
         if (data.update) {
-          updateQueueEntry(data.update.queue_index, data.update.status);
+          const index = data.update.queue_index;
+          const status = data.update.status;
+          const nid = data.update.nid;
+          const msg = `Update: Q${index + 1} (${nid}) is ${status}.`;
+          flash(msg, 'info', 3);
+          updateQueueEntry(index, status);
         }
       }
       if (data.update) {
@@ -137,16 +143,14 @@ export default function AppContext({ children }) {
       controlledLog(data);
       const room = data.globs.room;
       const isTheRoom = room === roomChoice;
-      const msg = `receiveQueue compare rooms: ${room} ${roomChoice} ${isTheRoom}`;
-      controlledLog(msg);
+      // const msg = `receiveQueue compare rooms: ${room} ${roomChoice} ${isTheRoom}`;
+      // controlledLog(msg);
       if (isTheRoom) {
         data.paper_list = decryptPaperQueue(data.paper_list_encrypted);
         setQueue(data.paper_list);
         receiveGlobs(data.globs);
         setProbeGUIMsg(notSetYetMsg); // when queue arrives, invalidate probe
         setProbeTextMsg(notSetYetMsg);
-      } else {
-        // maybe need to check for other updates????XXX
       }
     };
 
@@ -165,7 +169,7 @@ export default function AppContext({ children }) {
       return msg;
     };
 
-    const receiveProbe = (countStr) => {
+    const receiveProbeGui = (countStr) => {
       const msg = getMsgFromProbe(countStr, 'GUI');
       setProbeGUIMsg(msg);
     };
@@ -191,8 +195,8 @@ export default function AppContext({ children }) {
       socket.on('server_set_queue', receiveQueue);
       socket.on('server_set_globs', receiveGlobs);
       socket.on('server_send_alert', receiveAlert);
-      socket.on('server_probe_count', receiveProbe);
-      socket.on('server_probe_text_count', receiveProbeText);
+      socket.on('server_probe_by_gui', receiveProbeGui);
+      socket.on('server_probe_by_text', receiveProbeText);
       socket.on('server_file_uploads', receiveFileUploads);
       socket.on('server_reload_user', receiveReload);
     }
@@ -203,8 +207,8 @@ export default function AppContext({ children }) {
         socket.off('server_set_queue', receiveQueue);
         socket.off('server_set_globs', receiveGlobs);
         socket.off('server_send_alert', receiveAlert);
-        socket.off('server_probe_count', receiveProbe);
-        socket.off('server_probe_text_count', receiveProbeText);
+        socket.off('server_probe_by_gui', receiveProbeGui);
+        socket.off('server_probe_by_text', receiveProbeText);
         socket.off('server_file_uploads', receiveFileUploads);
         socket.off('server_reload_user', receiveReload);
       }
@@ -215,7 +219,7 @@ export default function AppContext({ children }) {
     isAdmin,
     roomChoice,
     user,
-    paperKeys,
+    flash,
     controlledLog,
     socketEmit,
     revealModalDialog,
@@ -229,8 +233,8 @@ export default function AppContext({ children }) {
       value={{
         queue,
         queueCurrent,
-        newStatus,
-        setNewStatus,
+        updateStatus,
+        setUpdateStatus,
         serverGlobs,
         probeGUIMsg,
         probeTextMsg,

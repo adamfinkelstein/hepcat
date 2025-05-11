@@ -8,8 +8,7 @@ import CollapsibleParagraph from './CollapsibleParagraph.js';
 export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const { user, roomChoice } = useUser();
-  const isOutsideRole = user?.role_name === 'Outside';
+  const { roomChoice, isOutsideRole, isScreenOrOutside } = useUser();
   const globals = useAppGlobals();
   const queue = globals.queue;
   const isPaper =
@@ -28,7 +27,8 @@ export default function Paper() {
   const safeScores = cp ? cp.all_scores : '';
   const scoresHTML = formatScoresInHTML(safeScores);
   const currentStart = isPaper && globals.serverGlobs.current_start;
-  const hidePaperOutside = isOutsideRole && currentShow;
+  const hideAbstract = isScreenOrOutside();
+  const hidePaperOutside = isOutsideRole() && currentShow;
   const hideThisPaper = hidePaperOutside || !isPaper || isConflict;
   const hideMessage = isConflict
     ? 'CONFLICT'
@@ -204,23 +204,25 @@ export default function Paper() {
               {cp.title}
             </p>
             {showTags && (
-              <p>
+              <p className="bigger-font">
                 <span className="paper-par-header">Tags:</span>
                 <span>{globals.serverGlobs.current_tags}</span>
               </p>
             )}
-            <p>
+            <p className="bigger-font">
               <span className="paper-par-header">Reviews: </span>
               <span dangerouslySetInnerHTML={scoresHTML} />
             </p>
             {showHist && (
-              <p>
+              <p className="bigger-font">
                 <span className="paper-par-header">History:</span>
                 <span>{formatHistoryList(hist)}</span>
               </p>
             )}
 
-            <CollapsibleParagraph title="Abstract" text={cp.abstract} />
+            {!hideAbstract && (
+              <CollapsibleParagraph title="Abstract" text={cp.abstract} />
+            )}
 
             <div className="d-flex justify-content-center">
               <img

@@ -9,8 +9,8 @@ export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
   const { roomChoice } = useUser();
   const {
-    newStatus,
-    setNewStatus,
+    updateStatus,
+    setUpdateStatus,
     queueCurrent,
     queue,
     serverGlobs,
@@ -31,7 +31,7 @@ export default function AdminQueueControls() {
   };
 
   const handleAdvanceButton = () => {
-    const data = { roomChoice, newStatus };
+    const data = { roomChoice, updateStatus };
     socketEmit('admin_advance_queue', data);
   };
 
@@ -64,8 +64,8 @@ export default function AdminQueueControls() {
       </Button>
       <ChooseStatusDropdown
         choiceList={statusList}
-        currentChoice={newStatus}
-        setValue={setNewStatus}
+        currentChoice={updateStatus}
+        setValue={setUpdateStatus}
       />
       <Button
         disabled={disableNext}

@@ -7,13 +7,13 @@ import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
-import { useFontInfo } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
   const { user, isAdmin, allUsers } = useUser();
   const { socketLogout } = useSocketIO();
-  const { currentFontStyle } = useFontInfo();
+  const { fontPref } = usePreferences();
 
   function countOnlineUsers() {
     if (!isAdmin) return 0;
@@ -42,7 +42,7 @@ export default function HeaderBar() {
   return (
     <>
       <Navbar bg="dark" variant="dark" fixed="top" className="HeaderBar">
-        <Container fluid className={currentFontStyle}>
+        <Container fluid className={fontPref}>
           <Navbar.Brand as={NavLink} to="/">
             Hepcat: SIGGRAPH PC Meeting
           </Navbar.Brand>
@@ -75,6 +75,12 @@ export default function HeaderBar() {
                     <NavDropdown.Item as={NavLink} to="preferences">
                       Preferences
                     </NavDropdown.Item>
+                    <NavDropdown.Item as={NavLink} to="private">
+                      Private Settings
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={NavLink} to="change_password">
+                      Change Password
+                    </NavDropdown.Item>
                     {isAdmin && (
                       <>
                         <NavDropdown.Item as={NavLink} to="uploads">
@@ -85,9 +91,6 @@ export default function HeaderBar() {
                         </NavDropdown.Item>
                       </>
                     )}
-                    <NavDropdown.Item as={NavLink} to="change_password">
-                      Change Password
-                    </NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item
                       onClick={() => {
@@ -104,7 +107,7 @@ export default function HeaderBar() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <div className={currentFontStyle}>
+      <div className={fontPref}>
         <div className="HeaderBarSpacer"></div>
       </div>
     </>

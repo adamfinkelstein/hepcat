@@ -7,7 +7,6 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFilterContext } from '../contexts/FilterContext';
-// import { useFontInfo } from '../contexts/PreferencesContext';
 
 export default function DangerousOps() {
   const { user, showGlobalOps, setShowGlobalOps } = useUser();
@@ -20,8 +19,9 @@ export default function DangerousOps() {
   const { appBar, guiBar, setGuiBar } = useAppGlobals();
   const { allGuiFilterNames, allTextFilterNames } = useFilterContext();
   const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
-  // const { currentFontStyle } = useFontInfo();
+  // const { fontPref } = useFontInfo();
   const isSuper = user && user.role_name === 'Super';
+  const appVersion = process.env.REACT_APP_VERSION;
 
   function handleSetBarButton() {
     const text =
@@ -82,7 +82,7 @@ export default function DangerousOps() {
 
   return (
     <div className="DangerousOps mt-3">
-      {/* <div className={currentFontStyle}> */}
+      {/* <div className={fontPref}> */}
       <Stack direction="horizontal" className="my-2">
         <h2>Dangerous Operations&nbsp;&nbsp;</h2>
         <Button
@@ -145,9 +145,11 @@ export default function DangerousOps() {
         </Stack>
       </Collapse>
       <hr />
-      {gitInfo && <p>{gitInfo}</p>}
+      <p>
+        {appVersion && <>Version {appVersion}: </>}
+        {gitInfo && <>{gitInfo}</>}
+      </p>
       <p>&nbsp;</p>
-      {/* </div> */}
     </div>
   );
 }

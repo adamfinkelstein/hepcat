@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useCallback } from 'react';
-var CryptoJS = require('crypto-js'); // XXX should this be const?
+const CryptoJS = require('crypto-js');
 
 const keyContext = createContext();
 

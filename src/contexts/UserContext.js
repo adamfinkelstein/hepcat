@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useSocketIO } from './SocketIOContext.js';
 import { useControlledLog } from './ControlledLogContext.js';
 import { useFlasher } from './FlasherContext';
 import { useKey } from './KeyContext';
+import { useStorage } from './StorageContext';
 
 const userContext = createContext();
 
@@ -12,23 +13,37 @@ export default function UserContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { setPaperKeys } = useKey();
+  const { setStorageUserID } = useStorage();
 
   const [user, setUser] = useState(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminKey, setAdminKey] = useState(''); // XXX move to KeyContext???
+  const [adminKey, setAdminKey] = useState(''); // XXX move to KeyContext??? or AdminContext????
   const [conflictbot, setConflictbot] = useState(false);
   const [allUsers, setAllUsers] = useState({});
   const [allRooms, setAllRooms] = useState([]);
   const [roomCalledTo, setRoomCalledTo] = useState('Plenary');
   const [roomChoice, setRoomChoice] = useState('Plenary');
   const [gitInfo, setGitInfo] = useState('');
-  const [showAbstract, setShowAbstract] = useState(true);
   const [showGlobalOps, setShowGlobalOps] = useState(false);
+
+  const isScreenRole = useCallback(() => {
+    return user?.role_name === 'Screen';
+  }, [user]);
+
+  const isOutsideRole = useCallback(() => {
+    return user?.role_name === 'Outside';
+  }, [user]);
+
+  // either type of screen role
+  const isScreenOrOutside = useCallback(() => {
+    return isScreenRole() || isOutsideRole();
+  }, [isScreenRole, isOutsideRole]);
 
   useEffect(() => {
     if (!socket) {
       if (user || socket === null) {
         setUser(null);
+        setStorageUserID(null);
       }
       setIsAdmin(false);
       setAdminKey('');
@@ -38,6 +53,9 @@ export default function UserContext({ children }) {
         controlledLog('received welcome:');
         controlledLog(data);
         setUser(data.user);
+        if (data.user && data.user.email) {
+          setStorageUserID(data.user.email);
+        }
         const isAdmin = data.user && data.user.role_is_admin;
         setIsAdmin(isAdmin);
         setConflictbot(data.conflictbot_enabled);
@@ -139,6 +157,7 @@ export default function UserContext({ children }) {
     allUsers,
     gitInfo,
     setPaperKeys,
+    setStorageUserID,
   ]);
 
   return (
@@ -154,10 +173,11 @@ export default function UserContext({ children }) {
         roomCalledTo,
         roomChoice,
         setRoomChoice,
-        showAbstract,
-        setShowAbstract,
         showGlobalOps,
         setShowGlobalOps,
+        isScreenRole,
+        isOutsideRole,
+        isScreenOrOutside,
       }}
     >
       {children}

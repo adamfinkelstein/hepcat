@@ -15,47 +15,43 @@ from .tables import History, context_str_to_enum
 ######################
 
 
-# all history for this paper
+# partial query for paper history in order
+def history_query_for_paper(paper):
+    query = History.query.filter_by(paper_id=paper.id).order_by(History.id.desc())
+    return query
+
+
+# partial query for paper history in context (NOT greater)
+def history_query_for_paper_in_context(paper, context_str):
+    context_enum = context_str_to_enum(context_str)
+    query = history_query_for_paper(paper)
+    history = query.filter(History.context_enum == context_enum)
+    return history
+
+
+# partial query for paper history in context (OR greater)
+def history_query_for_paper_above_context(paper, context_str):
+    context_enum = context_str_to_enum(context_str)
+    query = history_query_for_paper(paper)
+    history = query.filter(History.context_enum >= context_enum)
+    return history
+
+
+# latest history above given context (e.g. "Plenary" for meeting room)
+def get_latest_history_above_context(paper, context_str):
+    query = history_query_for_paper_above_context(paper, context_str)
+    latest_history = query.first()
+    return latest_history
+
+
+# latest history for this paper (not Revoke, but BBS etc)
 def get_latest_history(paper):
-    latest_history = (
-        History.query.filter_by(paper_id=paper.id).order_by(History.id.desc()).first()
-    )
-    return latest_history
+    return get_latest_history_above_context(paper, "BBS")
 
 
-# only history set in a meeting room
+# latest history set in a meeting room
 def get_latest_room_history(paper):
-    context_plenary = context_str_to_enum("Plenary")
-    latest_history = (
-        History.query.filter_by(paper_id=paper.id)
-        .filter(History.context_enum >= context_plenary)
-        .order_by(History.id.desc())
-        .first()
-    )
-    return latest_history
-
-
-def get_room_history_count(paper):
-    context_plenary = context_str_to_enum("Plenary")
-    n = (
-        History.query.filter_by(paper_id=paper.id)
-        .filter(History.context_enum >= context_plenary)
-        .count()
-    )
-    return n
-
-
-# only history set in bbs or meeting room???
-# Maybe only need to check if paper is reject or tabled?
-# def get_latest_bbs_or_room_history(paper):
-#     context_plenary = context_str_to_enum("Plenary")
-#     latest_history = (
-#         History.query.filter_by(paper_id=paper.id)
-#         .filter(History.context_enum >= context_plenary)
-#         .order_by(History.id.desc())
-#         .first()
-#     )
-#     return latest_history
+    return get_latest_history_above_context(paper, "Plenary")
 
 
 # status from any event (bbs, sticky, room)
@@ -74,13 +70,18 @@ def get_latest_room_history_status(paper):
     return None
 
 
+def get_room_history_count(paper):
+    query = history_query_for_paper_above_context(paper, "Plenary")
+    n = query.count()
+    return n
+
+
 # Used for text filter like "BBS:Tabled" or "BBS:Reject".
 # Also used in writing out chair file in zip.
 # In principle, every paper should have a single BBS status.
 def get_paper_bbs_status(paper):
-    history = list(paper.history)
-    context_bbs = context_str_to_enum("BBS")
-    for h in history:
-        if h.context_enum == context_bbs:
-            return h.status
+    query = history_query_for_paper_in_context(paper, "BBS")
+    latest_history = query.first()
+    if latest_history:
+        return latest_history.status
     return "Tabled"

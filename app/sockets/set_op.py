@@ -143,7 +143,7 @@ def test_report_results(expr, result, expect, verbose=False):
     if verbose or not ok:
         print(f"=== working on expr: {expr}")
     if not ok:
-        print(f"XXX failure! got {result} but expected {expect}")
+        print(f"*** failure! got {result} but expected {expect}")
 
 
 def test_main():

@@ -3,20 +3,18 @@ import { useUser } from '../contexts/UserContext';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import PaperConflict from './PaperConflict';
-import { useFavorites } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 
-export default function QueueElement({ paper, showConflicts, showStars }) {
-  const { user } = useUser();
+export default function QueueElement({ paper }) {
+  const { isScreenOrOutside } = useUser();
   const globals = useAppGlobals();
-  const favorites = useFavorites();
+  const { favorites, showConflicts, showStars } = usePreferences();
   const queueIndex = paper ? paper.queue_order - 1 : -1;
   const isCurrent = queueIndex === globals.queueCurrent;
   const isPast = queueIndex < globals.queueCurrent;
   const isConflict = paper.nid === 0;
   const isFavorite = favorites.includes(paper.nid);
-  const isScreenRole = user?.role_name === 'Screen';
-  const isOutsideRole = user?.role_name === 'Outside';
-  const isScreen = isScreenRole || isOutsideRole;
+  const isScreen = isScreenOrOutside();
   const showStatus = paper.status && !isCurrent && !isScreen;
   const status = showStatus ? paper.status : '';
   const starSymbol = '\u2605';

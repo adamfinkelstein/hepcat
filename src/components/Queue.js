@@ -1,24 +1,23 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Form from 'react-bootstrap/Form';
-import { useState } from 'react';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import QueueElement from './QueueElement.js';
 import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {
-  const { user, isAdmin } = useUser();
+  const { user, isAdmin, isScreenOrOutside } = useUser();
   const globals = useAppGlobals();
+  const { showConflicts, setShowConflicts, showStars, setShowStars } =
+    usePreferences();
   const queue = globals.queue;
   const current = globals.queueCurrent;
   const counter = current + 1;
   const currentCount =
     counter > queue.length ? 'completed' : 'Q' + counter + ' of';
-  const isScreenRole = user?.role_name === 'Screen';
-  const isOutsideRole = user?.role_name === 'Outside';
-  const isScreen = isScreenRole || isOutsideRole;
-  const past_max = isScreen ? 0 : 3;
+  const past_max = isScreenOrOutside() ? 0 : 3;
   const future_max = 12;
   const start_index = Math.max(0, current - past_max);
   const end_index = Math.min(counter + future_max, queue.length);
@@ -26,26 +25,17 @@ export default function Queue() {
   const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue;
   const hiddenMsg = globals.serverGlobs ? globals.serverGlobs.message : '';
 
-  const [showConflictsInQ, setShowConflictsInQ] = useState(true);
-  const [showStarsInQ, setShowStarsInQ] = useState(true);
-
-  function getQEntryClass(index, paper) {
-    const isConflict = paper.nid === 0;
-
+  function getQEntryClass(index) {
     let className = 'q-entry';
     if (index === globals.queueCurrent) {
       className += ' Current';
-    } else if (index < globals.queueCurrent) {
-      className += ' past-entry';
-      if (!isScreen && !isConflict) {
-        className += ' ' + paper.status;
-      }
-    } else if (index % 2) {
-      // future - odd?
-      className += ' odd-entry';
+      return className;
     }
-    if (index === end_index - 1) {
-      className += ' last-entry';
+    if (index < globals.queueCurrent) {
+      className += ' past-entry';
+    }
+    if (index % 2) {
+      className += ' odd-entry';
     }
     return className;
   }
@@ -68,17 +58,17 @@ export default function Queue() {
             <Form.Check
               label="Conflicts"
               type="checkbox"
-              checked={showConflictsInQ}
+              checked={showConflicts}
               onChange={() => {
-                setShowConflictsInQ(!showConflictsInQ);
+                setShowConflicts(!showConflicts);
               }}
             />
             <Form.Check
               label="Stars"
               type="checkbox"
-              checked={showStarsInQ}
+              checked={showStars}
               onChange={() => {
-                setShowStarsInQ(!showStarsInQ);
+                setShowStars(!showStars);
               }}
             />
           </Stack>
@@ -88,15 +78,8 @@ export default function Queue() {
         <ul>
           {queueSlice.map((paper, index) => {
             return (
-              <li
-                key={index}
-                className={getQEntryClass(index + start_index, paper)}
-              >
-                <QueueElement
-                  paper={paper}
-                  showConflicts={showConflictsInQ}
-                  showStars={showStarsInQ}
-                />
+              <li key={index} className={getQEntryClass(index + start_index)}>
+                <QueueElement paper={paper} />
               </li>
             );
           })}

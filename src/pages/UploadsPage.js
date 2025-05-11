@@ -1,14 +1,14 @@
 import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import Form from 'react-bootstrap/Form';
 import { useAppGlobals } from '../contexts/AppContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
-import { useFontInfo } from '../contexts/PreferencesContext';
-import Form from 'react-bootstrap/Form';
+import { usePreferences } from '../contexts/PreferencesContext';
 import DangerousOps from '../components/DangerousOps';
 
 export default function UploadsPage() {
@@ -17,7 +17,7 @@ export default function UploadsPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { adminKey } = useUser();
-  const { currentFontStyle } = useFontInfo();
+  const { fontPref } = usePreferences();
   const globals = useAppGlobals();
   const fileUploads = globals.fileUploads;
   const uploadList = fileUploads ? fileUploads.uploads : [];
@@ -60,7 +60,7 @@ export default function UploadsPage() {
 
   return (
     <Container className="UploadsPage mt-3">
-      <div className={currentFontStyle}>
+      <div className={fontPref}>
         <h1>Upload CSV Files Here</h1>
         <Container fluid>
           <Form>

@@ -39,19 +39,28 @@ from .users import (
     user_record_socket_and_session,
     get_user_id_from_session,
     get_current_user_or_none,
+    connected_user_ids_list,
+    disconnect_user_by_id,
 )
 from ..util import (
     get_cache_var_dump,
     invalidate_cache_var,
     invalidate_cache_all,
 )
-from ..models.bar import set_bar, get_bar
+from ..models.settings import (
+    setting_float_set,
+    setting_float_get,
+    setting_bool_get,
+    setting_bool_set,
+)
 from ..models.history_util import (
     get_paper_bbs_status,
     get_latest_history,
     get_latest_history_status,
     get_latest_room_history_status,
     get_room_history_count,
+    history_query_for_paper_above_context,
+    history_query_for_paper,
 )
 from ..models.tables import (
     User,
@@ -146,22 +155,30 @@ def get_grid_paper_dump(paper):
     history = list(paper.history)
     below_bar = paper.below_bar
     paper_room = get_paper_room_name(paper)
+    context_revoke = context_str_to_enum("Revoke")
     context_bbs = context_str_to_enum("BBS")
     context_sticky = context_str_to_enum("Sticky")
     # context_plenary = context_str_to_enum("Plenary")
     status = None  # should be overwritten
+    idx = 0
     for h in history:
-        # contexts: "BBS", "Sticky", "Plenary", "Room..."
-        if h.context_enum == context_bbs:
+        # contexts: Revoke,BBS,Sticky,Plenary,Room...
+        if h.context_enum == context_revoke:
+            continue
+        elif h.context_enum == context_bbs:
             # Start meeting showing BBS Tabled.
             status = tabled_or_ready(h.status)
+            idx = h.id
         elif h.context_enum == context_sticky:
             status = tabled_sticky_or_ready(h.status)
+            idx = h.id
         else:  # h.context_enum >= context_plenary:  # must be a room
             # Note "presumed reject" set in Plenary by init_grid_from_bbs().
             status = h.status  # C,J,R,T
+            idx = h.id
     paper_dump = {
         "nid": paper.nid,
+        "idx": idx,
         "below_bar": below_bar,
         "status": status,
         "paper_room": paper_room,
@@ -170,6 +187,9 @@ def get_grid_paper_dump(paper):
 
 
 # This is not efficient but ok for now.
+# Among other things, called by filters_allow_paper(),
+# and get_id_set_by_grid_status(), so could be slow.
+# That could be improved by checking grid cache first.
 def get_paper_grid_status(paper):
     dump = get_grid_paper_dump(paper)
     status = dump["status"]
@@ -284,13 +304,16 @@ def get_all_user_list_dump():
     return dump
 
 
-def get_paper_history_dump(paper):
-    context_plenary = context_str_to_enum("Plenary")
-    plenary_history = (
-        History.query.filter_by(paper_id=paper.id)
-        .filter(History.context_enum >= context_plenary)
-        .all()
-    )
+def get_paper_all_history_dump(paper):
+    query = history_query_for_paper(paper)
+    plenary_history = query.all()
+    history_dump = history_schema.dump(plenary_history)
+    return history_dump
+
+
+def get_paper_meeting_history_dump(paper):
+    query = history_query_for_paper_above_context(paper, "Plenary")
+    plenary_history = query.all()
     history_dump = history_schema.dump(plenary_history)
     return history_dump
 
@@ -832,7 +855,7 @@ def get_nid_list(exp):
 PARSE_ERR_MSG = "Failed to parse expression in text filter."
 
 
-def parse_explicit_queue(room, exp):
+def parse_text_filter(room, exp):
     exp = remove_all_whitespace(exp)
     if not exp:
         return [], False, ""
@@ -848,8 +871,8 @@ def parse_explicit_queue(room, exp):
     return p_list, solve_tsp, ""
 
 
-def set_queue_explicit(room, exp, no_tsp):
-    filter_papers, solve_tsp, msg = parse_explicit_queue(room, exp)
+def set_queue_by_text_filter(room, exp, no_tsp):
+    filter_papers, solve_tsp, msg = parse_text_filter(room, exp)
     if filter_papers is None:
         return msg
     if no_tsp:
@@ -858,8 +881,8 @@ def set_queue_explicit(room, exp, no_tsp):
     return msg
 
 
-def probe_queue_explicit(room, exp):
-    filter_papers, _, _ = parse_explicit_queue(room, exp)
+def probe_queue_by_text_filter(room, exp):
+    filter_papers, _, _ = parse_text_filter(room, exp)
     if filter_papers is None:
         return PARSE_ERR_MSG
     msg = get_probe_counts_msg(filter_papers)
@@ -916,7 +939,7 @@ def get_paper_at_queue_index(room, index):
 # def shows status and history for current paper when revealed
 def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
-    bar = get_bar()
+    bar = setting_float_get("bar")
     globs["bar"] = bar
     show_logs = current_app.config["REACT_APP_SHOW_LOGS"]
     if show_logs is not None:
@@ -927,7 +950,7 @@ def get_globs_dump_with_status(room):
         status = get_latest_history_status(paper)
         globs["current_status"] = status
         if globs["current_show"]:
-            history = get_paper_history_dump(paper)
+            history = get_paper_meeting_history_dump(paper)
             globs["current_history"] = history
             labels = get_paper_tag_labels(paper)
             globs["current_tags"] = labels
@@ -963,6 +986,16 @@ def clear_all_stickies():
     count_deleted = History.query.filter_by(context_enum=context_sticky).delete()
     log_print(f"this should clear {count_deleted} stickies")
     return count_deleted
+
+
+def disconnect_non_admin_users():
+    connected_user_ids = connected_user_ids_list()
+    print(f"disconnect_non_admin_users: {connected_user_ids}")
+    for id in connected_user_ids:
+        user = User.query.filter_by(id=id).first()
+        if user and not user.role_is_admin:
+            print(f"disconnecting user {user.email}")
+            disconnect_user_by_id(id)
 
 
 # call users to room (bring==True) or release from (bring==False)
@@ -1031,10 +1064,13 @@ def login_user_and_send_welcome(user):
         git_info = f"Running in {config_name} mode. "
         git_info += get_git_info_from_repo()
         data["all_users"] = all_users
-        data["admin_key"] = current_app.config["INSTANCE"]
+        data["admin_key"] = current_app.config["APP_INSTANCE"]
         data["git_info"] = git_info
     emit("server_welcome", data)
     if user.role_is_admin:
+        disable = setting_bool_get("disable_logins")
+        emit("server_relay_disable_logins", disable)
+        print("server_relay_disable_logins: ", disable)
         emit_admin_uploads(False)
         emit_admin_filters(False)
     # if not user.role_is_super: (better safe than sorry)
@@ -1075,9 +1111,9 @@ def socketio_error_handler(exc):
 @socketio.on("connect")
 def io_connect(auth):
     ensure_supers()  # Ensure that special (chair) admin exists at login
-    user = user_connect(auth)
+    user, msg = user_connect(auth)
     if not user:
-        raise ConnectionRefusedError("Invalid credentials")  # reject the connection
+        raise ConnectionRefusedError(msg)  # reject the connection
     if user.role_is_admin:
         join_room("admin")
     # valid user, accept the connection and send welcome
@@ -1197,7 +1233,7 @@ def admin_next_paper(room):
 @admin_required_for_io_with_record
 def admin_advance_queue(data):
     room = data["roomChoice"]
-    status_update = data["newStatus"]
+    status_update = data["updateStatus"]
     log_print(f"admin request to advance queue in {room} with status {status_update}")
     index_before_advance, paper = update_current_paper_status(room, status_update)
     if not paper:
@@ -1213,6 +1249,7 @@ def admin_advance_queue(data):
     grid_paper_dump = get_grid_paper_dump(paper)
     update = {
         "queue_index": index_before_advance,
+        "nid": paper.nid,
         "status": status_update,
         "grid_update": grid_paper_dump,
     }
@@ -1257,12 +1294,31 @@ def admin_hide_queue(data):
     emit("server_send_flasher", data)
 
 
-@socketio.on("admin_set_queue")
+@socketio.on("admin_set_queue_by_gui")
 @admin_required_for_io_with_record
-def admin_set_queue(filters):
+def admin_set_queue_by_gui(filters):
     room = filters["roomChoice"]
     log_print(f"admin request for set queue in {room}: {filters}")
     msg = set_queue(room, filters)
+    try_sql_commit()
+    queue, current_paper = get_queue_dump_cached(room, True)
+    emit("server_set_queue", queue, broadcast=True)
+    globs = queue["globs"]
+    conflictbots_broadcast_conflicts(globs, current_paper)
+    data = {"message": msg, "type": "success"}
+    emit("server_send_flasher", data)
+
+
+@socketio.on("admin_set_queue_by_text")
+@admin_required_for_io_with_record
+def admin_set_queue_by_text(data):
+    room = data["roomChoice"]
+    explicit = data["explicit"]
+    no_tsp = data["noTSP"] if "noTSP" in data else False
+    log_print(
+        f"admin request for set explicit queue {room}: {explicit} (no tsp {no_tsp})"
+    )
+    msg = set_queue_by_text_filter(room, explicit, no_tsp)
     try_sql_commit()
     queue, current_paper = get_queue_dump_cached(room, True)
     emit("server_set_queue", queue, broadcast=True)
@@ -1305,8 +1361,8 @@ def admin_load_filter(name):
         data = filter.text
         if filter.is_gui:
             data = json.loads(data)
-        log_print(f"server_send_one_filter {data}")
-        emit("server_send_one_filter", data)
+        log_print(f"server_load_filter {data}")
+        emit("server_load_filter", data)
     else:
         msg = f"Cannot find filter with name: {name}"
         log_print(msg)
@@ -1340,52 +1396,34 @@ def admin_delete_filter(name):
         emit("server_send_flasher", data)
 
 
-@socketio.on("admin_probe_queue")
+@socketio.on("admin_probe_by_gui")
 @admin_required_for_io_no_record
-def admin_probe_queue(filters):
+def admin_probe_by_gui(filters):
     log_print(f"admin probe queue: {filters}")
     filter_papers = get_filtered_papers(filters)
     msg = get_probe_counts_msg(filter_papers)
-    emit("server_probe_count", msg)
+    emit("server_probe_by_gui", msg)
 
 
-@socketio.on("admin_probe_text")
+@socketio.on("admin_probe_by_text")
 @admin_required_for_io_no_record
-def admin_probe_queue_explicit(data):
+def admin_probe_by_text(data):
     room = data["roomChoice"]
     explicit = data["explicit"].strip()
     log_print(f"admin request for probe explicit queue {room}: {explicit}")
     if explicit:
-        msg = probe_queue_explicit(room, explicit)
+        msg = probe_queue_by_text_filter(room, explicit)
     else:
         msg = ""
-    emit("server_probe_text_count", msg)
-
-
-@socketio.on("admin_set_text_filter")
-@admin_required_for_io_with_record
-def admin_set_text_filter(data):
-    room = data["roomChoice"]
-    explicit = data["explicit"]
-    no_tsp = data["noTSP"] if "noTSP" in data else False
-    log_print(
-        f"admin request for set explicit queue {room}: {explicit} (no tsp {no_tsp})"
-    )
-    msg = set_queue_explicit(room, explicit, no_tsp)
-    try_sql_commit()
-    queue, current_paper = get_queue_dump_cached(room, True)
-    emit("server_set_queue", queue, broadcast=True)
-    globs = queue["globs"]
-    conflictbots_broadcast_conflicts(globs, current_paper)
-    data = {"message": msg, "type": "success"}
-    emit("server_send_flasher", data)
+    emit("server_probe_by_text", msg)
 
 
 @socketio.on("admin_set_bar")
 @admin_required_for_io_with_record
 def admin_set_bar(bar):
     log_print(f"admin request set bar to {bar}")
-    bar = set_bar(bar)  # converts to float
+    bar = float(bar)
+    setting_float_set("bar", bar)
     update_all_paper_bar_status(bar)
     init_grid_from_bbs()
     try_sql_commit()
@@ -1399,30 +1437,15 @@ def admin_set_bar(bar):
     emit("server_send_flasher", data)
 
 
-@socketio.on("admin_init_grid")
-@admin_required_for_io_with_record
-def admin_init_grid():
-    msg = "got request admin_init_grid"
-    log_print(msg)
-    # print(current_app.config) # debugging
-    if count_papers_in_all_queues() > 0:
-        msg = "Cannot initialize grid when queues are not empty."
-        log_print(msg)
-        data = {"message": msg, "type": "warning"}
-        emit("server_send_flasher", data)
-        return
-    init_grid_from_bbs()
-    success = try_sql_commit()
-    if success:
-        grid_dump = get_grid_dump_cached(True)
-        emit("server_set_grid", grid_dump, broadcast=True)
-        msg = "Successfully initialized grid."
-        data = {"message": msg, "type": "success"}
-        emit("server_send_flasher", data)
-    else:
-        msg = "Error when initializing grid."
-        data = {"message": msg, "type": "warning"}
-        emit("server_send_flasher", data)
+@socketio.on("admin_set_disable_logins")
+@admin_required_for_io_no_record
+def admin_set_disable_logins(disable):
+    log_print(f"admin_set_disable_logins {disable}")
+    setting_bool_set("disable_logins", disable)
+    try_sql_commit()
+    emit("server_relay_disable_logins", disable, broadcast=True)
+    if disable:
+        disconnect_non_admin_users()
 
 
 @socketio.on("admin_bulk_action")
@@ -1450,26 +1473,7 @@ def admin_bulk_action(data):
         emit("server_send_flasher", data)
 
 
-@socketio.on("admin_clear_stickies")
-@admin_required_for_io_with_record
-def admin_clear_stickies():
-    msg = "got request admin_clear_stickies"
-    log_print(msg)
-    count = clear_all_stickies()
-    if count:
-        success = try_sql_commit()
-    if count and success:
-        grid_dump = get_grid_dump_cached(True)
-        emit("server_set_grid", grid_dump, broadcast=True)
-        msg = f"All {count} stickies are now cleared."
-        data = {"message": msg, "type": "success"}
-        emit("server_send_flasher", data)
-    else:
-        msg = "No stickies were cleared."
-        data = {"message": msg, "type": "warning"}
-        emit("server_send_flasher", data)
-
-
+# XXX This function is big and should be factored.
 @socketio.on("user_set_sticky")
 def user_set_sticky(data):
     user = get_current_user_or_none()
@@ -1482,6 +1486,7 @@ def user_set_sticky(data):
     if not paper:
         return  # should never happen because it is now checked at the client
     status_data = data["status"]
+    key = data["key"]
     status = status_data
     if status == "Tabled-Discuss":
         status = "Tabled"
@@ -1494,10 +1499,14 @@ def user_set_sticky(data):
     auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
     if auto_reject and paper.below_bar and is_reject and not is_paper_accepted(paper):
         context = context_plenary  # Mark in Plenary instead of Sticky
-    history = History(paper=paper, context_enum=context, status_enum=status_enum)
+    history = History(
+        paper=paper, context_enum=context, status_enum=status_enum, sticky_key=key
+    )
     db.session.add(history)
     if try_sql_commit():
         invalidate_grid_cache()
+        data["idx"] = history.id  # same data but add id
+        emit("server_confirm_sticky", data)  # just to sender
         grid_update = get_encrypted_grid_entry(paper)
         emit("server_set_sticky", grid_update, broadcast=True)
         if not playback:
@@ -1510,6 +1519,50 @@ def user_set_sticky(data):
         broadcast_admin_alert("Server Error", msg)
 
 
+# XXX This function is big and should be factored.
+@socketio.on("user_revoke_sticky")
+def user_revoke_sticky(data):
+    user = get_current_user_or_none()
+    if not user:
+        disconnect()
+        return
+    log_print(f"user request to revoke sticky: {data}")
+    nid = data["nid"]
+    key = data["key"]
+    paper = Paper.query.filter_by(nid=nid).first()
+    if not paper:
+        return  # should never happen because it is now checked at the client
+    # should only be able to revoke sticky if most recent history
+    latest = get_latest_history(paper)
+    if not latest or latest.sticky_key != key:
+        msg = f"Failed attempt to revoke sticky for paper {nid}."
+        log_print(msg)
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+        return
+    print(f"latest before revoke: {latest}")
+    context_revoke = context_str_to_enum("Revoke")
+    latest.context_enum = context_revoke
+    db.session.add(latest)
+    print(f"latest after revoke: {latest}")
+    if try_sql_commit():
+        hist = get_paper_all_history_dump(paper)
+        print(f"hist after revoke: {hist}")
+        invalidate_grid_cache()
+        grid_update = get_encrypted_grid_entry(paper)
+        emit("server_set_sticky", grid_update, broadcast=True)
+        playback = "playback" in data
+        if not playback:
+            message = f"Sticky revoked for paper {nid}!"
+            data = {"message": message, "type": "success"}
+            emit("server_send_flasher", data)
+    else:
+        msg = f"Failed attempt to revoke sticky for paper {nid} (db)."
+        log_print(msg)
+        broadcast_admin_alert("Server Error", msg)
+
+
+# XXX This function is big and should be factored.
 @socketio.on("user_change_password")
 def user_change_password(data):
     user = get_current_user_or_none()

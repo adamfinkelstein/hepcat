@@ -1,9 +1,7 @@
-import json
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from .. import db, log_print
 from .tables import (
-    Setting,
     User,
     Role,
     Paper,
@@ -24,50 +22,6 @@ def try_sql_commit():
         log_print("SQLAlchemyError! Rolling back db...")
         db.session.rollback()
         return False
-
-
-######################
-# Global settings
-######################
-
-
-def setting_dict_set(name, value):
-    setting = Setting.query.filter_by(name=name).first()
-    val_json = json.dumps(value)
-    print(f"setting_set: {name} = {value} = json: {val_json}")
-    if setting:
-        setting.is_num = False
-        setting.str_value = val_json
-    else:
-        setting = Setting(name=name, is_num=False, str_value=val_json)
-    db.session.add(setting)
-
-
-def setting_dict_get(name):
-    setting = Setting.query.filter_by(name=name).first()
-    if setting:
-        value = json.loads(setting.str_value)
-        return value
-    return None
-
-
-def setting_float_set(name, value):
-    setting = Setting.query.filter_by(name=name).first()
-    # val_str = str(value)
-    # print(f"setting_set: {name} = {value} = str: {val_str}")
-    if setting:
-        setting.is_num = True
-        setting.num_value = value
-    else:
-        setting = Setting(name=name, is_num=True, num_value=value)
-    db.session.add(setting)
-
-
-def setting_float_get(name):
-    setting = Setting.query.filter_by(name=name).first()
-    if setting and setting.is_num:
-        return setting.num_value
-    return None
 
 
 ######################

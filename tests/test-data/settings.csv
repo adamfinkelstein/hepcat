@@ -1,2 +1,3 @@
-Name,Is Num,Num Val,Str Val
-bar,True,0.75,
+Name,Type,Value
+bar,float,0.75
+disable_logins,bool,TRUE

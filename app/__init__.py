@@ -87,7 +87,7 @@ def create_app(config_name, build_path):
         log_print("ALLOW_CORS - allowing cross origin requests on APP", "info", app)
 
     # a random string associated with this instance
-    app.config["INSTANCE"] = uuid.uuid4().hex
+    app.config["APP_INSTANCE"] = uuid.uuid4().hex
 
     pool_size = app.config["SQLALCHEMY_POOL_SIZE"]
     if pool_size:

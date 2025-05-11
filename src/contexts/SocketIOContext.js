@@ -1,71 +1,83 @@
-import React from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  useContext,
+} from 'react';
 import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
-import { useFlasher } from '../contexts/FlasherContext';
-import { useModalDialog } from '../contexts/ModalDialogContext';
+import { useFlasher } from './FlasherContext';
+import { useModalDialog } from './ModalDialogContext';
+import { useStorage } from './StorageContext';
 
-const socketIOContext = React.createContext();
+const socketIOContext = createContext();
 let errorCallback = null;
 
-const tokenName = 'token';
-
-const tokenStorageSet = (token, remember) => {
-  if (remember) {
-    // console.log('set and remember token ' + token);
-    window.localStorage.setItem(tokenName, token);
-  } else {
-    // we only write the token to session storage if local storage does not
-    // have a token
-    if (!window.localStorage.getItem(tokenName)) {
-      // console.log('set token ' + token);
-      window.sessionStorage.setItem(tokenName, token);
-    }
-  }
-};
-
-const tokenStorageGet = () => {
-  let token = window.localStorage.getItem(tokenName);
-  if (token) {
-    // console.log('get remembered token ' + token);
-  } else {
-    token = window.sessionStorage.getItem(tokenName);
-    // console.log('get token ' + token);
-  }
-  return token;
-};
-
-const tokenStorageClear = () => {
-  // console.log('clear token');
-  window.sessionStorage.removeItem(tokenName);
-  window.localStorage.removeItem(tokenName);
-};
+const TOKEN_STORAGE_KEY = 'io_login_token';
 
 export default function SocketIOContext({ children }) {
-  const [socket, setSocket] = React.useState(undefined);
-  const [auth, setAuth] = React.useState(undefined);
+  const [socket, setSocket] = useState(undefined);
+  const [auth, setAuth] = useState(undefined);
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
+  const {
+    getLocalStorageItem,
+    setLocalStorageItem,
+    getSessionStorageItem,
+    setSessionStorageItem,
+  } = useStorage();
 
-  const socketLogin = React.useCallback((email, password, remember, cb) => {
+  const tokenStorageSet = useCallback(
+    (token, remember) => {
+      if (remember) {
+        setLocalStorageItem(TOKEN_STORAGE_KEY, token);
+        setSessionStorageItem(TOKEN_STORAGE_KEY, null); // remove, just in case
+        return;
+      }
+      // if not already in local storage, write to session storage
+      if (!getLocalStorageItem(TOKEN_STORAGE_KEY)) {
+        setSessionStorageItem(TOKEN_STORAGE_KEY, token);
+      }
+    },
+    [getLocalStorageItem, setLocalStorageItem, setSessionStorageItem],
+  );
+
+  const tokenStorageGet = useCallback(() => {
+    // first check local storage, then session storage
+    const token = getLocalStorageItem(TOKEN_STORAGE_KEY);
+    if (token) return token;
+    return getSessionStorageItem(TOKEN_STORAGE_KEY);
+  }, [getLocalStorageItem, getSessionStorageItem]);
+
+  const tokenStorageClear = useCallback(() => {
+    setSessionStorageItem(TOKEN_STORAGE_KEY, null);
+    setLocalStorageItem(TOKEN_STORAGE_KEY, null);
+  }, [setSessionStorageItem, setLocalStorageItem]);
+
+  const socketLogin = useCallback((email, password, remember, cb) => {
     errorCallback = cb;
     setAuth({ email, password, remember });
   }, []);
 
-  const socketLogout = React.useCallback((clearToken) => {
-    if (clearToken) tokenStorageClear();
-    setAuth(null);
-    setSocket(null);
-  }, []);
+  const socketLogout = useCallback(
+    (clearToken) => {
+      if (clearToken) tokenStorageClear();
+      setAuth(null);
+      setSocket(null);
+    },
+    [tokenStorageClear],
+  );
 
-  const socketSetAuthToken = React.useCallback(
+  const socketSetAuthToken = useCallback(
     (token) => {
       tokenStorageSet(token, auth?.remember);
     },
-    [auth],
+    [auth, tokenStorageSet],
   );
 
-  const socketEmit = React.useCallback(
+  const socketEmit = useCallback(
     (message, data) => {
       if (!socket || !socket.emit) {
         controlledLog('socket does not exist, message not sent.');
@@ -81,7 +93,7 @@ export default function SocketIOContext({ children }) {
     [socket, controlledLog],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!auth) {
       // the user did not log in yet
       // if we have stored a token, then try to use it
@@ -162,7 +174,15 @@ export default function SocketIOContext({ children }) {
     return () => {
       s.disconnect();
     };
-  }, [auth, controlledLog, flash, revealModalDialog, socketLogout]);
+  }, [
+    auth,
+    controlledLog,
+    flash,
+    revealModalDialog,
+    socketLogout,
+    tokenStorageClear,
+    tokenStorageGet,
+  ]);
 
   return (
     <socketIOContext.Provider
@@ -180,5 +200,5 @@ export default function SocketIOContext({ children }) {
 }
 
 export function useSocketIO() {
-  return React.useContext(socketIOContext);
+  return useContext(socketIOContext);
 }

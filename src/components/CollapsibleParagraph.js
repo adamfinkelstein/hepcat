@@ -1,8 +1,8 @@
 import Form from 'react-bootstrap/Form';
-import { useUser } from '../contexts/UserContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function CollapsibleParagraph({ title, text }) {
-  const { showAbstract, setShowAbstract } = useUser();
+  const { showAbstract, setShowAbstract } = usePreferences();
   const checkLabel = 'Show ' + title;
   const content = showAbstract ? text : '';
   return (

@@ -9,42 +9,6 @@ body {
   font-size: 120%;
 }
 
-.size-3XS {
-  zoom: 60%;
-}
-
-.size-2XS {
-  zoom: 68%;
-}
-
-.size-XS {
-  zoom: 77%;
-}
-
-.size-S {
-  zoom: 88%;
-}
-
-.size-M {
-  zoom: 100%;
-}
-
-.size-L {
-  zoom: 108%;
-}
-
-.size-XL {
-  zoom: 117%;
-}
-
-.size-2XL {
-  zoom: 126%;
-}
-
-.size-3XL {
-  zoom: 136%;
-}
-
 .App {
   overflow: hidden;
 }
@@ -183,6 +147,10 @@ body {
   animation-name: FlasherSlideOutAnimation;
 }
 
+/*
+ * BODY - two panels
+ */
+
 .Body .left-panel,
 .Body .right-panel {
   overflow-y: auto;
@@ -260,9 +228,7 @@ body {
 
 .Queue .q-entry.past-entry {
   border-bottom: 0;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  border-top: 1px solid black;
+  border-top: 1px solid #aaa;
 }
 
 .Queue .q-entry.Current {
@@ -271,10 +237,6 @@ body {
 
 .Queue .q-entry.odd-entry {
   background-color: #eee;
-}
-
-.Queue .q-entry.last-entry {
-  border-bottom: 1px solid black;
 }
 
 .Queue .q-symbol {

@@ -5,10 +5,11 @@ import {
   useEffect,
   useCallback,
 } from 'react';
-import { useSocketIO } from './SocketIOContext.js';
-import { useControlledLog } from './ControlledLogContext.js';
+import { useSocketIO } from './SocketIOContext';
+import { useControlledLog } from './ControlledLogContext';
 import { useUser } from './UserContext';
 import { useKey } from './KeyContext';
+import { useSticky } from '../contexts/StickyContext';
 
 const gridContext = createContext();
 
@@ -17,6 +18,7 @@ export default function GridContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { roomChoice } = useUser();
   const { decryptObjectOrNull } = useKey();
+  const { checkStickyIdIsValid } = useSticky();
 
   const [gridMode, setGridMode] = useState('Normal');
   const [gridInRoom, setGridInRoom] = useState(false);
@@ -68,15 +70,14 @@ export default function GridContext({ children }) {
   const updateGridEntry = useCallback(
     (grid_update) => {
       const nid = grid_update.nid;
-      if (!nid || !gridPapers.hasOwnProperty(nid)) {
-        controlledLog('*** cannot find grid entry for nid:', nid);
-        return;
-      }
+      const idx = grid_update.idx;
+      checkStickyIdIsValid(nid, idx);
+      if (!nid || !gridPapers.hasOwnProperty(nid)) return;
       const newGridPapers = { ...gridPapers };
       newGridPapers[nid] = grid_update;
       setGridPapers(newGridPapers); // force update to papers variable
     },
-    [gridPapers, setGridPapers, controlledLog],
+    [gridPapers, setGridPapers, checkStickyIdIsValid],
   );
 
   const decryptGridPapers = useCallback(
@@ -92,14 +93,25 @@ export default function GridContext({ children }) {
           nConflicts++;
           continue; // skip conflicted papers
         }
-        papers[p.nid] = p;
-        nidsInOrder.push(p.nid);
+        const nid = p.nid;
+        const idx = p.idx;
+        papers[nid] = p;
+        nidsInOrder.push(nid);
+        checkStickyIdIsValid(nid, idx);
       }
       setGridConflicts(nConflicts);
       setGridNidsInOrder(nidsInOrder);
       setGridPapers(papers);
+      // controlledLog('grid papers decrypted: ', papers);
     },
-    [decryptObjectOrNull, setGridPapers, setGridNidsInOrder, setGridConflicts],
+    [
+      decryptObjectOrNull,
+      setGridPapers,
+      setGridNidsInOrder,
+      setGridConflicts,
+      checkStickyIdIsValid,
+      // controlledLog,
+    ],
   );
 
   useEffect(() => {

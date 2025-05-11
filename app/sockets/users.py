@@ -2,6 +2,7 @@ from flask import request, session
 from flask_socketio import disconnect
 from app import db, log_print
 from app.models.tables import User
+from app.models.settings import setting_bool_get
 
 
 #####################
@@ -126,6 +127,13 @@ def user_record_socket_and_session(user):
     put_user_id_in_session(user.id)
 
 
+def user_login_ok(user):
+    if user.role_is_admin:
+        return True
+    disabled = setting_bool_get("disable_logins")
+    return not disabled
+
+
 def user_connect(auth):
     if "password" in auth:
         # this is a brand new login
@@ -136,19 +144,21 @@ def user_connect(auth):
         user = User.query.filter_by(email=email_lower).first()
         if user is None or not user.verify_password(password):
             # invalid user or password, reject the connection
-            return False
+            return None, "Invalid credentials"
     elif "token" in auth:
         # this is a refresh login using a JWT token in place of a password
         token = auth.get("token", "")
         user = User.user_from_token(token)
+        # log_print(f"Received refresh connection request from {user.email}")
         if not user:
-            return False
-        log_print(f"Received refresh connection request from {user.email}")
+            return None, "Invalid credentials"
     else:
-        # this connection does not have sufficient credentials
-        return False
+        # connection without any credentials
+        return None, "Invalid credentials"
+    if not user_login_ok(user):
+        return None, "Logins are currently disabled. Try again later."
     user_record_socket_and_session(user)
-    return user
+    return user, None
 
 
 def user_disconnect():
@@ -163,6 +173,12 @@ def user_disconnect():
     # remove the user_id from the session
     clear_user_id_in_session()
     return user
+
+
+def disconnect_user_by_id(user_id):
+    user_sid = get_user_socket(user_id)
+    if user_sid:
+        disconnect(sid=user_sid, namespace="/")
 
 
 def disconnect_all_users():

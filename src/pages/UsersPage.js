@@ -2,12 +2,14 @@ import Container from 'react-bootstrap/Container';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
+import Stack from 'react-bootstrap/Stack';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
-import { useFontInfo } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
+import DisableLogins from '../components/DisableLogins';
 
 /*
 import moment from 'moment';
@@ -25,7 +27,7 @@ export default function UsersPage() {
   const { user, allUsers } = useUser();
   const { controlledLog } = useControlledLog();
   const { revealConfirmationBox } = useConfirmationBox();
-  const { currentFontStyle } = useFontInfo();
+  const { fontPref } = usePreferences();
 
   const usersArr = Object.entries(allUsers).map(([_email, oneUser]) => oneUser);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -57,9 +59,12 @@ export default function UsersPage() {
 
   return (
     <Container className="UsersPage">
-      <div className={currentFontStyle}>
+      <div className={fontPref}>
         <Container fluid className="mt-3">
-          <h1>All Users</h1>
+          <Stack direction="horizontal" gap={5}>
+            <h1>All Users</h1>
+            <DisableLogins />
+          </Stack>
           <Table striped bordered hover>
             <thead>
               <tr>

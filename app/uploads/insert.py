@@ -29,7 +29,7 @@ from ..models.helpers import (
     ensure_screens,
 )
 from ..models.history_util import get_latest_history
-from ..models.bar import get_bar
+from ..models.settings import setting_float_get
 from . import (
     single_quote_to_double,
     get_paper_room_name_or_none,
@@ -105,19 +105,24 @@ def insert_filter_rows(rows):
     return count
 
 
-# Name,Is Num,Num Val,Str Val
+def setting_val_as_json(val_type, val_str):
+    val_str = str(val_str)  # ensure string
+    if val_type == "dict":
+        val_str = single_quote_to_double(val_str)
+    elif val_type == "bool":
+        val_str = "true" if val_str.lower() == "true" else "false"
+    return val_str
+
+
+# Name,Type,Value
 def insert_setting_rows(rows):
     count = 0
     for row in rows:
-        name, is_num, num_val, str_val = row
-        is_num = True if is_num == "True" else False
-        if is_num:
-            num_val = float(num_val)
-            setting = Setting(name=name, is_num=True, num_value=num_val)
-        else:
-            quoted = single_quote_to_double(str_val)
-            setting = Setting(name=name, is_num=False, str_value=quoted)
+        name, val_type, val_str = row
+        val_str = setting_val_as_json(val_type, val_str)
+        setting = Setting(name=name, type=val_type, json=val_str)
         db.session.add(setting)
+        log_print(f"insert_setting_rows: {name} = {val_str} (type: {val_type})")
         count += 1
     return count
 
@@ -438,15 +443,6 @@ def review_str_to_float(s):
     return 0
 
 
-# no longer needed after settings file is read
-# def check_for_test_bar_and_get_bar():
-#     test_bar = current_app.config["HEPCAT_TEST_BAR"]
-#     if test_bar:
-#         set_bar(test_bar)
-#         return test_bar
-#     return get_bar()
-
-
 def add_bbs_history_to_paper(paper, status):
     context_bbs = context_str_to_enum("BBS")
     status_enum = status_str_to_enum(status)
@@ -465,7 +461,7 @@ def add_tags_to_paper(paper, tags):
 
 def insert_chair_score_rows(rows):
     count = 0
-    bar = get_bar()
+    bar = setting_float_get("bar")
     for row in rows:
         # Submission ID,Sort Score,Status,Reviews,Tags
         sid, chair_score, status, reviews, tags = row
@@ -590,7 +586,7 @@ csvHeaders = {
     "history": "Submission ID,When,Context,Status",
     "papers": "Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract",
     "users": "Email,First Name,Last Name,Rooms,Role,Password",
-    "settings": "Name,Is Num,Num Val,Str Val",
+    "settings": "Name,Type,Value",
 }
 
 

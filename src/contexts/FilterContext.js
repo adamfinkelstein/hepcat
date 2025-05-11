@@ -45,7 +45,7 @@ export default function FilterContext({ children }) {
 
     if (socket && 'on' in socket) {
       controlledLog('register socket handlers in FilterContext');
-      socket.on('server_send_one_filter', receiveOneFilter);
+      socket.on('server_load_filter', receiveOneFilter);
       socket.on('server_send_filter_names', receiveFilterNames);
     }
 
@@ -53,7 +53,7 @@ export default function FilterContext({ children }) {
     return () => {
       if (socket && 'off' in socket) {
         controlledLog('cleanup socket handlers in FilterContext');
-        socket.off('server_send_one_filter', receiveOneFilter);
+        socket.off('server_load_filter', receiveOneFilter);
         socket.off('server_send_filter_names', receiveFilterNames);
       }
     };

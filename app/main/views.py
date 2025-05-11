@@ -12,6 +12,7 @@ from ..models.helpers import try_sql_commit
 @main.route("/forgot_password/")
 @main.route("/guide/")
 @main.route("/preferences/")
+@main.route("/private/")
 @main.route("/uploads/")
 @main.route("/users/")
 @main.route("/change_password/")

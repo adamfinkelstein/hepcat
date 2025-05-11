@@ -44,9 +44,8 @@ class Setting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # admin_only = db.Column(db.Boolean, default=False) # only visible to admin
     name = db.Column(db.String(64), unique=True)
-    is_num = db.Column(db.Boolean, default=True)
-    num_value = db.Column(db.Float, default=0.0)
-    str_value = db.Column(db.String, default="")  # encoded as string/JSON
+    type = db.Column(db.String(64))
+    json = db.Column(db.String, default="")  # val as JSON
 
 
 class Role(db.Model):
@@ -212,6 +211,7 @@ class History(db.Model):
     when = db.Column(db.DateTime, server_default=func.now())
     context_enum = db.Column(db.Integer)
     status_enum = db.Column(db.Integer)
+    sticky_key = db.Column(db.String(64), default="")
 
     @hybrid_property
     def context(self):
@@ -305,7 +305,7 @@ class Action(db.Model):
 #
 ######################
 
-history_context_basic = ["Error", "BBS", "Sticky", "Plenary"]
+history_context_basic = ["Revoke", "BBS", "Sticky", "Plenary"]
 history_context_name = {}
 history_context_int = {}
 all_queue_rooms = []
@@ -360,13 +360,13 @@ def fill_history_context_tables_and_room_list():
 def context_str_to_enum(str):
     if str in history_context_int:
         return history_context_int[str]
-    return 0  # Error
+    return 0  # Revoke
 
 
 def context_enum_to_str(n):
     if n in history_context_name:
         return history_context_name[n]
-    return "Error"
+    return "Revoke"
 
 
 class HistoryStatus(IntEnum):

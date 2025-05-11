@@ -1,11 +1,10 @@
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
-import { useChangeFontSize, useFontInfo } from '../contexts/PreferencesContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function TextPreferences() {
-  let fontInfo = useFontInfo();
-  let changeFontSize = useChangeFontSize();
+  const { fontSize, fontSizes, setFontSize } = usePreferences();
 
   return (
     <Container fluid className="TextPreferences mt-4">
@@ -14,15 +13,15 @@ export default function TextPreferences() {
         <span className="bigger-font">Choose font size:</span>
         <DropdownButton
           id="dropdown-item-button"
-          title={fontInfo['currentFontSize']}
+          title={fontSize}
           className="mx-3"
         >
-          {Object.keys(fontInfo['fontSizes']).map((fontSizeKey, index) => {
+          {Object.keys(fontSizes).map((fontSizeKey, index) => {
             return (
               <Dropdown.Item
                 key={index}
                 as="button"
-                onClick={() => changeFontSize(fontSizeKey)}
+                onClick={() => setFontSize(fontSizeKey)}
               >
                 {fontSizeKey}
               </Dropdown.Item>

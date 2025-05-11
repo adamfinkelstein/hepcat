@@ -1,5 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react';
+import {
+  useState,
+  useCallback,
+  useEffect,
+  createContext,
+  useContext,
+} from 'react';
 import { useCount } from './CountContext';
+import { useStorage } from './StorageContext';
 
 const defaultColors = {
   Tabled: '#E8F77D',
@@ -10,17 +17,6 @@ const defaultColors = {
   Journal: '#288D0C',
   Current: '#000000',
   Conflict: '#DD1111',
-};
-
-const defaultTextBlackOrWhite = {
-  Tabled: true,
-  'Tabled-Discuss': true,
-  Ready: true,
-  Reject: true,
-  Conference: false,
-  Journal: false,
-  Current: false,
-  Conflicts: false,
 };
 
 const fontSizes = {
@@ -35,190 +31,180 @@ const fontSizes = {
   Gigantic: 'size-3XL',
 };
 
-const ColorsContext = React.createContext();
-const ChangeColorsContext = React.createContext();
-const TextColorsContext = React.createContext();
-const ChangeTextColorsContext = React.createContext();
-const FontInfoContext = React.createContext();
-const ChangeFontSizeContext = React.createContext();
-const FavoritesContext = React.createContext();
-const ChangeFavoritesContext = React.createContext();
-const SplitWidthContext = React.createContext();
-const ChangeSplitWidthContext = React.createContext();
+const fontScales = {
+  'size-3XS': 60,
+  'size-2XS': 68,
+  'size-XS': 77,
+  'size-S': 88,
+  'size-M': 100,
+  'size-L': 108,
+  'size-XL': 117,
+  'size-2XL': 126,
+  'size-3XL': 136,
+};
 
-const DefaultColorsContext = React.createContext();
+// Function to determine if text should be black (or white)
+// over a given background color. Check luminance.
+const textShouldBeBlackOverColor = (hexColor) => {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.65;
+};
 
-export function useColors() {
-  return useContext(ColorsContext);
-}
+const appendCSSRule = (cssText, styleNode) => {
+  const cssRule = document.createTextNode(cssText);
+  styleNode.appendChild(cssRule);
+};
 
-export function useChangeColor() {
-  return useContext(ChangeColorsContext);
-}
+const appendColorRule = (colorKey, bgColor, styleNode) => {
+  const textBlack = textShouldBeBlackOverColor(bgColor);
+  const textColor = textBlack ? '#000' : '#fff';
+  const textCSS = `.${colorKey} {
+    background: ${bgColor};
+    color: ${textColor};
+  }`;
+  appendCSSRule(textCSS, styleNode);
+};
 
-export function useTextColors() {
-  return useContext(TextColorsContext);
-}
+const appendFontRule = (fontKey, fontScale, styleNode) => {
+  const fontCSS = `.${fontKey} {
+    zoom: ${fontScale}%;
+  }`;
+  appendCSSRule(fontCSS, styleNode);
+};
 
-export function useChangeTextColors() {
-  return useContext(ChangeTextColorsContext);
-}
+const PREF_STORAGE_KEY = 'preferences';
 
-export function useDefaultColors() {
-  return useContext(DefaultColorsContext);
-}
+const preferencesContext = createContext();
 
-export function useFontInfo() {
-  return useContext(FontInfoContext);
-}
-
-export function useChangeFontSize() {
-  return useContext(ChangeFontSizeContext);
-}
-
-export function useFavorites() {
-  return useContext(FavoritesContext);
-}
-
-export function useChangeFavorites() {
-  return useContext(ChangeFavoritesContext);
-}
-
-export function useSplitWidth() {
-  return useContext(SplitWidthContext);
-}
-
-export function useChangeSplitWidth() {
-  return useContext(ChangeSplitWidthContext);
+export function usePreferences() {
+  return useContext(preferencesContext);
 }
 
 export default function PreferencesContext({ children }) {
   const { colorKeys } = useCount();
+  const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [colors, setColors] = useState(defaultColors);
-  const [textBlackOrWhite, setTextBlackOrWhite] = useState(
-    defaultTextBlackOrWhite,
-  );
   const [fontSize, setFontSize] = useState('Medium');
   const [favorites, setFavorites] = useState([]);
   const [splitWidth, setSplitWidth] = useState([40, 60]);
-  // not sure if this is the best approach (avoiding overwriting of data on load with this variable)
-  const [prefUpdated, setPrefUpdated] = useState(false);
+  const [showAbstract, setShowAbstract] = useState(true);
+  const [showConflicts, setShowConflicts] = useState(true);
+  const [showStars, setShowStars] = useState(true);
 
-  const writePrefsToLocalStorage = () => {
-    localStorage.setItem('colors', JSON.stringify(colors));
-    localStorage.setItem('textColors', JSON.stringify(textBlackOrWhite));
-    localStorage.setItem('fontSize', JSON.stringify(fontSize));
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-    localStorage.setItem('splitWidth', JSON.stringify(splitWidth));
-  };
+  const writePrefsToLocalStorage = useCallback(() => {
+    const prefs = {
+      col: colors,
+      fon: fontSize,
+      fav: favorites,
+      spl: splitWidth,
+      abs: showAbstract,
+      con: showConflicts,
+      sta: showStars,
+    };
+    setUserLocalStorageItem(PREF_STORAGE_KEY, prefs);
+  }, [
+    colors,
+    fontSize,
+    favorites,
+    splitWidth,
+    showAbstract,
+    showConflicts,
+    showStars,
+    setUserLocalStorageItem,
+  ]);
 
-  const readPrefsFromLocalStorage = () => {
-    const colorData = localStorage.getItem('colors');
-    const textColorData = localStorage.getItem('textColors');
-    const fontSizeData = localStorage.getItem('fontSize');
-    const favoritesData = localStorage.getItem('favorites');
-    const splitWidthData = localStorage.getItem('splitWidth');
+  const readPrefsFromLocalStorage = useCallback(() => {
+    const prefs = getUserLocalStorageItem(PREF_STORAGE_KEY);
+    if (prefs) {
+      const { col, fon, fav, spl, abs, con, sta } = prefs;
+      // this pattern allows for new preferences to be added:
+      if (col !== undefined) setColors(col);
+      if (fon !== undefined) setFontSize(fon);
+      if (fav !== undefined) setFavorites(fav);
+      if (spl !== undefined) setSplitWidth(spl);
+      if (abs !== undefined) setShowAbstract(abs);
+      if (con !== undefined) setShowConflicts(con);
+      if (sta !== undefined) setShowStars(sta);
+    }
+  }, [getUserLocalStorageItem]);
 
-    if (colorData) {
-      setColors(JSON.parse(colorData));
-    }
-    if (fontSizeData) {
-      setTextBlackOrWhite(JSON.parse(textColorData));
-    }
-    if (fontSizeData) {
-      setFontSize(JSON.parse(fontSizeData));
-    }
-    if (favoritesData) {
-      setFavorites(JSON.parse(favoritesData));
-    }
-    if (splitWidthData) {
-      setSplitWidth(JSON.parse(splitWidthData));
-    }
-  };
-
-  // Empty dependency array means this effect will only run once.
+  // Read preferences on mount
   useEffect(() => {
     readPrefsFromLocalStorage();
-    setPrefUpdated(true);
-  }, []);
+    setIsInitialized(true);
+  }, [readPrefsFromLocalStorage]);
 
-  // No dependency array means this effect will run on every render.
-  // Is that too often??? Maybe.
+  // Only save preferences when they change, and initialization is complete
   useEffect(() => {
-    if (prefUpdated) {
+    if (isInitialized) {
       writePrefsToLocalStorage();
     }
-  });
+  }, [isInitialized, writePrefsToLocalStorage]);
 
-  // No dependency array means this effect will run on every render.
-  // Is that too often??? Maybe.
   useEffect(() => {
     const cssStyle = document.createElement('style');
-    // const colorKeys = Object.keys(colors);
-    colorKeys.forEach((colorKey) => {
-      const textBG = colors[colorKey];
-      const textColor = textBlackOrWhite[colorKey] ? '#000' : '#fff';
-      const textCSS =
-        '.' + colorKey + '{background:' + textBG + ';color:' + textColor + '}';
-      const prefRule = document.createTextNode(textCSS);
-      cssStyle.appendChild(prefRule);
+    Object.entries(colors).forEach(([colorKey, bgColor]) => {
+      appendColorRule(colorKey, bgColor, cssStyle);
     });
-
-    // controlledLog(cssStyle)
+    Object.entries(fontScales).forEach(([fontKey, fontScale]) => {
+      appendFontRule(fontKey, fontScale, cssStyle);
+    });
     document.getElementsByTagName('head')[0].appendChild(cssStyle);
-  });
+    // clean up
+    return () => {
+      if (cssStyle.parentNode) {
+        cssStyle.parentNode.removeChild(cssStyle);
+      }
+    };
+  }, [colors, colorKeys]);
 
   function changeToDefaultColors() {
     setColors(defaultColors);
-    setTextBlackOrWhite(defaultTextBlackOrWhite);
   }
 
   function changeColor(colorType, newColor) {
-    let newColors = { ...colors };
-    newColors[colorType] = newColor;
-    setColors(newColors);
-  }
-
-  function changeTextColors(textColorType, newTextColor) {
-    let newTextColors = { ...textBlackOrWhite };
-    newTextColors[textColorType] = newTextColor;
-    setTextBlackOrWhite(newTextColors);
+    setColors({
+      ...colors,
+      [colorType]: newColor,
+    });
   }
 
   return (
-    <ColorsContext.Provider value={colors}>
-      <ChangeColorsContext.Provider value={changeColor}>
-        <DefaultColorsContext.Provider
-          value={{
-            defaultColors: defaultColors,
-            changeToDefaultColors: changeToDefaultColors,
-          }}
-        >
-          <TextColorsContext.Provider value={textBlackOrWhite}>
-            <ChangeTextColorsContext.Provider value={changeTextColors}>
-              <FontInfoContext.Provider
-                value={{
-                  currentFontSize: fontSize,
-                  currentFontStyle: fontSizes[fontSize],
-                  fontSizes: fontSizes,
-                }}
-              >
-                <ChangeFontSizeContext.Provider value={setFontSize}>
-                  <FavoritesContext.Provider value={favorites}>
-                    <ChangeFavoritesContext.Provider value={setFavorites}>
-                      <SplitWidthContext.Provider value={splitWidth}>
-                        <ChangeSplitWidthContext.Provider value={setSplitWidth}>
-                          {children}
-                        </ChangeSplitWidthContext.Provider>
-                      </SplitWidthContext.Provider>
-                    </ChangeFavoritesContext.Provider>
-                  </FavoritesContext.Provider>
-                </ChangeFontSizeContext.Provider>
-              </FontInfoContext.Provider>
-            </ChangeTextColorsContext.Provider>
-          </TextColorsContext.Provider>
-        </DefaultColorsContext.Provider>
-      </ChangeColorsContext.Provider>
-    </ColorsContext.Provider>
+    <preferencesContext.Provider
+      value={{
+        // Colors
+        colors,
+        changeColor,
+        defaultColors,
+        changeToDefaultColors,
+
+        // Font Info
+        fontSizes,
+        fontSize,
+        setFontSize,
+        fontPref: fontSizes[fontSize],
+
+        // Favorites
+        favorites,
+        setFavorites,
+
+        // GUI settings
+        splitWidth,
+        setSplitWidth,
+        showAbstract,
+        setShowAbstract,
+        showConflicts,
+        setShowConflicts,
+        showStars,
+        setShowStars,
+      }}
+    >
+      {children}
+    </preferencesContext.Provider>
   );
 }
