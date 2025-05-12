@@ -56,14 +56,6 @@ def env_get_float(name, default=0.0):
     return float(var)
 
 
-def get_conflictbot_namespace():
-    namespace = env_get_str("CONFLICTBOT_NAMESPACE")
-    if not namespace:
-        return None
-    cb_namespace = "/conflictbot_" + namespace
-    return cb_namespace
-
-
 default_db = "sqlite:///" + subdir_path("data.sqlite")
 
 dotenv_path = join(basedir, ".env")
@@ -121,9 +113,6 @@ class Config:
     UPLOAD_FOLDER = subdir_path("tmp")
     BIN_FOLDER = subdir_path("local_bin")
     APP_FOLDER = subdir_path("app")
-
-    CONFLICTBOT_NAMESPACE = get_conflictbot_namespace()
-    MEETING_IS_ONLINE = CONFLICTBOT_NAMESPACE is not None
 
 
 class DevelopmentConfig(Config):

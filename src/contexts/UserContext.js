@@ -18,7 +18,6 @@ export default function UserContext({ children }) {
   const [user, setUser] = useState(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminKey, setAdminKey] = useState(''); // XXX move to KeyContext??? or AdminContext????
-  const [conflictbot, setConflictbot] = useState(false);
   const [allUsers, setAllUsers] = useState({});
   const [allRooms, setAllRooms] = useState([]);
   const [roomCalledTo, setRoomCalledTo] = useState('Plenary');
@@ -58,7 +57,6 @@ export default function UserContext({ children }) {
         }
         const isAdmin = data.user && data.user.role_is_admin;
         setIsAdmin(isAdmin);
-        setConflictbot(data.conflictbot_enabled);
         if (isAdmin && data.all_users) {
           setAllUsers(data.all_users);
         }
@@ -167,7 +165,6 @@ export default function UserContext({ children }) {
         isAdmin,
         adminKey,
         gitInfo,
-        conflictbot,
         allUsers,
         allRooms,
         roomCalledTo,

@@ -271,7 +271,6 @@ class GlobQueue(db.Model):
     current_show_enter = db.Column(
         db.Integer, default=0
     )  # show enter and leave conflict lists
-    called_users = db.Column(db.Boolean, default=False)
 
 
 class FileUpload(db.Model):

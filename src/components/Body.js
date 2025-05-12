@@ -3,11 +3,9 @@ import Split from 'react-split';
 import Stack from 'react-bootstrap/Stack';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useAppGlobals } from '../contexts/AppContext';
-import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import Queue from './Queue';
@@ -16,21 +14,16 @@ import GridTab from './GridTab';
 import SetQueue from './SetQueue';
 
 export default function Body() {
-  const { socketEmit } = useSocketIO();
   const {
     user,
     isAdmin,
     allRooms,
-    conflictbot,
-    roomCalledTo,
     roomChoice,
     setRoomChoice,
     isScreenOrOutside,
   } = useUser();
   const { queue, serverGlobs } = useAppGlobals();
   const { splitWidth, setSplitWidth, fontPref } = usePreferences();
-  const showRoomWarning =
-    !isAdmin && conflictbot && roomCalledTo !== roomChoice;
   const showGrid = !isScreenOrOutside();
   const hideQueue = !isAdmin && serverGlobs?.hide_queue;
   const hideMessage =
@@ -38,12 +31,6 @@ export default function Body() {
       ? serverGlobs.message
       : 'The queue is hidden.';
   const message = hideQueue ? hideMessage : 'No papers in queue.';
-  const isPlenary = roomChoice === 'Plenary';
-  const showBringButton = isAdmin && conflictbot && !isPlenary;
-  const calledUsers = serverGlobs && serverGlobs.called_users;
-  const bringButtonLabel = calledUsers
-    ? 'Release to Plenary'
-    : 'Bring Reviewers';
 
   const userBelongsInRoom = (room) =>
     room === 'Plenary' || user?.rooms?.includes(room);
@@ -51,16 +38,10 @@ export default function Body() {
   const userRooms = allRooms.filter(
     // XXX Later make this configurable whether everyone can
     // go in any room.
-    (room) => isAdmin || conflictbot || userBelongsInRoom(room),
+    (room) => isAdmin || userBelongsInRoom(room),
   );
 
   const handleDragEnd = (sizes) => setSplitWidth(sizes);
-
-  const handleBringButton = () => {
-    if (!conflictbot) return;
-    const data = { bring: !calledUsers, room: roomChoice };
-    socketEmit('admin_bring_to_room', data);
-  };
 
   return (
     <Container fluid className="Body">
@@ -95,16 +76,6 @@ export default function Body() {
                     );
                   })}
                 </DropdownButton>
-                {showBringButton && (
-                  <Button variant="primary" onClick={handleBringButton}>
-                    {bringButtonLabel}
-                  </Button>
-                )}
-                {showRoomWarning && (
-                  <span id="room-warning">
-                    You were last called to {roomCalledTo}.
-                  </span>
-                )}
               </Stack>
               {queue.length && !hideQueue ? (
                 <Queue />

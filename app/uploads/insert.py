@@ -304,9 +304,6 @@ def insert_paper_rows(rows):
             paper.tag_labels.append(label)
         db.session.add(paper)
         count += 1
-    if current_app.config["MEETING_IS_ONLINE"]:
-        insert_test_paper()
-        log_print("inserted test paper")
     insert_paper_room_rows(paper_room_rows)  # now insert room assignments
     return count
 
@@ -343,8 +340,6 @@ def insert_conflict_rows(rows):
             user.conf_papers.append(paper)
             db.session.add(user)
             count += 1
-    if current_app.config["MEETING_IS_ONLINE"]:
-        insert_test_paper_conflicts()
     return count
 
 

@@ -70,7 +70,6 @@ from ..models.tables import (
     FileUpload,
     History,
     Filter,
-    GlobQueue,
     status_str_to_enum,
     context_str_to_enum,
     get_all_rooms,
@@ -295,13 +294,6 @@ def get_all_user_dict_dump_cached(refresh_cache):
 
 def invalidate_user_dict_cache():
     invalidate_cache_var("user_dict")
-
-
-# this is still used by conflictbot to maintain old interface
-def get_all_user_list_dump():
-    users = User.query.all()
-    dump = get_user_list_dump(users)
-    return dump
 
 
 def get_paper_all_history_dump(paper):
@@ -954,7 +946,7 @@ def get_globs_dump_with_status(room):
             globs["current_history"] = history
             labels = get_paper_tag_labels(paper)
             globs["current_tags"] = labels
-    return globs, paper
+    return globs
 
 
 def get_queue(room):
@@ -975,10 +967,9 @@ def get_queue(room):
         paper_enc = encrypt_obj_with_oid(paper_dump, paper.oid, paper.key)
         paper_list.append(paper_enc)
         paper_prev = paper
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     queue = {"paper_list_encrypted": paper_list, "globs": globs}
-    result = (queue, current_paper)  # current paper needed by conflictbot
-    return result
+    return queue
 
 
 def clear_all_stickies():
@@ -996,24 +987,6 @@ def disconnect_non_admin_users():
         if user and not user.role_is_admin:
             print(f"disconnecting user {user.email}")
             disconnect_user_by_id(id)
-
-
-# call users to room (bring==True) or release from (bring==False)
-def call_users_to_room(room, bring):
-    log_print(f"call users to room {room} ({bring})")
-    gq = GlobQueue.query.filter_by(room=room).first()
-    if gq:
-        gq.called_users = bring
-        db.session.add(gq)
-    users = User.query.all()
-    for user in users:
-        if room_in_user_rooms(room, user):
-            if bring:
-                user.room_name = room
-                db.session.add(user)
-            elif user.room_name == room:
-                user.room_name = "Plenary"
-                db.session.add(user)
 
 
 def get_unconflicted_paper_keys(user):
@@ -1050,13 +1023,11 @@ def login_user_and_send_welcome(user):
     user_dump = get_one_user_dump(user)
     paper_keys = get_unconflicted_paper_keys_cached(user)
     all_rooms = get_all_rooms()
-    conflictbot_enabled = current_app.config["MEETING_IS_ONLINE"]
     data = {
         "user": user_dump,
         "token": user.generate_token(),  # used to remember user after page refreshes
         "paper_keys": paper_keys,
         "all_rooms": all_rooms,
-        "conflictbot_enabled": conflictbot_enabled,
     }
     all_users = get_all_user_dict_dump_cached(True)
     if user.role_is_admin:
@@ -1164,7 +1135,7 @@ def user_request_queue(room):
         disconnect()
         return
     log_print(f"{user.full_name} requested queue for {room}")
-    data, _ = get_queue_dump_cached(room, False)
+    data = get_queue_dump_cached(room, False)
     emit("server_set_queue", data)
 
 
@@ -1178,33 +1149,6 @@ def io_disconnect():
         invalidate_user_dict_cache()
 
 
-@socketio.on("admin_bring_to_room")
-@admin_required_for_io_no_record
-def admin_bring_to_room(gui_data):
-    if not current_app.config["MEETING_IS_ONLINE"]:
-        return  # only useful in online setting
-    bring = gui_data["bring"]
-    room = gui_data["room"]
-    log_print(f"admin request to bring ({bring}) to room {room}")
-    call_users_to_room(room, bring)
-    try_sql_commit()
-    all_users = get_all_user_dict_dump_cached(True)
-    data = {"room": room, "bring": bring, "all_users": all_users}
-    emit("server_call_to_room", data, broadcast=True)
-    globs, _ = get_globs_dump_with_status(room)
-    emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_user_list()
-    conflictbots_broadcast_call_to_room(room)
-
-
-@socketio.on("admin_bring_to_all_rooms")
-@admin_required_for_io_no_record
-def admin_bring_to_all_rooms():
-    if not current_app.config["MEETING_IS_ONLINE"]:
-        return  # only useful in online setting
-    conflictbots_broadcast_call_to_room(False)
-
-
 @socketio.on("admin_prev_paper")
 @admin_required_for_io_with_record
 def admin_prev_paper(room):
@@ -1212,9 +1156,8 @@ def admin_prev_paper(room):
     zero_or_inc_current_index(room, -1)  # also "hides" current
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_conflicts(globs, current_paper)
 
 
 @socketio.on("admin_next_paper")
@@ -1224,9 +1167,8 @@ def admin_next_paper(room):
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_conflicts(globs, current_paper)
 
 
 @socketio.on("admin_advance_queue")
@@ -1254,11 +1196,10 @@ def admin_advance_queue(data):
         "grid_update": grid_paper_dump,
     }
     update_encrypted = encrypt_obj_with_oid(update, paper.oid, paper.key)
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     # globs['update'] = update # only send encrypted version!
     globs["update_encrypted"] = update_encrypted
     emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_conflicts(globs, current_paper)
 
 
 @socketio.on("admin_show_current")
@@ -1268,9 +1209,8 @@ def admin_show_current(room):
     show_current_paper(room)
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_conflicts(globs, current_paper)
 
 
 @socketio.on("admin_hide_queue")
@@ -1283,9 +1223,8 @@ def admin_hide_queue(data):
     set_hide_queue(room, hide, message)
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs, current_paper = get_globs_dump_with_status(room)
+    globs = get_globs_dump_with_status(room)
     emit("server_set_globs", globs, broadcast=True)
-    conflictbots_broadcast_conflicts(globs, current_paper)
     if hide:
         reply = "Queue is now hidden for everyone except the admin."
     else:
@@ -1301,10 +1240,8 @@ def admin_set_queue_by_gui(filters):
     log_print(f"admin request for set queue in {room}: {filters}")
     msg = set_queue(room, filters)
     try_sql_commit()
-    queue, current_paper = get_queue_dump_cached(room, True)
+    queue = get_queue_dump_cached(room, True)
     emit("server_set_queue", queue, broadcast=True)
-    globs = queue["globs"]
-    conflictbots_broadcast_conflicts(globs, current_paper)
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
 
@@ -1320,10 +1257,8 @@ def admin_set_queue_by_text(data):
     )
     msg = set_queue_by_text_filter(room, explicit, no_tsp)
     try_sql_commit()
-    queue, current_paper = get_queue_dump_cached(room, True)
+    queue = get_queue_dump_cached(room, True)
     emit("server_set_queue", queue, broadcast=True)
-    globs = queue["globs"]
-    conflictbots_broadcast_conflicts(globs, current_paper)
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
 
@@ -1428,7 +1363,7 @@ def admin_set_bar(bar):
     init_grid_from_bbs()
     try_sql_commit()
     invalidate_cache_all()  # room queues contain the bar and the grids
-    globs, _ = get_globs_dump_with_status("Plenary")
+    globs = get_globs_dump_with_status("Plenary")
     emit("server_set_globs", globs, broadcast=True)  # bar is in globs
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
@@ -1618,79 +1553,6 @@ def emit_admin_filters(broadcast):
         emit("server_send_filter_names", names)
 
 
-#################################################
-#
-# Conflictbot below here:
-#
-#################################################
-
-
-def conflictbots_broadcast_user_list():
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        return
-    users_dump = get_all_user_list_dump()
-    all_rooms = get_all_rooms()
-    msg_data = {"roomNames": all_rooms, "userMappings": users_dump}
-    emit("user-list", msg_data, namespace=conflictbot_namespace, broadcast=True)
-
-
-def conflictbots_broadcast_call_to_room(room):
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        return
-    if not room:
-        room = "ALL"
-    log_print(f"call-to-room: {room}")
-    emit("call-to-room", room, namespace=conflictbot_namespace, broadcast=True)
-
-
-def conflictbots_broadcast_conflicts(globs, current_paper):
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        return
-    room = globs["room"]
-    hide = globs["hide_queue"]
-    show = globs["current_show"]
-    if hide:
-        show = False
-    # if hide: queue is hidden so there are NO CONFLICTS:
-    if hide or not current_paper or not current_paper.conf_users:
-        nid = 0
-        oid = ""
-        conflict_emails = []
-    else:
-        nid = current_paper.nid
-        oid = current_paper.oid
-        conflict_list = list(current_paper.conf_users)
-        conflict_emails = get_user_list_emails(conflict_list)
-    data = {
-        "room": room,
-        "paper": nid,
-        "paper_oid": oid,
-        "show": show,
-        "emails": conflict_emails,
-    }
-    emit("conflicts", data, namespace=conflictbot_namespace, broadcast=True)
-
-
-# this next line is broken because the namespace is not set yet.
-@socketio.on("connect", namespace="disabled_conflictbot_namespace")
-def conflictbot_connect():
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        return
-    log_print("conflictbot connected")
-    log_print("sending user list.")
-    # broadcast user list and status to all conflictbots, including this one
-    conflictbots_broadcast_user_list()
-    # need to send all rooms.
-    all_rooms = get_all_rooms()
-    for room in all_rooms:
-        globs, current_paper = get_globs_dump_with_status(room)
-        conflictbots_broadcast_conflicts(globs, current_paper)
-
-
 ####################################
 #
 # Uploads
@@ -1756,12 +1618,3 @@ def admin_load_database():
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
         playback_recorded_actions(user_set_sticky)
-
-
-@socketio.on("admin_refresh_conflictbot")
-@admin_required_for_io_no_record
-def admin_refresh_conflictbot(room):
-    log_print(f"admin_refresh_conflictbot for {room}...")
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if conflictbot_namespace:
-        emit("refresh", room, namespace=conflictbot_namespace, broadcast=True)

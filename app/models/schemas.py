@@ -56,14 +56,4 @@ class GlobQueueSchema(ma.Schema):
             "current_show",
             "current_start",
             "current_show_enter",
-            "called_users",
         )
-
-
-# Currently unused. Could possibly be made useful by
-# adding a virtual field (function) to the model that
-# returns json.loads(filter.text) if is_gui.
-#
-# class FilterSchema(ma.Schema):
-#     class Meta:
-#         fields = ("name", "is_gui", "text")

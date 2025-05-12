@@ -34,8 +34,7 @@ def get_or_create_gq(room):
     if gq:
         # log_print(f'retrieved GC with room {room}')
         return gq
-    called_users = room == "Plenary"
-    gq = GlobQueue(room=room, called_users=called_users)
+    gq = GlobQueue(room=room)
     db.session.add(gq)
     return gq
 
@@ -49,7 +48,6 @@ def reset_gq(room):
     gq.message = ""
     gq.current = -1
     gq.current_show = False
-    gq.called_users = False
     db.session.add(gq)
 
 

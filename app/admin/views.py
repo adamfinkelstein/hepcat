@@ -1,7 +1,6 @@
 from flask import (
     abort,
     flash,
-    render_template,
     send_file,
     current_app,
 )
@@ -34,59 +33,3 @@ def download_zip(key):
     msg = "Sorry -- something is wrong. Try logging back in."
     flash(msg)
     return abort(404)
-
-
-@admin.route("/old_zoom_conflictbot/<key>")
-def old_zoom_conflictbot(key):
-    inst = current_app.config["APP_INSTANCE"]
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        msg = "Sorry -- conflictbot is not enabled at server."
-        flash(msg)
-        return abort(404)
-    if key != inst:
-        msg = "Sorry -- the admin key is wrong. Try logging back in."
-        flash(msg)
-        return abort(404)
-    url = f"/admin/old_zoom_conflictbot/{inst}"
-    client_id = current_app.config["CONFLICTBOT_ZOOM_CLIENT_ID"]
-    client_secret = current_app.config["CONFLICTBOT_ZOOM_CLIENT_SECRET"]
-    return render_template(
-        "old-zoom-conflictbot.html",
-        conflictbot_socket=conflictbot_namespace,
-        url=url,
-        client_id=client_id,
-        client_secret=client_secret,
-    )
-
-
-@admin.route("/debug_conflictbot/<key>")
-def debug_conflictbot(key):
-    inst = current_app.config["APP_INSTANCE"]
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if not conflictbot_namespace:
-        msg = "Sorry -- conflictbot is not enabled at server."
-        flash(msg)
-        return abort(404)
-    if key != inst:
-        msg = "Sorry -- the admin key is wrong. Try logging back in."
-        flash(msg)
-        return abort(404)
-    return render_template(
-        "debug-conflictbot.html",
-        conflictbot_socket=conflictbot_namespace,
-    )
-
-
-@admin.route("/conflictbot3/<key>")
-def conflictbot3(key):
-    inst = current_app.config["APP_INSTANCE"]
-    conflictbot_namespace = current_app.config["CONFLICTBOT_NAMESPACE"]
-    if key != inst:
-        msg = "Sorry -- the admin key is wrong. Try logging back in."
-        flash(msg)
-        return abort(404)
-    return render_template(
-        "conflictbot3.html",
-        conflictbot_socket=conflictbot_namespace,
-    )
