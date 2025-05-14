@@ -14,7 +14,7 @@ import { useSticky } from '../contexts/StickyContext';
 const gridContext = createContext();
 
 export default function GridContext({ children }) {
-  const { socket } = useSocketIO();
+  const { registerIoHandlers } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { roomChoice } = useUser();
   const { decryptObjectOrNull } = useKey();
@@ -134,13 +134,16 @@ export default function GridContext({ children }) {
     setGridNidsBelow,
   ]);
 
-  useEffect(() => {
-    const receiveGrid = (data) => {
+  const receiveGrid = useCallback(
+    (data) => {
       decryptGridPapers(data.papers_encrypted);
       controlledLog('received and decoded grid data');
-    };
+    },
+    [controlledLog, decryptGridPapers],
+  );
 
-    const receiveSticky = (encrypted_grid_update) => {
+  const receiveSticky = useCallback(
+    (encrypted_grid_update) => {
       const grid_update = decryptObjectOrNull(encrypted_grid_update);
       if (!grid_update) {
         controlledLog('received sticky for conflicted paper (ignored)');
@@ -148,29 +151,22 @@ export default function GridContext({ children }) {
       }
       controlledLog('received sticky grid update: ', grid_update);
       updateGridEntry(grid_update);
-    };
+    },
+    [controlledLog, decryptObjectOrNull, updateGridEntry],
+  );
 
-    if (socket && 'on' in socket) {
-      controlledLog('register socket handlers in GridContext');
-      socket.on('server_set_grid', receiveGrid);
-      socket.on('server_set_sticky', receiveSticky);
-    }
-
-    // return from useEffect is function that does cleanup
-    return () => {
-      if (socket && 'off' in socket) {
-        controlledLog('cleanup socket handlers in GridContext');
-        socket.off('server_set_grid', receiveGrid);
-        socket.off('server_set_sticky', receiveSticky);
-      }
+  const getHandlers = useCallback(() => {
+    return {
+      server_set_grid: receiveGrid,
+      server_set_sticky: receiveSticky,
     };
-  }, [
-    socket,
-    controlledLog,
-    decryptObjectOrNull,
-    updateGridEntry,
-    decryptGridPapers,
-  ]);
+  }, [receiveGrid, receiveSticky]);
+
+  useEffect(() => {
+    const context = 'GridContext';
+    const handlers = getHandlers();
+    return registerIoHandlers(handlers, context);
+  }, [getHandlers, registerIoHandlers]);
 
   return (
     <gridContext.Provider

@@ -7,7 +7,6 @@ import {
 } from 'react';
 import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
-import { useFlasher } from './FlasherContext';
 import { useModalDialog } from './ModalDialogContext';
 import { useStorage } from './StorageContext';
 
@@ -20,7 +19,6 @@ export default function SocketIOContext({ children }) {
   const [socket, setSocket] = useState(undefined);
   const [auth, setAuth] = useState(undefined);
   const { controlledLog } = useControlledLog();
-  const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
   const {
     getLocalStorageItem,
@@ -83,51 +81,42 @@ export default function SocketIOContext({ children }) {
         controlledLog('socket does not exist, message not sent.');
         return;
       }
-      controlledLog('socketEmit: ' + message);
-      if (data) {
+      if (data !== undefined) {
         socket.emit(message, data);
+        controlledLog('socketEmit: ' + message + ' data: ', data);
       } else {
         socket.emit(message);
+        controlledLog('socketEmit: ' + message + ' (no data)');
       }
     },
     [socket, controlledLog],
   );
 
-  useEffect(() => {
-    if (!auth) {
-      // the user did not log in yet
-      // if we have stored a token, then try to use it
-      const token = tokenStorageGet();
-      if (token) {
-        setAuth({ token });
-      } else {
-        // setting auth and user to null indicates that the user is not
-        // logged in, which is different than the initial values of undefined
-        // which mean that the app is still starting and trying to figure out
-        // if the user can be authenticated or not.
-        setAuth(null);
-        setSocket(null);
+  const registerOnOrOffHandlers = useCallback(
+    (handlers, contextName, onOrOff) => {
+      const action = onOrOff === 'on' ? 'register' : 'cleanup';
+      if (socket && onOrOff in socket) {
+        controlledLog(action + ' socket handlers in ' + contextName);
+        Object.entries(handlers).forEach(([event, handler]) => {
+          socket[onOrOff](event, handler);
+        });
       }
-      return;
-    }
-    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
-    const s = socketIOClient(endpt, { auth });
-    setSocket(s);
+    },
+    [socket, controlledLog],
+  );
 
-    s.on('connect_error', (err) => {
-      if (errorCallback) {
-        const msg =
-          !err.message || err.message.includes('xhr')
-            ? 'The server appears to be offline. Please try again later.'
-            : err.message;
-        errorCallback(msg);
-      }
-      tokenStorageClear();
-      setSocket(null);
-      setAuth(null);
-    });
+  const registerIoHandlers = useCallback(
+    (handlers, contextName) => {
+      registerOnOrOffHandlers(handlers, contextName, 'on');
+      return () => {
+        registerOnOrOffHandlers(handlers, contextName, 'off');
+      };
+    },
+    [registerOnOrOffHandlers],
+  );
 
-    s.on('disconnect', (reason, _details) => {
+  const handleDisconnect = useCallback(
+    (reason, _details) => {
       // notes on possible reason...
       // machine sleeps: 'transport close'
       // server disconnect: 'io server disconnect'
@@ -143,7 +132,6 @@ export default function SocketIOContext({ children }) {
             </p>
           </>
         );
-        // flash(msg, 'warning', 0);
         revealModalDialog({
           title: 'Disconnected',
           message: msg,
@@ -156,33 +144,66 @@ export default function SocketIOContext({ children }) {
           },
         });
       }
-    });
+    },
+    [controlledLog, revealModalDialog],
+  );
 
-    // Socket.IO handler for the server to push a flashed message */
-    s.on('server_send_flasher', (data, cb) => {
-      // controlledLog('got flasher:');
-      // controlledLog(data);
-      flash(data.message, data.type);
-
-      // the server may request acknowledgement of this message, in that case
-      // invoke the callback
-      if (cb) {
-        cb();
+  const handleConnectError = useCallback(
+    (err) => {
+      if (errorCallback) {
+        const msg =
+          !err.message || err.message.includes('xhr')
+            ? 'The server appears to be offline. Please try again later.'
+            : err.message;
+        errorCallback(msg);
       }
-    });
+      tokenStorageClear();
+      setAuth(null);
+      setSocket(null);
+    },
+    [tokenStorageClear, setSocket, setAuth],
+  );
+
+  /*
+  This callback is used to check if the user is authenticated.
+  Initially, auth is undefined, which means that the app is still
+  starting and trying to figure out if the user can be authenticated.
+  We check for a token in local/session storage. If it does not exist,
+  we set the auth to null, which indicates that the user is not logged in.
+  If the token does exist, we set the auth to contain the token.
+  This will trigger a re-render of the component, and the socket connection
+  will be attempted using this token on the NEXT render. This is more
+  efficient that trying to connect immediately, because there will be
+  a next render anyway, and we can avoid double-connecting.
+  */
+  const isAuthenticated = useCallback(() => {
+    if (auth) return true; // already authenticated
+
+    // not authenticated, so check for token
+    const token = tokenStorageGet();
+    if (token) {
+      setAuth({ token }); // will cause a re-render
+    } else {
+      setAuth(null);
+      setSocket(null);
+    }
+    return false;
+  }, [auth, tokenStorageGet, setAuth, setSocket]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+
+    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
+    const s = socketIOClient(endpt, { auth });
+    setSocket(s);
+
+    s.on('connect_error', handleConnectError);
+    s.on('disconnect', handleDisconnect);
 
     return () => {
       s.disconnect();
     };
-  }, [
-    auth,
-    controlledLog,
-    flash,
-    revealModalDialog,
-    socketLogout,
-    tokenStorageClear,
-    tokenStorageGet,
-  ]);
+  }, [isAuthenticated, auth, setSocket, handleConnectError, handleDisconnect]);
 
   return (
     <socketIOContext.Provider
@@ -192,6 +213,7 @@ export default function SocketIOContext({ children }) {
         socket,
         socketEmit,
         socketSetAuthToken,
+        registerIoHandlers,
       }}
     >
       {children}

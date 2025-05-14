@@ -14,7 +14,6 @@ function decryptMsgUsingKey(msg, keyStr) {
 
 export default function KeyContext({ children }) {
   const [paperKeys, setPaperKeys] = useState(null);
-  //   const [adminKey, setAdminKey] = useState(''); // XXX move to KeyContext???
 
   const oidIsConflict = useCallback(
     (oid) => {

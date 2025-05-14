@@ -631,6 +631,10 @@ def get_probe_counts_msg(filter_papers):
     return msg
 
 
+# XXX TODO: Factor out filter / set code starting here
+# Roughly 250 lines of code.
+
+
 def get_papers_with_ids(ids):
     papers = Paper.query.all()
     p_list = list(papers)
@@ -1029,23 +1033,19 @@ def login_user_and_send_welcome(user):
         "paper_keys": paper_keys,
         "all_rooms": all_rooms,
     }
-    all_users = get_all_user_dict_dump_cached(True)
     if user.role_is_admin:
-        config_name = current_app.config["CONFIG_NAME"]
-        git_info = f"Running in {config_name} mode. "
-        git_info += get_git_info_from_repo()
-        data["all_users"] = all_users
+        # data["all_users"] = all_users
         data["admin_key"] = current_app.config["APP_INSTANCE"]
-        data["git_info"] = git_info
+        data["git_info"] = get_git_info_from_repo()
     emit("server_welcome", data)
     if user.role_is_admin:
         disable = setting_bool_get("disable_logins")
         emit("server_relay_disable_logins", disable)
-        print("server_relay_disable_logins: ", disable)
         emit_admin_uploads(False)
         emit_admin_filters(False)
     # if not user.role_is_super: (better safe than sorry)
     # tell all admins about this login...
+    all_users = get_all_user_dict_dump_cached(True)
     emit("server_refresh_all_users", all_users, room="admin")
 
 
@@ -1219,7 +1219,7 @@ def admin_hide_queue(data):
     room = data["roomChoice"]
     hide = data["hide"]
     message = data["message"]
-    log_print(f"admin request for hide queue {room}: {hide} {message}")
+    log_print(f"admin_hide_queue {room}: {hide} {message}")
     set_hide_queue(room, hide, message)
     try_sql_commit()
     invalidate_queue_cache(room)

@@ -159,7 +159,8 @@ body {
 }
 
 .Body .queue-message,
-.Body .paper-message {
+.Body .paper-message,
+.Queue .queue-message {
   border: 1px dashed purple;
   border-radius: 6px;
   color: purple;
@@ -248,16 +249,6 @@ body {
 
 .Queue .q-title {
   font-weight: bold;
-}
-
-.Queue .queue-hidden-for-non {
-  border: 1px dashed purple;
-  border-radius: 5px;
-  color: purple;
-  font-style: italic;
-  font-weight: bold;
-  margin: 15px;
-  padding: 8px;
 }
 
 /*

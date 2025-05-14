@@ -63,6 +63,9 @@ export default function Paper() {
     return result;
   }
 
+  // XXX Ugly code: currentShowEnter is 0, 1, or -1.
+  // Comes from database entry in GQ.
+  // Should probably be a pair of booleans.
   let current_enter = isPaper && currentShowEnter === 1 ? cp.enter : [];
   let current_leave = isPaper && currentShowEnter === 1 ? cp.leave : [];
   if (isPaper && currentShowEnter === -1) {

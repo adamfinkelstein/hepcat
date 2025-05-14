@@ -2,7 +2,7 @@ import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Form from 'react-bootstrap/Form';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
@@ -18,8 +18,7 @@ export default function UploadsPage() {
   const { socketEmit } = useSocketIO();
   const { adminKey } = useUser();
   const { fontPref } = usePreferences();
-  const globals = useAppGlobals();
-  const fileUploads = globals.fileUploads;
+  const { fileUploads } = useAdmin();
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];
   const uploadTitle = uploadList.length

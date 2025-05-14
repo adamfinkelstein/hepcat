@@ -22,7 +22,7 @@ function genRandomKey(length) {
 const stickyContext = createContext();
 
 export default function StickyContext({ children }) {
-  const { socket, socketEmit } = useSocketIO();
+  const { socket, socketEmit, registerIoHandlers } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
 
@@ -113,23 +113,25 @@ export default function StickyContext({ children }) {
     [socketEmit, stickyKeys, forgetStickyKey, controlledLog],
   );
 
-  useEffect(() => {
-    const receiveConfirmation = (data) => {
+  const receiveConfirmation = useCallback(
+    (data) => {
       controlledLog('received confirmation data', data);
       saveConfirmedSticky(data);
+    },
+    [controlledLog, saveConfirmedSticky],
+  );
+
+  const getHandlers = useCallback(() => {
+    return {
+      server_confirm_sticky: receiveConfirmation,
     };
-    if (socket && 'on' in socket) {
-      controlledLog('register socket handlers in StickyContext');
-      socket.on('server_confirm_sticky', receiveConfirmation);
-    }
-    // cleanup
-    return () => {
-      if (socket && 'off' in socket) {
-        controlledLog('cleanup socket handlers in StickyContext');
-        socket.off('server_confirm_sticky', receiveConfirmation);
-      }
-    };
-  }, [socket, controlledLog, saveConfirmedSticky]);
+  }, [receiveConfirmation]);
+
+  useEffect(() => {
+    const context = 'StickyContext';
+    const handlers = getHandlers();
+    return registerIoHandlers(handlers, context);
+  }, [getHandlers, registerIoHandlers]);
 
   return (
     <stickyContext.Provider

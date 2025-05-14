@@ -2,20 +2,17 @@ import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useAppGlobals } from '../contexts/AppContext';
 import ChooseStatusDropdown from './ChooseStatusDropdown';
+
+const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
 
 export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
   const { roomChoice } = useUser();
-  const {
-    updateStatus,
-    setUpdateStatus,
-    queueCurrent,
-    queue,
-    serverGlobs,
-    statusList,
-  } = useAppGlobals();
+  const { queueCurrent, queue, serverGlobs } = useAppGlobals();
+  const { updateStatus, setUpdateStatus } = useAdmin();
   const disablePrev = queueCurrent === 0;
   const disableNext = queueCurrent >= queue.length;
   const disableShow = disableNext || serverGlobs.current_show;

@@ -49,7 +49,6 @@ class GlobQueueSchema(ma.Schema):
     class Meta:
         fields = (
             "room",
-            "bar",
             "hide_queue",
             "message",
             "current",

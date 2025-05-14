@@ -22,8 +22,11 @@ export default function Queue() {
   const start_index = Math.max(0, current - past_max);
   const end_index = Math.min(counter + future_max, queue.length);
   const queueSlice = queue.slice(start_index, end_index);
-  const hideQueue = globals.serverGlobs && globals.serverGlobs.hide_queue;
-  const hiddenMsg = globals.serverGlobs ? globals.serverGlobs.message : '';
+  const serverGlobs = globals?.serverGlobs;
+  const hideQueue = serverGlobs?.hide_queue;
+  const hideMessage = serverGlobs?.message
+    ? serverGlobs.message
+    : 'The queue is hidden.';
 
   function getQEntryClass(index) {
     let className = 'q-entry';
@@ -45,8 +48,9 @@ export default function Queue() {
       {user && isAdmin && <AdminQueueControls />}
       <Container fluid>
         {hideQueue && (
-          <div className="bigger-font queue-hidden-for-non">
-            Queue hidden for non-admin users, saying: <br /> {hiddenMsg}
+          <div className="bigger-font queue-message">
+            Queue hidden for non-admin users, with this message: <br />{' '}
+            {hideMessage}
           </div>
         )}
         <Stack direction="horizontal" className="mt-2">

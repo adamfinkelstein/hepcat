@@ -6,6 +6,7 @@ import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useAppGlobals } from '../contexts/AppContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFilterContext } from '../contexts/FilterContext';
 
 export default function DangerousOps() {
@@ -16,7 +17,8 @@ export default function DangerousOps() {
   const { flash } = useFlasher();
   const { socketEmit, socketLogout } = useSocketIO();
   const { gitInfo } = useUser();
-  const { appBar, guiBar, setGuiBar } = useAppGlobals();
+  const { globBar } = useAppGlobals();
+  const { locBar, setLocBar } = useAdmin();
   const { allGuiFilterNames, allTextFilterNames } = useFilterContext();
   const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
   // const { fontPref } = useFontInfo();
@@ -29,10 +31,10 @@ export default function DangerousOps() {
       ' This would wipe out any meeting progress before now.';
     revealConfirmationBox('Please Confirm', text, (confirmed) => {
       if (confirmed) {
-        controlledLog('confirmed bar update:', guiBar);
-        socketEmit('admin_set_bar', guiBar);
+        controlledLog('confirmed bar update:', locBar);
+        socketEmit('admin_set_bar', locBar);
       } else {
-        setGuiBar(appBar); // reset box back to current bar value
+        setLocBar(globBar); // reset box back to current bar value
         controlledLog('canceled bar update');
       }
     });
@@ -104,8 +106,8 @@ export default function DangerousOps() {
             </Button>
             <input
               name="bar"
-              value={guiBar}
-              onChange={(e) => setGuiBar(e.target.value)}
+              value={locBar}
+              onChange={(e) => setLocBar(e.target.value)}
             />
           </Stack>
           <Stack direction="horizontal" gap={2}>

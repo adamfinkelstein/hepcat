@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {
   useState,
   createContext,
@@ -10,14 +9,11 @@ import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 import { useFlasher } from './FlasherContext';
 import { useUser } from './UserContext';
-import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useKey } from './KeyContext';
 import { useGrid } from './GridContext';
+import { useAdmin } from './AdminContext';
 
 const AppGlobalsContext = createContext();
-
-const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
-const notSetYetMsg = '(not set)';
 
 export function useAppGlobals() {
   return useContext(AppGlobalsContext);
@@ -25,61 +21,49 @@ export function useAppGlobals() {
 
 export default function AppContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
-  const { user, isAdmin, roomChoice } = useUser();
-  const { socket, socketEmit } = useSocketIO();
-  const { revealModalDialog } = useModalDialog();
+  const { isAdmin, roomChoice } = useUser();
+  const { socketEmit, registerIoHandlers } = useSocketIO();
   const { decryptObjectOrNull } = useKey();
   const { updateGridEntry } = useGrid();
+  const { resetProbeMsgs, recordAdminGlobs, setLocBar } = useAdmin();
   const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
-  const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
-  const [probeTextMsg, setProbeTextMsg] = useState(notSetYetMsg);
-  const [fileUploads, setFileUploads] = useState(null);
   const [serverGlobs, setServerGlobs] = useState(null);
-  const [updateStatus, setUpdateStatus] = useState('Tabled');
-  const [appBar, setAppBar] = useState(''); // actual bar value
-  const [guiBar, setGuiBar] = useState(''); // value in set bar input text box
-  const [hideQ, setHideQ] = useState(false);
-  const [hiddenMsg, setHiddenMsg] = useState('');
+  const [globBar, setGlobBar] = useState(''); // actual bar value
 
-  const recordGlobsForThisRoom = useCallback(
-    (data) => {
-      controlledLog('record globs for this room:');
-      controlledLog(data);
-      // data.message = getTimeInHiddenMessage(data.message);
-      setHideQ(data.hide_queue);
-      setHiddenMsg(data.message);
-      if ('showAppLogs' in data) {
-        // could be true or false or not exist
-        setShowLogs(data.showAppLogs);
-      }
-      setServerGlobs(data);
-      const curr = data ? data.current : 0;
-      const status = data ? data.current_status : null;
-      setQueueCurrent(curr);
-      if (status) {
-        setUpdateStatus(status);
-      }
-    },
-    [
-      controlledLog,
-      setShowLogs,
-      setServerGlobs,
-      setQueueCurrent,
-      setUpdateStatus,
-      setHideQ,
-      setHiddenMsg,
-    ],
-  );
-
+  // When room choice changes, emit request to server.
   useEffect(() => {
     controlledLog('roomChoice is now ' + roomChoice);
     socketEmit('user_request_queue', roomChoice);
   }, [roomChoice, controlledLog, socketEmit]);
 
-  useEffect(() => {
-    const updateQueueEntry = (queue_index, status) => {
+  const recordGlobsForThisRoom = useCallback(
+    (data) => {
+      controlledLog('record globs for this room:', data);
+      if ('showAppLogs' in data) {
+        // could be true or false or not exist
+        setShowLogs(data.showAppLogs);
+      }
+      if (isAdmin) {
+        recordAdminGlobs(data);
+      }
+      setServerGlobs(data);
+      const curr = data ? data.current : 0;
+      setQueueCurrent(curr);
+    },
+    [
+      controlledLog,
+      isAdmin,
+      setShowLogs,
+      setServerGlobs,
+      setQueueCurrent,
+      recordAdminGlobs,
+    ],
+  );
+
+  const updateQueueEntry = useCallback(
+    (queue_index, status) => {
       if (queue_index < 0 || queue_index >= queue.length) {
         controlledLog('cannot updateQueueEntry at queue_index ', queue_index);
         return;
@@ -87,17 +71,15 @@ export default function AppContext({ children }) {
       queue[queue_index].status = status;
       const newQueue = [...queue];
       setQueue(newQueue); // force update
-    };
+    },
+    [controlledLog, queue, setQueue],
+  );
 
-    // called on receiving data from either:
-    //   server_set_queue or server_set_globs
-    const receiveGlobs = (data) => {
-      if (!data) {
-        controlledLog('WARNING! received globs with empty data');
-        return;
-      }
-      controlledLog('received globs:');
-      controlledLog(data);
+  // called on receiving data from either:
+  //   server_set_queue or server_set_globs
+  const receiveGlobs = useCallback(
+    (data) => {
+      controlledLog('received globs:', data);
       // if there was an update, it was encrypted, so get it...
       if (data.update_encrypted) {
         data.update = decryptObjectOrNull(data.update_encrypted);
@@ -122,13 +104,29 @@ export default function AppContext({ children }) {
         // bar is same for all rooms
         const barNum = data.bar;
         const barString = barNum.toString();
-        setAppBar(barString);
-        setGuiBar(barString);
+        setGlobBar(barString);
         controlledLog('set bar to:', barString);
+        if (isAdmin) {
+          setLocBar(barString);
+        }
       }
-    };
+    },
+    [
+      isAdmin,
+      controlledLog,
+      roomChoice,
+      recordGlobsForThisRoom,
+      flash,
+      updateQueueEntry,
+      updateGridEntry,
+      setLocBar,
+      setGlobBar,
+      decryptObjectOrNull,
+    ],
+  );
 
-    const decryptPaperQueue = (arr) => {
+  const decryptPaperQueue = useCallback(
+    (arr) => {
       const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
       const result = arr.map((p) => {
         const dec = decryptObjectOrNull(p);
@@ -136,11 +134,13 @@ export default function AppContext({ children }) {
         return safe;
       });
       return result;
-    };
+    },
+    [decryptObjectOrNull],
+  );
 
-    const receiveQueue = (data) => {
-      controlledLog('received queue:');
-      controlledLog(data);
+  const receiveQueue = useCallback(
+    (data) => {
+      controlledLog('received queue:', data);
       const room = data.globs.room;
       const isTheRoom = room === roomChoice;
       // const msg = `receiveQueue compare rooms: ${room} ${roomChoice} ${isTheRoom}`;
@@ -149,104 +149,39 @@ export default function AppContext({ children }) {
         data.paper_list = decryptPaperQueue(data.paper_list_encrypted);
         setQueue(data.paper_list);
         receiveGlobs(data.globs);
-        setProbeGUIMsg(notSetYetMsg); // when queue arrives, invalidate probe
-        setProbeTextMsg(notSetYetMsg);
+        resetProbeMsgs();
       }
-    };
+    },
+    [
+      controlledLog,
+      roomChoice,
+      decryptPaperQueue,
+      setQueue,
+      receiveGlobs,
+      resetProbeMsgs,
+    ],
+  );
 
-    const receiveFileUploads = (file_uploads) => {
-      controlledLog('received file upload status:');
-      controlledLog(file_uploads);
-      setFileUploads(file_uploads);
+  const getHandlers = useCallback(() => {
+    return {
+      server_set_queue: receiveQueue,
+      server_set_globs: receiveGlobs,
     };
+  }, [receiveQueue, receiveGlobs]);
 
-    const getMsgFromProbe = (countStr, label) => {
-      const now = Date.now();
-      const fmtNow = moment.utc(now).local().format('ddd h:mm:ss');
-      const fmtMsg = countStr + ' — updated ' + fmtNow;
-      const msg = !countStr.length ? notSetYetMsg : fmtMsg;
-      controlledLog('received probe ' + label + ' ' + msg);
-      return msg;
-    };
-
-    const receiveProbeGui = (countStr) => {
-      const msg = getMsgFromProbe(countStr, 'GUI');
-      setProbeGUIMsg(msg);
-    };
-
-    const receiveProbeText = (countStr) => {
-      const msg = getMsgFromProbe(countStr, 'text');
-      setProbeTextMsg(msg);
-    };
-
-    const receiveAlert = (data) => {
-      if (isAdmin || !data.admin_only) {
-        revealModalDialog({ title: data.title, message: data.body });
-      }
-    };
-
-    const receiveReload = () => {
-      controlledLog('got request to reload');
-      window.location.reload();
-    };
-
-    if (socket && 'on' in socket) {
-      controlledLog('register socket handlers in AppContext');
-      socket.on('server_set_queue', receiveQueue);
-      socket.on('server_set_globs', receiveGlobs);
-      socket.on('server_send_alert', receiveAlert);
-      socket.on('server_probe_by_gui', receiveProbeGui);
-      socket.on('server_probe_by_text', receiveProbeText);
-      socket.on('server_file_uploads', receiveFileUploads);
-      socket.on('server_reload_user', receiveReload);
-    }
-
-    return () => {
-      if (socket && 'off' in socket) {
-        controlledLog('cleanup socket handlers in AppContext');
-        socket.off('server_set_queue', receiveQueue);
-        socket.off('server_set_globs', receiveGlobs);
-        socket.off('server_send_alert', receiveAlert);
-        socket.off('server_probe_by_gui', receiveProbeGui);
-        socket.off('server_probe_by_text', receiveProbeText);
-        socket.off('server_file_uploads', receiveFileUploads);
-        socket.off('server_reload_user', receiveReload);
-      }
-    };
-  }, [
-    queue,
-    socket,
-    isAdmin,
-    roomChoice,
-    user,
-    flash,
-    controlledLog,
-    socketEmit,
-    revealModalDialog,
-    recordGlobsForThisRoom,
-    decryptObjectOrNull,
-    updateGridEntry,
-  ]);
+  useEffect(() => {
+    const context = 'AppContext';
+    const handlers = getHandlers();
+    return registerIoHandlers(handlers, context);
+  }, [getHandlers, registerIoHandlers]);
 
   return (
     <AppGlobalsContext.Provider
       value={{
         queue,
         queueCurrent,
-        updateStatus,
-        setUpdateStatus,
         serverGlobs,
-        probeGUIMsg,
-        probeTextMsg,
-        fileUploads,
-        appBar,
-        guiBar,
-        setGuiBar,
-        hideQ,
-        setHideQ,
-        hiddenMsg,
-        setHiddenMsg,
-        statusList,
+        globBar,
       }}
     >
       {children}

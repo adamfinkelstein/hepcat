@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 
@@ -6,7 +6,7 @@ const filterContext = React.createContext();
 
 export default function FilterContext({ children }) {
   const { controlledLog } = useControlledLog();
-  const { socket, socketEmit } = useSocketIO();
+  const { registerIoHandlers } = useSocketIO();
   const [statusCheckbox, setStatusCheckbox] = useState([]);
   const [onlyCheckbox, setOnlyCheckbox] = useState([]);
   const [aboveScore, setAboveScore] = useState(-9.0);
@@ -17,14 +17,14 @@ export default function FilterContext({ children }) {
   const [allTextFilterNames, setAllTextFilterNames] = useState([]);
   const [guiFilterName, setGuiFilterName] = useState('');
   const [textFilterName, setTextFilterName] = useState('');
-  const [textFilterBox, setTextFilterBox] = useState('');
+  const [textFilterInput, setTextFilterInput] = useState('');
 
-  useEffect(() => {
-    const receiveOneFilter = (filter) => {
+  const receiveOneFilter = useCallback(
+    (filter) => {
       controlledLog('receiveOneFilter:', filter);
       if (typeof filter === 'string') {
         // this is a text filter
-        setTextFilterBox(filter);
+        setTextFilterInput(filter);
       } else {
         // this is a GUI filter
         const newAbove = filter.useAboveScore ? filter.aboveScore : -9.0;
@@ -36,28 +36,30 @@ export default function FilterContext({ children }) {
         setAboveScore(newAbove);
         setBelowScore(newBelow);
       }
-    };
+    },
+    [controlledLog],
+  );
 
-    const receiveFilterNames = (filters) => {
+  const receiveFilterNames = useCallback(
+    (filters) => {
       setAllGuiFilterNames(filters.gui);
       setAllTextFilterNames(filters.text);
-    };
+    },
+    [setAllGuiFilterNames, setAllTextFilterNames],
+  );
 
-    if (socket && 'on' in socket) {
-      controlledLog('register socket handlers in FilterContext');
-      socket.on('server_load_filter', receiveOneFilter);
-      socket.on('server_send_filter_names', receiveFilterNames);
-    }
-
-    // return from useEffect is function that does cleanup
-    return () => {
-      if (socket && 'off' in socket) {
-        controlledLog('cleanup socket handlers in FilterContext');
-        socket.off('server_load_filter', receiveOneFilter);
-        socket.off('server_send_filter_names', receiveFilterNames);
-      }
+  const getHandlers = useCallback(() => {
+    return {
+      server_load_filter: receiveOneFilter,
+      server_send_filter_names: receiveFilterNames,
     };
-  }, [socket, controlledLog, socketEmit]);
+  }, [receiveOneFilter, receiveFilterNames]);
+
+  useEffect(() => {
+    const context = 'FilterContext';
+    const handlers = getHandlers();
+    return registerIoHandlers(handlers, context);
+  }, [getHandlers, registerIoHandlers]);
 
   return (
     <filterContext.Provider
@@ -82,8 +84,8 @@ export default function FilterContext({ children }) {
         setGuiFilterName,
         textFilterName,
         setTextFilterName,
-        textFilterBox,
-        setTextFilterBox,
+        textFilterInput,
+        setTextFilterInput,
       }}
     >
       {children}

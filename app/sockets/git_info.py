@@ -1,8 +1,11 @@
 from gitinfo import get_git_info
+from flask import current_app
 
 
 def info_to_txt(info):
-    result = "Git version:"
+    config_name = current_app.config["CONFIG_NAME"]
+    result = f"Running in {config_name} mode. "
+    result += "Git version:"
     for key in info:
         str = info[key]
         if key == "commit":

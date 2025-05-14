@@ -19,6 +19,7 @@ import FlasherContext from './contexts/FlasherContext';
 import ModalDialogContext from './contexts/ModalDialogContext';
 import ConfirmationBoxContext from './contexts/ConfirmationBoxContext';
 import StorageContext from './contexts/StorageContext';
+import ServerAlertContext from './contexts/ServerAlertContext';
 
 export default function App() {
   return (
@@ -33,22 +34,24 @@ export default function App() {
                     <AdminContext>
                       <KeyContext>
                         <UserContext>
-                          <StickyContext>
-                            <GridContext>
-                              <CountContext>
-                                <AppContext>
-                                  <FilterContext>
-                                    <PreferencesContext>
-                                      <ModalDialog />
-                                      <ConfirmationBox />
-                                      <HeaderBar />
-                                      <AppRoutes />
-                                    </PreferencesContext>
-                                  </FilterContext>
-                                </AppContext>
-                              </CountContext>
-                            </GridContext>
-                          </StickyContext>
+                          <ServerAlertContext>
+                            <StickyContext>
+                              <GridContext>
+                                <CountContext>
+                                  <AppContext>
+                                    <FilterContext>
+                                      <PreferencesContext>
+                                        <ModalDialog />
+                                        <ConfirmationBox />
+                                        <HeaderBar />
+                                        <AppRoutes />
+                                      </PreferencesContext>
+                                    </FilterContext>
+                                  </AppContext>
+                                </CountContext>
+                              </GridContext>
+                            </StickyContext>
+                          </ServerAlertContext>
                         </UserContext>
                       </KeyContext>
                     </AdminContext>
