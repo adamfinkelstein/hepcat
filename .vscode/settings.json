@@ -3,7 +3,7 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "python.formatting.provider": "none",
-  "prettier.singleQuote": true,
+  "prettier.useLocal": true,
   "editor.formatOnSave": true,
   "postcssSorting.config": {
     "properties-order": "alphabetical"
@@ -52,5 +52,5 @@
     "valuenow",
     "vstack",
     "werkzeug"
-  ]
+  ],
 }
