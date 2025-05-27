@@ -7,7 +7,6 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
-import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import DangerousOps from '../components/DangerousOps';
 
@@ -16,9 +15,8 @@ export default function UploadsPage() {
   const { revealModalDialog } = useModalDialog();
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
-  const { adminKey } = useUser();
   const { fontPref } = usePreferences();
-  const { fileUploads } = useAdmin();
+  const { fileUploads, adminKey } = useAdmin();
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];
   const uploadTitle = uploadList.length

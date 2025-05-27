@@ -1,14 +1,14 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import Alert from 'react-bootstrap/Alert';
 // import { useControlledLog } from '../contexts/ControlledLogContext';
 
-const FlasherContext = createContext();
+const FlasherContext = React.createContext();
 let flashId = 0; // use incrementing number to assign a unique ID to each alert
 
 export function useFlasher() {
-  return useContext(FlasherContext);
+  return React.useContext(FlasherContext);
 }
 
 export default function FlashContext({ children }) {
@@ -28,20 +28,20 @@ export default function FlashContext({ children }) {
       // controlledLog('hideFlash', id);
       setMessages((messages) =>
         messages.map((message) =>
-          message.flashId === id ? { ...message, visible: false } : message,
-        ),
+          message.flashId === id ? { ...message, visible: false } : message
+        )
       );
 
       // let the slide out animation play, then delete this alert
       const deleteFlash = (id) => {
         // controlledLog('deleteFlash', id);
         setMessages((messages) =>
-          messages.filter((message) => message.flashId !== id),
+          messages.filter((message) => message.flashId !== id)
         );
       };
       setTimeout(deleteFlash.bind(null, id), 600);
     },
-    [], // was [controlledLog] until commented out
+    [] // was [controlledLog] until commented out
   );
 
   const flash = useCallback(
@@ -62,7 +62,7 @@ export default function FlashContext({ children }) {
         setTimeout(hideFlash.bind(null, id), duration * 1000);
       }
     },
-    [hideFlash],
+    [hideFlash]
   );
 
   return (

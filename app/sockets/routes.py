@@ -7,7 +7,6 @@ from Crypto.Util.Padding import pad
 from flask import current_app
 from flask_socketio import (
     emit,
-    disconnect,
     join_room,
     leave_room,
     ConnectionRefusedError,
@@ -16,8 +15,10 @@ from sqlalchemy.sql.expression import func
 from .decorators import (
     admin_required_for_io_with_record,
     admin_required_for_io_no_record,
+    login_required_for_io,
     super_required_for_io,
     playback_recorded_actions,
+    get_user_or_disconnect,
 )
 from .. import db, socketio, log_print
 from ..order import order_q, get_enter_leave_conf_sets
@@ -38,7 +39,6 @@ from .users import (
     disconnect_all_users,
     user_record_socket_and_session,
     get_user_id_from_session,
-    get_current_user_or_none,
     connected_user_ids_list,
     disconnect_user_by_id,
 )
@@ -210,8 +210,10 @@ def get_grid_dump():
             continue
         paper_enc = get_encrypted_grid_entry(paper)
         papers_encrypted.append(paper_enc)
+    bar = setting_float_get("bar")
     grid_dump = {
         "papers_encrypted": papers_encrypted,
+        "bar": bar,
     }
     return grid_dump
 
@@ -338,29 +340,11 @@ def is_paper_ready(paper):
     return True
 
 
-# requires below bar and reject status (in BBS or meeting)
-def is_paper_presumed(paper):
-    if not paper.below_bar:
-        return False
-    latest = get_latest_history_status(paper)
-    if latest != "Reject":
-        return False
-    return True
-
-
 def is_paper_accepted(paper):
     latest = get_latest_room_history_status(paper)
     if latest == "Journal" or latest == "Conference":
         return True
     return False
-
-
-# def is_paper_sticky(paper):
-#     context_sticky = context_str_to_enum("Sticky")
-#     latest = get_latest_history(paper)
-#     if not latest or latest.context_enum != context_sticky:
-#         return False
-#     return True
 
 
 def is_in_cluster(paper):
@@ -426,9 +410,6 @@ def sanitize_paper_filters(filters):
 
 # includes all GUI checkboxes for filtering papers except for "this room only"
 paper_check_functions = {
-    # "Sticky Only": (is_paper_sticky, True),
-    # "Ready Only": (is_paper_ready, True),
-    "No Presumed Rej": (is_paper_presumed, False),
     "No Clusters": (is_in_cluster, False),
     "No Chair Conf": (has_chair_conflict, False),
     "Only Chair Conf": (has_chair_conflict, True),
@@ -488,15 +469,16 @@ def paper_is_ready_reject_below_bar(paper):
     return True
 
 
-def bulk_reject_below_bar():
-    papers = Paper.query.all()
-    papers = list(papers)
-    papers = [p for p in papers if paper_is_ready_reject_below_bar(p)]
-    plenary = context_str_to_enum("Plenary")
-    reject = status_str_to_enum("Reject")
-    for paper in papers:
-        history = History(paper=paper, context_enum=plenary, status_enum=reject)
-        db.session.add(history)
+# This code is now dead:
+# def bulk_reject_below_bar():
+#     papers = Paper.query.all()
+#     papers = list(papers)
+#     papers = [p for p in papers if paper_is_ready_reject_below_bar(p)]
+#     plenary = context_str_to_enum("Plenary")
+#     reject = status_str_to_enum("Reject")
+#     for paper in papers:
+#         history = History(paper=paper, context_enum=plenary, status_enum=reject)
+#         db.session.add(history)
 
 
 def bulk_confirm_in_queue():
@@ -935,8 +917,6 @@ def get_paper_at_queue_index(room, index):
 # def shows status and history for current paper when revealed
 def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
-    bar = setting_float_get("bar")
-    globs["bar"] = bar
     show_logs = current_app.config["REACT_APP_SHOW_LOGS"]
     if show_logs is not None:
         globs["showAppLogs"] = show_logs
@@ -1118,22 +1098,16 @@ def admin_become_user(email):
 
 
 @socketio.on("user_request_grid")
-def user_request_grid():
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
+@get_user_or_disconnect
+def user_request_grid(user):
     log_print(f"{user.full_name} requested grid")
     grid_dump = get_grid_dump_cached(False)
     emit("server_set_grid", grid_dump)
 
 
 @socketio.on("user_request_queue")
-def user_request_queue(room):
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
+@get_user_or_disconnect
+def user_request_queue(user, room):
     log_print(f"{user.full_name} requested queue for {room}")
     data = get_queue_dump_cached(room, False)
     emit("server_set_queue", data)
@@ -1362,10 +1336,7 @@ def admin_set_bar(bar):
     update_all_paper_bar_status(bar)
     init_grid_from_bbs()
     try_sql_commit()
-    invalidate_cache_all()  # room queues contain the bar and the grids
-    globs = get_globs_dump_with_status("Plenary")
-    emit("server_set_globs", globs, broadcast=True)  # bar is in globs
-    grid_dump = get_grid_dump_cached(True)
+    grid_dump = get_grid_dump_cached(True)  # refresh cache
     emit("server_set_grid", grid_dump, broadcast=True)
     message = f"Bar is now updated to: {bar}"
     data = {"message": message, "type": "success"}
@@ -1383,38 +1354,30 @@ def admin_set_disable_logins(disable):
         disconnect_non_admin_users()
 
 
-@socketio.on("admin_bulk_action")
+@socketio.on("admin_bulk_confirm")
 @admin_required_for_io_with_record
-def admin_bulk_action(data):
-    is_queue_not_bar = data["isQueueNotBar"]
-    end_text = "confirm in queue" if is_queue_not_bar else "reject below bar"
-    msg = f"got request admin_bulk_action: {end_text})"
+def admin_bulk_confirm():
+    msg = "got request for admin_bulk_confirm"
     log_print(msg)
-    if is_queue_not_bar:
-        bulk_confirm_in_queue()
-    else:
-        bulk_reject_below_bar()
+    bulk_confirm_in_queue()
     success = try_sql_commit()
     # invalidate_grid_cache() # next line will do this
     grid_dump = get_grid_dump_cached(True)
     emit("server_set_grid", grid_dump, broadcast=True)
     if success:
-        msg = f"Bulk {end_text} completed."
+        msg = "Completed bulk confirm in queue."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
     else:
-        msg = f"Error in bulk action ({end_text})."
+        msg = "Error in admin_bulk_confirm."
         data = {"message": msg, "type": "warning"}
         emit("server_send_flasher", data)
 
 
 # XXX This function is big and should be factored.
 @socketio.on("user_set_sticky")
+@login_required_for_io
 def user_set_sticky(data):
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
     log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
     paper = Paper.query.filter_by(nid=nid).first()
@@ -1456,11 +1419,8 @@ def user_set_sticky(data):
 
 # XXX This function is big and should be factored.
 @socketio.on("user_revoke_sticky")
+@login_required_for_io
 def user_revoke_sticky(data):
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
     log_print(f"user request to revoke sticky: {data}")
     nid = data["nid"]
     key = data["key"]
@@ -1499,11 +1459,8 @@ def user_revoke_sticky(data):
 
 # XXX This function is big and should be factored.
 @socketio.on("user_change_password")
-def user_change_password(data):
-    user = get_current_user_or_none()
-    if not user:
-        disconnect()
-        return
+@get_user_or_disconnect
+def user_change_password(user, data):
     old_password = data["oldPassword"]
     new_password = data["password"]
     for_email = data["forEmail"]

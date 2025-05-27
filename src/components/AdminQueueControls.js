@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useQueue } from '../contexts/QueueContext';
 import ChooseStatusDropdown from './ChooseStatusDropdown';
 
 const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
@@ -11,11 +11,11 @@ const statusList = ['Tabled', 'Reject', 'Conference', 'Journal'];
 export default function AdminQueueControls() {
   const { socketEmit } = useSocketIO();
   const { roomChoice } = useUser();
-  const { queueCurrent, queue, serverGlobs } = useAppGlobals();
+  const { queueCurrent, queue, roomGlobs } = useQueue();
   const { updateStatus, setUpdateStatus } = useAdmin();
   const disablePrev = queueCurrent === 0;
   const disableNext = queueCurrent >= queue.length;
-  const disableShow = disableNext || serverGlobs.current_show;
+  const disableShow = disableNext || roomGlobs?.current_show;
   const upArrow = '\u2B06';
   const dnArrow = '\u2B07';
 

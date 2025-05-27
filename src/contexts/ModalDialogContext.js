@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
-const modalDialogContext = createContext();
+const modalDialogContext = React.createContext();
 
 export default function ModalDialogContext({ children }) {
   const [showModal, setShowModal] = useState(false);
@@ -41,7 +41,7 @@ export default function ModalDialogContext({ children }) {
       setModalButton,
       setModalOnOK,
       setShowModal,
-    ],
+    ]
   );
 
   return (
@@ -62,5 +62,5 @@ export default function ModalDialogContext({ children }) {
 }
 
 export function useModalDialog() {
-  return useContext(modalDialogContext);
+  return React.useContext(modalDialogContext);
 }

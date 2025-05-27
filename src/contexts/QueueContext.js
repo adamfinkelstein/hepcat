@@ -1,10 +1,4 @@
-import {
-  useState,
-  createContext,
-  useContext,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useSocketIO } from './SocketIOContext';
 import { useFlasher } from './FlasherContext';
@@ -13,13 +7,13 @@ import { useKey } from './KeyContext';
 import { useGrid } from './GridContext';
 import { useAdmin } from './AdminContext';
 
-const AppGlobalsContext = createContext();
+const queueContext = React.createContext();
 
-export function useAppGlobals() {
-  return useContext(AppGlobalsContext);
+export function useQueue() {
+  return React.useContext(queueContext);
 }
 
-export default function AppContext({ children }) {
+export default function QueueContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
   const { isAdmin, roomChoice } = useUser();
   const { socketEmit, registerIoHandlers } = useSocketIO();
@@ -29,8 +23,7 @@ export default function AppContext({ children }) {
   const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
-  const [serverGlobs, setServerGlobs] = useState(null);
-  const [globBar, setGlobBar] = useState(''); // actual bar value
+  const [roomGlobs, setRoomGlobs] = useState(null);
 
   // When room choice changes, emit request to server.
   useEffect(() => {
@@ -38,9 +31,9 @@ export default function AppContext({ children }) {
     socketEmit('user_request_queue', roomChoice);
   }, [roomChoice, controlledLog, socketEmit]);
 
-  const recordGlobsForThisRoom = useCallback(
+  const recordRoomGlobs = useCallback(
     (data) => {
-      controlledLog('record globs for this room:', data);
+      controlledLog('recordRoomGlobs:', data);
       if ('showAppLogs' in data) {
         // could be true or false or not exist
         setShowLogs(data.showAppLogs);
@@ -48,7 +41,7 @@ export default function AppContext({ children }) {
       if (isAdmin) {
         recordAdminGlobs(data);
       }
-      setServerGlobs(data);
+      setRoomGlobs(data);
       const curr = data ? data.current : 0;
       setQueueCurrent(curr);
     },
@@ -56,10 +49,10 @@ export default function AppContext({ children }) {
       controlledLog,
       isAdmin,
       setShowLogs,
-      setServerGlobs,
+      setRoomGlobs,
       setQueueCurrent,
       recordAdminGlobs,
-    ],
+    ]
   );
 
   const updateQueueEntry = useCallback(
@@ -72,7 +65,7 @@ export default function AppContext({ children }) {
       const newQueue = [...queue];
       setQueue(newQueue); // force update
     },
-    [controlledLog, queue, setQueue],
+    [controlledLog, queue, setQueue]
   );
 
   // called on receiving data from either:
@@ -85,9 +78,12 @@ export default function AppContext({ children }) {
         data.update = decryptObjectOrNull(data.update_encrypted);
         controlledLog('decrypt update:', data.update);
       }
+      if (data.update) {
+        updateGridEntry(data.update.grid_update);
+      }
       const isTheRoom = data.room === roomChoice;
       if (isTheRoom) {
-        recordGlobsForThisRoom(data);
+        recordRoomGlobs(data);
         if (data.update) {
           const index = data.update.queue_index;
           const status = data.update.status;
@@ -97,32 +93,16 @@ export default function AppContext({ children }) {
           updateQueueEntry(index, status);
         }
       }
-      if (data.update) {
-        updateGridEntry(data.update.grid_update);
-      }
-      if ('bar' in data) {
-        // bar is same for all rooms
-        const barNum = data.bar;
-        const barString = barNum.toString();
-        setGlobBar(barString);
-        controlledLog('set bar to:', barString);
-        if (isAdmin) {
-          setLocBar(barString);
-        }
-      }
     },
     [
-      isAdmin,
       controlledLog,
       roomChoice,
-      recordGlobsForThisRoom,
+      recordRoomGlobs,
       flash,
       updateQueueEntry,
       updateGridEntry,
-      setLocBar,
-      setGlobBar,
       decryptObjectOrNull,
-    ],
+    ]
   );
 
   const decryptPaperQueue = useCallback(
@@ -135,7 +115,7 @@ export default function AppContext({ children }) {
       });
       return result;
     },
-    [decryptObjectOrNull],
+    [decryptObjectOrNull]
   );
 
   const receiveQueue = useCallback(
@@ -159,7 +139,7 @@ export default function AppContext({ children }) {
       setQueue,
       receiveGlobs,
       resetProbeMsgs,
-    ],
+    ]
   );
 
   const getHandlers = useCallback(() => {
@@ -170,21 +150,20 @@ export default function AppContext({ children }) {
   }, [receiveQueue, receiveGlobs]);
 
   useEffect(() => {
-    const context = 'AppContext';
+    const context = 'QueueContext';
     const handlers = getHandlers();
     return registerIoHandlers(handlers, context);
   }, [getHandlers, registerIoHandlers]);
 
   return (
-    <AppGlobalsContext.Provider
+    <queueContext.Provider
       value={{
         queue,
         queueCurrent,
-        serverGlobs,
-        globBar,
+        roomGlobs,
       }}
     >
       {children}
-    </AppGlobalsContext.Provider>
+    </queueContext.Provider>
   );
 }

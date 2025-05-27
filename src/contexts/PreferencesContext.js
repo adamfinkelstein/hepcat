@@ -1,10 +1,4 @@
-import {
-  useState,
-  useCallback,
-  useEffect,
-  createContext,
-  useContext,
-} from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useCount } from './CountContext';
 import { useStorage } from './StorageContext';
 
@@ -78,10 +72,10 @@ const appendFontRule = (fontKey, fontScale, styleNode) => {
 
 const PREF_STORAGE_KEY = 'preferences';
 
-const preferencesContext = createContext();
+const preferencesContext = React.createContext();
 
 export function usePreferences() {
-  return useContext(preferencesContext);
+  return React.useContext(preferencesContext);
 }
 
 export default function PreferencesContext({ children }) {

@@ -1,9 +1,4 @@
-import {
-  createContext, useState,
-  useContext,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useStorage } from './StorageContext';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
@@ -18,7 +13,7 @@ function genRandomKey(length) {
   return slice;
 }
 
-const stickyContext = createContext();
+const stickyContext = React.createContext();
 
 export default function StickyContext({ children }) {
   const { socket, socketEmit, registerIoHandlers } = useSocketIO();
@@ -40,11 +35,11 @@ export default function StickyContext({ children }) {
         setUserLocalStorageItem(STORAGE_KEY, null); // remove the item
       }
     },
-    [setUserLocalStorageItem],
+    [setUserLocalStorageItem]
   );
 
   const [stickyKeys, setStickyKeys] = useState(() =>
-    loadStickyKeysFromStorage(),
+    loadStickyKeysFromStorage()
   );
 
   // Update localStorage whenever stickyKeys changes
@@ -60,7 +55,7 @@ export default function StickyContext({ children }) {
       newKeys[nid] = data;
       setStickyKeys(newKeys);
     },
-    [stickyKeys, setStickyKeys],
+    [stickyKeys, setStickyKeys]
   );
 
   const forgetStickyKey = useCallback(
@@ -70,7 +65,7 @@ export default function StickyContext({ children }) {
       delete newKeys[nid];
       setStickyKeys(newKeys);
     },
-    [stickyKeys, setStickyKeys],
+    [stickyKeys, setStickyKeys]
   );
 
   const checkStickyIdIsValid = useCallback(
@@ -84,7 +79,7 @@ export default function StickyContext({ children }) {
         forgetStickyKey(nid);
       }
     },
-    [stickyKeys, forgetStickyKey, controlledLog],
+    [stickyKeys, forgetStickyKey, controlledLog]
   );
 
   const sendSticky = useCallback(
@@ -94,7 +89,7 @@ export default function StickyContext({ children }) {
       socket.emit('user_set_sticky', data);
       controlledLog('Send sticky: ', data);
     },
-    [socket, controlledLog],
+    [socket, controlledLog]
   );
 
   const revokeSticky = useCallback(
@@ -109,7 +104,7 @@ export default function StickyContext({ children }) {
       forgetStickyKey(nid);
       return true;
     },
-    [socketEmit, stickyKeys, forgetStickyKey, controlledLog],
+    [socketEmit, stickyKeys, forgetStickyKey, controlledLog]
   );
 
   const receiveConfirmation = useCallback(
@@ -117,7 +112,7 @@ export default function StickyContext({ children }) {
       controlledLog('received confirmation data', data);
       saveConfirmedSticky(data);
     },
-    [controlledLog, saveConfirmedSticky],
+    [controlledLog, saveConfirmedSticky]
   );
 
   const getHandlers = useCallback(() => {
@@ -142,5 +137,5 @@ export default function StickyContext({ children }) {
 }
 
 export function useSticky() {
-  return useContext(stickyContext);
+  return React.useContext(stickyContext);
 }

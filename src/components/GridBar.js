@@ -1,12 +1,12 @@
-import { useAppGlobals } from '../contexts/AppContext';
+import { useGrid } from '../contexts/GridContext';
 import { useCount } from '../contexts/CountContext';
 
 export default function GridBar() {
-  const { globBar } = useAppGlobals();
+  const { gridBar } = useGrid();
   const { getGridCount } = useCount();
   const nAbove = getGridCount('above');
   const nBelow = getGridCount('below');
-  const barString = 'bar: ' + globBar;
+  const barString = 'bar: ' + gridBar;
 
   return (
     <div className="GridBar">

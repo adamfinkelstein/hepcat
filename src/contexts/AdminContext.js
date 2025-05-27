@@ -1,15 +1,9 @@
 import moment from 'moment';
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 
-const adminContext = createContext();
+const adminContext = React.createContext();
 
 const notSetYetMsg = '(not set)';
 
@@ -24,16 +18,27 @@ export default function AdminContext({ children }) {
   const [locHideQ, setLocHideQ] = useState(false); // checkbox to hide queue
   const [locHideMsg, setLocHideMsg] = useState(''); // text box msg
   const [updateStatus, setUpdateStatus] = useState('Tabled');
+  const [gitInfo, setGitInfo] = useState('');
+  const [adminKey, setAdminKey] = useState(null);
+  const [allUsers, setAllUsers] = useState({});
+  const [showDangerous, setShowDangerous] = useState(false);
 
-  // Called by AppContext when new Queue arrives.
+  const countOnlineUsers = useCallback(() => {
+    let count = 0;
+    for (const [email, user] of Object.entries(allUsers)) {
+      if (email && user.is_online) count++;
+    }
+    return count;
+  }, [allUsers]);
+
+  // Called by QueueContext when new Queue arrives.
   // Reset both probes to not set yet.
   const resetProbeMsgs = useCallback(() => {
-    controlledLog('reset probes');
     setProbeGUIMsg(notSetYetMsg);
     setProbeTextMsg(notSetYetMsg);
-  }, [controlledLog, setProbeGUIMsg, setProbeTextMsg]);
+  }, [setProbeGUIMsg, setProbeTextMsg]);
 
-  // Update admin local variables from AppContext.
+  // Update admin local variables from QueueContext.
   const recordAdminGlobs = useCallback(
     (data) => {
       controlledLog('recordAdminGlobs', data);
@@ -43,7 +48,7 @@ export default function AdminContext({ children }) {
         setUpdateStatus(data.current_status);
       }
     },
-    [controlledLog, setLocHideQ, setLocHideMsg],
+    [controlledLog, setLocHideQ, setLocHideMsg]
   );
 
   // Called by component that has the switch.
@@ -55,7 +60,7 @@ export default function AdminContext({ children }) {
       socketEmit('admin_set_disable_logins', disable);
       controlledLog('admin_set_disable_logins: ', disable);
     },
-    [disableLogins, setDisableLogins, socketEmit, controlledLog],
+    [disableLogins, setDisableLogins, socketEmit, controlledLog]
   );
 
   // called by server broadcast of a change to some switch.
@@ -64,7 +69,7 @@ export default function AdminContext({ children }) {
       controlledLog('receiveDisableLogin', disabled);
       setDisableLogins(disabled);
     },
-    [setDisableLogins, controlledLog],
+    [setDisableLogins, controlledLog]
   );
 
   const receiveFileUploads = useCallback(
@@ -72,7 +77,7 @@ export default function AdminContext({ children }) {
       controlledLog('received file uploads:', file_uploads);
       setFileUploads(file_uploads);
     },
-    [setFileUploads, controlledLog],
+    [setFileUploads, controlledLog]
   );
 
   const getMsgFromProbe = useCallback(
@@ -84,7 +89,7 @@ export default function AdminContext({ children }) {
       controlledLog('received probe ' + label + ' ' + msg);
       return msg;
     },
-    [controlledLog],
+    [controlledLog]
   );
 
   const receiveProbeGui = useCallback(
@@ -92,7 +97,7 @@ export default function AdminContext({ children }) {
       const msg = getMsgFromProbe(countStr, 'GUI');
       setProbeGUIMsg(msg);
     },
-    [getMsgFromProbe, setProbeGUIMsg],
+    [getMsgFromProbe, setProbeGUIMsg]
   );
 
   const receiveProbeText = useCallback(
@@ -100,7 +105,27 @@ export default function AdminContext({ children }) {
       const msg = getMsgFromProbe(countStr, 'text');
       setProbeTextMsg(msg);
     },
-    [getMsgFromProbe, setProbeTextMsg],
+    [getMsgFromProbe, setProbeTextMsg]
+  );
+
+  const receiveRefreshUser = useCallback(
+    (oneUser) => {
+      controlledLog('received refresh for one user:', oneUser);
+      controlledLog(oneUser);
+      const allUsersCopy = { ...allUsers };
+      const email = oneUser.email;
+      allUsersCopy[email] = oneUser;
+      setAllUsers(allUsersCopy);
+    },
+    [controlledLog, allUsers, setAllUsers]
+  );
+
+  const receiveRefreshAllUsers = useCallback(
+    (usersObj) => {
+      controlledLog('received refresh for all users: ', usersObj);
+      setAllUsers(usersObj);
+    },
+    [controlledLog, setAllUsers]
   );
 
   const getHandlers = useCallback(() => {
@@ -109,12 +134,16 @@ export default function AdminContext({ children }) {
       server_probe_by_gui: receiveProbeGui,
       server_probe_by_text: receiveProbeText,
       server_file_uploads: receiveFileUploads,
+      server_refresh_user: receiveRefreshUser,
+      server_refresh_all_users: receiveRefreshAllUsers,
     };
   }, [
     receiveDisableLogins,
     receiveProbeGui,
     receiveProbeText,
     receiveFileUploads,
+    receiveRefreshUser,
+    receiveRefreshAllUsers,
   ]);
 
   useEffect(() => {
@@ -141,6 +170,15 @@ export default function AdminContext({ children }) {
         setLocHideQ,
         locHideMsg,
         setLocHideMsg,
+        showDangerous,
+        setShowDangerous,
+        adminKey,
+        setAdminKey,
+        gitInfo,
+        setGitInfo,
+        allUsers,
+        setAllUsers,
+        countOnlineUsers,
       }}
     >
       {children}
@@ -149,5 +187,5 @@ export default function AdminContext({ children }) {
 }
 
 export function useAdmin() {
-  return useContext(adminContext);
+  return React.useContext(adminContext);
 }

@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useFlasher } from './FlasherContext';
 import { useSocketIO } from './SocketIOContext';
 import { useUser } from './UserContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 
-const serverAlertContext = createContext();
+const serverAlertContext = React.createContext();
 
 export default function ServerAlertContext({ children }) {
   const { controlledLog } = useControlledLog();
@@ -23,7 +23,7 @@ export default function ServerAlertContext({ children }) {
         cb();
       }
     },
-    [flash],
+    [flash]
   );
 
   const receiveAlert = useCallback(
@@ -32,7 +32,7 @@ export default function ServerAlertContext({ children }) {
         revealModalDialog({ title: data.title, message: data.body });
       }
     },
-    [isAdmin, revealModalDialog],
+    [isAdmin, revealModalDialog]
   );
 
   const receiveReload = useCallback(() => {
@@ -62,5 +62,5 @@ export default function ServerAlertContext({ children }) {
 }
 
 export function useServerAlertContext() {
-  return useContext(serverAlertContext);
+  return React.useContext(serverAlertContext);
 }

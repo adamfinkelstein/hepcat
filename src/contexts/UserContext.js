@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useSocketIO } from './SocketIOContext.js';
 import { useControlledLog } from './ControlledLogContext.js';
 import { useKey } from './KeyContext';
 import { useStorage } from './StorageContext';
+import { useAdmin } from './AdminContext';
 
-const userContext = createContext();
+const userContext = React.createContext();
 
 export default function UserContext({ children }) {
   const { socket, socketEmit, socketSetAuthToken, registerIoHandlers } =
@@ -13,15 +13,12 @@ export default function UserContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { setPaperKeys } = useKey();
   const { setStorageUserID } = useStorage();
+  const { setAdminKey, setGitInfo } = useAdmin();
 
   const [user, setUser] = useState(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminKey, setAdminKey] = useState(null); // XXX move to KeyContext??? or AdminContext????
-  const [allUsers, setAllUsers] = useState({});
   const [allRooms, setAllRooms] = useState([]);
   const [roomChoice, setRoomChoice] = useState('Plenary');
-  const [gitInfo, setGitInfo] = useState('');
-  const [showGlobalOps, setShowGlobalOps] = useState(false);
 
   const isScreenRole = useCallback(() => {
     return user?.role_name === 'Screen';
@@ -69,28 +66,7 @@ export default function UserContext({ children }) {
       socketSetAuthToken,
       roomChoice,
       socketEmit,
-    ],
-  );
-
-  const receiveRefreshUser = useCallback(
-    (oneUser) => {
-      controlledLog('received refresh for one user:', oneUser);
-      controlledLog(oneUser);
-      const allUsersCopy = { ...allUsers };
-      const email = oneUser.email;
-      allUsersCopy[email] = oneUser;
-      setAllUsers(allUsersCopy);
-    },
-    [controlledLog, allUsers, setAllUsers],
-  );
-
-  const receiveRefreshAllUsers = useCallback(
-    (usersObj) => {
-      controlledLog('received refresh for all users:');
-      controlledLog(usersObj);
-      setAllUsers(usersObj);
-    },
-    [controlledLog, setAllUsers],
+    ]
   );
 
   // if logged in, do nothing.
@@ -117,10 +93,8 @@ export default function UserContext({ children }) {
   const getHandlers = useCallback(() => {
     return {
       server_welcome: receiveWelcome,
-      server_refresh_user: receiveRefreshUser,
-      server_refresh_all_users: receiveRefreshAllUsers,
     };
-  }, [receiveWelcome, receiveRefreshUser, receiveRefreshAllUsers]);
+  }, [receiveWelcome]);
 
   useEffect(() => {
     const context = 'UserContext';
@@ -133,14 +107,9 @@ export default function UserContext({ children }) {
       value={{
         user,
         isAdmin,
-        adminKey,
-        gitInfo,
-        allUsers,
         allRooms,
         roomChoice,
         setRoomChoice,
-        showGlobalOps,
-        setShowGlobalOps,
         isScreenRole,
         isOutsideRole,
         isScreenOrOutside,
@@ -152,5 +121,5 @@ export default function UserContext({ children }) {
 }
 
 export function useUser() {
-  return useContext(userContext);
+  return React.useContext(userContext);
 }

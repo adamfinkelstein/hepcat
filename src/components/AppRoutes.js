@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useUser } from '../contexts/UserContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import MainPage from '../pages/MainPage';
@@ -15,8 +14,6 @@ import ChangePasswordPage from '../pages/ChangePasswordPage';
 export default function AppRoutes() {
   const { socket } = useSocketIO();
   const { user, isAdmin } = useUser();
-  const { controlledLog } = useControlledLog();
-  controlledLog(user);
 
   if (socket === undefined || user === undefined) {
     // too early to render, wait for the socket to be either

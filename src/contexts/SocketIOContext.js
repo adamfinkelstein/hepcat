@@ -1,19 +1,14 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  createContext,
-  useContext,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import socketIOClient from 'socket.io-client';
 import { useControlledLog } from './ControlledLogContext';
 import { useModalDialog } from './ModalDialogContext';
 import { useStorage } from './StorageContext';
 
-const socketIOContext = createContext();
+const socketIOContext = React.createContext();
 let errorCallback = null;
 
 const TOKEN_STORAGE_KEY = 'io_login_token';
+const verboseHandlerRegistration = false;
 
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = useState(undefined);
@@ -39,7 +34,7 @@ export default function SocketIOContext({ children }) {
         setSessionStorageItem(TOKEN_STORAGE_KEY, token);
       }
     },
-    [getLocalStorageItem, setLocalStorageItem, setSessionStorageItem],
+    [getLocalStorageItem, setLocalStorageItem, setSessionStorageItem]
   );
 
   const tokenStorageGet = useCallback(() => {
@@ -65,14 +60,14 @@ export default function SocketIOContext({ children }) {
       setAuth(null);
       setSocket(null);
     },
-    [tokenStorageClear],
+    [tokenStorageClear]
   );
 
   const socketSetAuthToken = useCallback(
     (token) => {
       tokenStorageSet(token, auth?.remember);
     },
-    [auth, tokenStorageSet],
+    [auth, tokenStorageSet]
   );
 
   const socketEmit = useCallback(
@@ -89,20 +84,23 @@ export default function SocketIOContext({ children }) {
         controlledLog('socketEmit: ' + message + ' (no data)');
       }
     },
-    [socket, controlledLog],
+    [socket, controlledLog]
   );
 
   const registerOnOrOffHandlers = useCallback(
     (handlers, contextName, onOrOff) => {
-      const action = onOrOff === 'on' ? 'register' : 'cleanup';
       if (socket && onOrOff in socket) {
-        controlledLog(action + ' socket handlers in ' + contextName);
+        if (verboseHandlerRegistration) {
+          const action = onOrOff === 'on' ? 'register' : 'cleanup';
+          const msg = action + ' socket handlers in ' + contextName;
+          controlledLog(msg);
+        }
         Object.entries(handlers).forEach(([event, handler]) => {
           socket[onOrOff](event, handler);
         });
       }
     },
-    [socket, controlledLog],
+    [socket, controlledLog]
   );
 
   const registerIoHandlers = useCallback(
@@ -112,7 +110,7 @@ export default function SocketIOContext({ children }) {
         registerOnOrOffHandlers(handlers, contextName, 'off');
       };
     },
-    [registerOnOrOffHandlers],
+    [registerOnOrOffHandlers]
   );
 
   const handleDisconnect = useCallback(
@@ -120,6 +118,7 @@ export default function SocketIOContext({ children }) {
       // notes on possible reason...
       // machine sleeps: 'transport close'
       // server disconnect: 'io server disconnect'
+      // see: https://socket.io/docs/v3/client-socket-instance/
       controlledLog('socket disconnect for reason: ' + reason);
       const serverDisconnect = reason === 'io server disconnect';
       if (serverDisconnect) {
@@ -145,7 +144,7 @@ export default function SocketIOContext({ children }) {
         });
       }
     },
-    [controlledLog, revealModalDialog],
+    [controlledLog, revealModalDialog]
   );
 
   const handleConnectError = useCallback(
@@ -161,7 +160,7 @@ export default function SocketIOContext({ children }) {
       setAuth(null);
       setSocket(null);
     },
-    [tokenStorageClear, setSocket, setAuth],
+    [tokenStorageClear, setSocket, setAuth]
   );
 
   /*
@@ -201,6 +200,9 @@ export default function SocketIOContext({ children }) {
     s.on('disconnect', handleDisconnect);
 
     return () => {
+      // XXX Is "off" to deregister these methods needed/correct???
+      s.off('connect_error', handleConnectError);
+      s.off('disconnect', handleDisconnect);
       s.disconnect();
     };
   }, [isAuthenticated, auth, setSocket, handleConnectError, handleDisconnect]);
@@ -222,5 +224,5 @@ export default function SocketIOContext({ children }) {
 }
 
 export function useSocketIO() {
-  return useContext(socketIOContext);
+  return React.useContext(socketIOContext);
 }

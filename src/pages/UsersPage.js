@@ -6,6 +6,7 @@ import Stack from 'react-bootstrap/Stack';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { usePreferences } from '../contexts/PreferencesContext';
@@ -24,7 +25,8 @@ function timeDiff(since) {
 export default function UsersPage() {
   const { flash } = useFlasher();
   const { socketEmit } = useSocketIO();
-  const { user, allUsers } = useUser();
+  const { user } = useUser();
+  const { allUsers } = useAdmin();
   const { controlledLog } = useControlledLog();
   const { revealConfirmationBox } = useConfirmationBox();
   const { fontPref } = usePreferences();

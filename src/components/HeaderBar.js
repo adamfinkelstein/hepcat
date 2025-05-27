@@ -5,24 +5,17 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Badge from 'react-bootstrap/Badge';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
-  const { user, isAdmin, allUsers } = useUser();
+  const { user, isAdmin } = useUser();
+  const { countOnlineUsers } = useAdmin();
   const { socketLogout } = useSocketIO();
   const { fontPref } = usePreferences();
-
-  function countOnlineUsers() {
-    if (!isAdmin) return 0;
-    let count = 0;
-    for (const [email, user] of Object.entries(allUsers)) {
-      if (email && user.is_online) count++;
-    }
-    return count;
-  }
 
   function getHeaderBarName() {
     let headerBarName = user && user.full_name ? user.full_name : 'User';
@@ -36,7 +29,7 @@ export default function HeaderBar() {
     return headerBarName;
   }
 
-  const onlineCount = countOnlineUsers();
+  const onlineCount = isAdmin ? countOnlineUsers() : 0;
   const headerBarName = getHeaderBarName();
 
   return (

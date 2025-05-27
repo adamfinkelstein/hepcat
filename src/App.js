@@ -12,7 +12,7 @@ import GridContext from './contexts/GridContext';
 import AdminContext from './contexts/AdminContext';
 import StickyContext from './contexts/StickyContext';
 import CountContext from './contexts/CountContext';
-import AppContext from './contexts/AppContext';
+import QueueContext from './contexts/QueueContext';
 import FilterContext from './contexts/FilterContext';
 import PreferencesContext from './contexts/PreferencesContext';
 import FlasherContext from './contexts/FlasherContext';
@@ -38,7 +38,7 @@ export default function App() {
                             <StickyContext>
                               <GridContext>
                                 <CountContext>
-                                  <AppContext>
+                                  <QueueContext>
                                     <FilterContext>
                                       <PreferencesContext>
                                         <ModalDialog />
@@ -47,7 +47,7 @@ export default function App() {
                                         <AppRoutes />
                                       </PreferencesContext>
                                     </FilterContext>
-                                  </AppContext>
+                                  </QueueContext>
                                 </CountContext>
                               </GridContext>
                             </StickyContext>

@@ -49,16 +49,13 @@ export default function GuiFilters() {
     setUseAboveScore,
     useBelowScore,
     setUseBelowScore,
-  } = useFilterContext(); // XXX TODO: consolidate checkboxes, scores
+  } = useFilterContext(); // XXX TODO: consolidate checkboxes, scores?
 
-  // XXX TODO: think through which of these are still needed.
   const filterList = [
     'This Room Only',
-    'No Presumed Rej',
     'Dual Only',
     'Journal Only',
     'No Clusters',
-    'No Exceptions',
     'No Chair Conf',
     'Only Chair Conf',
     'Above Bar',
@@ -158,7 +155,7 @@ export default function GuiFilters() {
     const thisRoom = onlyCheckbox.includes(roomText);
     const onlyNoRoom = onlyCheckbox.filter((o) => o !== roomText);
     const only = onlyNoRoom.map(
-      (o) => 'Check:' + o.replace(/[^a-zA-Z]+/g, '_'),
+      (o) => 'Check:' + o.replace(/[^a-zA-Z]+/g, '_')
     );
     if (statuses.length === 0) {
       return 'None';

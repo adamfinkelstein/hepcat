@@ -113,3 +113,28 @@ def super_required_for_io(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+def login_required_for_io(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user_or_none()
+        if not user:
+            disconnect()
+            return
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def get_user_or_disconnect(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user_or_none()
+        if not user:
+            disconnect()
+            return
+        # Call the original function with user as the first argument
+        return f(user, *args, **kwargs)
+
+    return decorated

@@ -1,17 +1,11 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 import { useUser } from './UserContext';
 import { useKey } from './KeyContext';
 import { useSticky } from '../contexts/StickyContext';
 
-const gridContext = createContext();
+const gridContext = React.createContext();
 
 export default function GridContext({ children }) {
   const { registerIoHandlers } = useSocketIO();
@@ -20,6 +14,7 @@ export default function GridContext({ children }) {
   const { decryptObjectOrNull } = useKey();
   const { checkStickyIdIsValid } = useSticky();
 
+  const [gridBar, setGridBar] = useState('');
   const [gridMode, setGridMode] = useState('Normal');
   const [gridInRoom, setGridInRoom] = useState(false);
   const [gridPapers, setGridPapers] = useState({});
@@ -32,7 +27,7 @@ export default function GridContext({ children }) {
     (nid) => {
       return gridPapers.hasOwnProperty(nid);
     },
-    [gridPapers],
+    [gridPapers]
   );
 
   const gridGetElemByNid = useCallback(
@@ -40,7 +35,7 @@ export default function GridContext({ children }) {
       if (!gridNidIsValid(nid)) return null;
       return gridPapers[nid];
     },
-    [gridPapers, gridNidIsValid],
+    [gridPapers, gridNidIsValid]
   );
 
   const sortGridPapers = useCallback(
@@ -63,7 +58,7 @@ export default function GridContext({ children }) {
       }
       return { above, below };
     },
-    [gridInRoom, roomChoice, controlledLog],
+    [gridInRoom, roomChoice, controlledLog]
   );
 
   // called due to sticky or queue update
@@ -77,7 +72,7 @@ export default function GridContext({ children }) {
       newGridPapers[nid] = grid_update;
       setGridPapers(newGridPapers); // force update to papers variable
     },
-    [gridPapers, setGridPapers, checkStickyIdIsValid],
+    [gridPapers, setGridPapers, checkStickyIdIsValid]
   );
 
   const decryptGridPapers = useCallback(
@@ -111,7 +106,7 @@ export default function GridContext({ children }) {
       setGridConflicts,
       checkStickyIdIsValid,
       // controlledLog,
-    ],
+    ]
   );
 
   useEffect(() => {
@@ -136,10 +131,13 @@ export default function GridContext({ children }) {
 
   const receiveGrid = useCallback(
     (data) => {
+      const barNum = data.bar;
+      const barStr = barNum.toString();
+      setGridBar(barStr);
       decryptGridPapers(data.papers_encrypted);
-      controlledLog('received and decoded grid data');
+      controlledLog('received and decoded grid data and bar: ' + barStr);
     },
-    [controlledLog, decryptGridPapers],
+    [controlledLog, decryptGridPapers]
   );
 
   const receiveSticky = useCallback(
@@ -152,7 +150,7 @@ export default function GridContext({ children }) {
       controlledLog('received sticky grid update: ', grid_update);
       updateGridEntry(grid_update);
     },
-    [controlledLog, decryptObjectOrNull, updateGridEntry],
+    [controlledLog, decryptObjectOrNull, updateGridEntry]
   );
 
   const getHandlers = useCallback(() => {
@@ -171,6 +169,7 @@ export default function GridContext({ children }) {
   return (
     <gridContext.Provider
       value={{
+        gridBar,
         gridMode,
         setGridMode,
         gridInRoom,
@@ -190,5 +189,5 @@ export default function GridContext({ children }) {
 }
 
 export function useGrid() {
-  return useContext(gridContext);
+  return React.useContext(gridContext);
 }

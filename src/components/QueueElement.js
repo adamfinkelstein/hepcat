@@ -1,4 +1,4 @@
-import { useAppGlobals } from '../contexts/AppContext';
+import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
@@ -7,11 +7,11 @@ import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function QueueElement({ paper }) {
   const { isScreenOrOutside } = useUser();
-  const globals = useAppGlobals();
+  const { queueCurrent } = useQueue();
   const { favorites, showConflicts, showStars } = usePreferences();
   const queueIndex = paper ? paper.queue_order - 1 : -1;
-  const isCurrent = queueIndex === globals.queueCurrent;
-  const isPast = queueIndex < globals.queueCurrent;
+  const isCurrent = queueIndex === queueCurrent;
+  const isPast = queueIndex < queueCurrent;
   const isConflict = paper.nid === 0;
   const isFavorite = favorites.includes(paper.nid);
   const isScreen = isScreenOrOutside();

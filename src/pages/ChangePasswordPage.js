@@ -5,6 +5,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useControlledLog } from '../contexts/ControlledLogContext.js';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -17,7 +18,8 @@ export default function ChangePasswordPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { flash } = useFlasher();
-  const { user, isAdmin, allUsers } = useUser();
+  const { user, isAdmin } = useUser();
+  const { allUsers } = useAdmin();
   const { fontPref } = usePreferences();
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));

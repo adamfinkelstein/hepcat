@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
-const confirmationBoxContext = createContext();
+const confirmationBoxContext = React.createContext();
 
 export default function ConfirmationBoxContext({ children }) {
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -31,7 +31,7 @@ export default function ConfirmationBoxContext({ children }) {
       setConfirmationBody,
       setShowConfirmation,
       setConfirmationCallback,
-    ],
+    ]
   );
 
   return (
@@ -51,5 +51,5 @@ export default function ConfirmationBoxContext({ children }) {
 }
 
 export function useConfirmationBox() {
-  return useContext(confirmationBoxContext);
+  return React.useContext(confirmationBoxContext);
 }

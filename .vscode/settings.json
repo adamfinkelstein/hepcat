@@ -2,12 +2,16 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.formatting.provider": "none",
-  "prettier.useLocal": true,
-  "editor.formatOnSave": true,
-  "postcssSorting.config": {
-    "properties-order": "alphabetical"
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
   "cSpell.words": [
     "apikey",
     "backref",

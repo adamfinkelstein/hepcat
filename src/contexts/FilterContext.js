@@ -37,7 +37,7 @@ export default function FilterContext({ children }) {
         setBelowScore(newBelow);
       }
     },
-    [controlledLog],
+    [controlledLog]
   );
 
   const receiveFilterNames = useCallback(
@@ -45,7 +45,7 @@ export default function FilterContext({ children }) {
       setAllGuiFilterNames(filters.gui);
       setAllTextFilterNames(filters.text);
     },
-    [setAllGuiFilterNames, setAllTextFilterNames],
+    [setAllGuiFilterNames, setAllTextFilterNames]
   );
 
   const getHandlers = useCallback(() => {

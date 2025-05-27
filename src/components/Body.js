@@ -5,7 +5,7 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import Queue from './Queue';
@@ -22,14 +22,13 @@ export default function Body() {
     setRoomChoice,
     isScreenOrOutside,
   } = useUser();
-  const { queue, serverGlobs } = useAppGlobals();
+  const { queue, roomGlobs } = useQueue();
   const { splitWidth, setSplitWidth, fontPref } = usePreferences();
   const showGrid = !isScreenOrOutside();
-  const hideQueue = !isAdmin && serverGlobs?.hide_queue;
-  const hideMessage =
-    serverGlobs && serverGlobs.message
-      ? serverGlobs.message
-      : 'The queue is hidden.';
+  const hideQueue = !isAdmin && roomGlobs?.hide_queue;
+  const hideMessage = roomGlobs?.message
+    ? roomGlobs.message
+    : 'The queue is hidden.';
   const message = hideQueue ? hideMessage : 'No papers in queue.';
 
   const userBelongsInRoom = (room) =>
@@ -38,7 +37,7 @@ export default function Body() {
   const userRooms = allRooms.filter(
     // XXX Later make this configurable whether everyone can
     // go in any room.
-    (room) => isAdmin || userBelongsInRoom(room),
+    (room) => isAdmin || userBelongsInRoom(room)
   );
 
   const handleDragEnd = (sizes) => setSplitWidth(sizes);

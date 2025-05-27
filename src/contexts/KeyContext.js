@@ -1,7 +1,7 @@
-import { createContext, useState, useContext, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 const CryptoJS = require('crypto-js');
 
-const keyContext = createContext();
+const keyContext = React.createContext();
 
 function decryptMsgUsingKey(msg, keyStr) {
   const key = CryptoJS.enc.Utf8.parse(keyStr);
@@ -20,7 +20,7 @@ export default function KeyContext({ children }) {
       if (!paperKeys) return true;
       return !(oid in paperKeys);
     },
-    [paperKeys],
+    [paperKeys]
   );
 
   const oidToNid = useCallback(
@@ -28,7 +28,7 @@ export default function KeyContext({ children }) {
       if (oidIsConflict(oid)) return 0;
       return paperKeys[oid].nid;
     },
-    [paperKeys, oidIsConflict],
+    [paperKeys, oidIsConflict]
   );
 
   const decryptMessageByOid = useCallback(
@@ -37,7 +37,7 @@ export default function KeyContext({ children }) {
       const key = paperKeys[oid].key;
       return decryptMsgUsingKey(msg, key);
     },
-    [paperKeys, oidIsConflict],
+    [paperKeys, oidIsConflict]
   );
 
   const decryptObjectOrNull = useCallback(
@@ -48,7 +48,7 @@ export default function KeyContext({ children }) {
       if (!str) return null;
       return JSON.parse(str);
     },
-    [oidIsConflict, decryptMessageByOid],
+    [oidIsConflict, decryptMessageByOid]
   );
 
   return (
@@ -61,5 +61,5 @@ export default function KeyContext({ children }) {
 }
 
 export function useKey() {
-  return useContext(keyContext);
+  return React.useContext(keyContext);
 }

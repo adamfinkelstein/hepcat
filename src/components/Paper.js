@@ -1,6 +1,6 @@
 import moment from 'moment';
 import Container from 'react-bootstrap/Container';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { useState, useEffect } from 'react';
 import CollapsibleParagraph from './CollapsibleParagraph.js';
@@ -9,24 +9,19 @@ export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   const { roomChoice, isOutsideRole, isScreenOrOutside } = useUser();
-  const globals = useAppGlobals();
-  const queue = globals.queue;
+  const { queue, queueCurrent, roomGlobs } = useQueue();
   const isPaper =
-    queue &&
-    queue.length &&
-    globals.queueCurrent < queue.length &&
-    globals.queueCurrent >= 0;
-  const queueCurrent = globals.queueCurrent;
-  const currentShow = isPaper && globals.serverGlobs.current_show;
-  const currentShowEnter = isPaper ? globals.serverGlobs.current_show_enter : 0;
+    queue && queue.length && queueCurrent < queue.length && queueCurrent >= 0;
+  const currentShow = isPaper && roomGlobs.current_show;
+  const currentShowEnter = isPaper ? roomGlobs.current_show_enter : 0;
   const cp = isPaper ? queue[queueCurrent] : null; // current paper
   const isConflict = cp ? cp.nid === 0 : false;
-  const showTags = isPaper && globals.serverGlobs.current_tags;
-  const hist = isPaper ? globals.serverGlobs.current_history : [];
+  const showTags = isPaper && roomGlobs.current_tags;
+  const hist = isPaper ? roomGlobs.current_history : [];
   const showHist = hist && hist.length > 0;
   const safeScores = cp ? cp.all_scores : '';
   const scoresHTML = formatScoresInHTML(safeScores);
-  const currentStart = isPaper && globals.serverGlobs.current_start;
+  const currentStart = isPaper && roomGlobs.current_start;
   const hideAbstract = isScreenOrOutside();
   const hidePaperOutside = isOutsideRole() && currentShow;
   const hideThisPaper = hidePaperOutside || !isPaper || isConflict;
@@ -209,7 +204,7 @@ export default function Paper() {
             {showTags && (
               <p className="bigger-font">
                 <span className="paper-par-header">Tags:</span>
-                <span>{globals.serverGlobs.current_tags}</span>
+                <span>{roomGlobs.current_tags}</span>
               </p>
             )}
             <p className="bigger-font">

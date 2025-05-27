@@ -1,22 +1,32 @@
 // Revised StorageContext.js
-import React, { createContext, useContext, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 
-const storageContext = createContext();
+const verboseStorageOps = false;
+const storageContext = React.createContext();
 
 export default function StorageContext({ children }) {
   const { controlledLog } = useControlledLog();
   const [isInitialized, setIsInitialized] = useState(false);
   const [userID, setUserID] = useState(null);
 
+  const storageLog = useCallback(
+    (msg) => {
+      if (verboseStorageOps) {
+        controlledLog(msg);
+      }
+    },
+    [controlledLog]
+  );
+
   // Called by functions that read/write storage below.
   // This function ensures that the storage is initialized.
   // The main thing is it checks to see if the app version is current.
   // If not, it clears all localStorage and sessionStorage data.
   const ensureInitialized = useCallback(() => {
-    controlledLog('+++ StorageContext: check if initialized');
+    // storageLog('+++ StorageContext: check if initialized');
     if (isInitialized) return;
-    controlledLog('=== StorageContext: Initializing storage...');
+    // storageLog('=== StorageContext: Initializing storage...');
     setIsInitialized(true);
     const appVersion = process.env.REACT_APP_VERSION;
     const appInLocalStorage = window.localStorage.getItem('app_version');
@@ -27,9 +37,9 @@ export default function StorageContext({ children }) {
       // Save the app version to localStorage,
       // so this will only happen once per version change.
       window.localStorage.setItem('app_version', appVersion);
-      controlledLog('Cleared storage and updated to app version:', appVersion);
+      storageLog('Cleared storage and updated to app version:', appVersion);
     }
-  }, [isInitialized, setIsInitialized, controlledLog]);
+  }, [isInitialized, setIsInitialized, storageLog]);
 
   // Generic function to get item from storage
   const getStorageItem = useCallback(
@@ -39,14 +49,14 @@ export default function StorageContext({ children }) {
       const storageType = useLocal ? 'LocalStorage' : 'SessionStorage';
       try {
         const json = storage.getItem(key);
-        controlledLog(`${storageType} get ${key}: ${json}`);
+        storageLog(`${storageType} get ${key}: ${json}`);
         return json ? JSON.parse(json) : null;
       } catch (error) {
-        controlledLog(`${storageType} get error: ${error.message}`);
+        storageLog(`${storageType} get error: ${error.message}`);
         return null;
       }
     },
-    [ensureInitialized, controlledLog],
+    [ensureInitialized, storageLog]
   );
 
   // Generic function to set item in storage
@@ -59,83 +69,83 @@ export default function StorageContext({ children }) {
       try {
         if (value === null) {
           storage.removeItem(key);
-          controlledLog(`${storageType} remove: ${key}`);
+          storageLog(`${storageType} remove: ${key}`);
         } else {
           const json = JSON.stringify(value);
           storage.setItem(key, json);
-          controlledLog(`${storageType} set ${key}: ${json}`);
+          storageLog(`${storageType} set ${key}: ${json}`);
         }
       } catch (error) {
-        controlledLog(`${storageType} set error: ${error.message}`);
+        storageLog(`${storageType} set error: ${error.message}`);
       }
     },
-    [ensureInitialized, controlledLog],
+    [ensureInitialized, storageLog]
   );
 
   // User-specific functions
   const getUserStorageItem = useCallback(
     (key, useLocal = true) => {
       if (!userID) {
-        controlledLog('getUserStorageItem: No userID available');
+        storageLog('getUserStorageItem: No userID available');
         return null;
       }
       const userKey = `${userID}:${key}`;
       return getStorageItem(userKey, useLocal);
     },
-    [userID, getStorageItem, controlledLog],
+    [userID, getStorageItem, storageLog]
   );
 
   const setUserStorageItem = useCallback(
     (key, value, useLocal = true) => {
       if (!userID) {
-        controlledLog(`setUserStorageItem ${key}: No userID available`);
+        storageLog(`setUserStorageItem ${key}: No userID available`);
         return;
       }
       const userKey = `${userID}:${key}`;
       setStorageItem(userKey, value, useLocal);
     },
-    [userID, setStorageItem, controlledLog],
+    [userID, setStorageItem, storageLog]
   );
 
   // Specific functions that use the generic helpers
   const getLocalStorageItem = useCallback(
     (key) => getStorageItem(key, true),
-    [getStorageItem],
+    [getStorageItem]
   );
 
   const setLocalStorageItem = useCallback(
     (key, value) => setStorageItem(key, value, true),
-    [setStorageItem],
+    [setStorageItem]
   );
 
   const getSessionStorageItem = useCallback(
     (key) => getStorageItem(key, false),
-    [getStorageItem],
+    [getStorageItem]
   );
 
   const setSessionStorageItem = useCallback(
     (key, value) => setStorageItem(key, value, false),
-    [setStorageItem],
+    [setStorageItem]
   );
 
   const getUserLocalStorageItem = useCallback(
     (key) => getUserStorageItem(key, true),
-    [getUserStorageItem],
+    [getUserStorageItem]
   );
 
   const setUserLocalStorageItem = useCallback(
     (key, value) => setUserStorageItem(key, value, true),
-    [setUserStorageItem],
+    [setUserStorageItem]
   );
 
   const getUserSessionStorageItem = useCallback(
     (key) => getUserStorageItem(key, false),
-    [getUserStorageItem],
+    [getUserStorageItem]
   );
 
   const setUserSessionStorageItem = useCallback(
     (key, value) => setUserStorageItem(key, value, false),
-    [setUserStorageItem],
+    [setUserStorageItem]
   );
 
   return (
@@ -161,5 +171,5 @@ export default function StorageContext({ children }) {
 }
 
 export function useStorage() {
-  return useContext(storageContext);
+  return React.useContext(storageContext);
 }

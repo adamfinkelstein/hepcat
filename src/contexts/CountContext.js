@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext.js';
 import { useGrid } from './GridContext';
 
@@ -72,7 +66,7 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
 
 const defaultCounts = getCountsInGrid(false, 0, {}, [], []);
 
-const countContext = createContext();
+const countContext = React.createContext();
 
 export default function CountContext({ children }) {
   const { controlledLog } = useControlledLog();
@@ -91,7 +85,7 @@ export default function CountContext({ children }) {
       gridConflicts,
       gridPapers,
       gridNidsAbove,
-      gridNidsBelow,
+      gridNidsBelow
     );
     setGridCounts(counts);
   }, [
@@ -112,7 +106,7 @@ export default function CountContext({ children }) {
         return 0;
       }
     },
-    [gridCounts],
+    [gridCounts]
   );
 
   return (
@@ -130,5 +124,5 @@ export default function CountContext({ children }) {
 }
 
 export function useCount() {
-  return useContext(countContext);
+  return React.useContext(countContext);
 }

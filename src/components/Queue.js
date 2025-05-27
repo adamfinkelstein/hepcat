@@ -1,7 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Form from 'react-bootstrap/Form';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import QueueElement from './QueueElement.js';
@@ -9,32 +9,29 @@ import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {
   const { user, isAdmin, isScreenOrOutside } = useUser();
-  const globals = useAppGlobals();
+  const { queue, queueCurrent, roomGlobs } = useQueue();
   const { showConflicts, setShowConflicts, showStars, setShowStars } =
     usePreferences();
-  const queue = globals.queue;
-  const current = globals.queueCurrent;
-  const counter = current + 1;
+  const counter = queueCurrent + 1;
   const currentCount =
     counter > queue.length ? 'completed' : 'Q' + counter + ' of';
   const past_max = isScreenOrOutside() ? 0 : 3;
   const future_max = 12;
-  const start_index = Math.max(0, current - past_max);
+  const start_index = Math.max(0, queueCurrent - past_max);
   const end_index = Math.min(counter + future_max, queue.length);
   const queueSlice = queue.slice(start_index, end_index);
-  const serverGlobs = globals?.serverGlobs;
-  const hideQueue = serverGlobs?.hide_queue;
-  const hideMessage = serverGlobs?.message
-    ? serverGlobs.message
+  const hideQueue = roomGlobs?.hide_queue;
+  const hideMessage = roomGlobs?.message
+    ? roomGlobs.message
     : 'The queue is hidden.';
 
   function getQEntryClass(index) {
     let className = 'q-entry';
-    if (index === globals.queueCurrent) {
+    if (index === queueCurrent) {
       className += ' Current';
       return className;
     }
-    if (index < globals.queueCurrent) {
+    if (index < queueCurrent) {
       className += ' past-entry';
     }
     if (index % 2) {

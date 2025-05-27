@@ -1,25 +1,24 @@
-import React from 'react';
 import { Button, Stack, Collapse } from 'react-bootstrap';
-import { useUser } from '../contexts/UserContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
-import { useAppGlobals } from '../contexts/AppContext';
+import { useGrid } from '../contexts/GridContext';
+import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
 import { useFilterContext } from '../contexts/FilterContext';
 
 export default function DangerousOps() {
-  const { user, showGlobalOps, setShowGlobalOps } = useUser();
-  const showHideText = showGlobalOps ? 'Hide' : 'Show';
+  const { user } = useUser();
   const { revealConfirmationBox } = useConfirmationBox();
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { socketEmit, socketLogout } = useSocketIO();
-  const { gitInfo } = useUser();
-  const { globBar } = useAppGlobals();
-  const { locBar, setLocBar } = useAdmin();
+  const { gridBar } = useGrid();
+  const { locBar, setLocBar, gitInfo, showDangerous, setShowDangerous } =
+    useAdmin();
   const { allGuiFilterNames, allTextFilterNames } = useFilterContext();
+  const showHideText = showDangerous ? 'Hide' : 'Show';
   const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
   // const { fontPref } = useFontInfo();
   const isSuper = user && user.role_name === 'Super';
@@ -34,23 +33,20 @@ export default function DangerousOps() {
         controlledLog('confirmed bar update:', locBar);
         socketEmit('admin_set_bar', locBar);
       } else {
-        setLocBar(globBar); // reset box back to current bar value
+        setLocBar(gridBar); // canceled: reset box back to current bar value
         controlledLog('canceled bar update');
       }
     });
   }
 
-  function handleBulkActionButton(isQueueNotBar) {
-    controlledLog('Bulk reject button pressed (' + isQueueNotBar + ').');
-    const endText = isQueueNotBar ? 'confirm in queue' : 'reject below bar';
-    const text = 'Are you sure you want to bulk ' + endText + '?';
+  function handleBulkConfirmButton() {
+    const text = 'Are you sure you want to bulk confirm in queue?';
     revealConfirmationBox('Please Confirm', text, (confirmed) => {
       if (confirmed) {
-        const msg = 'Bulk ' + endText;
+        const msg = 'Bulk confirm in queue';
         controlledLog(msg);
-        flash(msg, 'success');
-        const data = { isQueueNotBar };
-        socketEmit('admin_bulk_action', data);
+        // flash(msg, 'success');
+        socketEmit('admin_bulk_confirm');
       } else {
         const msg = 'Bulk action button canceled.';
         controlledLog(msg);
@@ -89,12 +85,12 @@ export default function DangerousOps() {
         <h2>Dangerous Operations&nbsp;&nbsp;</h2>
         <Button
           variant="secondary"
-          onClick={() => setShowGlobalOps(!showGlobalOps)}
+          onClick={() => setShowDangerous(!showDangerous)}
         >
           {showHideText}
         </Button>
       </Stack>
-      <Collapse in={showGlobalOps}>
+      <Collapse in={showDangerous}>
         <Stack direction="vertical" gap={3}>
           <Stack direction="horizontal" gap={2}>
             <Button
@@ -111,10 +107,7 @@ export default function DangerousOps() {
             />
           </Stack>
           <Stack direction="horizontal" gap={2}>
-            <Button
-              variant="danger"
-              onClick={() => handleBulkActionButton(true)}
-            >
+            <Button variant="danger" onClick={() => handleBulkConfirmButton()}>
               Bulk&nbsp;Confirm in&nbsp;Queue
             </Button>
             <div className="button-desc">
