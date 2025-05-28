@@ -160,7 +160,8 @@ body {
 
 .Body .queue-message,
 .Body .paper-message,
-.Queue .queue-message {
+.Queue .queue-message,
+.GridTab .grid-message {
   border: 1px dashed purple;
   border-radius: 6px;
   color: purple;
@@ -298,14 +299,13 @@ body {
   justify-content: start;
 }
 
-.GridBlock,
+.GridBlock .grid-item,
 .GridDemo .grid-item {
   border: 1px solid #444;
   border-radius: 4px;
 }
 
-.GridBlock,
-.GridDemo .faded-grid {
+.GridBlock .faded-grid {
   opacity: 0.2;
 }
 

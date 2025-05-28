@@ -1,6 +1,7 @@
 import Stack from 'react-bootstrap/Stack';
 import { useGrid } from '../contexts/GridContext';
 import { useCount } from '../contexts/CountContext';
+import { useUser } from '../contexts/UserContext';
 import ColorLegend from './ColorLegend';
 import GridBar from './GridBar.js';
 import GridBlock from './GridBlock.js';
@@ -19,10 +20,13 @@ function CountSpan({ label, count }) {
 export default function GridTab() {
   const { gridNidsAbove, gridNidsBelow, gridInRoom } = useGrid();
   const { getGridCount } = useCount();
+  const { roomChoice } = useUser();
   const nTotal = getGridCount('total');
   const nConflict = getGridCount('Conflict');
   const nonConflict = nTotal - nConflict;
   const showProgress = nonConflict > 0;
+  const showGrid = gridNidsAbove.length + gridNidsBelow.length > 0;
+  const noGridMsg = '(No papers assigned to ' + roomChoice + '.)';
 
   return (
     <Stack direction="vertical" gap={3} className="GridTab ms-2">
@@ -35,7 +39,7 @@ export default function GridTab() {
       </Stack>
 
       <GridBlock nidList={gridNidsAbove} />
-      <GridBar />
+      {showGrid ? <GridBar /> : <div className="grid-message">{noGridMsg}</div>}
       <GridBlock nidList={gridNidsBelow} />
 
       {showProgress > 0 && <GridProgressBar />}
