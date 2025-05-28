@@ -3,9 +3,9 @@ import { useCount } from './CountContext';
 import { useStorage } from './StorageContext';
 
 const defaultColors = {
-  Tabled: '#E8F77D',
-  'Tabled-Discuss': '#FFC65E',
   Ready: '#F4F4F4',
+  'Tabled-Discuss': '#FFC65E',
+  Tabled: '#E8F77D',
   Reject: '#F3A8C0',
   Conference: '#628BF0',
   Journal: '#288D0C',

@@ -289,21 +289,29 @@ body {
   text-align: center;
 }
 
-.GridBlock .grid-item {
+.GridDemo {
+  display: grid;
+  grid-gap: 2px;
+  grid-template-columns: repeat(auto-fill, 50px);
+  text-align: center;
+  width: 270px;
+  justify-content: start;
+}
+
+.GridBlock,
+.GridDemo .grid-item {
   border: 1px solid #444;
   border-radius: 4px;
 }
 
-/* no longer used
-.GridBlock .sticky-border {
-  border: 2.5px solid black;
-  border-radius: 8px;
-}
-*/
-
-.GridBlock .faded-grid {
+.GridBlock,
+.GridDemo .faded-grid {
   opacity: 0.2;
 }
+
+/*
+ * Progress bars
+ */
 
 .GridTab .grid-progress-bar {
   border: 1px solid #444;
@@ -315,22 +323,17 @@ body {
   border-right: 1px solid black;
 }
 
-/* remove thin line from rightmost items in progress bar */
-.GridTab .Tabled.progress-bar,
-.GridTab .Conflict.progress-bar {
-  border-right: 0;
-}
-
 /* thick line between different sections of progress bar */
-.GridTab .Ready.progress-bar,
+.GridTab .Reject.progress-bar,
 .GridTab .Conflict.progress-bar {
   border-left: 5px solid black;
 }
 
-/* Appears to no longer be used.
-.GridTab .below-grid {
-  align-items: start;
-} */
+/* remove thin line from rightmost items in progress bar */
+.GridTab .Journal.progress-bar,
+.GridTab .Conflict.progress-bar {
+  border-right: 0;
+}
 
 .GridTab .total-count {
   margin-left: auto;
@@ -375,6 +378,13 @@ body {
 .ColorLegend .unselected-color {
   border: 1px solid white;
   padding: 3px 8px;
+  cursor: pointer;
+}
+
+.ColorLegend .unselected-color:hover {
+  background: lightyellow;
+  border: 1px dashed gray;
+  border-radius: 6px;
 }
 
 /* this is the hstack for a legend that is currently picked */

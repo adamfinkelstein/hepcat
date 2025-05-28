@@ -40,7 +40,7 @@ export default function GridTab() {
 
       {showProgress > 0 && <GridProgressBar />}
       <Stack direction="horizontal" gap={4} className="below-grid">
-        <ColorLegend showCounts={true} />
+        <ColorLegend header="Grid Status" showCounts={true} />
         <div className="vr" />
         <SetSticky />
       </Stack>

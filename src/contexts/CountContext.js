@@ -20,9 +20,9 @@ const getBasicCountsInGrid = (inRoom, conf, nidsAbove, nidsBelow) => {
 };
 
 const allStatuses = [
-  'Tabled',
-  'Tabled-Discuss',
   'Ready',
+  'Tabled-Discuss',
+  'Tabled',
   'Reject',
   'Conference',
   'Journal',

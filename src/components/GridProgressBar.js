@@ -5,7 +5,7 @@ import { useUser } from '../contexts/UserContext';
 
 export default function GridProgressBar() {
   const { user } = useUser();
-  const { getGridCount } = useCount();
+  const { getGridCount, allStatuses } = useCount();
 
   const countToPercent = (count) => {
     const total = getGridCount('total');
@@ -40,14 +40,7 @@ export default function GridProgressBar() {
     return fmt;
   };
 
-  const progressBars = [
-    'Journal',
-    'Conference',
-    'Reject',
-    'Ready',
-    'Tabled-Discuss',
-    'Tabled',
-  ];
+  const progressBars = [...allStatuses];
   const conflictCount = getGridCount('Conflict');
   if (conflictCount) progressBars.push('Conflict');
 
@@ -73,9 +66,9 @@ export default function GridProgressBar() {
       </ProgressBar>
 
       <Stack direction="horizontal" className="my-0 me-3" gap={3}>
-        <div>Converged: {getCounts('Converged')}</div>
-        <div>+</div>
         <div>Pending: {getCounts('Pending')}</div>
+        <div>+</div>
+        <div>Converged: {getCounts('Converged')}</div>
         {conflictCount && (
           <>
             <div>+</div>

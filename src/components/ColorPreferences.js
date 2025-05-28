@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
-import ChooseStatusDropdown from './ChooseStatusDropdown.js';
+import ColorLegend from './ColorLegend';
+import GridDemo from './GridDemo';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
-import { useCount } from '../contexts/CountContext';
 import { usePreferences } from '../contexts/PreferencesContext';
-import ColorLegend from './ColorLegend';
 
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
   const { colors, changeColor, defaultColors, changeToDefaultColors } =
     usePreferences();
-  const { colorKeys } = useCount();
   const defaultColorVals = Object.values(defaultColors);
   const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
 
@@ -31,9 +29,18 @@ export default function ColorPreferences() {
   };
 
   return (
-    <Container fluid className="ColorPreferences">
-      <h2>Modify Colors</h2>
+    <Container fluid className="ColorPreferences mb-5">
+      <Stack direction="horizontal" gap={5} className="mb-3">
+        <h2>Colors</h2>
+        <Button variant="secondary" onClick={handleDefaultColorButton}>
+          Reset to Defaults
+        </Button>
+      </Stack>
       <Stack direction="horizontal" gap={5}>
+        <ColorLegend
+          selectedColorKey={selectedColorKey}
+          setSelectedColorKey={setSelectedColorKey}
+        />
         <SketchPicker
           disableAlpha
           color={colors[selectedColorKey]}
@@ -43,24 +50,7 @@ export default function ColorPreferences() {
           className="color-picker"
           presetColors={defaultColorVals}
         />
-        <Stack direction="vertical" gap={2}>
-          <Stack direction="horizontal" gap={2}>
-            <div className="bigger-font">Modify:</div>
-            <ChooseStatusDropdown
-              choiceList={colorKeys}
-              currentChoice={selectedColorKey}
-              setValue={setSelectedColorKey}
-            />
-            <div />
-          </Stack>
-          <ColorLegend header="Color Codes" />
-          <Stack className="mt-2 mb-5" direction="horizontal" gap={5}>
-            <Button variant="secondary" onClick={handleDefaultColorButton}>
-              Reset to Defaults
-            </Button>
-            <div />
-          </Stack>
-        </Stack>
+        <GridDemo />
       </Stack>
     </Container>
   );

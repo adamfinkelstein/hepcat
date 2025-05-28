@@ -19,7 +19,7 @@ export default function QueueContext({ children }) {
   const { socketEmit, registerIoHandlers } = useSocketIO();
   const { decryptObjectOrNull } = useKey();
   const { updateGridEntry } = useGrid();
-  const { resetProbeMsgs, recordAdminGlobs, setLocBar } = useAdmin();
+  const { resetProbeMsgs, recordAdminGlobs } = useAdmin();
   const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);

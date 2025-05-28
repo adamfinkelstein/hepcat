@@ -8,9 +8,8 @@ export default function TextPreferences() {
 
   return (
     <Container fluid className="TextPreferences mt-4">
-      <h2>Text</h2>
-      <Stack direction="horizontal">
-        <span className="bigger-font">Choose font size:</span>
+      <Stack direction="horizontal" gap={3}>
+        <h2>Font Size</h2>
         <DropdownButton
           id="dropdown-item-button"
           title={fontSize}
