@@ -42,7 +42,8 @@ export default function GridProgressBar() {
 
   const progressBars = [...allStatuses];
   const conflictCount = getGridCount('Conflict');
-  if (conflictCount) progressBars.push('Conflict');
+  const showConflicts = conflictCount > 0;
+  if (showConflicts) progressBars.push('Conflict');
 
   return (
     <Stack direction="vertical" className="my-0 GridProgressBar" gap={1}>
@@ -69,7 +70,7 @@ export default function GridProgressBar() {
         <div>Pending: {getCounts('Pending')}</div>
         <div>+</div>
         <div>Converged: {getCounts('Converged')}</div>
-        {conflictCount && (
+        {showConflicts && (
           <>
             <div>+</div>
             <div>Conflicts: {conflictCount}</div>
