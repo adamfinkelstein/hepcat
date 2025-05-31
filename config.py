@@ -111,7 +111,7 @@ class Config:
     MAIL_DEFAULT_SENDER = "noreply@hepcat.app"
 
     UPLOAD_FOLDER = subdir_path("tmp")
-    BIN_FOLDER = subdir_path("local_bin")
+    BIN_FOLDER = subdir_path("bin_local")
     APP_FOLDER = subdir_path("app")
 
 

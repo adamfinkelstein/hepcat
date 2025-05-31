@@ -14,6 +14,9 @@
 # for domain SSL
 /certs
 
+# locally install executables
+/bin_local
+
 # misc
 .DS_Store
 .python-version
