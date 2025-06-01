@@ -1,8 +1,8 @@
+import os
 import re
 import json
 import base64
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from flask import current_app
 from flask_socketio import (
     emit,
@@ -92,23 +92,38 @@ from ..models.label_util import (
 )
 
 
-# Uses ECB encryption, which is probably fine for our situation.
-# Key should be 16 char for AES128.
-# Modified from this article:
-# https://medium.com/@sachadehe/encrypt-decrypt-data-between-python-3-and-javascript-true-aes-algorithm-7c4e2fa3a9ff
 def encrypt_str(raw, key):
-    raw = pad(raw.encode(), 16)
-    cipher = AES.new(key.encode("utf-8"), AES.MODE_ECB)
-    enc = base64.b64encode(cipher.encrypt(raw))
-    enc = enc.decode("utf-8")
-    # log_print('encrypted: ' + enc)
-    return enc
+    # Convert key to 16 bytes for AES-128 (pad with zeros if short)
+    key_bytes = key.encode("utf-8")[:16].ljust(16, b"\0")
+    nonce = os.urandom(12)  # random 12-byte nonce
+    aesgcm = AESGCM(key_bytes)
+    ciphertext = aesgcm.encrypt(nonce, raw.encode("utf-8"), None)
+    encrypted_data = nonce + ciphertext
+    return base64.b64encode(encrypted_data).decode("utf-8")
+
+
+def debug_obj_string(str):
+    beg = str[:8]
+    end = str[-8:]
+    n = len(str)
+    debug = f"{beg}...{n}...{end}"
+    return debug
+
+
+def debug_encoding(jsn, enc):
+    d_jsn = debug_obj_string(jsn)
+    d_enc = debug_obj_string(enc)
+    debug = f"[ {d_jsn} | {d_enc} ]"
+    return debug
 
 
 def encrypt_obj_with_oid(obj, oid, key):
-    obj_string = json.dumps(obj)
-    enc_string = encrypt_str(obj_string, key)
+    jsn_string = json.dumps(obj)
+    enc_string = encrypt_str(jsn_string, key)
     package = {"oid": oid, "enc": enc_string}
+    debug = None  # debug_encoding(jsn_string, enc_string)
+    if debug:
+        package["debug"] = debug
     return package
 
 
@@ -1148,6 +1163,7 @@ def admin_advance_queue(data):
     invalidate_queue_cache(room)
     grid_paper_dump = get_grid_paper_dump(paper)
     update = {
+        "room": room,
         "queue_index": index_before_advance,
         "nid": paper.nid,
         "status": status_update,

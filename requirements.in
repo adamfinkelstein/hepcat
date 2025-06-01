@@ -32,7 +32,7 @@ numpy
 ortools
 
 # encryption
-pycryptodome
+cryptography
 
 # git
 python-git-info

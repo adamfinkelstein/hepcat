@@ -14,6 +14,8 @@ blinker==1.9.0
     #   flask-mail
 certifi==2025.4.26
     # via requests
+cffi==1.17.1
+    # via cryptography
 cfgv==3.4.0
     # via pre-commit
 charset-normalizer==3.4.2
@@ -22,6 +24,8 @@ click==8.2.1
     # via flask
 coverage==7.8.2
     # via pytest-cov
+cryptography==45.0.3
+    # via -r requirements.in
 distlib==0.3.9
     # via virtualenv
 dnspython==2.7.0
@@ -111,8 +115,8 @@ pre-commit==4.2.0
     # via -r requirements.in
 protobuf==5.29.5
     # via ortools
-pycryptodome==3.23.0
-    # via -r requirements.in
+pycparser==2.22
+    # via cffi
 pyjwt==2.10.1
     # via -r requirements.in
 pytest==8.3.5
