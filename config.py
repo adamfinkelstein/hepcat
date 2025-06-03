@@ -65,7 +65,7 @@ load_dotenv(dotenv_path)
 
 class Config:
     SECRET_KEY = env_get_str("SECRET_KEY", "UeVbP7PG4RmtNhz")
-    REACT_APP_SHOW_LOGS = env_get_bool("REACT_APP_SHOW_LOGS", False)
+    HEPCAT_SHOW_LOGS = env_get_bool("HEPCAT_SHOW_LOGS", False)
     HEPCAT_LOG_LEVEL = env_get_str("HEPCAT_LOG_LEVEL", "INFO")
     HEPCAT_SHOW_TIMERS = env_get_bool("HEPCAT_SHOW_TIMERS", False)
     HEPCAT_TSP_DISABLED = env_get_bool("HEPCAT_TSP_DISABLED", False)
@@ -100,7 +100,6 @@ class Config:
 
     USE_EVENTLET = env_get_bool("USE_EVENTLET")
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
-    ALLOW_CORS_SOCKET = env_get_bool("ALLOW_CORS_SOCKET")
 
     # https://sendgrid.com/en-us/blog/sending-emails-from-python-flask-applications-with-twilio-sendgrid
     MAIL_SERVER = env_get_str("MAIL_SERVER", "smtp.sendgrid.net")
@@ -119,7 +118,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     ALLOW_CORS = True
     HEPCAT_SHOW_TIMERS = True
-    REACT_APP_SHOW_LOGS = True
+    HEPCAT_SHOW_LOGS = True
     HEPCAT_SHOW_TIMERS = True
 
 

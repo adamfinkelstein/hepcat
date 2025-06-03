@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import CryptoJS from 'crypto-js';
 import { useStorage } from './StorageContext';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
-const CryptoJS = require('crypto-js');
 
 const STORAGE_KEY = 'stickyKeys'; // Key for localStorage
 
@@ -60,7 +60,7 @@ export default function StickyContext({ children }) {
 
   const forgetStickyKey = useCallback(
     (nid) => {
-      if (!stickyKeys || !stickyKeys.hasOwnProperty(nid)) return;
+      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return;
       const newKeys = { ...stickyKeys };
       delete newKeys[nid];
       setStickyKeys(newKeys);
@@ -72,7 +72,7 @@ export default function StickyContext({ children }) {
     (nid, check_idx) => {
       // controlledLog(`Check sticky for ${nid}: ${check_idx}`);
       if (!nid || !check_idx) return;
-      if (!stickyKeys || !stickyKeys.hasOwnProperty(nid)) return;
+      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return;
       const { idx } = stickyKeys[nid];
       if (idx !== check_idx) {
         controlledLog(`Sticky for ${nid} outdated: ${idx} != ${check_idx}`);
@@ -94,9 +94,7 @@ export default function StickyContext({ children }) {
 
   const revokeSticky = useCallback(
     (nid) => {
-      if (!stickyKeys || !stickyKeys.hasOwnProperty(nid)) {
-        return false;
-      }
+      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return false;
       const { key } = stickyKeys[nid];
       const data = { nid, key };
       socketEmit('user_revoke_sticky', data);

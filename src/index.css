@@ -96,7 +96,7 @@ body {
 .Flasher {
   background-color: white; /* fallback color */
   background-color: rgba(0, 0, 0, 0); /* fully transparent */
-  border: none;
+  border: none !important; /* Force override any bootstrap defaults */
   /* this is a transparent sidebar on which notifications are rendered */
   padding: 50px 0 0 30px;
   pointer-events: none; /* allow clicks to pass through */

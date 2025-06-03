@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
-import QueueElement from './QueueElement.js';
+import QueueElement from './QueueElement';
 import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {

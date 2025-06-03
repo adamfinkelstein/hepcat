@@ -25,7 +25,7 @@ export default function GridContext({ children }) {
 
   const gridNidIsValid = useCallback(
     (nid) => {
-      return gridPapers.hasOwnProperty(nid);
+      return Object.hasOwn(gridPapers, nid);
     },
     [gridPapers]
   );
@@ -43,7 +43,7 @@ export default function GridContext({ children }) {
       const above = [];
       const below = [];
       for (const nid of nidsInOrder) {
-        if (!papers.hasOwnProperty(nid)) {
+        if (!Object.hasOwn(papers, nid)) {
           // this should not happen, and is just here for a sanity check.
           controlledLog('*** cannot find grid entry for nid:', nid);
           continue;
@@ -67,7 +67,7 @@ export default function GridContext({ children }) {
       const nid = grid_update.nid;
       const idx = grid_update.idx;
       checkStickyIdIsValid(nid, idx);
-      if (!nid || !gridPapers.hasOwnProperty(nid)) return;
+      if (!nid || !Object.hasOwn(gridPapers, nid)) return;
       const newGridPapers = { ...gridPapers };
       newGridPapers[nid] = grid_update;
       setGridPapers(newGridPapers); // force update to papers variable
@@ -174,7 +174,6 @@ export default function GridContext({ children }) {
         setGridMode,
         gridInRoom,
         gridPapers,
-        gridNidsInOrder,
         gridNidsAbove,
         gridNidsBelow,
         gridConflicts,

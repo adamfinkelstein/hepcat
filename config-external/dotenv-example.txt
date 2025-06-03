@@ -16,4 +16,4 @@ MAIL_PASSWORD=<missing>
 # ALLOW_CORS=
 
 # set to True if you want app to show logs on console
-# REACT_APP_SHOW_LOGS=
+# HEPCAT_SHOW_LOGS=

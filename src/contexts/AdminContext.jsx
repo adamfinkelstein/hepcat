@@ -1,5 +1,5 @@
-import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
+import { DateTime } from 'luxon';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 
@@ -83,7 +83,7 @@ export default function AdminContext({ children }) {
   const getMsgFromProbe = useCallback(
     (countStr, label) => {
       const now = Date.now();
-      const fmtNow = moment.utc(now).local().format('ddd h:mm:ss');
+      const fmtNow = DateTime.fromMillis(now).toLocal().toFormat('ccc h:mm:ss');
       const fmtMsg = countStr + ' — updated ' + fmtNow;
       const msg = !countStr.length ? notSetYetMsg : fmtMsg;
       controlledLog('received probe ' + label + ' ' + msg);

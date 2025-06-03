@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useControlledLog } from './ControlledLogContext.js';
+import { useControlledLog } from './ControlledLogContext';
 import { useGrid } from './GridContext';
 
 const getBasicCountsInGrid = (inRoom, conf, nidsAbove, nidsBelow) => {
@@ -39,7 +39,7 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
     counts[status] = 0;
   }
   for (const nid of allInGrid) {
-    if (!papers.hasOwnProperty(nid)) {
+    if (!Object.hasOwn(papers, nid)) {
       // this should not happen, and is just here for a sanity check.
       // console.log('*** cannot find grid entry for nid:', nid);
       // possible when transitioning between users, grid conflicts change,
@@ -100,7 +100,7 @@ export default function CountContext({ children }) {
 
   const getGridCount = useCallback(
     (field) => {
-      if (gridCounts?.hasOwnProperty(field)) {
+      if (gridCounts && Object.hasOwn(gridCounts, field)) {
         return gridCounts[field];
       } else {
         return 0;

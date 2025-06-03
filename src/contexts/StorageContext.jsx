@@ -28,7 +28,7 @@ export default function StorageContext({ children }) {
     if (isInitialized) return;
     // storageLog('=== StorageContext: Initializing storage...');
     setIsInitialized(true);
-    const appVersion = process.env.REACT_APP_VERSION;
+    const appVersion = process.env.HEPCAT_VERSION;
     const appInLocalStorage = window.localStorage.getItem('app_version');
     if (appVersion && appVersion !== appInLocalStorage) {
       // Clear all localStorage and sessionStorage data

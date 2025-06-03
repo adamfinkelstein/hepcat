@@ -1,6 +1,5 @@
 import Button from 'react-bootstrap/Button';
-import { useNavigate } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router';
 import { useState, useEffect, useRef } from 'react';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useFlasher } from '../contexts/FlasherContext';

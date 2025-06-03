@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-const CryptoJS = require('crypto-js');
+import CryptoJS from 'crypto-js';
 
 const keyContext = React.createContext();
 

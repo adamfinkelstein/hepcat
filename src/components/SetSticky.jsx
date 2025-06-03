@@ -1,9 +1,9 @@
 import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
-import ChooseStatusDropdown from './ChooseStatusDropdown.js';
-import StickyTip from './StickyTip.js';
+import ChooseStatusDropdown from './ChooseStatusDropdown';
+import StickyTip from './StickyTip';
 import { useState } from 'react';
-import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useGrid } from '../contexts/GridContext';

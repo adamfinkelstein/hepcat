@@ -3,11 +3,11 @@ import { useGrid } from '../contexts/GridContext';
 import { useCount } from '../contexts/CountContext';
 import { useUser } from '../contexts/UserContext';
 import ColorLegend from './ColorLegend';
-import GridBar from './GridBar.js';
-import GridBlock from './GridBlock.js';
-import GridModeDropdown from './GridModeDropdown.js';
-import GridProgressBar from './GridProgressBar.js';
-import SetSticky from './SetSticky.js';
+import GridBar from './GridBar';
+import GridBlock from './GridBlock';
+import GridModeDropdown from './GridModeDropdown';
+import GridProgressBar from './GridProgressBar';
+import SetSticky from './SetSticky';
 
 function CountSpan({ label, count }) {
   return (
@@ -26,7 +26,8 @@ export default function GridTab() {
   const nonConflict = nTotal - nConflict;
   const showProgress = nonConflict > 0;
   const showGrid = gridNidsAbove.length + gridNidsBelow.length > 0;
-  const noGridMsg = '(No papers assigned to ' + roomChoice + '.)';
+  const noPapInRoom = '(No papers assigned to ' + roomChoice + '.)';
+  const noGridMsg = gridInRoom ? noPapInRoom : '(No papers in grid.)';
 
   return (
     <Stack direction="vertical" gap={3} className="GridTab ms-2">

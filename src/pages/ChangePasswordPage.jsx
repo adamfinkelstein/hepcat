@@ -1,8 +1,8 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
-import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useNavigate, Navigate } from 'react-router';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';

@@ -4,7 +4,7 @@ const controlledLogContext = React.createContext();
 
 export default function ControlledLogContext({ children }) {
   const [showLogs, setShowLogs] = useState(
-    Boolean(process.env.REACT_APP_SHOW_LOGS)
+    Boolean(process.env.HEPCAT_SHOW_LOGS)
   );
 
   const controlledLog = (...output) => {

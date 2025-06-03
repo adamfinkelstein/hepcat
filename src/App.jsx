@@ -3,7 +3,7 @@ import HeaderBar from './components/HeaderBar';
 import AppRoutes from './components/AppRoutes';
 import ModalDialog from './components/ModalDialog';
 import ConfirmationBox from './components/ConfirmationBox';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import ControlledLogContext from './contexts/ControlledLogContext';
 import SocketIOContext from './contexts/SocketIOContext';
 import KeyContext from './contexts/KeyContext';

@@ -1,7 +1,7 @@
-import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Form from 'react-bootstrap/Form';
+import { DateTime } from 'luxon';
 import { useAdmin } from '../contexts/AdminContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
@@ -50,9 +50,10 @@ export default function UploadsPage() {
   }
 
   function formatUpload(upload) {
-    const when = moment.utc(upload.when).local().format('llll');
-    const fmt = upload.file + ' (' + upload.count + ' uploaded ' + when + ')';
-    return fmt;
+    const fmt = 'ccc MMM d, h:mm a ZZZZ';
+    const when = DateTime.fromISO(upload.when).toLocal().toFormat(fmt);
+    const msg = upload.file + ' (' + upload.count + ' uploaded ' + when + ')';
+    return msg;
   }
 
   return (

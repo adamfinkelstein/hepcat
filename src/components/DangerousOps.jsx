@@ -1,7 +1,6 @@
 import { Button, Stack, Collapse } from 'react-bootstrap';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';
-import { useFlasher } from '../contexts/FlasherContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useGrid } from '../contexts/GridContext';
 import { useUser } from '../contexts/UserContext';
@@ -12,7 +11,6 @@ export default function DangerousOps() {
   const { user } = useUser();
   const { revealConfirmationBox } = useConfirmationBox();
   const { controlledLog } = useControlledLog();
-  const { flash } = useFlasher();
   const { socketEmit, socketLogout } = useSocketIO();
   const { gridBar } = useGrid();
   const { locBar, setLocBar, gitInfo, showDangerous, setShowDangerous } =
@@ -22,7 +20,7 @@ export default function DangerousOps() {
   const numFilters = allGuiFilterNames.length + allTextFilterNames.length;
   // const { fontPref } = useFontInfo();
   const isSuper = user && user.role_name === 'Super';
-  const appVersion = process.env.REACT_APP_VERSION;
+  const appVersion = process.env.HEPCAT_VERSION;
 
   function handleSetBarButton() {
     const text =

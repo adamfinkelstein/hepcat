@@ -3,7 +3,7 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import Stack from 'react-bootstrap/Stack';
-import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useSocketIO } from '../contexts/SocketIOContext';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
@@ -11,16 +11,6 @@ import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import DisableLogins from '../components/DisableLogins';
-
-/*
-import moment from 'moment';
-function timeDiff(since) {
-  const localTime = Boolean(process.env.REACT_APP_USER_LOCAL_TIME);
-  const then = localTime ? moment(since) : moment.utc(since);
-  const diff = then.fromNow();
-  return diff;
-}
-*/
 
 export default function UsersPage() {
   const { flash } = useFlasher();

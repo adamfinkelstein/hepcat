@@ -192,7 +192,7 @@ export default function SocketIOContext({ children }) {
   useEffect(() => {
     if (!isAuthenticated()) return;
 
-    const endpt = process.env.REACT_APP_SOCKET_ENDPOINT;
+    const endpt = process.env.VITE_SOCKET_ENDPOINT || window.location.origin;
     const s = socketIOClient(endpt, { auth });
     setSocket(s);
 

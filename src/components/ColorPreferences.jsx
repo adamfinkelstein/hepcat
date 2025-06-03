@@ -1,26 +1,24 @@
 import { useState } from 'react';
-import { SketchPicker } from 'react-color';
+import { HexColorPicker } from 'react-colorful';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
 import ColorLegend from './ColorLegend';
 import GridDemo from './GridDemo';
-import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { usePreferences } from '../contexts/PreferencesContext';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 
 export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
-  const { colors, changeColor, defaultColors, changeToDefaultColors } =
-    usePreferences();
-  const defaultColorVals = Object.values(defaultColors);
-  const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
-
   const { flash } = useFlasher();
+  const { colors, changeColor, changeToDefaultColors } = usePreferences();
+  const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
+  const logColorChanges = false;
 
   let handleChangeColor = (type, color) => {
-    controlledLog('change color', type, color);
-    changeColor(type, color.hex);
+    if (logColorChanges) controlledLog('change color', type, color);
+    changeColor(type, color);
   };
 
   const handleDefaultColorButton = () => {
@@ -41,14 +39,10 @@ export default function ColorPreferences() {
           selectedColorKey={selectedColorKey}
           setSelectedColorKey={setSelectedColorKey}
         />
-        <SketchPicker
-          disableAlpha
+        <HexColorPicker
           color={colors[selectedColorKey]}
-          onChangeComplete={(color) =>
-            handleChangeColor(selectedColorKey, color)
-          }
+          onChange={(color) => handleChangeColor(selectedColorKey, color)}
           className="color-picker"
-          presetColors={defaultColorVals}
         />
         <GridDemo />
       </Stack>

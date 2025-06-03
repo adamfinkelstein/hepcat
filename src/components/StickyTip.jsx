@@ -1,4 +1,4 @@
-import HoverTip from './HoverTip.js';
+import HoverTip from './HoverTip';
 
 export default function StickyTip() {
   return (

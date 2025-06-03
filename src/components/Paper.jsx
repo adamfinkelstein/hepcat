@@ -1,9 +1,9 @@
-import moment from 'moment';
 import Container from 'react-bootstrap/Container';
+import { DateTime } from 'luxon';
 import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { useState, useEffect } from 'react';
-import CollapsibleParagraph from './CollapsibleParagraph.js';
+import CollapsibleParagraph from './CollapsibleParagraph';
 
 export default function Paper() {
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -103,14 +103,8 @@ export default function Paper() {
   }
 
   function formatHistoryElement(h) {
-    return (
-      h.status +
-      ' (' +
-      h.context +
-      ' ' +
-      moment.utc(h.when).local().format('ddd LT') +
-      ')'
-    );
+    const when = DateTime.fromISO(h.when).toLocal().toFormat('ccc t');
+    return h.status + ' (' + h.context + ' ' + when + ')';
   }
 
   function formatHistoryList(histList) {
@@ -129,24 +123,20 @@ export default function Paper() {
   // FOR TIMER:
 
   function dateToSecs(date) {
-    return moment.utc(date).local().unix();
+    return DateTime.fromISO(date, { zone: 'utc' }).toUnixInteger();
   }
 
-  function formatTime(date) {
-    if (!currentShow || !currentStart) {
-      return '';
-    }
-    const sec1 = dateToSecs(currentStart);
-    const sec2 = dateToSecs(date);
-    const diff = sec2 - sec1;
-    if (diff < 0) {
-      return '00:00';
-    } else if (diff >= 3600) {
-      return '> 1hr';
-    }
-    const msDiff = diff * 1000;
-    const format = moment.utc(msDiff).format('mm:ss');
-    return format;
+  function formatTime(nowInMS) {
+    if (!currentShow || !currentStart) return '';
+
+    const startSecs = dateToSecs(currentStart);
+    const nowInSecs = Math.floor(nowInMS / 1000);
+    const duration = nowInSecs - startSecs;
+
+    if (duration < 0) return '00:00';
+    if (duration >= 3600) return '> 1hr';
+
+    return DateTime.fromSeconds(duration).toFormat('mm:ss');
   }
 
   function userToClass(user) {

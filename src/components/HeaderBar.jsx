@@ -3,7 +3,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Badge from 'react-bootstrap/Badge';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';

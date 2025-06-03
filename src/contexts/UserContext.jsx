@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useSocketIO } from './SocketIOContext.js';
-import { useControlledLog } from './ControlledLogContext.js';
+import { useSocketIO } from './SocketIOContext';
+import { useControlledLog } from './ControlledLogContext';
 import { useKey } from './KeyContext';
 import { useStorage } from './StorageContext';
 import { useAdmin } from './AdminContext';

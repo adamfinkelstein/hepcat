@@ -1,9 +1,9 @@
 import Button from 'react-bootstrap/Button';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router';
 import { useState, useEffect, useRef } from 'react';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
-import { useControlledLog } from '../contexts/ControlledLogContext.js';
+import { useControlledLog } from '../contexts/ControlledLogContext';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

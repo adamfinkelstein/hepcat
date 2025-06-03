@@ -1,4 +1,3 @@
-import os
 import re
 import json
 import base64
@@ -75,11 +74,11 @@ from ..models.tables import (
     get_all_rooms,
 )
 from ..models.schemas import (
-    UserSchema,
-    PaperSchema,
-    HistorySchema,
-    FileUploadSchema,
-    GlobQueueSchema,
+    user_schema,
+    paper_schema,
+    global_schema,
+    history_schema,
+    uploads_schema,
 )
 from ..models.helpers import (
     dump_users_papers_and_conflicts,
@@ -91,14 +90,6 @@ from ..models.helpers import (
 from ..models.label_util import (
     label_str_to_enum,
 )
-
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
-paper_schema = PaperSchema()
-papers_schema = PaperSchema(many=True)
-global_schema = GlobQueueSchema()
-history_schema = HistorySchema(many=True)
-uploads_schema = FileUploadSchema(many=True)
 
 
 # Uses ECB encryption, which is probably fine for our situation.
@@ -119,14 +110,6 @@ def encrypt_obj_with_oid(obj, oid, key):
     enc_string = encrypt_str(obj_string, key)
     package = {"oid": oid, "enc": enc_string}
     return package
-
-
-def get_react_env_vars():
-    vars = {}
-    for item, value in os.environ.items():
-        if item.startswith("REACT_APP"):
-            vars[item] = value
-    return vars
 
 
 def count_papers_in_all_queues():
@@ -917,7 +900,7 @@ def get_paper_at_queue_index(room, index):
 # def shows status and history for current paper when revealed
 def get_globs_dump_with_status(room):
     globs = get_globs_dump(room)
-    show_logs = current_app.config["REACT_APP_SHOW_LOGS"]
+    show_logs = current_app.config["HEPCAT_SHOW_LOGS"]
     if show_logs is not None:
         globs["showAppLogs"] = show_logs
     current_index = globs["current"]
@@ -1114,7 +1097,8 @@ def user_request_queue(user, room):
 
 
 @socketio.on("disconnect")
-def io_disconnect():
+def io_disconnect(reason):
+    log_print(f"io_disconnect with reason: {reason}")
     user = user_disconnect()
     if user and not user.role_is_super:
         # tell all admins about this disconnect...

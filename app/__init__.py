@@ -129,14 +129,15 @@ def create_app(config_name, build_path):
     mail.init_app(app)
     db.init_app(app)
     ma.init_app(app)
+
     # Set this in SocketIO(): max_http_buffer_size
     # See https://python-socketio.readthedocs.io/en/latest/api.html#socketio.Server
     # Default is 1^6 for 1MB. Probably want larger for file uploads, so set to 10MB:
     max_http_buffer_size = 10 * 1024 * 1024  # 10MB
     cors_allowed_origins = None
-    if app.config["ALLOW_CORS"] or app.config["ALLOW_CORS_SOCKET"]:
+    if app.config["ALLOW_CORS"]:
         cors_allowed_origins = "*"
-        msg = "ALLOW_CORS_SOCKET - allowing cross origin requests on socket"
+        msg = "ALLOW_CORS - allowing cross origin requests on socket"
         log_print(msg, "info", app)
     async_mode = "threading"
     if app.config["USE_EVENTLET"]:
