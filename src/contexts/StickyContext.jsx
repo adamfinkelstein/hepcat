@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import CryptoJS from 'crypto-js';
 import { useStorage } from './StorageContext';
 import { useSocketIO } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
@@ -7,10 +6,7 @@ import { useControlledLog } from './ControlledLogContext';
 const STORAGE_KEY = 'stickyKeys'; // Key for localStorage
 
 function genRandomKey(length) {
-  const randomWordArray = CryptoJS.lib.WordArray.random(length / 2);
-  const randomString = randomWordArray.toString(CryptoJS.enc.Hex);
-  const slice = randomString.slice(0, length);
-  return slice;
+  return crypto.randomUUID().slice(0, length);
 }
 
 const stickyContext = React.createContext();

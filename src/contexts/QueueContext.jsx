@@ -17,7 +17,7 @@ export default function QueueContext({ children }) {
   const { controlledLog, setShowLogs } = useControlledLog();
   const { isAdmin, roomChoice } = useUser();
   const { socketEmit, registerIoHandlers } = useSocketIO();
-  const { decryptObjectOrNull } = useKey();
+  const { decryptThenHandleArray, decryptThenHandleObj } = useKey();
   const { updateGridEntry } = useGrid();
   const { resetProbeMsgs, recordAdminGlobs } = useAdmin();
   const { flash } = useFlasher();
@@ -68,75 +68,71 @@ export default function QueueContext({ children }) {
     [controlledLog, queue, setQueue]
   );
 
+  const handleGlobsUpdate = useCallback(
+    (update) => {
+      controlledLog('decrypted globs update:', update);
+      const isTheRoom = update.room === roomChoice;
+      updateGridEntry(update.grid_update);
+      if (!isTheRoom) return;
+      const index = update.queue_index;
+      const status = update.status;
+      const nid = update.nid;
+      const msg = `Update: Q${index + 1} (${nid}) is ${status}.`;
+      flash(msg, 'info', 3);
+      updateQueueEntry(index, status);
+    },
+    [controlledLog, roomChoice, flash, updateGridEntry, updateQueueEntry]
+  );
+
   // called on receiving data from either:
   //   server_set_queue or server_set_globs
   const receiveGlobs = useCallback(
     (data) => {
       controlledLog('received globs:', data);
       // if there was an update, it was encrypted, so get it...
-      if (data.update_encrypted) {
-        data.update = decryptObjectOrNull(data.update_encrypted);
-        controlledLog('decrypt update:', data.update);
-      }
-      if (data.update) {
-        updateGridEntry(data.update.grid_update);
-      }
       const isTheRoom = data.room === roomChoice;
-      if (isTheRoom) {
-        recordRoomGlobs(data);
-        if (data.update) {
-          const index = data.update.queue_index;
-          const status = data.update.status;
-          const nid = data.update.nid;
-          const msg = `Update: Q${index + 1} (${nid}) is ${status}.`;
-          flash(msg, 'info', 3);
-          updateQueueEntry(index, status);
-        }
-      }
+      const encrypted = data.update_encrypted;
+      if (isTheRoom) recordRoomGlobs(data);
+      if (!encrypted) return;
+      decryptThenHandleObj(encrypted, handleGlobsUpdate);
     },
     [
       controlledLog,
       roomChoice,
       recordRoomGlobs,
-      flash,
-      updateQueueEntry,
-      updateGridEntry,
-      decryptObjectOrNull,
+      handleGlobsUpdate,
+      decryptThenHandleObj,
     ]
   );
 
-  const decryptPaperQueue = useCallback(
+  const safeSetQueue = useCallback(
     (arr) => {
       const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
-      const result = arr.map((p) => {
-        const dec = decryptObjectOrNull(p);
-        const safe = dec ? dec : dummy;
-        return safe;
+      const safeQ = arr.map((p) => {
+        return p ? p : dummy; // replace null (conflict) w dummy
       });
-      return result;
+      setQueue(safeQ);
     },
-    [decryptObjectOrNull]
+    [setQueue]
   );
 
   const receiveQueue = useCallback(
     (data) => {
       controlledLog('received queue:', data);
-      const room = data.globs.room;
-      const isTheRoom = room === roomChoice;
-      // const msg = `receiveQueue compare rooms: ${room} ${roomChoice} ${isTheRoom}`;
-      // controlledLog(msg);
+      const encrypted = data.paper_list_encrypted;
+      const globs = data.globs;
+      const isTheRoom = globs.room === roomChoice;
       if (isTheRoom) {
-        data.paper_list = decryptPaperQueue(data.paper_list_encrypted);
-        setQueue(data.paper_list);
-        receiveGlobs(data.globs);
         resetProbeMsgs();
+        receiveGlobs(globs);
+        decryptThenHandleArray(encrypted, safeSetQueue);
       }
     },
     [
       controlledLog,
       roomChoice,
-      decryptPaperQueue,
-      setQueue,
+      decryptThenHandleArray,
+      safeSetQueue,
       receiveGlobs,
       resetProbeMsgs,
     ]

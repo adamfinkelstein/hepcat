@@ -11,7 +11,7 @@ export default function GridContext({ children }) {
   const { registerIoHandlers } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { roomChoice } = useUser();
-  const { decryptObjectOrNull } = useKey();
+  const { decryptThenHandleObj, decryptThenHandleArray } = useKey();
   const { checkStickyIdIsValid } = useSticky();
 
   const [gridBar, setGridBar] = useState('');
@@ -75,38 +75,31 @@ export default function GridContext({ children }) {
     [gridPapers, setGridPapers, checkStickyIdIsValid]
   );
 
-  const decryptGridPapers = useCallback(
-    (encryptedPapers) => {
-      const papers = {}; // dictionary indexed by nid
+  const updateGridPapers = useCallback(
+    (arr) => {
+      const valid = arr.filter(Boolean); // omit null (conflicts)
+      const nConflicts = arr.length - valid.length;
       const nidsInOrder = [];
-      const nEnc = encryptedPapers.length;
-      let nConflicts = 0;
-      for (let i = 0; i < nEnc; i++) {
-        const paperEnc = encryptedPapers[i];
-        const p = decryptObjectOrNull(paperEnc);
-        if (!p) {
-          nConflicts++;
-          continue; // skip conflicted papers
-        }
+      const papers = {}; // dictionary indexed by nid
+      for (const p of valid) {
         const nid = p.nid;
         const idx = p.idx;
-        papers[nid] = p;
         nidsInOrder.push(nid);
+        papers[nid] = p;
         checkStickyIdIsValid(nid, idx);
       }
       setGridConflicts(nConflicts);
       setGridNidsInOrder(nidsInOrder);
       setGridPapers(papers);
-      // controlledLog('grid papers decrypted: ', papers);
     },
-    [
-      decryptObjectOrNull,
-      setGridPapers,
-      setGridNidsInOrder,
-      setGridConflicts,
-      checkStickyIdIsValid,
-      // controlledLog,
-    ]
+    [setGridPapers, setGridNidsInOrder, setGridConflicts, checkStickyIdIsValid]
+  );
+
+  const decryptGridPapers = useCallback(
+    (encryptedPapers) => {
+      decryptThenHandleArray(encryptedPapers, updateGridPapers);
+    },
+    [decryptThenHandleArray, updateGridPapers]
   );
 
   useEffect(() => {
@@ -142,15 +135,9 @@ export default function GridContext({ children }) {
 
   const receiveSticky = useCallback(
     (encrypted_grid_update) => {
-      const grid_update = decryptObjectOrNull(encrypted_grid_update);
-      if (!grid_update) {
-        controlledLog('received sticky for conflicted paper (ignored)');
-        return;
-      }
-      controlledLog('received sticky grid update: ', grid_update);
-      updateGridEntry(grid_update);
+      decryptThenHandleObj(encrypted_grid_update, updateGridEntry);
     },
-    [controlledLog, decryptObjectOrNull, updateGridEntry]
+    [decryptThenHandleObj, updateGridEntry]
   );
 
   const getHandlers = useCallback(() => {
