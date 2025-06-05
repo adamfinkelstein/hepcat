@@ -77,7 +77,6 @@ class Config:
     HEPCAT_TEST_ACTIONS = env_get_int("HEPCAT_TEST_ACTIONS", 0)  # 0=none
     HEPCAT_TEST_AUTO_INIT = env_get_bool("HEPCAT_TEST_AUTO_INIT", True)
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
-    HEPCAT_AUTO_REJECT = env_get_bool("HEPCAT_AUTO_REJECT", True)
     HEPCAT_CACHE_NAME = env_get_str("HEPCAT_CACHE_NAME", "cache")  # or "" for no cache
     HEPCAT_CACHE_DIR = subdir_path(HEPCAT_CACHE_NAME) if HEPCAT_CACHE_NAME else None
 

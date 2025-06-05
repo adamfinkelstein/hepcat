@@ -49,7 +49,7 @@ export default function GuiFilters() {
     setUseAboveScore,
     useBelowScore,
     setUseBelowScore,
-  } = useFilterContext(); // XXX TODO: consolidate checkboxes, scores?
+  } = useFilterContext();
 
   const filterList = [
     'This Room Only',

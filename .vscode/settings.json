@@ -60,6 +60,7 @@
     "urandom",
     "Vals",
     "valuenow",
+    "vite",
     "vstack",
     "werkzeug"
   ],

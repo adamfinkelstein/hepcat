@@ -153,7 +153,7 @@ def domain_from_email(email):
 
 # Email,First Name,Last Name,Rooms,Role,Password
 def insert_user_rows(rows, hash_cache):
-    ok_roles = "Admin,Chair,Backup,Screen,Outside".split(",")
+    ok_roles = "Super,Admin,Chair,Backup,Screen,Outside".split(",")
     omit_domains = current_app.config["OMIT_USER_DOMAINS"]
     count = 0
     hash_count = 0
@@ -482,8 +482,7 @@ def sticky_context_maybe_below_bar(paper, status_str):
     is_reject = status_str == "Reject"
     context_plenary = context_str_to_enum("Plenary")
     context = context_str_to_enum("Sticky")  # default (most cases)
-    auto_reject = current_app.config["HEPCAT_AUTO_REJECT"]
-    if auto_reject and paper.below_bar and is_reject:
+    if paper.below_bar and is_reject:
         context = context_plenary  # Mark in Plenary instead of Sticky
     return context
 
@@ -541,7 +540,7 @@ def insert_history_rows(rows):
             continue
         # debug: then = now - timedelta(seconds=secs)
         status_enum = status_str_to_enum(status)
-        if context == "Sticky":
+        if context == "Sticky":  # Sticky R below bar marked in Plenary
             context_enum = sticky_context_maybe_below_bar(paper, status)
         else:
             context_enum = context_str_to_enum(context)
