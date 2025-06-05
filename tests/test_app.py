@@ -5,7 +5,7 @@ from app.models.tables import User, Paper, conflicts, Label, LabelType
 
 class TestApp(HepcatTestCase):
     def test_database(self):
-        assert User.query.count() == 61  # 51 users in test-data/users.csv + 10 rooms
+        assert User.query.count() == 62  # 52 users in test-data/users.csv + 10 rooms
         assert Paper.query.count() == 199  # 200 papers one omitted due to exception
         # assert History.query.count() == 331 moving target!
         assert db.session.query(conflicts).count() == 591
