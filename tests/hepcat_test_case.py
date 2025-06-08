@@ -34,7 +34,6 @@ class HepcatTestCase(unittest.TestCase):
         # create an app
         build_path = os.getcwd() + "/build"
         self.app = create_app("testing", build_path)
-        self.client = self.app.test_client()  ## ???
         self.app_ctx = self.app.app_context()
         self.app_ctx.push()
 
@@ -63,6 +62,8 @@ class HepcatTestCase(unittest.TestCase):
         self.app_ctx.pop()
 
     def login(self, email="fake.citizen@example.com", password="pass"):
+        if not hasattr(self, "client"):
+            self.client = self.app.test_client()
         client = socketio.test_client(
             self.app,
             auth={"email": email, "password": password},
@@ -70,3 +71,12 @@ class HepcatTestCase(unittest.TestCase):
         )
         assert client.is_connected()
         return client
+
+    def login_regular(self):
+        return self.login()
+
+    def login_admin(self):
+        return self.login(email="fake.admin@example.com")
+
+    def login_super(self):
+        return self.login(email="fake.super@example.com")
