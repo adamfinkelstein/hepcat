@@ -57,6 +57,7 @@ def env_get_float(name, default=0.0):
 
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
+testing_db = "sqlite:///" + subdir_path("test.sqlite")
 
 dotenv_path = join(basedir, ".env")
 print(f"loading .env file: {dotenv_path}")
@@ -125,6 +126,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = testing_db
 
 
 class ProductionConfig(Config):
