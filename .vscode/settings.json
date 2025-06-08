@@ -48,6 +48,7 @@
     "Prefs",
     "progressbar",
     "psycopg",
+    "pytest",
     "pywrapcp",
     "sendgrid",
     "SIGGRAPH",
