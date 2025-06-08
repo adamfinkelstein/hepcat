@@ -15,7 +15,7 @@ class HepcatTestCase(unittest.TestCase):
 
         # create a test database
         db.create_all()  # is this needed? not harmful.
-        # the following could probably be replaced with:
+        # XXX the following could probably be replaced with:
         # read_test_csv_files()
         read_csv("tests/test-data/users.csv")
         read_csv("tests/test-data/papers.csv")
