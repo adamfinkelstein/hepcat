@@ -1,6 +1,5 @@
 from tests.hepcat_test_case import HepcatTestCase
 from app.models.tables import User, Paper, Action
-from app import db
 from flask import current_app
 import time
 
@@ -102,11 +101,8 @@ class TestDecoratorsViaSocketEvents(HepcatTestCase):
 
         client = self.login(email="fake.citizen@example.com")
 
-        sticky_data = {
-            "nid": 110,  # Known test paper
-            "status": "Accept",
-            "key": "test_login_key",
-        }
+        # known paper
+        sticky_data = {"nid": 110, "status": "Accept", "key": "test_key"}
 
         client.get_received()
         client.emit("user_set_sticky", sticky_data)
