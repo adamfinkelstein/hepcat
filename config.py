@@ -57,6 +57,7 @@ def env_get_float(name, default=0.0):
 
 
 default_db = "sqlite:///" + subdir_path("data.sqlite")
+testing_db = "sqlite:///" + subdir_path("test.sqlite")
 
 dotenv_path = join(basedir, ".env")
 print(f"loading .env file: {dotenv_path}")
@@ -77,7 +78,6 @@ class Config:
     HEPCAT_TEST_ACTIONS = env_get_int("HEPCAT_TEST_ACTIONS", 0)  # 0=none
     HEPCAT_TEST_AUTO_INIT = env_get_bool("HEPCAT_TEST_AUTO_INIT", True)
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
-    HEPCAT_AUTO_REJECT = env_get_bool("HEPCAT_AUTO_REJECT", True)
     HEPCAT_CACHE_NAME = env_get_str("HEPCAT_CACHE_NAME", "cache")  # or "" for no cache
     HEPCAT_CACHE_DIR = subdir_path(HEPCAT_CACHE_NAME) if HEPCAT_CACHE_NAME else None
 
@@ -93,6 +93,7 @@ class Config:
     HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_SCREEN_PASSWD", "pass")
     OMIT_USER_DOMAINS = env_get_str("OMIT_USER_DOMAINS", "linklings.com")
     DISABLE_PASSWORD_CACHE = env_get_bool("DISABLE_PASSWORD_CACHE", False)
+    CONCORDE_EXE = env_get_str("CONCORDE_EXE", "")  # Set this to override default
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = env_get_str("DEV_DATABASE_URL", default_db)
@@ -125,6 +126,8 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = testing_db
+    HEPCAT_CACHE_DIR = None  # Do not bother caching
 
 
 class ProductionConfig(Config):

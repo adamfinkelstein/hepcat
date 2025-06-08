@@ -1,6 +1,7 @@
 Email,First Name,Last Name,Rooms,Role,Password
-fake.admin@example.com,Fake,Admin,Room_1B;Room_2B,Admin,
-fake.chair@example.com,Fake,Chair,Room_1A;Room_2B,Chair,
+fake.super@example.com,Fake,Super,Room_1B;Room_2B,Super,pass
+fake.admin@example.com,Fake,Admin,Room_1B;Room_2B,Admin,pass
+fake.chair@example.com,Fake,Chair,Room_1A;Room_2B,Chair,pass
 fake.citizen@example.com,Fake,Citizen,Room_1A;Room_2A,,pass
 destiny.gomez@example.com,Destiny,Gomez,Room_1B;Room_2A,,
 valerie.stone@example.com,Valerie,Stone,Room_1B;Room_2A,,

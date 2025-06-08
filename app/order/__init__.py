@@ -224,12 +224,17 @@ EDGE_WEIGHT_SECTION
 
 
 def get_concorde_path_if_exists(bin_folder):
-    local_platform = platform.system() + "." + platform.machine()
-    log_print(f"local_platform: {local_platform}")
-    executable = "concorde." + local_platform
+    executable = current_app.config["CONCORDE_EXE"]
+    if not executable:
+        # like: concorde.Darwin.arm64 or concorde.Linux.x86_64
+        sys = platform.system()
+        mac = platform.machine()
+        executable = f"concorde.{sys}.{mac}"
     concorde_path = os.path.join(bin_folder, executable)
     if os.path.isfile(concorde_path):
+        log_print(f"concorde path: {concorde_path}")
         return concorde_path
+    log_print(f"concorde executable not found at: {concorde_path}")
     return None
 
 

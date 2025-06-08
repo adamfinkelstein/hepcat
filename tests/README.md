@@ -5,7 +5,11 @@
 There are several ways to test Hepcat.
 
 - Compile and launch the app locally, log in and try out the GUI.
-- Whenever new code is checked into Github, some unit tests in this directory are run automatically.
+- In the project root, run either:
+  - `python hepcat.py tests` -- runs all unit tests in this directory.
+  - `python -m pytest tests/test_sockets.py -v` -- runs specific unit tests in `test_sockets` (or more generally `test_*`).
+  - `python -m pytest tests/test_sockets.py -vs` -- same as above but more output shown.
+- Whenever new code is checked into Github, these unit tests are run automatically.
 - The simulation stress test described next.
 
 ## Simulation stress test with many fake users connecting on sockets:
