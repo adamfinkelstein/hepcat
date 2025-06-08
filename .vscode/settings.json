@@ -48,6 +48,7 @@
     "Prefs",
     "progressbar",
     "psycopg",
+    "pytest",
     "pywrapcp",
     "sendgrid",
     "SIGGRAPH",
@@ -60,6 +61,7 @@
     "urandom",
     "Vals",
     "valuenow",
+    "vite",
     "vstack",
     "werkzeug"
   ],

@@ -62,10 +62,7 @@ export default function SetSticky() {
     });
   };
 
-  /* We already know nid is valid, so we can skip that check.
-   * These warnings should be consistent with the policy in
-   * current_app.config["HEPCAT_AUTO_REJECT"]
-   */
+  // We already know nid is valid, so we can skip that check.
   const checkForWarningsThenSendSticky = (nid) => {
     const gridElem = gridGetElemByNid(nid);
     const gridStatus = gridElem.status;
