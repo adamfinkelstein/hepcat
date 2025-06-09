@@ -127,6 +127,7 @@ class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = testing_db
+    HEPCAT_CACHE_DIR = None  # Do not bother caching
 
 
 class ProductionConfig(Config):

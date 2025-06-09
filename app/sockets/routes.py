@@ -566,6 +566,30 @@ def broadcast_admin_alert(title, body):
     emit("server_send_alert", data, room="admin")
 
 
+def emit_admin_uploads(broadcast):
+    uploads = FileUpload.query.all()
+    uploads_dump = uploads_schema.dump(uploads)
+    pending = pending_uploads(uploads)
+    data = {"uploads": uploads_dump, "pending": pending}
+    if broadcast:
+        emit("server_file_uploads", data, room="admin")
+    else:  # otherwise just to the client of this request
+        emit("server_file_uploads", data)
+
+
+def emit_admin_filters(broadcast):
+    filters = Filter.query.all()
+    gui_names = [filter.name for filter in filters if filter.is_gui]
+    text_names = [filter.name for filter in filters if not filter.is_gui]
+    gui_names.sort()
+    text_names.sort()
+    names = {"gui": gui_names, "text": text_names}
+    if broadcast:
+        emit("server_send_filter_names", names, room="admin")
+    else:  # otherwise just to the client of this request
+        emit("server_send_filter_names", names)
+
+
 def login_user_and_send_welcome(user):
     log_print(f"client connected - send welcome to {user.full_name}")
     user_dump = get_one_user_dump(user)
@@ -603,7 +627,7 @@ def update_all_paper_bar_status(bar):
 
 ###########
 #
-# Decorator (communication) functions mostly below here:
+# Socket communications functions below here:
 #
 ###########
 
@@ -637,6 +661,166 @@ def io_connect(auth):
         login_user_and_send_welcome(user)
 
 
+@socketio.on("disconnect")
+def io_disconnect(reason):
+    log_print(f"io_disconnect with reason: {reason}")
+    user = user_disconnect()
+    if user and not user.role_is_super:
+        # tell all admins about this disconnect...
+        user_dump = get_one_user_dump(user)
+        emit("server_refresh_user", user_dump, room="admin")
+        invalidate_user_dict_cache()
+
+
+##########
+#
+# User actions
+#
+##########
+
+
+@socketio.on("user_request_grid")
+@get_user_or_disconnect
+def user_request_grid(user):
+    log_print(f"{user.full_name} requested grid")
+    grid_dump = get_grid_dump_cached(False)
+    emit("server_set_grid", grid_dump)
+
+
+@socketio.on("user_request_queue")
+@get_user_or_disconnect
+def user_request_queue(user, room):
+    log_print(f"{user.full_name} requested queue for {room}")
+    data = get_queue_dump_cached(room, False)
+    emit("server_set_queue", data)
+
+
+@socketio.on("user_set_sticky")
+@login_required_for_io
+def user_set_sticky(data):
+    log_print(f"user request for set sticky: {data}")
+    nid = data["nid"]
+    paper = Paper.query.filter_by(nid=nid).first()
+    if not paper:
+        return  # should never happen because it is now checked at the client
+    status_data = data["status"]
+    key = data["key"]
+    status = status_data
+    if status == "Tabled-Discuss":
+        status = "Tabled"
+    is_reject = status == "Reject"
+    playback = "playback" in data
+    status_enum = status_str_to_enum(status)
+    context_plenary = context_str_to_enum("Plenary")
+    context_sticky = context_str_to_enum("Sticky")
+    context = context_sticky  # default (most cases)
+    if paper.below_bar and is_reject and not is_paper_accepted(paper):
+        context = context_plenary  # Mark in Plenary instead of Sticky
+    history = History(
+        paper=paper, context_enum=context, status_enum=status_enum, sticky_key=key
+    )
+    db.session.add(history)
+    if try_sql_commit():
+        invalidate_grid_cache()
+        data["idx"] = history.id  # same data but add id
+        emit("server_confirm_sticky", data)  # just to sender
+        grid_update = get_encrypted_grid_entry(paper)
+        emit("server_set_sticky", grid_update, broadcast=True)
+        if not playback:
+            message = f"Sticky received for paper {nid} ({status_data})."
+            data = {"message": message, "type": "success"}
+            emit("server_send_flasher", data)
+    else:
+        msg = f"Failed attempt to file sticky for paper {nid} ({status_data})."
+        log_print(msg)
+        broadcast_admin_alert("Server Error", msg)
+
+
+@socketio.on("user_revoke_sticky")
+@login_required_for_io
+def user_revoke_sticky(data):
+    log_print(f"user request to revoke sticky: {data}")
+    nid = data["nid"]
+    key = data["key"]
+    paper = Paper.query.filter_by(nid=nid).first()
+    if not paper:
+        return  # should never happen because it is now checked at the client
+    # should only be able to revoke sticky if most recent history
+    latest = get_latest_history(paper)
+    if not latest or latest.sticky_key != key:
+        msg = f"Failed attempt to revoke sticky for paper {nid}."
+        log_print(msg)
+        data = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", data)
+        return
+    print(f"latest before revoke: {latest}")
+    context_revoke = context_str_to_enum("Revoke")
+    latest.context_enum = context_revoke
+    db.session.add(latest)
+    print(f"latest after revoke: {latest}")
+    if try_sql_commit():
+        hist = get_paper_all_history_dump(paper)
+        print(f"hist after revoke: {hist}")
+        invalidate_grid_cache()
+        grid_update = get_encrypted_grid_entry(paper)
+        emit("server_set_sticky", grid_update, broadcast=True)
+        playback = "playback" in data
+        if not playback:
+            message = f"Sticky revoked for paper {nid}!"
+            data = {"message": message, "type": "success"}
+            emit("server_send_flasher", data)
+    else:
+        msg = f"Failed attempt to revoke sticky for paper {nid} (db)."
+        log_print(msg)
+        broadcast_admin_alert("Server Error", msg)
+
+
+@socketio.on("user_change_password")
+@get_user_or_disconnect
+def user_change_password(user, data):
+    old_password = data["oldPassword"]
+    new_password = data["password"]
+    for_email = data["forEmail"]
+    message = None
+    if for_email:
+        for_user = User.query.filter_by(email=for_email).first()
+        if not user.role_is_admin or not for_user:
+            success = False
+        else:
+            success = True
+            for_name = for_user.full_name
+            message = f"You have changed the password for {for_name}."
+    else:
+        if old_password and not user.verify_password(old_password):
+            success = False
+            message = "Current password incorrect. Password was NOT updated."
+        else:
+            success = True
+            for_user = user  # self
+            message = "You have successfully changed your password."
+    if success:
+        log_print(f"change password for {for_user.full_name}")
+        for_user.password = new_password
+        db.session.add(for_user)
+        if try_sql_commit():
+            message_type = "success"
+        else:
+            success = False
+    if not success:
+        if not message:
+            message = "Error setting password."
+        message_type = "warning"
+    reply = {"message": message, "type": message_type}
+    emit("server_send_flasher", reply)
+
+
+##########
+#
+# Admin actions
+#
+##########
+
+
 @socketio.on("admin_become_user")
 @admin_required_for_io_no_record
 def admin_become_user(email):
@@ -660,33 +844,6 @@ def admin_become_user(email):
     # record new user socket and session, then emit welcome
     user_record_socket_and_session(new_user)
     login_user_and_send_welcome(new_user)
-
-
-@socketio.on("user_request_grid")
-@get_user_or_disconnect
-def user_request_grid(user):
-    log_print(f"{user.full_name} requested grid")
-    grid_dump = get_grid_dump_cached(False)
-    emit("server_set_grid", grid_dump)
-
-
-@socketio.on("user_request_queue")
-@get_user_or_disconnect
-def user_request_queue(user, room):
-    log_print(f"{user.full_name} requested queue for {room}")
-    data = get_queue_dump_cached(room, False)
-    emit("server_set_queue", data)
-
-
-@socketio.on("disconnect")
-def io_disconnect(reason):
-    log_print(f"io_disconnect with reason: {reason}")
-    user = user_disconnect()
-    if user and not user.role_is_super:
-        # tell all admins about this disconnect...
-        user_dump = get_one_user_dump(user)
-        emit("server_refresh_user", user_dump, room="admin")
-        invalidate_user_dict_cache()
 
 
 @socketio.on("admin_prev_paper")
@@ -941,154 +1098,11 @@ def admin_bulk_confirm():
         emit("server_send_flasher", data)
 
 
-@socketio.on("user_set_sticky")
-@login_required_for_io
-def user_set_sticky(data):
-    log_print(f"user request for set sticky: {data}")
-    nid = data["nid"]
-    paper = Paper.query.filter_by(nid=nid).first()
-    if not paper:
-        return  # should never happen because it is now checked at the client
-    status_data = data["status"]
-    key = data["key"]
-    status = status_data
-    if status == "Tabled-Discuss":
-        status = "Tabled"
-    is_reject = status == "Reject"
-    playback = "playback" in data
-    status_enum = status_str_to_enum(status)
-    context_plenary = context_str_to_enum("Plenary")
-    context_sticky = context_str_to_enum("Sticky")
-    context = context_sticky  # default (most cases)
-    if paper.below_bar and is_reject and not is_paper_accepted(paper):
-        context = context_plenary  # Mark in Plenary instead of Sticky
-    history = History(
-        paper=paper, context_enum=context, status_enum=status_enum, sticky_key=key
-    )
-    db.session.add(history)
-    if try_sql_commit():
-        invalidate_grid_cache()
-        data["idx"] = history.id  # same data but add id
-        emit("server_confirm_sticky", data)  # just to sender
-        grid_update = get_encrypted_grid_entry(paper)
-        emit("server_set_sticky", grid_update, broadcast=True)
-        if not playback:
-            message = f"Sticky received for paper {nid} ({status_data})."
-            data = {"message": message, "type": "success"}
-            emit("server_send_flasher", data)
-    else:
-        msg = f"Failed attempt to file sticky for paper {nid} ({status_data})."
-        log_print(msg)
-        broadcast_admin_alert("Server Error", msg)
-
-
-@socketio.on("user_revoke_sticky")
-@login_required_for_io
-def user_revoke_sticky(data):
-    log_print(f"user request to revoke sticky: {data}")
-    nid = data["nid"]
-    key = data["key"]
-    paper = Paper.query.filter_by(nid=nid).first()
-    if not paper:
-        return  # should never happen because it is now checked at the client
-    # should only be able to revoke sticky if most recent history
-    latest = get_latest_history(paper)
-    if not latest or latest.sticky_key != key:
-        msg = f"Failed attempt to revoke sticky for paper {nid}."
-        log_print(msg)
-        data = {"message": msg, "type": "warning"}
-        emit("server_send_flasher", data)
-        return
-    print(f"latest before revoke: {latest}")
-    context_revoke = context_str_to_enum("Revoke")
-    latest.context_enum = context_revoke
-    db.session.add(latest)
-    print(f"latest after revoke: {latest}")
-    if try_sql_commit():
-        hist = get_paper_all_history_dump(paper)
-        print(f"hist after revoke: {hist}")
-        invalidate_grid_cache()
-        grid_update = get_encrypted_grid_entry(paper)
-        emit("server_set_sticky", grid_update, broadcast=True)
-        playback = "playback" in data
-        if not playback:
-            message = f"Sticky revoked for paper {nid}!"
-            data = {"message": message, "type": "success"}
-            emit("server_send_flasher", data)
-    else:
-        msg = f"Failed attempt to revoke sticky for paper {nid} (db)."
-        log_print(msg)
-        broadcast_admin_alert("Server Error", msg)
-
-
-@socketio.on("user_change_password")
-@get_user_or_disconnect
-def user_change_password(user, data):
-    old_password = data["oldPassword"]
-    new_password = data["password"]
-    for_email = data["forEmail"]
-    message = None
-    if for_email:
-        for_user = User.query.filter_by(email=for_email).first()
-        if not user.role_is_admin or not for_user:
-            success = False
-        else:
-            success = True
-            for_name = for_user.full_name
-            message = f"You have changed the password for {for_name}."
-    else:
-        if old_password and not user.verify_password(old_password):
-            success = False
-            message = "Current password incorrect. Password was NOT updated."
-        else:
-            success = True
-            for_user = user  # self
-            message = "You have successfully changed your password."
-    if success:
-        log_print(f"change password for {for_user.full_name}")
-        for_user.password = new_password
-        db.session.add(for_user)
-        if try_sql_commit():
-            message_type = "success"
-        else:
-            success = False
-    if not success:
-        if not message:
-            message = "Error setting password."
-        message_type = "warning"
-    reply = {"message": message, "type": message_type}
-    emit("server_send_flasher", reply)
-
-
-def emit_admin_filters(broadcast):
-    filters = Filter.query.all()
-    gui_names = [filter.name for filter in filters if filter.is_gui]
-    text_names = [filter.name for filter in filters if not filter.is_gui]
-    gui_names.sort()
-    text_names.sort()
-    names = {"gui": gui_names, "text": text_names}
-    if broadcast:
-        emit("server_send_filter_names", names, room="admin")
-    else:  # otherwise just to the client of this request
-        emit("server_send_filter_names", names)
-
-
-####################################
+########
 #
-# Uploads
+# Related to Uploads Page
 #
-####################################
-
-
-def emit_admin_uploads(broadcast):
-    uploads = FileUpload.query.all()
-    uploads_dump = uploads_schema.dump(uploads)
-    pending = pending_uploads(uploads)
-    data = {"uploads": uploads_dump, "pending": pending}
-    if broadcast:
-        emit("server_file_uploads", data, room="admin")
-    else:  # otherwise just to the client of this request
-        emit("server_file_uploads", data)
+########
 
 
 @socketio.on("admin_file_upload")
@@ -1106,7 +1120,8 @@ def admin_upload_file(contents):
         disconnect_all_users()
         return  # logging out all users, so no need to send updates
     emit_admin_uploads(True)
-    emit_admin_filters(True)
+    if header_type == "filters":
+        emit_admin_filters(True)
     if header_type in ["chair", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
@@ -1114,14 +1129,6 @@ def admin_upload_file(contents):
     msg = f"File upload ({header_type}) successful. {msg}"
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
-
-
-def wipe_db_and_disconnect_all():
-    log_print("about to wipe database...")
-    invalidate_cache_all()
-    disconnect_all_users()  # do this first because users in db
-    wipe_db_clean()
-    remove_upload_folder()  # clean up any files
 
 
 @socketio.on("admin_wipe_database")
@@ -1138,3 +1145,11 @@ def admin_load_database():
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
         playback_recorded_actions(user_set_sticky)
+
+
+def wipe_db_and_disconnect_all():
+    log_print("about to wipe database...")
+    invalidate_cache_all()
+    disconnect_all_users()  # do this first because users in db
+    wipe_db_clean()
+    remove_upload_folder()  # clean up any files
