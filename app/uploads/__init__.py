@@ -1,3 +1,4 @@
+import uuid
 from .. import current_app
 from ..util import make_path_if_needed, remove_folder_tree_if_exists
 
@@ -45,3 +46,9 @@ def file_upload_name(header_type):
 
 def file_is_upload(file_name):
     return file_name.startswith(file_uploads_prefix) and file_name.endswith(".csv")
+
+
+def gen_random_key(max_chars):
+    hex = uuid.uuid4().hex
+    hex = hex[:max_chars]  # 4 billion options on 8 hex digits
+    return hex

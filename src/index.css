@@ -25,6 +25,11 @@ body {
   text-decoration: underline;
 }
 
+.form-check-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /*
  * Coloring USER NAMES in one of:
  * - conflicts in queue

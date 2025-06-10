@@ -1,6 +1,4 @@
-import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-// import Stack from 'react-bootstrap/Stack';
+import { Button, Stack, Container } from 'react-bootstrap';
 import { useControlledLog } from '../contexts/ControlledLogContext';
 import { useFlasher } from '../contexts/FlasherContext';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
@@ -41,20 +39,25 @@ export default function RevokeStickies() {
     <Container fluid className="RevokeStickies">
       <h2>Revoke Stickies</h2>
       {showRevoke ? (
-        <Container fluid className="mt-3 mb-5">
-          {stickyNids.map((nid) => {
-            return (
-              <Button
-                key={nid}
-                className="mx-2"
-                variant="warning"
-                onClick={() => handleStickyButton(nid)}
-              >
-                {nid}
-              </Button>
-            );
-          })}
-        </Container>
+        <Stack direction="vertical">
+          <span className="ms-3">
+            Click any red button below to revoke that sticky:
+          </span>
+          <Container fluid className="mt-3 mb-5">
+            {stickyNids.map((nid) => {
+              return (
+                <Button
+                  key={nid}
+                  className="mx-2"
+                  variant="danger"
+                  onClick={() => handleStickyButton(nid)}
+                >
+                  {nid}
+                </Button>
+              );
+            })}
+          </Container>
+        </Stack>
       ) : (
         <span className="mt-5 ms-3">(No current stickies to revoke.)</span>
       )}

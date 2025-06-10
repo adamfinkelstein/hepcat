@@ -76,6 +76,9 @@ def record_action(func_name, args_json):
 ##################################
 
 
+# Require that the wrapped function is being requested by
+# an Admin user. In this variant, the operation is recorded
+# in the Actions table.
 def admin_required_for_io_with_record(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -93,6 +96,9 @@ def admin_required_for_io_with_record(f):
     return decorated
 
 
+# Require that the wrapped function is being requested by
+# an Admin user. In this variant, the operation is not
+# recorded in the Actions table.
 def admin_required_for_io_no_record(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -104,6 +110,8 @@ def admin_required_for_io_no_record(f):
     return decorated
 
 
+# Require that the wrapped function is being requested by
+# an Super user. No Super functions are recorded.
 def super_required_for_io(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -115,6 +123,8 @@ def super_required_for_io(f):
     return decorated
 
 
+# Require that the wrapped function is being requested by
+# a logged in user.
 def login_required_for_io(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -127,6 +137,9 @@ def login_required_for_io(f):
     return decorated
 
 
+# Require that the wrapped function is being requested by
+# a logged in user, and pass that user as a first arg to
+# the wrapped function.
 def get_user_or_disconnect(f):
     @wraps(f)
     def decorated(*args, **kwargs):

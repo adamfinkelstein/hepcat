@@ -8,39 +8,38 @@ export default function DisableLogins() {
   const { disableLogins, updateDisableLogins } = useAdmin();
   const { revealConfirmationBox } = useConfirmationBox();
   // const [disableLogins, updateDisableLogins] = useState(false);
-  const disabledClass = disableLogins ? 'text-dark' : 'text-muted';
-  const enabledClass = disableLogins ? 'text-muted' : 'text-dark';
+  const disabledClass = disableLogins ? 'text-primary' : 'text-muted';
+  const allowedClass = disableLogins ? 'text-muted' : 'text-primary';
 
   const confirmDisable = useCallback(
     (e) => {
+      e.preventDefault(); // wait for confirmation from server
       if (disableLogins) {
-        updateDisableLogins(false); // no confirmation for uncheck
+        updateDisableLogins(false); // no confirmation switching to allow
       } else {
         const text =
           'Are you really sure you want to disable non-admin logins?' +
           ' This will also log out any non-admins currently logged in.';
         revealConfirmationBox('Please Confirm', text, (confirmed) => {
-          updateDisableLogins(confirmed);
-          if (!confirmed) {
-            e.target.checked = false; // cancel: uncheck the switch
+          if (confirmed) {
+            updateDisableLogins(true);
           }
         });
       }
     },
-    [disableLogins, updateDisableLogins, revealConfirmationBox],
+    [disableLogins, updateDisableLogins, revealConfirmationBox]
   );
 
   return (
     <Stack className="DisableLogins fw-bold" direction="horizontal">
-      <span className={enabledClass}>Enable</span>
+      <span className={disabledClass}>Disable</span>
       <Form.Check
         type="switch"
-        checked={disableLogins}
+        checked={!disableLogins}
         className="ms-2"
         onChange={(e) => confirmDisable(e)}
       />
-      <span className={disabledClass}>Disable</span>
-      <span className="text-dark">&nbsp;non-admin logins</span>
+      <span className={allowedClass}>Allow non-admin logins</span>
     </Stack>
   );
 }

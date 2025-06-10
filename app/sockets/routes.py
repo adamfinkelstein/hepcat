@@ -1,7 +1,4 @@
-import os
 import json
-import base64
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from flask import current_app
 from flask_socketio import (
     emit,
@@ -9,7 +6,6 @@ from flask_socketio import (
     leave_room,
     ConnectionRefusedError,
 )
-from sqlalchemy.sql.expression import func
 from .decorators import (
     admin_required_for_io_with_record,
     admin_required_for_io_no_record,
@@ -19,50 +15,33 @@ from .decorators import (
     get_user_or_disconnect,
 )
 from .. import db, socketio, log_print
-from ..order import order_q, get_enter_leave_conf_sets
-from ..uploads import remove_upload_folder
 from ..uploads.insert import (
     save_and_read_csv,
     pending_uploads,
     read_test_csv_files,
     init_grid_from_bbs,
 )
-from .filters import (
-    get_grid_paper_dump,
-    get_filtered_papers,
-    parse_text_filter,
-    PARSE_ERR_MSG,
-)
+from .filters import get_grid_paper_dump, get_filtered_papers
 from .git_info import get_git_info_from_repo
 from .users import (
     user_connect,
     user_disconnect,
-    user_has_socket,
     forget_user_socket,
     disconnect_all_users,
     user_record_socket_and_session,
     get_user_id_from_session,
-    connected_user_ids_list,
-    disconnect_user_by_id,
+    get_current_user_or_none,
 )
 from ..util import (
-    get_cache_var_dump,
-    invalidate_cache_var,
     invalidate_cache_all,
 )
 from ..models.settings import (
     setting_float_set,
-    setting_float_get,
     setting_bool_get,
     setting_bool_set,
 )
 from ..models.history_util import (
-    get_paper_bbs_status,
     get_latest_history,
-    get_latest_history_status,
-    get_latest_room_history_status,
-    history_query_for_paper_above_context,
-    history_query_for_paper,
 )
 from ..models.tables import (
     User,
@@ -74,491 +53,45 @@ from ..models.tables import (
     context_str_to_enum,
     get_all_rooms,
 )
-from ..models.schemas import (
-    user_schema,
-    paper_schema,
-    global_schema,
-    history_schema,
-    uploads_schema,
-)
+from ..models.schemas import uploads_schema
 from ..models.helpers import (
     dump_users_papers_and_conflicts,
-    get_or_create_gq,
     try_sql_commit,
     ensure_supers,
-    wipe_db_clean,
 )
-from ..models.label_util import (
-    label_str_to_enum,
+from ..admin.downloads import write_file_for_download
+from .get_or_set import (
+    bulk_confirm_in_queue,
+    disconnect_non_admin_users,
+    encrypt_obj_with_oid,
+    get_all_user_dict_dump,
+    get_encrypted_grid_entry,
+    get_globs_dump_with_status,
+    get_grid_dump_cached,
+    get_one_user_dump,
+    get_paper_all_history_dump,
+    get_probe_counts_msg,
+    get_queue_dump_cached,
+    get_unconflicted_paper_keys_cached,
+    invalidate_grid_cache,
+    invalidate_queue_cache,
+    is_paper_accepted,
+    probe_queue_by_text_filter,
+    set_hide_queue,
+    set_queue,
+    set_queue_by_text_filter,
+    show_current_paper,
+    update_all_paper_bar_status,
+    update_current_paper_status,
+    wipe_db_and_disconnect_all,
+    zero_or_inc_current_index,
 )
 
-
-def encrypt_str(raw, key):
-    # Convert key to 16 bytes for AES-128 (pad with zeros if short)
-    key_bytes = key.encode("utf-8")[:16].ljust(16, b"\0")
-    nonce = os.urandom(12)  # random 12-byte nonce
-    aesgcm = AESGCM(key_bytes)
-    ciphertext = aesgcm.encrypt(nonce, raw.encode("utf-8"), None)
-    encrypted_data = nonce + ciphertext
-    return base64.b64encode(encrypted_data).decode("utf-8")
-
-
-def debug_obj_string(str):
-    beg = str[:8]
-    end = str[-8:]
-    n = len(str)
-    debug = f"{beg}...{n}...{end}"
-    return debug
-
-
-def debug_encoding(jsn, enc):
-    d_jsn = debug_obj_string(jsn)
-    d_enc = debug_obj_string(enc)
-    debug = f"[ {d_jsn} | {d_enc} ]"
-    return debug
-
-
-def encrypt_obj_with_oid(obj, oid, key):
-    jsn_string = json.dumps(obj)
-    enc_string = encrypt_str(jsn_string, key)
-    package = {"oid": oid, "enc": enc_string}
-    debug = None  # debug_encoding(jsn_string, enc_string)
-    if debug:
-        package["debug"] = debug
-    return package
-
-
-def count_papers_in_all_queues():
-    count = 0
-    papers = Paper.query.all()
-    for paper in papers:
-        if paper.queue_id:
-            count += 1
-    return count
-
-
-def get_encrypted_grid_entry(paper):
-    paper_dump = get_grid_paper_dump(paper)
-    paper_enc = encrypt_obj_with_oid(paper_dump, paper.oid, paper.key)
-    return paper_enc
-
-
-def get_grid_dump():
-    papers = Paper.query.order_by(Paper.sort_score.desc(), Paper.nid).all()
-    papers_encrypted = []
-    for paper in papers:
-        nid = paper.nid
-        if nid == 9999:  # do not put test paper in grid
-            continue
-        paper_enc = get_encrypted_grid_entry(paper)
-        papers_encrypted.append(paper_enc)
-    bar = setting_float_get("bar")
-    grid_dump = {
-        "papers_encrypted": papers_encrypted,
-        "bar": bar,
-    }
-    return grid_dump
-
-
-def get_grid_dump_cached(refresh_cache):
-    grid_dump = get_cache_var_dump("grid", get_grid_dump, None, refresh_cache)
-    return grid_dump
-
-
-def get_queue_cache_name(room):
-    name = f"queue_{room}"
-    return name
-
-
-def get_queue_dump_cached(room, refresh_cache):
-    name = get_queue_cache_name(room)
-    queue_dump = get_cache_var_dump(name, get_queue, room, refresh_cache)
-    return queue_dump
-
-
-def invalidate_grid_cache():
-    invalidate_cache_var("grid")
-
-
-def invalidate_queue_cache(room):
-    name = get_queue_cache_name(room)
-    invalidate_cache_var(name)
-
-
-def get_one_user_dump(user):
-    user_dump = user_schema.dump(user)
-    user_dump["is_online"] = user_has_socket(user.id)
-    return user_dump
-
-
-def get_user_list_dump(users, sort=True):
-    user_list = list(users)  # in case it was a set or something
-    if sort:
-        # currently sorts on full name
-        user_list = sorted(user_list, key=lambda u: u.full_name)
-    list_dump = []
-    for user in user_list:
-        user_dump = get_one_user_dump(user)
-        list_dump.append(user_dump)
-    return list_dump
-
-
-def get_user_dict_dump(users):
-    user_list = list(users)  # in case it was a set or something
-    dict_dump = {}
-    for user in user_list:
-        if not user.role_is_super:
-            email = user.email
-            user_dump = get_one_user_dump(user)
-            dict_dump[email] = user_dump
-    return dict_dump
-
-
-def get_user_list_emails(users):
-    user_list = list(users)  # in case it was a set
-    emails = []
-    for user in user_list:
-        emails.append(user.email)
-    return emails
-
-
-# send users as dictionary indexed by email
-def get_all_user_dict_dump():
-    users = User.query.all()
-    dump = get_user_dict_dump(users)
-    return dump
-
-
-def get_all_user_dict_dump_cached(refresh_cache):
-    user_dump = get_cache_var_dump(
-        "user_dict", get_all_user_dict_dump, None, refresh_cache
-    )
-    return user_dump
-
-
-def invalidate_user_dict_cache():
-    invalidate_cache_var("user_dict")
-
-
-def get_paper_all_history_dump(paper):
-    query = history_query_for_paper(paper)
-    plenary_history = query.all()
-    history_dump = history_schema.dump(plenary_history)
-    return history_dump
-
-
-def get_paper_meeting_history_dump(paper):
-    query = history_query_for_paper_above_context(paper, "Plenary")
-    plenary_history = query.all()
-    history_dump = history_schema.dump(plenary_history)
-    return history_dump
-
-
-def get_paper_tag_labels(paper):
-    bar_type = "Bar"
-    bar_enum = label_str_to_enum(bar_type)
-    bar_name = "Below" if paper.below_bar else "Above"
-    bar_tuple = (-bar_enum, bar_name, bar_type)
-    all_tups = [bar_tuple]
-    labels = paper.tag_labels
-    for label in labels:
-        if not label.is_cluster:  # do not show clusters
-            # fmt = f"{label.label_type}:{label.name}" # now done after sort
-            tuple = (-label.type_enum, label.name, label.label_type)
-            all_tups.append(tuple)
-    all_tups.sort()  # descending order of type_enum and then ascending by name
-    all_tags = [f"{tup[2]}:{tup[1]}" for tup in all_tups]
-    all_tags = (", ").join(all_tags)
-    return all_tags
-
-
-def is_paper_ready(paper):
-    latest = get_latest_room_history_status(paper)
-    if latest:  # marked in meeting room (includes presumed-R)
-        return False
-    bbs = get_paper_bbs_status(paper)
-    if bbs == "Tabled":
-        return False
-    return True
-
-
-def is_paper_accepted(paper):
-    latest = get_latest_room_history_status(paper)
-    if latest == "Journal" or latest == "Conference":
-        return True
-    return False
-
-
-def bulk_confirm_in_queue():
-    # for all papers in queue that are ready...
-    # ...mark as "seen" with current status.
-    gq = get_or_create_gq("Plenary")
-    papers = Paper.query.filter_by(queue_id=gq.id).all()
-    papers = list(papers)
-    # papers = [p for p in papers if is_paper_ready(p)] all in queue
-    sticky = context_str_to_enum("Sticky")
-    plenary = context_str_to_enum("Plenary")
-    tabled = status_str_to_enum("Tabled")
-    count = 0
-    for paper in papers:
-        prev_history = get_latest_history(paper)
-        if not prev_history:  # just in case
-            continue
-        # only consider stickies that mark as converged
-        status = prev_history.status_enum
-        if prev_history.context_enum != sticky or status == tabled:
-            continue
-        history = History(paper=paper, context_enum=plenary, status_enum=status)
-        db.session.add(history)
-        count += 1
-    log_print(f"bulk_confirm_in_queue: {count} stickies confirmed.")
-
-
-def zero_or_inc_current_index(room, zero_or_inc):
-    gq = get_or_create_gq(room)
-    gq.current_show_enter = zero_or_inc
-    if zero_or_inc == 0:
-        gq.current = 0
-    elif zero_or_inc == -1:
-        gq.current -= 1
-    elif zero_or_inc == +1:
-        gq.current += 1
-    else:
-        gq.current = -1  # default = no current
-        gq.current_show_enter = 0
-    gq.current_show = False
-    db.session.add(gq)
-
-
-def clear_queue(room):
-    gq = get_or_create_gq(room)
-    papers = Paper.query.filter_by(queue_id=gq.id).all()
-    papers = list(papers)
-    n = len(papers)
-    log_print(f"clearing queue for {room} -- {n} papers")
-    for paper in papers:
-        paper.queue_id = None
-        paper.queue_order = 0
-        db.session.add(paper)
-    return gq
-
-
-def message_from_set_queue(count, skipped, over_max):
-    msg = f"Set queue with {count} papers."
-    if skipped:
-        msg += f" Skipped {skipped} because already in other queues."
-    if over_max:
-        msg += f" Selected random subset of {over_max} to stay under time budget."
-    return msg
-
-
-def set_queue_to_paper_list(room, paper_list, solve_tsp):
-    gq = clear_queue(room)
-    # remove any papers already in other queues...
-    keepers = []
-    skipped = 0
-    for paper in paper_list:
-        if paper.queue_id:
-            skipped += 1
-        else:
-            keepers.append(paper)
-    over_max = False
-    tsp_disabled = current_app.config["HEPCAT_TSP_DISABLED"]
-    if solve_tsp and not tsp_disabled:
-        order_papers, over_max = order_q(keepers, room)
-    else:
-        order_papers = keepers
-    count = 0
-    for paper in order_papers:
-        paper.queue_id = gq.id
-        paper.queue_order = count + 1  # queue order starts at 1
-        db.session.add(paper)
-        count += 1
-    if count:
-        zero_or_inc_current_index(room, 0)  # does commit!
-    else:
-        zero_or_inc_current_index(room, -100)  # empty queue = no current
-    msg = message_from_set_queue(count, skipped, over_max)
-    return msg
-
-
-def set_queue_by_text_filter(room, exp, no_tsp):
-    filter_papers, solve_tsp, msg = parse_text_filter(room, exp)
-    if filter_papers is None:
-        return msg
-    if no_tsp:
-        solve_tsp = False
-    msg = set_queue_to_paper_list(room, filter_papers, solve_tsp)
-    return msg
-
-
-def probe_queue_by_text_filter(room, exp):
-    filter_papers, _, _ = parse_text_filter(room, exp)
-    if filter_papers is None:
-        return PARSE_ERR_MSG
-    msg = get_probe_counts_msg(filter_papers)
-    return msg
-
-
-def set_queue(room, filters):
-    filter_papers = get_filtered_papers(filters)
-    solve_tsp = True
-    return set_queue_to_paper_list(room, filter_papers, solve_tsp)
-
-
-def filter_papers_in_queues(paper_list):
-    in_queues = [paper for paper in paper_list if paper.queue_id]
-    return in_queues
-
-
-def get_filter_paper_counts(filter_papers):
-    if not filter_papers:
-        return 0, 0
-    papers_in_queues = filter_papers_in_queues(filter_papers)
-    total = len(filter_papers)
-    n_in_queues = len(papers_in_queues)
-    return total, n_in_queues
-
-
-def get_probe_counts_msg(filter_papers):
-    total, in_queues = get_filter_paper_counts(filter_papers)
-    if not total:
-        msg = "no matching papers"
-    elif not in_queues:
-        msg = f"{total}"
-    else:
-        msg = f"{total} total (already in queues: {in_queues})"
-    return msg
-
-
-def show_current_paper(room):
-    gq = get_or_create_gq(room)
-    gq.current_show = True
-    gq.current_start = func.now()
-    db.session.add(gq)
-
-
-def set_hide_queue(room, hide, message):
-    gq = get_or_create_gq(room)
-    gq.hide_queue = hide
-    gq.message = message
-    if not hide:  # if transition from hide to show queue...
-        gq.current_show = False  # then hide the current paper.
-        gq.current_show_enter = 0  # and do not show enter/leave.
-    db.session.add(gq)
-
-
-def get_globs_dump(room):
-    gq = get_or_create_gq(room)
-    globs = global_schema.dump(gq)
-    return globs
-
-
-def update_current_paper_status(room, new_status):
-    globs = get_globs_dump(room)
-    current_index = globs["current"]
-    paper = get_paper_at_queue_index(room, current_index)
-    if not paper:
-        return None, None
-    status_enum = status_str_to_enum(new_status)
-    room_context = context_str_to_enum(room)
-    if not room_context:  # just for safety default to plenary
-        room_context = context_str_to_enum("Plenary")
-    history = History(paper=paper, context_enum=room_context, status_enum=status_enum)
-    db.session.add(history)  # commit will follow on setting current index
-    return current_index, paper
-
-
-def get_paper_at_queue_index(room, index):
-    if not room or index < 0:
-        return None
-    gq = get_or_create_gq(room)
-    add_one = index + 1
-    paper = Paper.query.filter_by(queue_order=add_one).filter_by(queue_id=gq.id).first()
-    return paper
-
-
-# def shows status and history for current paper when revealed
-def get_globs_dump_with_status(room):
-    globs = get_globs_dump(room)
-    show_logs = current_app.config["HEPCAT_SHOW_LOGS"]
-    if show_logs is not None:
-        globs["showAppLogs"] = show_logs
-    current_index = globs["current"]
-    paper = get_paper_at_queue_index(room, current_index)
-    if paper:
-        status = get_latest_history_status(paper)
-        globs["current_status"] = status
-        if globs["current_show"]:
-            history = get_paper_meeting_history_dump(paper)
-            globs["current_history"] = history
-            labels = get_paper_tag_labels(paper)
-            globs["current_tags"] = labels
-    return globs
-
-
-def get_queue(room):
-    globs = get_globs_dump(room)
-    current_index = globs["current"]
-    gq = get_or_create_gq(room)
-    papers = Paper.query.filter_by(queue_id=gq.id).order_by(Paper.queue_order).all()
-    paper_list = []
-    paper_prev = None
-    for index, paper in enumerate(papers):
-        _, conf_curr, enter, leave = get_enter_leave_conf_sets(paper_prev, paper)
-        paper_dump = paper_schema.dump(paper)
-        if index <= current_index:  # only show status for history
-            paper_dump["status"] = get_latest_room_history_status(paper)
-        paper_dump["conflicts"] = get_user_list_dump(conf_curr)
-        paper_dump["enter"] = get_user_list_dump(enter)
-        paper_dump["leave"] = get_user_list_dump(leave)
-        paper_enc = encrypt_obj_with_oid(paper_dump, paper.oid, paper.key)
-        paper_list.append(paper_enc)
-        paper_prev = paper
-    globs = get_globs_dump_with_status(room)
-    queue = {"paper_list_encrypted": paper_list, "globs": globs}
-    return queue
-
-
-def clear_all_stickies():
-    context_sticky = context_str_to_enum("Sticky")
-    count_deleted = History.query.filter_by(context_enum=context_sticky).delete()
-    log_print(f"this should clear {count_deleted} stickies")
-    return count_deleted
-
-
-def disconnect_non_admin_users():
-    connected_user_ids = connected_user_ids_list()
-    print(f"disconnect_non_admin_users: {connected_user_ids}")
-    for id in connected_user_ids:
-        user = User.query.filter_by(id=id).first()
-        if user and not user.role_is_admin:
-            print(f"disconnecting user {user.email}")
-            disconnect_user_by_id(id)
-
-
-def get_unconflicted_paper_keys(user):
-    conflict_papers = list(user.conf_papers)
-    conflict_ids = [p.nid for p in conflict_papers]
-    all_papers = Paper.query.all()
-    paper_keys = {}
-    for p in all_papers:
-        if p.nid not in conflict_ids:
-            entry = {"nid": p.nid, "key": p.key}
-            paper_keys[p.oid] = entry
-    return paper_keys
-
-
-def get_paper_keys_cache_name(user):
-    uid = user.id
-    name = f"paper_keys_{uid}"
-    return name
-
-
-def get_unconflicted_paper_keys_cached(user):
-    name = get_paper_keys_cache_name(user)
-    paper_keys = get_cache_var_dump(name, get_unconflicted_paper_keys, user, False)
-    return paper_keys
+###########
+#
+# Common functions that emit messages:
+#
+###########
 
 
 def broadcast_admin_alert(title, body):
@@ -566,68 +99,69 @@ def broadcast_admin_alert(title, body):
     emit("server_send_alert", data, room="admin")
 
 
-def emit_admin_uploads(broadcast):
+def emit_admin_data(*, broadcast):
+    # uploads
     uploads = FileUpload.query.all()
     uploads_dump = uploads_schema.dump(uploads)
     pending = pending_uploads(uploads)
-    data = {"uploads": uploads_dump, "pending": pending}
-    if broadcast:
-        emit("server_file_uploads", data, room="admin")
-    else:  # otherwise just to the client of this request
-        emit("server_file_uploads", data)
-
-
-def emit_admin_filters(broadcast):
+    uploads = {"uploads": uploads_dump, "pending": pending}
+    # filters
     filters = Filter.query.all()
     gui_names = [filter.name for filter in filters if filter.is_gui]
     text_names = [filter.name for filter in filters if not filter.is_gui]
     gui_names.sort()
     text_names.sort()
-    names = {"gui": gui_names, "text": text_names}
+    filters = {"gui": gui_names, "text": text_names}
+    # general
+    disable = setting_bool_get("disable_logins")
+    git_info = get_git_info_from_repo()
+    data = {
+        "disable_logins": disable,
+        "git_info": git_info,
+        "uploads": uploads,
+        "filters": filters,
+    }
+    # now send
     if broadcast:
-        emit("server_send_filter_names", names, room="admin")
+        emit("server_send_admin_data", data, room="admin")
     else:  # otherwise just to the client of this request
-        emit("server_send_filter_names", names)
+        emit("server_send_admin_data", data)
 
 
 def login_user_and_send_welcome(user):
     log_print(f"client connected - send welcome to {user.full_name}")
     user_dump = get_one_user_dump(user)
+    user_token = user.generate_token()  # remember on page refresh
     paper_keys = get_unconflicted_paper_keys_cached(user)
     all_rooms = get_all_rooms()
+    grid = get_grid_dump_cached(False)
+    queue = get_queue_dump_cached(user.room_name, False)
+    show_logs = current_app.config["HEPCAT_SHOW_LOGS"]
     data = {
+        "show_logs": show_logs,
         "user": user_dump,
-        "token": user.generate_token(),  # used to remember user after page refreshes
+        "token": user_token,
         "paper_keys": paper_keys,
         "all_rooms": all_rooms,
+        "grid": grid,
+        "queue": queue,
     }
-    if user.role_is_admin:
-        # data["all_users"] = all_users
-        data["admin_key"] = current_app.config["APP_INSTANCE"]
-        data["git_info"] = get_git_info_from_repo()
     emit("server_welcome", data)
     if user.role_is_admin:
-        disable = setting_bool_get("disable_logins")
-        emit("server_relay_disable_logins", disable)
-        emit_admin_uploads(False)
-        emit_admin_filters(False)
-    # if not user.role_is_super: (better safe than sorry)
-    # tell all admins about this login...
-    all_users = get_all_user_dict_dump_cached(True)
-    emit("server_refresh_all_users", all_users, room="admin")
-
-
-def update_all_paper_bar_status(bar):
-    papers = Paper.query.all()
-    for paper in papers:
-        below_bar = paper.sort_score < bar
-        paper.below_bar = below_bar
-        db.session.add(paper)
+        emit_admin_data(broadcast=False)
+        # Need dump of all users for this admin.
+        # So might as well share the full list with all admins.
+        all_users = get_all_user_dict_dump()
+        emit("server_refresh_all_users", all_users, room="admin")
+    else:
+        # Tell all admins, just about this login.
+        user_dump = get_one_user_dump(user)
+        emit("server_refresh_user", user_dump, room="admin")
 
 
 ###########
 #
-# Socket communications functions below here:
+# Socket handlers functions (decorated).
 #
 ###########
 
@@ -636,16 +170,12 @@ def update_all_paper_bar_status(bar):
 def socketio_error_handler(exc):
     current_app.logger.exception("Socket.IO error occurred: %s", str(exc))
     current_app.logger.exception("... exception type: %s", type(exc).__name__)
-    emit(
-        "server_send_flasher",
-        {
-            "message": (
-                "An unexpected server error has occurred. Please notify "
-                "an administrator."
-            ),
-            "type": "danger",
-        },
-    )
+    msg = "An unexpected server error has occurred. Please notify an administrator."
+    data = {
+        "message": msg,
+        "type": "danger",
+    }
+    emit("server_send_flasher", data)
 
 
 @socketio.on("connect")
@@ -665,11 +195,10 @@ def io_connect(auth):
 def io_disconnect(reason):
     log_print(f"io_disconnect with reason: {reason}")
     user = user_disconnect()
-    if user and not user.role_is_super:
-        # tell all admins about this disconnect...
+    if user:
+        # tell all admins about this disconnect.
         user_dump = get_one_user_dump(user)
         emit("server_refresh_user", user_dump, room="admin")
-        invalidate_user_dict_cache()
 
 
 ##########
@@ -679,6 +208,7 @@ def io_disconnect(reason):
 ##########
 
 
+# needed to avoid race condition with user keys
 @socketio.on("user_request_grid")
 @get_user_or_disconnect
 def user_request_grid(user):
@@ -687,12 +217,23 @@ def user_request_grid(user):
     emit("server_set_grid", grid_dump)
 
 
+# always needed on room change
 @socketio.on("user_request_queue")
 @get_user_or_disconnect
 def user_request_queue(user, room):
-    log_print(f"{user.full_name} requested queue for {room}")
-    data = get_queue_dump_cached(room, False)
-    emit("server_set_queue", data)
+    user.room_name = room
+    db.session.add(user)
+    if try_sql_commit():
+        log_print(f"{user.full_name} changed to {room}")
+        data = get_queue_dump_cached(room, False)
+        emit("server_set_queue", data)
+        # tell all admins about this room change
+        user_dump = get_one_user_dump(user)
+        emit("server_refresh_user", user_dump, room="admin")
+    else:
+        msg = f"Sorry something went wrong choosing room {room}."
+        reply = {"message": msg, "type": "warning"}
+        emit("server_send_flasher", reply)
 
 
 @socketio.on("user_set_sticky")
@@ -824,6 +365,7 @@ def user_change_password(user, data):
 @socketio.on("admin_become_user")
 @admin_required_for_io_no_record
 def admin_become_user(email):
+    old_user = get_current_user_or_none()
     new_user = User.query.filter_by(email=email).first()
     if not new_user:
         # this should never happen.
@@ -836,11 +378,19 @@ def admin_become_user(email):
     # forget socket under old user id
     old_user_id = get_user_id_from_session()
     forget_user_socket(old_user_id)
-    # new user may or may not be admin.
-    # if yes: already were in admin room - stay.
-    # if not: need to leave admin room.
+    # Is the new user an admin?
+    # if NO:
+    #   1. Need to leave admin room.
+    #   2. Need to tell all admins about this logout.
+    # if YES:  (no special actions needed)
+    #   1. Already was in admin room - just stay.
+    #   2. The "welcome" below will refresh user list for all.
     if not new_user.role_is_admin:
         leave_room("admin")
+        # now that this socket is forgotten,
+        # tell all admins, just about this one logout.
+        user_dump = get_one_user_dump(old_user)
+        emit("server_refresh_user", user_dump, room="admin")
     # record new user socket and session, then emit welcome
     user_record_socket_and_session(new_user)
     login_user_and_send_welcome(new_user)
@@ -853,8 +403,8 @@ def admin_prev_paper(room):
     zero_or_inc_current_index(room, -1)  # also "hides" current
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs = get_globs_dump_with_status(room)
-    emit("server_set_globs", globs, broadcast=True)
+    data = get_globs_dump_with_status(room)
+    emit("server_set_queue", data, broadcast=True)
 
 
 @socketio.on("admin_next_paper")
@@ -864,8 +414,8 @@ def admin_next_paper(room):
     zero_or_inc_current_index(room, +1)  # also "hides" current
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs = get_globs_dump_with_status(room)
-    emit("server_set_globs", globs, broadcast=True)
+    data = get_globs_dump_with_status(room)
+    emit("server_set_queue", data, broadcast=True)
 
 
 @socketio.on("admin_advance_queue")
@@ -894,10 +444,10 @@ def admin_advance_queue(data):
         "grid_update": grid_paper_dump,
     }
     update_encrypted = encrypt_obj_with_oid(update, paper.oid, paper.key)
-    globs = get_globs_dump_with_status(room)
+    data = get_globs_dump_with_status(room)
     # globs['update'] = update # only send encrypted version!
-    globs["update_encrypted"] = update_encrypted
-    emit("server_set_globs", globs, broadcast=True)
+    data["update_encrypted"] = update_encrypted
+    emit("server_set_queue", data, broadcast=True)
 
 
 @socketio.on("admin_show_current")
@@ -907,8 +457,8 @@ def admin_show_current(room):
     show_current_paper(room)
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs = get_globs_dump_with_status(room)
-    emit("server_set_globs", globs, broadcast=True)
+    data = get_globs_dump_with_status(room)
+    emit("server_set_queue", data, broadcast=True)
 
 
 @socketio.on("admin_hide_queue")
@@ -921,8 +471,8 @@ def admin_hide_queue(data):
     set_hide_queue(room, hide, message)
     try_sql_commit()
     invalidate_queue_cache(room)
-    globs = get_globs_dump_with_status(room)
-    emit("server_set_globs", globs, broadcast=True)
+    data = get_globs_dump_with_status(room)
+    emit("server_set_queue", data, broadcast=True)
     if hide:
         reply = "Queue is now hidden for everyone except the admin."
     else:
@@ -979,7 +529,7 @@ def admin_save_filter(data):
         filter = Filter(name=name, is_gui=is_gui, text=text)
     db.session.add(filter)
     if try_sql_commit():
-        emit_admin_filters(True)
+        emit_admin_data(broadcast=True)
         msg = f"Saved filter named: {name}."
         data = {"message": msg, "type": "success"}
         emit("server_send_flasher", data)
@@ -1017,7 +567,7 @@ def admin_delete_filter(name):
     num_deleted = Filter.query.filter_by(name=name).delete()
     log_print(f"delete {num_deleted} filters (should be 1).")
     if try_sql_commit():
-        emit_admin_filters(True)
+        emit_admin_data(broadcast=True)
         msg = f"Deleted filter with name: {name}"
         log_print(msg)
         data = {"message": msg, "type": "success"}
@@ -1073,7 +623,7 @@ def admin_set_disable_logins(disable):
     log_print(f"admin_set_disable_logins {disable}")
     setting_bool_set("disable_logins", disable)
     try_sql_commit()
-    emit("server_relay_disable_logins", disable, broadcast=True)
+    emit_admin_data(broadcast=True)
     if disable:
         disconnect_non_admin_users()
 
@@ -1119,9 +669,9 @@ def admin_upload_file(contents):
     if header_type == "users":
         disconnect_all_users()
         return  # logging out all users, so no need to send updates
-    emit_admin_uploads(True)
+    emit_admin_data(broadcast=True)
     if header_type == "filters":
-        emit_admin_filters(True)
+        emit_admin_data(broadcast=True)
     if header_type in ["chair", "history"]:
         # reload will cause new globals and grid, which are needed
         emit("server_reload_user", broadcast=True)
@@ -1129,6 +679,16 @@ def admin_upload_file(contents):
     msg = f"File upload ({header_type}) successful. {msg}"
     data = {"message": msg, "type": "success"}
     emit("server_send_flasher", data)
+
+
+@socketio.on("admin_request_download")
+@admin_required_for_io_no_record
+def admin_request_download(kind):
+    msg = f"Received admin_request_download {kind}"
+    log_print(msg)
+    filename, key = write_file_for_download(kind)
+    data = {"filename": filename, "key": key}
+    emit("server_send_download", data)
 
 
 @socketio.on("admin_wipe_database")
@@ -1145,11 +705,3 @@ def admin_load_database():
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
         playback_recorded_actions(user_set_sticky)
-
-
-def wipe_db_and_disconnect_all():
-    log_print("about to wipe database...")
-    invalidate_cache_all()
-    disconnect_all_users()  # do this first because users in db
-    wipe_db_clean()
-    remove_upload_folder()  # clean up any files

@@ -20,6 +20,7 @@ import ModalDialogContext from './contexts/ModalDialogContext';
 import ConfirmationBoxContext from './contexts/ConfirmationBoxContext';
 import StorageContext from './contexts/StorageContext';
 import ServerAlertContext from './contexts/ServerAlertContext';
+import DownloadsContext from './contexts/DownloadsContext';
 
 export default function App() {
   return (
@@ -34,24 +35,26 @@ export default function App() {
                     <AdminContext>
                       <KeyContext>
                         <UserContext>
-                          <ServerAlertContext>
-                            <StickyContext>
-                              <GridContext>
-                                <CountContext>
-                                  <QueueContext>
-                                    <FilterContext>
-                                      <PreferencesContext>
-                                        <ModalDialog />
-                                        <ConfirmationBox />
-                                        <HeaderBar />
-                                        <AppRoutes />
-                                      </PreferencesContext>
-                                    </FilterContext>
-                                  </QueueContext>
-                                </CountContext>
-                              </GridContext>
-                            </StickyContext>
-                          </ServerAlertContext>
+                          <DownloadsContext>
+                            <ServerAlertContext>
+                              <StickyContext>
+                                <GridContext>
+                                  <CountContext>
+                                    <QueueContext>
+                                      <FilterContext>
+                                        <PreferencesContext>
+                                          <ModalDialog />
+                                          <ConfirmationBox />
+                                          <HeaderBar />
+                                          <AppRoutes />
+                                        </PreferencesContext>
+                                      </FilterContext>
+                                    </QueueContext>
+                                  </CountContext>
+                                </GridContext>
+                              </StickyContext>
+                            </ServerAlertContext>
+                          </DownloadsContext>
                         </UserContext>
                       </KeyContext>
                     </AdminContext>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DateTime } from 'luxon';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketIO, useSocketHandler } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 
 const adminContext = React.createContext();
@@ -8,7 +8,7 @@ const adminContext = React.createContext();
 const notSetYetMsg = '(not set)';
 
 export default function AdminContext({ children }) {
-  const { socketEmit, registerIoHandlers } = useSocketIO();
+  const { socketEmit } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const [disableLogins, setDisableLogins] = useState(false);
   const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
@@ -19,7 +19,6 @@ export default function AdminContext({ children }) {
   const [locHideMsg, setLocHideMsg] = useState(''); // text box msg
   const [updateStatus, setUpdateStatus] = useState('Tabled');
   const [gitInfo, setGitInfo] = useState('');
-  const [adminKey, setAdminKey] = useState(null);
   const [allUsers, setAllUsers] = useState({});
   const [showDangerous, setShowDangerous] = useState(false);
 
@@ -63,19 +62,12 @@ export default function AdminContext({ children }) {
     [disableLogins, setDisableLogins, socketEmit, controlledLog]
   );
 
-  // called by server broadcast of a change to some switch.
-  const receiveDisableLogins = useCallback(
-    (disabled) => {
-      controlledLog('receiveDisableLogin', disabled);
-      setDisableLogins(disabled);
-    },
-    [setDisableLogins, controlledLog]
-  );
-
-  const receiveFileUploads = useCallback(
-    (file_uploads) => {
-      controlledLog('received file uploads:', file_uploads);
-      setFileUploads(file_uploads);
+  const receiveAdminData = useCallback(
+    (data) => {
+      controlledLog('receiveAdminData:', data);
+      setDisableLogins(data.disable_logins);
+      setGitInfo(data.git_info);
+      setFileUploads(data.uploads);
     },
     [setFileUploads, controlledLog]
   );
@@ -111,13 +103,13 @@ export default function AdminContext({ children }) {
   const receiveRefreshUser = useCallback(
     (oneUser) => {
       controlledLog('received refresh for one user:', oneUser);
-      controlledLog(oneUser);
-      const allUsersCopy = { ...allUsers };
       const email = oneUser.email;
-      allUsersCopy[email] = oneUser;
-      setAllUsers(allUsersCopy);
+      setAllUsers((prevAllUsers) => ({
+        ...prevAllUsers,
+        [email]: oneUser,
+      }));
     },
-    [controlledLog, allUsers, setAllUsers]
+    [controlledLog, setAllUsers]
   );
 
   const receiveRefreshAllUsers = useCallback(
@@ -128,29 +120,13 @@ export default function AdminContext({ children }) {
     [controlledLog, setAllUsers]
   );
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_relay_disable_logins: receiveDisableLogins,
-      server_probe_by_gui: receiveProbeGui,
-      server_probe_by_text: receiveProbeText,
-      server_file_uploads: receiveFileUploads,
-      server_refresh_user: receiveRefreshUser,
-      server_refresh_all_users: receiveRefreshAllUsers,
-    };
-  }, [
-    receiveDisableLogins,
-    receiveProbeGui,
-    receiveProbeText,
-    receiveFileUploads,
-    receiveRefreshUser,
-    receiveRefreshAllUsers,
-  ]);
-
-  useEffect(() => {
-    const context = 'AdminContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'AdminContext';
+  useSocketHandler('server_send_admin_data', receiveAdminData, ctx);
+  useSocketHandler('server_probe_by_gui', receiveProbeGui, ctx);
+  useSocketHandler('server_probe_by_text', receiveProbeText, ctx);
+  useSocketHandler('server_refresh_user', receiveRefreshUser, ctx);
+  useSocketHandler('server_refresh_all_users', receiveRefreshAllUsers, ctx);
 
   return (
     <adminContext.Provider
@@ -172,8 +148,6 @@ export default function AdminContext({ children }) {
         setLocHideMsg,
         showDangerous,
         setShowDangerous,
-        adminKey,
-        setAdminKey,
         gitInfo,
         setGitInfo,
         allUsers,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketHandler } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 import { useUser } from './UserContext';
 import { useKey } from './KeyContext';
@@ -8,7 +8,6 @@ import { useSticky } from '../contexts/StickyContext';
 const gridContext = React.createContext();
 
 export default function GridContext({ children }) {
-  const { registerIoHandlers } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { roomChoice } = useUser();
   const { decryptThenHandleObj, decryptThenHandleArray } = useKey();
@@ -24,9 +23,7 @@ export default function GridContext({ children }) {
   const [gridConflicts, setGridConflicts] = useState(0);
 
   const gridNidIsValid = useCallback(
-    (nid) => {
-      return Object.hasOwn(gridPapers, nid);
-    },
+    (nid) => !!gridPapers?.[nid],
     [gridPapers]
   );
 
@@ -43,13 +40,10 @@ export default function GridContext({ children }) {
       const above = [];
       const below = [];
       for (const nid of nidsInOrder) {
-        if (!Object.hasOwn(papers, nid)) {
-          // this should not happen, and is just here for a sanity check.
-          controlledLog('*** cannot find grid entry for nid:', nid);
-          continue;
-        }
-        const p = papers[nid];
-        if (gridInRoom && p.paper_room !== roomChoice) continue; // skip papers for other rooms?
+        const p = papers?.[nid];
+        if (!p) continue; // sanity check -- should not happen
+        // if in room, skip papers for other rooms
+        if (gridInRoom && p.paper_room !== roomChoice) continue;
         if (p.below_bar) {
           below.push(nid);
         } else {
@@ -58,7 +52,7 @@ export default function GridContext({ children }) {
       }
       return { above, below };
     },
-    [gridInRoom, roomChoice, controlledLog]
+    [gridInRoom, roomChoice]
   );
 
   // called due to sticky or queue update
@@ -67,10 +61,11 @@ export default function GridContext({ children }) {
       const nid = grid_update.nid;
       const idx = grid_update.idx;
       checkStickyIdIsValid(nid, idx);
-      if (!nid || !Object.hasOwn(gridPapers, nid)) return;
-      const newGridPapers = { ...gridPapers };
-      newGridPapers[nid] = grid_update;
-      setGridPapers(newGridPapers); // force update to papers variable
+      if (!nid || !gridPapers?.[nid]) return;
+      setGridPapers((prevGridPapers) => ({
+        ...prevGridPapers,
+        [nid]: grid_update,
+      }));
     },
     [gridPapers, setGridPapers, checkStickyIdIsValid]
   );
@@ -108,7 +103,7 @@ export default function GridContext({ children }) {
   }, [gridMode, setGridInRoom]);
 
   // sort grid papers into above and below.
-  // this happens whenever grid changes.
+  // this happens whenever grid data changes.
   // also happens when grid mode changes because of sortGridPapers.
   useEffect(() => {
     const { above, below } = sortGridPapers(gridPapers, gridNidsInOrder);
@@ -140,18 +135,10 @@ export default function GridContext({ children }) {
     [decryptThenHandleObj, updateGridEntry]
   );
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_set_grid: receiveGrid,
-      server_set_sticky: receiveSticky,
-    };
-  }, [receiveGrid, receiveSticky]);
-
-  useEffect(() => {
-    const context = 'GridContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'GridContext';
+  useSocketHandler('server_set_grid', receiveGrid, ctx);
+  useSocketHandler('server_set_sticky', receiveSticky, ctx);
 
   return (
     <gridContext.Provider

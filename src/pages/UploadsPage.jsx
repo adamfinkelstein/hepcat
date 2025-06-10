@@ -1,5 +1,6 @@
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
+import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { DateTime } from 'luxon';
 import { useAdmin } from '../contexts/AdminContext';
@@ -16,7 +17,7 @@ export default function UploadsPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { fontPref } = usePreferences();
-  const { fileUploads, adminKey } = useAdmin();
+  const { fileUploads } = useAdmin();
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];
   const uploadTitle = uploadList.length
@@ -26,7 +27,7 @@ export default function UploadsPage() {
     ? 'Pending Files:'
     : 'No files pending.';
 
-  function handleSubmit(event) {
+  const handleSendBtn = (event) => {
     event.preventDefault();
     const fileUp = document.getElementById('form-file-upload');
     if (!fileUp.value) return;
@@ -45,16 +46,22 @@ export default function UploadsPage() {
     controlledLog(file);
     socketEmit('admin_file_upload', file);
     fileUp.value = null; // reset the upload
-    const msg = "Sent file '" + fileName + "' for upload...";
+    const msg = "Sent file '" + fileName + "' for upload.";
     flash(msg, 'success');
-  }
+  };
 
-  function formatUpload(upload) {
+  const formatUpload = (upload) => {
     const fmt = 'ccc MMM d, h:mm a ZZZZ';
     const when = DateTime.fromISO(upload.when).toLocal().toFormat(fmt);
     const msg = upload.file + ' (' + upload.count + ' uploaded ' + when + ')';
     return msg;
-  }
+  };
+
+  const handleRequestDownloadBtn = (kind) => {
+    socketEmit('admin_request_download', kind);
+    const msg = "Request file '" + kind + "' for download.";
+    flash(msg, 'success');
+  };
 
   return (
     <Container className="UploadsPage mt-3">
@@ -72,7 +79,7 @@ export default function UploadsPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                onClick={(e) => handleSubmit(e)}
+                onClick={(e) => handleSendBtn(e)}
               >
                 Send File
               </button>
@@ -105,36 +112,30 @@ export default function UploadsPage() {
           </div>
           <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
             <Stack direction="horizontal">
-              <a
-                className="btn btn-primary"
-                href={'/admin/download_csv/filters/' + adminKey}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Button
+                className="btn-warning"
+                onClick={() => handleRequestDownloadBtn('filters')}
               >
                 Download Filters
-              </a>
+              </Button>
               &nbsp;&nbsp;Download a CSV containing all current filters.
             </Stack>
             <Stack direction="horizontal">
-              <a
-                className="btn btn-warning"
-                href={'/admin/download_csv/results/' + adminKey}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Button
+                className="btn-warning"
+                onClick={() => handleRequestDownloadBtn('results')}
               >
                 Download Results
-              </a>
+              </Button>
               &nbsp;&nbsp;Download a CSV with the final status of all papers.
             </Stack>
             <Stack direction="horizontal">
-              <a
-                className="btn btn-warning"
-                href={'/admin/download_zip/' + adminKey}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Button
+                className="btn-warning"
+                onClick={() => handleRequestDownloadBtn('zip')}
               >
                 Download ZIP
-              </a>
+              </Button>
               &nbsp;&nbsp;Download a ZIP containing CSVs describing database.
             </Stack>
             <DangerousOps />

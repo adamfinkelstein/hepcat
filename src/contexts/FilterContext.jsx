@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketHandler } from './SocketIOContext';
 
 const filterContext = React.createContext();
 
 export default function FilterContext({ children }) {
   const { controlledLog } = useControlledLog();
-  const { registerIoHandlers } = useSocketIO();
   const [statusCheckbox, setStatusCheckbox] = useState([]);
   const [onlyCheckbox, setOnlyCheckbox] = useState([]);
   const [aboveScore, setAboveScore] = useState(-9.0);
@@ -41,25 +40,17 @@ export default function FilterContext({ children }) {
   );
 
   const receiveFilterNames = useCallback(
-    (filters) => {
-      setAllGuiFilterNames(filters.gui);
-      setAllTextFilterNames(filters.text);
+    (admin_data) => {
+      setAllGuiFilterNames(admin_data.filters.gui);
+      setAllTextFilterNames(admin_data.filters.text);
     },
     [setAllGuiFilterNames, setAllTextFilterNames]
   );
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_load_filter: receiveOneFilter,
-      server_send_filter_names: receiveFilterNames,
-    };
-  }, [receiveOneFilter, receiveFilterNames]);
-
-  useEffect(() => {
-    const context = 'FilterContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'FilterContext';
+  useSocketHandler('server_load_filter', receiveOneFilter, ctx);
+  useSocketHandler('server_send_admin_data', receiveFilterNames, ctx);
 
   return (
     <filterContext.Provider

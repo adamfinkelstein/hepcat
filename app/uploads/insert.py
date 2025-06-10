@@ -1,7 +1,6 @@
 import os
 import shutil
 import csv
-import uuid
 from .. import db, log_print, current_app
 from ..util import write_data_to_file, timer_start, timer_end
 from ..models.tables import (
@@ -35,6 +34,7 @@ from . import (
     get_paper_room_name_or_none,
     get_or_make_upload_folder,
     file_upload_name,
+    gen_random_key,
 )
 from .delete import delete_prev_file_uploads, delete_non_bbs_history, csvDeleteFunctions
 
@@ -197,12 +197,6 @@ def journal_only_from_track(track):
     return track == "Journal Only Track"
 
 
-def gen_random_key(max_chars):
-    hex = uuid.uuid4().hex
-    hex = hex[:max_chars]  # 4 billion options on 8 hex digits
-    return hex
-
-
 def gen_unique_keys(n, max_chars):
     oids = []
     while len(oids) < n:
@@ -264,6 +258,13 @@ def ensure_label(label_type, name):
     return label
 
 
+def ensure_thumbnail(thumbnail, nid):
+    if not thumbnail or "fakeimg.pl" in thumbnail:
+        # replace fake images from fakeimg.pl with picsum.photos
+        thumbnail = f"https://picsum.photos/seed/{nid}/600/450"
+    return thumbnail
+
+
 # Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
@@ -282,6 +283,7 @@ def insert_paper_rows(rows):
         nid = sid_to_num(sid)
         oid = oids.pop(0)
         key = keys.pop(0)
+        thumbnail = ensure_thumbnail(thumbnail, nid)
         paper_room_row = (sid, room)  # shoehorn 2025 format into earlier implementation
         paper_room_rows.append(paper_room_row)
         paper = Paper(

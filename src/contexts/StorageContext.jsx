@@ -26,7 +26,7 @@ export default function StorageContext({ children }) {
   const ensureInitialized = useCallback(() => {
     // storageLog('+++ StorageContext: check if initialized');
     if (isInitialized) return;
-    // storageLog('=== StorageContext: Initializing storage...');
+    // storageLog('=== StorageContext: Initializing storage.');
     setIsInitialized(true);
     const appVersion = process.env.HEPCAT_VERSION;
     const appInLocalStorage = window.localStorage.getItem('app_version');

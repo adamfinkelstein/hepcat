@@ -126,7 +126,7 @@ export default function KeyContext({ children }) {
 
   const decryptThenHandleObj = useCallback(
     async (obj, callback) => {
-      if (!obj || !obj.oid || oidIsConflict(obj.oid)) return;
+      if (!obj?.oid || oidIsConflict(obj.oid)) return;
       const json = await decryptMessageByOid(obj.enc, obj.oid);
       if (!json) return;
       debugCheckString(obj, json);
@@ -138,6 +138,7 @@ export default function KeyContext({ children }) {
 
   const decryptThenHandleArray = useCallback(
     async (arr, callback) => {
+      if (!arr) return;
       const result = await Promise.all(arr.map(decryptObjectOrNull));
       callback(result);
     },
