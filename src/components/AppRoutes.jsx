@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import { Routes, Route, Navigate } from 'react-router';
 import { useUser } from '../contexts/UserContext';
 import { useSocketIO } from '../contexts/SocketIOContext';

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import os
 import shutil
 import pickle
@@ -23,7 +26,6 @@ def init_util(log_print):
 
 
 def log_print_util(msg):
-    global log_print_set_on_init
     if log_print_set_on_init is None:
         print(f"no log so print: {msg}")
     else:
@@ -45,7 +47,6 @@ def timer_start():
 
 
 def timer_end(msg="", reset=False):
-    global time_start
     if not current_app.config["HEPCAT_SHOW_TIMERS"]:
         return
     time_end = timer()

@@ -58,3 +58,27 @@ repos:
         entry: npx prettier
         language: node
         types_or: [javascript, css, markdown]
+
+  # license header checker
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: Add license header to Python files
+        files: \.py$
+        args:
+          - --license-filepath
+          - LICENSE-HEADER.txt
+          - --comment-style
+          - '#'
+          - --use-current-year
+      - id: insert-license
+        name: Add license header to JavaScript files
+        files: \.(js|jsx)$
+        exclude: node_modules/
+        args:
+          - --license-filepath
+          - LICENSE-HEADER.txt
+          - --comment-style
+          - '//'
+          - --use-current-year

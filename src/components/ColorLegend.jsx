@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import Stack from 'react-bootstrap/Stack';
 import { useCount } from '../contexts/CountContext';
 import { useUser } from '../contexts/UserContext';

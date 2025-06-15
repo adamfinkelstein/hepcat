@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from config import subdir_path, env_get_str, env_get_bool
 
 if env_get_bool("USE_EVENTLET"):

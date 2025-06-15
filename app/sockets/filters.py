@@ -1,13 +1,11 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import re
 import json
 from .. import log_print
 from .set_ops import set_op_make_parser, set_op_parse_expr
 from ..models.label_util import label_str_to_enum
-from ..models.history_util import (
-    get_paper_bbs_status,
-    get_latest_history_status,
-    get_room_history_count,
-)
 from ..models.history_util import (
     get_paper_bbs_status,
     get_latest_history_status,

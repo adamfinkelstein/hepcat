@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import uuid
 from flask import Flask, current_app
 from flask_bootstrap import Bootstrap
@@ -55,7 +58,6 @@ def log_print_uninitialized(msg):
 
 
 def log_print(msg, level="info", app=None):
-    global log_initialized
     msg = str(msg)  # cast to string in case it is something else
     if not log_initialized:
         log_print_uninitialized(msg)
