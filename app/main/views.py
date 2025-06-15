@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import os
 from smtplib import SMTPException
 from flask import send_from_directory, request, render_template, url_for

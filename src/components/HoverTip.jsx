@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import Button from 'react-bootstrap/Button';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';

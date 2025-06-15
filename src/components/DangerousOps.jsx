@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import { Button, Stack, Collapse } from 'react-bootstrap';
 import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 import { useControlledLog } from '../contexts/ControlledLogContext';

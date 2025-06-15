@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { useCount } from './CountContext';
 import { useStorage } from './StorageContext';

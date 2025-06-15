@@ -1,9 +1,12 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from tests.hepcat_test_case import HepcatTestCase
 from app.util import read_text_from_file
 
 """
 This class tests the complete list of socket events
-as implemented in apps/sockets/routes.py 
+as implemented in apps/sockets/routes.py
 (but not the on_error handler) -- listed here:
 
 * connect
@@ -37,7 +40,7 @@ as implemented in apps/sockets/routes.py
 Some limitations that could be addressed in future updates:
 - Most calls cover legal paths and skip failure modes.
 - Thus much of the error-handling code is not exercised.
-- Generally, return values are not checked, 
+- Generally, return values are not checked,
   - except for message "names". Contents are ignored.
 - Also, state of app is not checked.
   - For example, changing bar does not check bar.

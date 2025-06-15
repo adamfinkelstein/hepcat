@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from flask import abort, send_file
 from . import admin
 from .downloads import verify_download_key

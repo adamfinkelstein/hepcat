@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from .. import db, log_print

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import os
 import platform
 import time
@@ -325,7 +328,6 @@ def start_timer():
 
 
 def elapsed_time():
-    global START_TIME
     end = time.time()
     diff = end - START_TIME
     diff = round(diff, 3)

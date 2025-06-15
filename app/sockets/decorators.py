@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import json
 from functools import wraps
 from flask import current_app
@@ -26,13 +29,11 @@ recorded_functions = {}
 
 
 def remember_function_by_name(f):
-    global recorded_functions
     func_name = f.__name__
     recorded_functions[func_name] = f
 
 
 def playback_recorded_actions(handle_sticky_func):
-    global recorded_functions
     log_print("playback_recorded_actions")
     actions = Action.query.order_by(Action.id).all()
     if not actions:

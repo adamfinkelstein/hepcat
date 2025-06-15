@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import uuid
 from .. import current_app
 from ..util import make_path_if_needed, remove_folder_tree_if_exists

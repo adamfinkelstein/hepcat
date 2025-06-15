@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from tests.hepcat_test_case import HepcatTestCase
 from app import db
 from app.models.tables import User, Paper, conflicts, Label, LabelType

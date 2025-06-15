@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Adam Finkelstein
+# Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 from os import getcwd, getenv
 from os.path import join
 from dotenv import load_dotenv

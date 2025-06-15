@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Adam Finkelstein
+// Licensed under the Apache 2.0 License. See LICENSE file for details.
+
 import TextPreferences from '../components/TextPreferences';
 import ColorPreferences from '../components/ColorPreferences';
 import Container from 'react-bootstrap/Container';
