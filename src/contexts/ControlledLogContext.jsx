@@ -3,9 +3,7 @@ import React, { useState } from 'react';
 const controlledLogContext = React.createContext();
 
 export default function ControlledLogContext({ children }) {
-  const [showLogs, setShowLogs] = useState(
-    Boolean(process.env.HEPCAT_SHOW_LOGS)
-  );
+  const [showLogs, setShowLogs] = useState(true);
 
   const controlledLog = (...output) => {
     if (showLogs) {

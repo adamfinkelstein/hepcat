@@ -1,7 +1,7 @@
 import re
 import json
 from .. import log_print
-from .set_op import set_op_make_parser, set_op_parse_expr
+from .set_ops import set_op_make_parser, set_op_parse_expr
 from ..models.label_util import label_str_to_enum
 from ..models.history_util import (
     get_paper_bbs_status,

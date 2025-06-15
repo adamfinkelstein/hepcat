@@ -34,10 +34,10 @@ def setting_float_set(name, val):
     setting_var_set(name, val)
 
 
-def setting_float_get(name):
+def setting_float_get(name, default=0.0):
     val = setting_var_get(name)
     if val is None:
-        return 0.0
+        return default
     return val
 
 
@@ -46,8 +46,8 @@ def setting_bool_set(name, val):
     setting_var_set(name, val)
 
 
-def setting_bool_get(name):
+def setting_bool_get(name, default=False):
     val = setting_var_get(name)
     if val is None:
-        return False
+        return default
     return val

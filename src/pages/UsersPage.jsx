@@ -92,7 +92,9 @@ export default function UsersPage() {
                     <td>{oneUser.email}</td>
                     <td>{oneUser.rooms?.replace(/Room_/g, '')}</td>
                     <td>
-                      {oneUser.is_online && <Badge bg="success">Online</Badge>}
+                      {oneUser.is_online && (
+                        <Badge bg="success">{oneUser.room_name}</Badge>
+                      )}
                     </td>
                   </tr>
                 );

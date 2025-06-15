@@ -8,7 +8,6 @@ const socketIOContext = React.createContext();
 let errorCallback = null;
 
 const TOKEN_STORAGE_KEY = 'io_login_token';
-const verboseHandlerRegistration = false;
 
 export default function SocketIOContext({ children }) {
   const [socket, setSocket] = useState(undefined);
@@ -72,8 +71,8 @@ export default function SocketIOContext({ children }) {
 
   const socketEmit = useCallback(
     (message, data) => {
-      if (!socket || !socket.emit) {
-        controlledLog('socket does not exist, message not sent.');
+      if (!socket?.connected || !socket?.emit) {
+        controlledLog('socket does not exist, message not sent:', message);
         return;
       }
       if (data !== undefined) {
@@ -85,32 +84,6 @@ export default function SocketIOContext({ children }) {
       }
     },
     [socket, controlledLog]
-  );
-
-  const registerOnOrOffHandlers = useCallback(
-    (handlers, contextName, onOrOff) => {
-      if (socket && onOrOff in socket) {
-        if (verboseHandlerRegistration) {
-          const action = onOrOff === 'on' ? 'register' : 'cleanup';
-          const msg = action + ' socket handlers in ' + contextName;
-          controlledLog(msg);
-        }
-        Object.entries(handlers).forEach(([event, handler]) => {
-          socket[onOrOff](event, handler);
-        });
-      }
-    },
-    [socket, controlledLog]
-  );
-
-  const registerIoHandlers = useCallback(
-    (handlers, contextName) => {
-      registerOnOrOffHandlers(handlers, contextName, 'on');
-      return () => {
-        registerOnOrOffHandlers(handlers, contextName, 'off');
-      };
-    },
-    [registerOnOrOffHandlers]
   );
 
   const handleDisconnect = useCallback(
@@ -200,7 +173,7 @@ export default function SocketIOContext({ children }) {
     s.on('disconnect', handleDisconnect);
 
     return () => {
-      // XXX Is "off" to deregister these methods needed/correct???
+      // these are nice, not strictly needed due to disconnect below.
       s.off('connect_error', handleConnectError);
       s.off('disconnect', handleDisconnect);
       s.disconnect();
@@ -210,12 +183,11 @@ export default function SocketIOContext({ children }) {
   return (
     <socketIOContext.Provider
       value={{
+        socket,
         socketLogin,
         socketLogout,
-        socket,
         socketEmit,
         socketSetAuthToken,
-        registerIoHandlers,
       }}
     >
       {children}
@@ -225,4 +197,30 @@ export default function SocketIOContext({ children }) {
 
 export function useSocketIO() {
   return React.useContext(socketIOContext);
+}
+
+// Custom hook for registering socket handler
+export function useSocketHandler(event, handler, handlerName) {
+  const { socket } = useSocketIO();
+  const { controlledLog } = useControlledLog();
+
+  const registerOnOrOffHandler = useCallback(
+    (event, handler, handlerName, onOrOff) => {
+      if (!socket) return;
+      const verbose = false;
+      if (verbose) {
+        const msg = onOrOff + ' socket ' + event + ' handler ' + handlerName;
+        controlledLog(msg);
+      }
+      socket[onOrOff](event, handler);
+    },
+    [socket, controlledLog]
+  );
+
+  useEffect(() => {
+    registerOnOrOffHandler(event, handler, handlerName, 'on');
+    return () => {
+      registerOnOrOffHandler(event, handler, handlerName, 'off');
+    };
+  }, [registerOnOrOffHandler, event, handler, handlerName]);
 }

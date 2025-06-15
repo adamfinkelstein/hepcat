@@ -45,13 +45,12 @@ export default function FlashContext({ children }) {
   );
 
   const flash = useCallback(
-    (message, type, duration) => {
+    // default duration is 4 seconds
+    (message, type, duration = 4) => {
       const id = ++flashId;
-      if (duration === undefined) {
-        // default duration is 4 seconds
-        duration = 4;
-      }
-
+      // Set the array of messages to be:
+      // - the old array, but remove any that match the new message
+      // - followed by the new message
       setMessages((messages) => [
         ...messages.filter((msg) => msg.message !== message),
         { message, type, flashId: id, visible: true },

@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
 import { useFlasher } from './FlasherContext';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketHandler } from './SocketIOContext';
 import { useUser } from './UserContext';
 import { useModalDialog } from '../contexts/ModalDialogContext';
 
@@ -11,7 +11,6 @@ export default function ServerAlertContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { revealModalDialog } = useModalDialog();
-  const { registerIoHandlers } = useSocketIO();
   const { isAdmin } = useUser();
 
   const receiveFlash = useCallback(
@@ -40,19 +39,11 @@ export default function ServerAlertContext({ children }) {
     window.location.reload();
   }, [controlledLog]);
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_send_flasher: receiveFlash,
-      server_send_alert: receiveAlert,
-      server_reload_user: receiveReload,
-    };
-  }, [receiveFlash, receiveAlert, receiveReload]);
-
-  useEffect(() => {
-    const context = 'ServerAlertContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'ServerAlertContext';
+  useSocketHandler('server_send_flasher', receiveFlash, ctx);
+  useSocketHandler('server_send_alert', receiveAlert, ctx);
+  useSocketHandler('server_reload_user', receiveReload, ctx);
 
   return (
     <serverAlertContext.Provider value={{}}>

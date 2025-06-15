@@ -1,19 +1,16 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketIO, useSocketHandler } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 import { useKey } from './KeyContext';
 import { useStorage } from './StorageContext';
-import { useAdmin } from './AdminContext';
 
 const userContext = React.createContext();
 
 export default function UserContext({ children }) {
-  const { socket, socketEmit, socketSetAuthToken, registerIoHandlers } =
-    useSocketIO();
-  const { controlledLog } = useControlledLog();
+  const { socket, socketEmit, socketSetAuthToken } = useSocketIO();
+  const { controlledLog, setShowLogs } = useControlledLog();
   const { setPaperKeys } = useKey();
   const { setStorageUserID } = useStorage();
-  const { setAdminKey, setGitInfo } = useAdmin();
 
   const [user, setUser] = useState(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,37 +32,27 @@ export default function UserContext({ children }) {
 
   const receiveWelcome = useCallback(
     (data) => {
+      setShowLogs(data.show_logs); // this should be before next line
       controlledLog('received welcome:', data);
       socketSetAuthToken(data.token);
       setPaperKeys(data.paper_keys);
       setAllRooms(data.all_rooms);
-      const user = data?.user;
-      const email = user?.email;
-      const room = user?.room_name;
-      const isAdmin = user?.role_is_admin;
-      setUser(user);
-      setStorageUserID(email);
-      setRoomChoice(room);
-      setIsAdmin(isAdmin);
-      if (isAdmin) {
-        setAdminKey(data.admin_key);
-        setGitInfo(data.git_info);
-      }
+      setUser(data.user);
+      setIsAdmin(data.user.role_is_admin);
+      setRoomChoice(data.user.room_name);
+      setStorageUserID(data.user.email);
       socketEmit('user_request_grid');
-      socketEmit('user_request_queue', roomChoice);
     },
     [
+      socketEmit,
       controlledLog,
+      setShowLogs,
       setUser,
       setStorageUserID,
       setIsAdmin,
-      setAdminKey,
-      setGitInfo,
       setPaperKeys,
       setAllRooms,
       socketSetAuthToken,
-      roomChoice,
-      socketEmit,
     ]
   );
 
@@ -77,30 +64,13 @@ export default function UserContext({ children }) {
       setUser(null);
       setStorageUserID(null);
       setIsAdmin(false);
-      setAdminKey('');
       setPaperKeys(null);
     }
-  }, [
-    user,
-    socket,
-    setUser,
-    setStorageUserID,
-    setIsAdmin,
-    setAdminKey,
-    setPaperKeys,
-  ]);
+  }, [user, socket, setUser, setStorageUserID, setIsAdmin, setPaperKeys]);
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_welcome: receiveWelcome,
-    };
-  }, [receiveWelcome]);
-
-  useEffect(() => {
-    const context = 'UserContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'UserContext';
+  useSocketHandler('server_welcome', receiveWelcome, ctx);
 
   return (
     <userContext.Provider

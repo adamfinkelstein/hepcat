@@ -93,7 +93,7 @@ export default function SetSticky() {
       text += 'Usually stickies are filed for papers you are tracking. ';
       warnings.push(text);
     }
-    // now confirm warnings (if any) and send sticky...
+    // now confirm warnings (if any) and send sticky.
     if (warnings.length) {
       confirmWarningsThenSendSticky(warnings, nid);
     } else {

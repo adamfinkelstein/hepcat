@@ -80,6 +80,7 @@ class Config:
     HEPCAT_RECORD_ADMIN = env_get_bool("HEPCAT_RECORD_ADMIN", True)
     HEPCAT_CACHE_NAME = env_get_str("HEPCAT_CACHE_NAME", "cache")  # or "" for no cache
     HEPCAT_CACHE_DIR = subdir_path(HEPCAT_CACHE_NAME) if HEPCAT_CACHE_NAME else None
+    HEPCAT_MAX_DOWNLOAD_SECS = env_get_int("HEPCAT_MAX_DOWNLOAD_SECS", 60)
 
     CONFLICTBOT_NAMESPACE = env_get_str("CONFLICTBOT_NAMESPACE")
     CONFLICTBOT_ZOOM_CLIENT_ID = env_get_str("CONFLICTBOT_ZOOM_CLIENT_ID")
@@ -96,7 +97,7 @@ class Config:
     CONCORDE_EXE = env_get_str("CONCORDE_EXE", "")  # Set this to override default
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = env_get_str("DEV_DATABASE_URL", default_db)
+    SQLALCHEMY_DATABASE_URI = env_get_str("SQLALCHEMY_DATABASE_URI", default_db)
     SQLALCHEMY_POOL_SIZE = env_get_int("SQLALCHEMY_POOL_SIZE", 0)  # 0=use default
 
     USE_EVENTLET = env_get_bool("USE_EVENTLET")

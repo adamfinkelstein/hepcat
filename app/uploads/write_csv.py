@@ -323,7 +323,6 @@ def write_csv_path(filename, rows):
     folder = get_or_make_upload_folder()
     fullpath = os.path.join(folder, filename)
     write_csv_rows(rows, fullpath)
-    return fullpath
 
 
 csvExtractFunctions = {
@@ -349,16 +348,16 @@ def write_kind_of_csv(kind):
     filename = f"hepcat_{kind}.csv"
     func = csvExtractFunctions[kind]
     rows = func()
-    fullpath = write_csv_path(filename, rows)
-    return filename, fullpath
+    write_csv_path(filename, rows)
+    return filename
 
 
 def write_all_csvs():
     csv_kinds = csvExtractFunctions.keys()
     paths = []
     for kind in csv_kinds:
-        filename, fullpath = write_kind_of_csv(kind)
-        if filename and fullpath:
+        filename = write_kind_of_csv(kind)
+        if filename:
             paths.append(filename)
     return paths
 
@@ -391,8 +390,7 @@ def write_zip_of_all_csvs():
     os.chdir(original_directory)
     if ok:
         log_print("zip claimed ok")
-        zipfile_path = os.path.join(folder, zipfile)
-        return zipfile_path
+        return zipfile
     else:
         log_print(f"zip claimed error -- output:\n{output}")
         return None

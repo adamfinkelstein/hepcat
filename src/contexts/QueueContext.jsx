@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useControlledLog } from './ControlledLogContext';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketIO, useSocketHandler } from './SocketIOContext';
 import { useFlasher } from './FlasherContext';
 import { useUser } from './UserContext';
 import { useKey } from './KeyContext';
@@ -14,9 +14,9 @@ export function useQueue() {
 }
 
 export default function QueueContext({ children }) {
-  const { controlledLog, setShowLogs } = useControlledLog();
-  const { isAdmin, roomChoice } = useUser();
-  const { socketEmit, registerIoHandlers } = useSocketIO();
+  const { controlledLog } = useControlledLog();
+  const { user, isAdmin, roomChoice } = useUser();
+  const { socketEmit } = useSocketIO();
   const { decryptThenHandleArray, decryptThenHandleObj } = useKey();
   const { updateGridEntry } = useGrid();
   const { resetProbeMsgs, recordAdminGlobs } = useAdmin();
@@ -25,50 +25,27 @@ export default function QueueContext({ children }) {
   const [queueCurrent, setQueueCurrent] = useState(0);
   const [roomGlobs, setRoomGlobs] = useState(null);
 
-  // When room choice changes, emit request to server.
+  // When room choice changes, request new queue.
+  // (Only after welcome when user is set.)
   useEffect(() => {
-    controlledLog('roomChoice is now ' + roomChoice);
-    socketEmit('user_request_queue', roomChoice);
-  }, [roomChoice, controlledLog, socketEmit]);
-
-  const recordRoomGlobs = useCallback(
-    (data) => {
-      controlledLog('recordRoomGlobs:', data);
-      if ('showAppLogs' in data) {
-        // could be true or false or not exist
-        setShowLogs(data.showAppLogs);
-      }
-      if (isAdmin) {
-        recordAdminGlobs(data);
-      }
-      setRoomGlobs(data);
-      const curr = data ? data.current : 0;
-      setQueueCurrent(curr);
-    },
-    [
-      controlledLog,
-      isAdmin,
-      setShowLogs,
-      setRoomGlobs,
-      setQueueCurrent,
-      recordAdminGlobs,
-    ]
-  );
+    if (user) socketEmit('user_request_queue', roomChoice);
+  }, [user, roomChoice, socketEmit]);
 
   const updateQueueEntry = useCallback(
-    (queue_index, status) => {
-      if (queue_index < 0 || queue_index >= queue.length) {
-        controlledLog('cannot updateQueueEntry at queue_index ', queue_index);
-        return;
-      }
-      queue[queue_index].status = status;
-      const newQueue = [...queue];
-      setQueue(newQueue); // force update
+    (q_index, status) => {
+      setQueue((prevQueue) => {
+        // Sanity check on bounds
+        if (q_index < 0 || q_index >= prevQueue.length) return prevQueue;
+        // Create new array with updated entry
+        const newQueue = [...prevQueue];
+        newQueue[q_index].status = status;
+        return newQueue;
+      });
     },
-    [controlledLog, queue, setQueue]
+    [setQueue]
   );
 
-  const handleGlobsUpdate = useCallback(
+  const handleQAndGridStatusUpdate = useCallback(
     (update) => {
       controlledLog('decrypted globs update:', update);
       const isTheRoom = update.room === roomChoice;
@@ -84,34 +61,13 @@ export default function QueueContext({ children }) {
     [controlledLog, roomChoice, flash, updateGridEntry, updateQueueEntry]
   );
 
-  // called on receiving data from either:
-  //   server_set_queue or server_set_globs
-  const receiveGlobs = useCallback(
-    (data) => {
-      controlledLog('received globs:', data);
-      // if there was an update, it was encrypted, so get it...
-      const isTheRoom = data.room === roomChoice;
-      const encrypted = data.update_encrypted;
-      if (isTheRoom) recordRoomGlobs(data);
-      if (!encrypted) return;
-      decryptThenHandleObj(encrypted, handleGlobsUpdate);
-    },
-    [
-      controlledLog,
-      roomChoice,
-      recordRoomGlobs,
-      handleGlobsUpdate,
-      decryptThenHandleObj,
-    ]
-  );
-
-  const safeSetQueue = useCallback(
+  const replaceConflictsAndSetQueue = useCallback(
     (arr) => {
       const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
-      const safeQ = arr.map((p) => {
+      const afterCleanup = arr.map((p) => {
         return p ? p : dummy; // replace null (conflict) w dummy
       });
-      setQueue(safeQ);
+      setQueue(afterCleanup);
     },
     [setQueue]
   );
@@ -119,37 +75,36 @@ export default function QueueContext({ children }) {
   const receiveQueue = useCallback(
     (data) => {
       controlledLog('received queue:', data);
-      const encrypted = data.paper_list_encrypted;
-      const globs = data.globs;
-      const isTheRoom = globs.room === roomChoice;
+      const update_paper = data.update_encrypted;
+      decryptThenHandleObj(update_paper, handleQAndGridStatusUpdate);
+      const isTheRoom = data.room === roomChoice;
       if (isTheRoom) {
         resetProbeMsgs();
-        receiveGlobs(globs);
-        decryptThenHandleArray(encrypted, safeSetQueue);
+        setRoomGlobs(data.globs);
+        setQueueCurrent(data.globs.current);
+        if (isAdmin) {
+          recordAdminGlobs(data.globs);
+        }
+        const paper_list = data.paper_list_encrypted;
+        decryptThenHandleArray(paper_list, replaceConflictsAndSetQueue);
       }
     },
     [
+      isAdmin,
+      recordAdminGlobs,
       controlledLog,
       roomChoice,
+      decryptThenHandleObj,
       decryptThenHandleArray,
-      safeSetQueue,
-      receiveGlobs,
+      handleQAndGridStatusUpdate,
+      replaceConflictsAndSetQueue,
       resetProbeMsgs,
     ]
   );
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_set_queue: receiveQueue,
-      server_set_globs: receiveGlobs,
-    };
-  }, [receiveQueue, receiveGlobs]);
-
-  useEffect(() => {
-    const context = 'QueueContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'QueueContext';
+  useSocketHandler('server_set_queue', receiveQueue, ctx);
 
   return (
     <queueContext.Provider

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useStorage } from './StorageContext';
-import { useSocketIO } from './SocketIOContext';
+import { useSocketIO, useSocketHandler } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
 
 const STORAGE_KEY = 'stickyKeys'; // Key for localStorage
@@ -12,7 +12,7 @@ function genRandomKey(length) {
 const stickyContext = React.createContext();
 
 export default function StickyContext({ children }) {
-  const { socket, socketEmit, registerIoHandlers } = useSocketIO();
+  const { socket, socketEmit } = useSocketIO();
   const { controlledLog } = useControlledLog();
   const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
 
@@ -45,30 +45,34 @@ export default function StickyContext({ children }) {
 
   const saveConfirmedSticky = useCallback(
     (data) => {
-      const newKeys = stickyKeys ? { ...stickyKeys } : {};
       const { nid, idx, key } = data;
-      data = { idx, key }; // save only the idx and key
-      newKeys[nid] = data;
-      setStickyKeys(newKeys);
+      const savedData = { idx, key };
+
+      setStickyKeys((prevStickyKeys) => ({
+        ...prevStickyKeys, // never null (see loadStickyKeysFromStorage)
+        [nid]: savedData,
+      }));
     },
-    [stickyKeys, setStickyKeys]
+    [setStickyKeys]
   );
 
   const forgetStickyKey = useCallback(
     (nid) => {
-      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return;
-      const newKeys = { ...stickyKeys };
-      delete newKeys[nid];
-      setStickyKeys(newKeys);
+      setStickyKeys((prevStickyKeys) => {
+        // no change if that key does not exist
+        if (!prevStickyKeys?.[nid]) return prevStickyKeys;
+        // make copy without that key
+        const { [nid]: _removed, ...newKeys } = prevStickyKeys;
+        return newKeys;
+      });
     },
-    [stickyKeys, setStickyKeys]
+    [setStickyKeys]
   );
 
   const checkStickyIdIsValid = useCallback(
     (nid, check_idx) => {
-      // controlledLog(`Check sticky for ${nid}: ${check_idx}`);
       if (!nid || !check_idx) return;
-      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return;
+      if (!stickyKeys?.[nid]) return;
       const { idx } = stickyKeys[nid];
       if (idx !== check_idx) {
         controlledLog(`Sticky for ${nid} outdated: ${idx} != ${check_idx}`);
@@ -90,7 +94,7 @@ export default function StickyContext({ children }) {
 
   const revokeSticky = useCallback(
     (nid) => {
-      if (!stickyKeys || !Object.hasOwn(stickyKeys, nid)) return false;
+      if (!stickyKeys?.[nid]) return false;
       const { key } = stickyKeys[nid];
       const data = { nid, key };
       socketEmit('user_revoke_sticky', data);
@@ -109,17 +113,9 @@ export default function StickyContext({ children }) {
     [controlledLog, saveConfirmedSticky]
   );
 
-  const getHandlers = useCallback(() => {
-    return {
-      server_confirm_sticky: receiveConfirmation,
-    };
-  }, [receiveConfirmation]);
-
-  useEffect(() => {
-    const context = 'StickyContext';
-    const handlers = getHandlers();
-    return registerIoHandlers(handlers, context);
-  }, [getHandlers, registerIoHandlers]);
+  // register socket event handlers
+  const ctx = 'StickyContext';
+  useSocketHandler('server_confirm_sticky', receiveConfirmation, ctx);
 
   return (
     <stickyContext.Provider

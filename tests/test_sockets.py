@@ -2,9 +2,9 @@ from tests.hepcat_test_case import HepcatTestCase
 from app.util import read_text_from_file
 
 """
-This class tests the complete list of 26 socket events 
-implemented in apps/sockets/routes.py 
-(but not the on_error handler):
+This class tests the complete list of socket events
+as implemented in apps/sockets/routes.py 
+(but not the on_error handler) -- listed here:
 
 * connect
 * disconnect
@@ -26,13 +26,21 @@ implemented in apps/sockets/routes.py
 * admin_delete_filter
 * admin_probe_by_gui
 * admin_probe_by_text
-- admin_set_bar
-- admin_set_disable_logins
-- admin_bulk_confirm
-- admin_file_upload
-- admin_wipe_database
-- admin_load_database
+* admin_set_bar
+* admin_set_disable_logins
+* admin_bulk_confirm
+* admin_file_upload
+* admin_request_download
+* admin_wipe_database
+* admin_load_database
 
+Some limitations that could be addressed in future updates:
+- Most calls cover legal paths and skip failure modes.
+- Thus much of the error-handling code is not exercised.
+- Generally, return values are not checked, 
+  - except for message "names". Contents are ignored.
+- Also, state of app is not checked.
+  - For example, changing bar does not check bar.
 """
 
 
@@ -57,10 +65,11 @@ class TestSockets(HepcatTestCase):
     def get_admin_client(self):
         client = self.login_admin()
         events = client.get_received()
-        assert len(events) == 5
+        assert len(events) == 3
         assert events[0]["name"] == "server_welcome"
         assert events[0]["args"][0]["user"]["email"] == "fake.admin@example.com"
-        assert events[1]["name"] == "server_relay_disable_logins"
+        assert events[1]["name"] == "server_send_admin_data"
+        assert events[2]["name"] == "server_refresh_all_users"
         return client
 
     def queue_fill_by_text(self, client):
@@ -76,7 +85,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_next_paper", "Plenary")
         events = client.get_received()
         assert len(events) == 1
-        assert events[0]["name"] == "server_set_globs"
+        assert events[0]["name"] == "server_set_queue"
 
     ##########
     #
@@ -179,7 +188,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_prev_paper", "Plenary")
         events = client.get_received()
         assert len(events) == 1
-        assert events[0]["name"] == "server_set_globs"
+        assert events[0]["name"] == "server_set_queue"
         client.disconnect()
 
     def test_admin_advance_queue(self):
@@ -189,7 +198,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_advance_queue", data)
         events = client.get_received()
         assert len(events) == 1
-        assert events[0]["name"] == "server_set_globs"
+        assert events[0]["name"] == "server_set_queue"
         client.disconnect()
 
     def test_admin_show_current(self):
@@ -198,7 +207,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_show_current", "Plenary")
         events = client.get_received()
         assert len(events) == 1
-        assert events[0]["name"] == "server_set_globs"
+        assert events[0]["name"] == "server_set_queue"
         client.disconnect()
 
     def test_admin_hide_queue(self):
@@ -208,7 +217,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_hide_queue", data)
         events = client.get_received()
         assert len(events) == 2
-        assert events[0]["name"] == "server_set_globs"
+        assert events[0]["name"] == "server_set_queue"
         assert events[1]["name"] == "server_send_flasher"
         client.disconnect()
 
@@ -234,7 +243,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_save_filter", data)
         events = client.get_received()
         assert len(events) == 2
-        assert events[0]["name"] == "server_send_filter_names"
+        assert events[0]["name"] == "server_send_admin_data"
         assert events[1]["name"] == "server_send_flasher"
         # next load
         client.emit("admin_load_filter", "test_filter")
@@ -245,7 +254,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_delete_filter", "test_filter")
         events = client.get_received()
         assert len(events) == 2
-        assert events[0]["name"] == "server_send_filter_names"
+        assert events[0]["name"] == "server_send_admin_data"
         assert events[1]["name"] == "server_send_flasher"
         client.disconnect()
 
@@ -282,7 +291,7 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_set_disable_logins", True)
         events = client.get_received()
         assert len(events) == 1
-        assert events[0]["name"] == "server_relay_disable_logins"
+        assert events[0]["name"] == "server_send_admin_data"
         client.disconnect()
 
     def test_admin_bulk_confirm(self):
@@ -303,8 +312,16 @@ class TestSockets(HepcatTestCase):
         client.emit("admin_file_upload", bytes)
         events = client.get_received()
         assert len(events) == 2
-        assert events[0]["name"] == "server_file_uploads"
+        assert events[0]["name"] == "server_send_admin_data"
         assert events[1]["name"] == "server_send_flasher"
+        client.disconnect()
+
+    def test_admin_request_download(self):
+        client = self.get_admin_client()
+        client.emit("admin_request_download", "filters")
+        events = client.get_received()
+        assert len(events) == 1
+        assert events[0]["name"] == "server_send_download"
         client.disconnect()
 
     def test_admin_wipe_database(self):

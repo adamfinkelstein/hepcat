@@ -39,14 +39,8 @@ const getCountsInGrid = (inRoom, conf, papers, nidsAbove, nidsBelow) => {
     counts[status] = 0;
   }
   for (const nid of allInGrid) {
-    if (!Object.hasOwn(papers, nid)) {
-      // this should not happen, and is just here for a sanity check.
-      // console.log('*** cannot find grid entry for nid:', nid);
-      // possible when transitioning between users, grid conflicts change,
-      // and there is some kind of race condition.
-      continue;
-    }
-    const paper = papers[nid];
+    const paper = papers?.[nid];
+    if (!paper) continue; // sanity check in case of race condition
     const status = paper.status;
     if (convergedStatuses.includes(status)) {
       converged++;
@@ -99,13 +93,7 @@ export default function CountContext({ children }) {
   ]);
 
   const getGridCount = useCallback(
-    (field) => {
-      if (gridCounts && Object.hasOwn(gridCounts, field)) {
-        return gridCounts[field];
-      } else {
-        return 0;
-      }
-    },
+    (field) => gridCounts?.[field] || 0,
     [gridCounts]
   );
 
