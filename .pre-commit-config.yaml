@@ -68,7 +68,7 @@ repos:
         files: \.py$
         args:
           - --license-filepath
-          - LICENSE-HEADER.txt
+          - .pre-commit/license-header.txt
           - --comment-style
           - '#'
           - --use-current-year
@@ -78,7 +78,7 @@ repos:
         exclude: node_modules/
         args:
           - --license-filepath
-          - LICENSE-HEADER.txt
+          - .pre-commit/license-header.txt
           - --comment-style
           - '//'
           - --use-current-year
