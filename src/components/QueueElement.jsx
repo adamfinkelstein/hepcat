@@ -5,7 +5,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import Container from 'react-bootstrap/Container';
 import Stack from 'react-bootstrap/Stack';
-import PaperConflict from './PaperConflict';
+import QueueConflicts from './QueueConflicts';
 import { usePreferences } from '../contexts/PreferencesContext';
 
 export default function QueueElement({ paper }) {
@@ -45,7 +45,7 @@ export default function QueueElement({ paper }) {
       {!isPast && (
         <div>
           {showConflicts && !isConflict && (
-            <PaperConflict conflicts={paper.conflicts} isCurrent={isCurrent} />
+            <QueueConflicts conflicts={paper.conflicts} isCurrent={isCurrent} />
           )}
         </div>
       )}
