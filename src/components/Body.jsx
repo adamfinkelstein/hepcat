@@ -12,9 +12,9 @@ import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import Queue from './Queue';
-import Paper from './Paper';
+import PaperTab from './PaperTab';
 import GridTab from './GridTab';
-import SetQueue from './SetQueue';
+import SetQueueTab from './SetQueueTab';
 
 export default function Body() {
   const {
@@ -95,7 +95,7 @@ export default function Body() {
               >
                 {!hideQueue && (
                   <Tab eventKey="paper" title="Paper" className="tab">
-                    <Paper />
+                    <PaperTab />
                   </Tab>
                 )}
                 {showGrid && (
@@ -105,7 +105,7 @@ export default function Body() {
                 )}
                 {isAdmin && (
                   <Tab eventKey="queue" title="Set Queue" className="tab">
-                    <SetQueue />
+                    <SetQueueTab />
                   </Tab>
                 )}
               </Tabs>

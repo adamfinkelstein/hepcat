@@ -348,29 +348,29 @@ body {
  * Set Queue panel
  */
 
-.SetQueue .q-message-input {
+.SetQueueTab .q-message-input {
   width: 400px;
 }
 
-.SetQueue .gui-filters {
+.SetQueueTab .gui-filters {
   align-items: flex-start;
 }
 
-.SetQueue .score-box {
+.SetQueueTab .score-box {
   width: 50px;
 }
 
-.SetQueue .text-filter-input {
+.SetQueueTab .text-filter-input {
   margin-bottom: 20px;
   width: 550px;
 }
 
-.SetQueue .dropdown-item {
+.SetQueueTab .dropdown-item {
   background-color: rgb(39, 87, 195);
   background-color: rgba(39, 87, 195, 0.1);
 }
 
-.SetQueue .dropdown-item:hover {
+.SetQueueTab .dropdown-item:hover {
   background-color: rgb(39, 87, 195);
   color: white;
 }

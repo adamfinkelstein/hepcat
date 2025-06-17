@@ -7,7 +7,7 @@ import { useUser } from '../contexts/UserContext';
 import PaperInfo from './PaperInfo';
 import PaperConflicts from './PaperConflicts';
 
-export default function Paper() {
+export default function PaperTab() {
   const { isOutsideRole } = useUser();
   const { queue, queueCurrent, roomGlobs } = useQueue();
   const isPaper =
@@ -24,7 +24,7 @@ export default function Paper() {
       : 'In session.';
 
   return (
-    <Container fluid className="Paper">
+    <Container fluid className="PaperTab">
       <div>
         {hideThisPaper ? (
           <p className="paper-message">{hideMessage}</p>

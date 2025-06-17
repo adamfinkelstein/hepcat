@@ -6,9 +6,9 @@ import HideQueue from './HideQueue';
 import GuiFilters from './GuiFilters';
 import TextFilters from './TextFilters';
 
-export default function SetQueue() {
+export default function SetQueueTab() {
   return (
-    <Container fluid className="SetQueue">
+    <Container fluid className="SetQueueTab">
       <HideQueue />
       <hr className="horizontal-divider" />
       <GuiFilters />
