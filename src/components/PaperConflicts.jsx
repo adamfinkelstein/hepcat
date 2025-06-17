@@ -7,11 +7,9 @@ import NameList from './NameList';
 
 export default function PaperConflicts() {
   const { roomChoice } = useUser();
-  const { queue, queueCurrent, roomGlobs } = useQueue();
-  const isPaper =
-    queue && queue.length && queueCurrent < queue.length && queueCurrent >= 0;
-  const currentShowEnter = isPaper ? roomGlobs.current_show_enter : 0;
-  const cp = isPaper ? queue[queueCurrent] : null; // current paper
+  const { queue, queueCurrent, isCurrentPaper, roomGlobs } = useQueue();
+  const currentShowEnter = isCurrentPaper ? roomGlobs.current_show_enter : 0;
+  const cp = isCurrentPaper ? queue[queueCurrent] : null; // current paper
 
   function userBelongsInRoom(user, room) {
     const rooms = user.rooms;
@@ -43,9 +41,9 @@ export default function PaperConflicts() {
   // XXX Ugly code: currentShowEnter is 0, 1, or -1.
   // Comes from database entry in GQ.
   // Should probably be a pair of booleans.
-  let current_enter = isPaper && currentShowEnter === 1 ? cp.enter : [];
-  let current_leave = isPaper && currentShowEnter === 1 ? cp.leave : [];
-  if (isPaper && currentShowEnter === -1) {
+  let current_enter = isCurrentPaper && currentShowEnter === 1 ? cp.enter : [];
+  let current_leave = isCurrentPaper && currentShowEnter === 1 ? cp.leave : [];
+  if (isCurrentPaper && currentShowEnter === -1) {
     current_enter = [];
     current_leave = [];
     if (queueCurrent < queue.length - 1) {
@@ -58,17 +56,18 @@ export default function PaperConflicts() {
     {
       show: true,
       title: 'Conflicts:',
-      array: isPaper && cp && cp.conflicts ? siftConflicts(cp.conflicts) : [],
+      array:
+        isCurrentPaper && cp && cp.conflicts ? siftConflicts(cp.conflicts) : [],
       default: '(none)',
     },
     {
-      show: current_leave && current_leave.length,
+      show: current_leave?.length,
       title: 'Leave:',
       array: siftConflicts(current_leave),
       default: '',
     },
     {
-      show: current_enter && current_enter.length,
+      show: current_enter?.length,
       title: 'Return:',
       array: siftConflicts(current_enter),
       default: '',
@@ -77,9 +76,13 @@ export default function PaperConflicts() {
 
   return (
     <div>
-      {conflicts_arrays.map((conf_arr, conf_ind) => {
-        return <NameList conf_arr={conf_arr} key={conf_ind} />;
-      })}
+      {conflicts_arrays.map((conf_arr, conf_ind) =>
+        conf_arr.show ? (
+          <NameList key={conf_ind} conf_arr={conf_arr} />
+        ) : (
+          <p key={conf_ind}>{conf_arr.default}</p>
+        )
+      )}
     </div>
   );
 }

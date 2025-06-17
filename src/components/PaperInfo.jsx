@@ -31,17 +31,15 @@ export default function PaperInfo() {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   const { isScreenOrOutside } = useUser();
-  const { queue, queueCurrent, roomGlobs } = useQueue();
-  const isPaper =
-    queue && queue.length && queueCurrent < queue.length && queueCurrent >= 0;
-  const currentShow = isPaper && roomGlobs.current_show;
-  const cp = isPaper ? queue[queueCurrent] : null; // current paper
-  const showTags = isPaper && roomGlobs.current_tags;
-  const hist = isPaper ? roomGlobs.current_history : [];
+  const { queue, queueCurrent, isCurrentPaper, roomGlobs } = useQueue();
+  const currentShow = isCurrentPaper && roomGlobs.current_show;
+  const cp = isCurrentPaper ? queue[queueCurrent] : null; // current paper
+  const showTags = isCurrentPaper && roomGlobs.current_tags;
+  const hist = isCurrentPaper ? roomGlobs.current_history : [];
   const showHist = hist && hist.length > 0;
   const safeScores = cp ? cp.all_scores : '';
   const scoresHTML = formatScoresInHTML(safeScores);
-  const currentStart = isPaper && roomGlobs.current_start;
+  const currentStart = isCurrentPaper && roomGlobs.current_start;
   const hideAbstract = isScreenOrOutside();
 
   useEffect(() => {

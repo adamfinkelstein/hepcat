@@ -15,7 +15,6 @@ function userToClass(user) {
 }
 
 export default function NameList({ conf_arr, key }) {
-  if (!conf_arr.show) return <p key={key}>{conf_arr.default}</p>;
   return (
     <div key={key}>
       <h3>{conf_arr.title}</h3>

@@ -26,7 +26,15 @@ export default function QueueContext({ children }) {
   const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
+  const [isCurrentPaper, setIsCurrentPaper] = useState(false);
   const [roomGlobs, setRoomGlobs] = useState(null);
+
+  // When queue or queueCurrent changes, track if there is a current paper.
+  useEffect(() => {
+    const isPaper =
+      queue?.length && queueCurrent < queue.length && queueCurrent >= 0;
+    setIsCurrentPaper(isPaper);
+  }, [queue, queueCurrent, setIsCurrentPaper]);
 
   // When room choice changes, request new queue.
   // (Only after welcome when user is set.)
@@ -114,6 +122,7 @@ export default function QueueContext({ children }) {
       value={{
         queue,
         queueCurrent,
+        isCurrentPaper,
         roomGlobs,
       }}
     >

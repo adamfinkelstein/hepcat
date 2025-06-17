@@ -9,17 +9,15 @@ import PaperConflicts from './PaperConflicts';
 
 export default function PaperTab() {
   const { isOutsideRole } = useUser();
-  const { queue, queueCurrent, roomGlobs } = useQueue();
-  const isPaper =
-    queue && queue.length && queueCurrent < queue.length && queueCurrent >= 0;
-  const currentShow = isPaper && roomGlobs.current_show;
-  const cp = isPaper ? queue[queueCurrent] : null; // current paper
+  const { queue, queueCurrent, isCurrentPaper, roomGlobs } = useQueue();
+  const currentShow = isCurrentPaper && roomGlobs.current_show;
+  const cp = isCurrentPaper ? queue[queueCurrent] : null; // current paper
   const isConflict = cp ? cp.nid === 0 : false;
   const hidePaperOutside = isOutsideRole() && currentShow;
-  const hideThisPaper = hidePaperOutside || !isPaper || isConflict;
+  const hideThisPaper = hidePaperOutside || !isCurrentPaper || isConflict;
   const hideMessage = isConflict
     ? 'CONFLICT'
-    : !isPaper
+    : !isCurrentPaper
       ? 'No current paper.'
       : 'In session.';
 
