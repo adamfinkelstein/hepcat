@@ -65,7 +65,7 @@ export default function SocketIOContext({ children }) {
     [tokenStorageClear]
   );
 
-  const socketSetAuthToken = useCallback(
+  const socketAuthTokenSet = useCallback(
     (token) => {
       tokenStorageSet(token, auth?.remember);
     },
@@ -190,7 +190,7 @@ export default function SocketIOContext({ children }) {
         socketLogin,
         socketLogout,
         socketEmit,
-        socketSetAuthToken,
+        socketAuthTokenSet,
       }}
     >
       {children}
