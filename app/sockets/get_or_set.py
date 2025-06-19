@@ -430,7 +430,9 @@ def get_globs_dump_with_status(room):
     paper = get_paper_at_queue_index(room, current_index)
     if paper:
         status = get_latest_history_status(paper)
-        globs["current_status"] = status
+        status_enc = encrypt_obj_with_oid(status, paper.oid, paper.key)
+        # globs["current_status"] = status
+        globs["current_status_enc"] = status_enc
         if globs["current_show"]:
             history = get_paper_meeting_history_dump(paper)
             globs["current_history"] = history

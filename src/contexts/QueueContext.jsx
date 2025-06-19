@@ -94,7 +94,17 @@ export default function QueueContext({ children }) {
         setRoomGlobs(data.globs);
         setQueueCurrent(data.globs.current);
         if (isAdmin) {
+          // first time call this without potential decrypt
           recordAdminGlobs(data.globs);
+          const status_enc = data.globs.current_status_enc;
+          if (status_enc) {
+            decryptThenHandleObj(status_enc, (decrypted_status) => {
+              console.log('call recordAdminGlobs with: ' + decrypted_status);
+              data.globs.current_status = decrypted_status;
+              // second time call it including successful current_status
+              recordAdminGlobs(data.globs);
+            });
+          }
         }
         const paper_list = data.paper_list_encrypted;
         decryptThenHandleArray(paper_list, replaceConflictsAndSetQueue);
