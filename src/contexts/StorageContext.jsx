@@ -11,7 +11,7 @@ const storageContext = React.createContext();
 export default function StorageContext({ children }) {
   const { controlledLog } = useControlledLog();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [userID, setUserID] = useState(null);
+  const [storageUserID, setStorageUserID] = useState(null);
 
   const storageLog = useCallback(
     (msg) => {
@@ -64,7 +64,7 @@ export default function StorageContext({ children }) {
 
   // Generic function to set item in storage
   // value null means remove the item
-  const setStorageItem = useCallback(
+  const storageItemPut = useCallback(
     (key, value, useLocal = true) => {
       ensureInitialized();
       const storage = useLocal ? window.localStorage : window.sessionStorage;
@@ -88,47 +88,47 @@ export default function StorageContext({ children }) {
   // User-specific functions
   const getUserStorageItem = useCallback(
     (key, useLocal = true) => {
-      if (!userID) {
-        storageLog('getUserStorageItem: No userID available');
+      if (!storageUserID) {
+        storageLog('getUserStorageItem: No storageUserID available');
         return null;
       }
-      const userKey = `${userID}:${key}`;
+      const userKey = `${storageUserID}:${key}`;
       return getStorageItem(userKey, useLocal);
     },
-    [userID, getStorageItem, storageLog]
+    [storageUserID, getStorageItem, storageLog]
   );
 
-  const setUserStorageItem = useCallback(
+  const userStorageItemPut = useCallback(
     (key, value, useLocal = true) => {
-      if (!userID) {
-        storageLog(`setUserStorageItem ${key}: No userID available`);
+      if (!storageUserID) {
+        storageLog(`userStorageItemPut ${key}: No storageUserID available`);
         return;
       }
-      const userKey = `${userID}:${key}`;
-      setStorageItem(userKey, value, useLocal);
+      const userKey = `${storageUserID}:${key}`;
+      storageItemPut(userKey, value, useLocal);
     },
-    [userID, setStorageItem, storageLog]
+    [storageUserID, storageItemPut, storageLog]
   );
 
   // Specific functions that use the generic helpers
-  const getLocalStorageItem = useCallback(
+  const localStorageItemGet = useCallback(
     (key) => getStorageItem(key, true),
     [getStorageItem]
   );
 
-  const setLocalStorageItem = useCallback(
-    (key, value) => setStorageItem(key, value, true),
-    [setStorageItem]
+  const localStorageItemSet = useCallback(
+    (key, value) => storageItemPut(key, value, true),
+    [storageItemPut]
   );
 
-  const getSessionStorageItem = useCallback(
+  const sessionStorageItemGet = useCallback(
     (key) => getStorageItem(key, false),
     [getStorageItem]
   );
 
-  const setSessionStorageItem = useCallback(
-    (key, value) => setStorageItem(key, value, false),
-    [setStorageItem]
+  const sessionStorageItemSet = useCallback(
+    (key, value) => storageItemPut(key, value, false),
+    [storageItemPut]
   );
 
   const getUserLocalStorageItem = useCallback(
@@ -136,9 +136,9 @@ export default function StorageContext({ children }) {
     [getUserStorageItem]
   );
 
-  const setUserLocalStorageItem = useCallback(
-    (key, value) => setUserStorageItem(key, value, true),
-    [setUserStorageItem]
+  const userLocalStorageItemSet = useCallback(
+    (key, value) => userStorageItemPut(key, value, true),
+    [userStorageItemPut]
   );
 
   const getUserSessionStorageItem = useCallback(
@@ -147,25 +147,25 @@ export default function StorageContext({ children }) {
   );
 
   const setUserSessionStorageItem = useCallback(
-    (key, value) => setUserStorageItem(key, value, false),
-    [setUserStorageItem]
+    (key, value) => userStorageItemPut(key, value, false),
+    [userStorageItemPut]
   );
 
   return (
     <storageContext.Provider
       value={{
         // Regular storage functions
-        getLocalStorageItem,
-        setLocalStorageItem,
-        getSessionStorageItem,
-        setSessionStorageItem,
+        localStorageItemGet,
+        localStorageItemSet,
+        sessionStorageItemGet,
+        sessionStorageItemSet,
         // User-specific storage functions
         getUserLocalStorageItem,
-        setUserLocalStorageItem,
+        userLocalStorageItemSet,
         getUserSessionStorageItem,
         setUserSessionStorageItem,
-        // Function to set userID
-        setStorageUserID: setUserID,
+        // Function to set storageUserID
+        setStorageUserID,
       }}
     >
       {children}

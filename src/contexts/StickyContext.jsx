@@ -17,7 +17,7 @@ const stickyContext = React.createContext();
 export default function StickyContext({ children }) {
   const { socket, socketEmit } = useSocketIO();
   const { controlledLog } = useControlledLog();
-  const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
+  const { getUserLocalStorageItem, userLocalStorageItemSet } = useStorage();
 
   // Load sticky keys from storage
   const loadStickyKeysFromStorage = useCallback(() => {
@@ -29,12 +29,12 @@ export default function StickyContext({ children }) {
   const saveStickyKeysToStorage = useCallback(
     (sKeys) => {
       if (sKeys && Object.keys(sKeys).length) {
-        setUserLocalStorageItem(STORAGE_KEY, sKeys);
+        userLocalStorageItemSet(STORAGE_KEY, sKeys);
       } else {
-        setUserLocalStorageItem(STORAGE_KEY, null); // remove the item
+        userLocalStorageItemSet(STORAGE_KEY, null); // remove the item
       }
     },
-    [setUserLocalStorageItem]
+    [userLocalStorageItemSet]
   );
 
   const [stickyKeys, setStickyKeys] = useState(() =>

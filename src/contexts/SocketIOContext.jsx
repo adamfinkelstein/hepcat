@@ -18,38 +18,38 @@ export default function SocketIOContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { revealModalDialog } = useModalDialog();
   const {
-    getLocalStorageItem,
-    setLocalStorageItem,
-    getSessionStorageItem,
-    setSessionStorageItem,
+    localStorageItemGet,
+    localStorageItemSet,
+    sessionStorageItemGet,
+    sessionStorageItemSet,
   } = useStorage();
 
   const tokenStorageSet = useCallback(
     (token, remember) => {
       if (remember) {
-        setLocalStorageItem(TOKEN_STORAGE_KEY, token);
-        setSessionStorageItem(TOKEN_STORAGE_KEY, null); // remove, just in case
+        localStorageItemSet(TOKEN_STORAGE_KEY, token);
+        sessionStorageItemSet(TOKEN_STORAGE_KEY, null); // remove, just in case
         return;
       }
       // if not already in local storage, write to session storage
-      if (!getLocalStorageItem(TOKEN_STORAGE_KEY)) {
-        setSessionStorageItem(TOKEN_STORAGE_KEY, token);
+      if (!localStorageItemGet(TOKEN_STORAGE_KEY)) {
+        sessionStorageItemSet(TOKEN_STORAGE_KEY, token);
       }
     },
-    [getLocalStorageItem, setLocalStorageItem, setSessionStorageItem]
+    [localStorageItemGet, localStorageItemSet, sessionStorageItemSet]
   );
 
   const tokenStorageGet = useCallback(() => {
     // first check local storage, then session storage
-    const token = getLocalStorageItem(TOKEN_STORAGE_KEY);
+    const token = localStorageItemGet(TOKEN_STORAGE_KEY);
     if (token) return token;
-    return getSessionStorageItem(TOKEN_STORAGE_KEY);
-  }, [getLocalStorageItem, getSessionStorageItem]);
+    return sessionStorageItemGet(TOKEN_STORAGE_KEY);
+  }, [localStorageItemGet, sessionStorageItemGet]);
 
   const tokenStorageClear = useCallback(() => {
-    setSessionStorageItem(TOKEN_STORAGE_KEY, null);
-    setLocalStorageItem(TOKEN_STORAGE_KEY, null);
-  }, [setSessionStorageItem, setLocalStorageItem]);
+    sessionStorageItemSet(TOKEN_STORAGE_KEY, null);
+    localStorageItemSet(TOKEN_STORAGE_KEY, null);
+  }, [sessionStorageItemSet, localStorageItemSet]);
 
   const socketLogin = useCallback((email, password, remember, cb) => {
     errorCallback = cb;
