@@ -207,23 +207,20 @@ export function useSocketHandler(event, handler, handlerName) {
   const { socket } = useSocketIO();
   const { controlledLog } = useControlledLog();
 
-  const registerOnOrOffHandler = useCallback(
-    (event, handler, handlerName, onOrOff) => {
+  useEffect(() => {
+    const registerOnOrOffHandler = (event, handler, msg, onOrOff) => {
       if (!socket) return;
       const verbose = false;
       if (verbose) {
-        const msg = onOrOff + ' socket ' + event + ' handler ' + handlerName;
-        controlledLog(msg);
+        controlledLog(onOrOff.toUpperCase() + ' ' + msg);
       }
       socket[onOrOff](event, handler);
-    },
-    [socket, controlledLog]
-  );
-
-  useEffect(() => {
-    registerOnOrOffHandler(event, handler, handlerName, 'on');
-    return () => {
-      registerOnOrOffHandler(event, handler, handlerName, 'off');
     };
-  }, [registerOnOrOffHandler, event, handler, handlerName]);
+
+    const msg = 'socket event: ' + event + ' handler name: ' + handlerName;
+    registerOnOrOffHandler(event, handler, msg, 'on');
+    return () => {
+      registerOnOrOffHandler(event, handler, msg, 'off');
+    };
+  }, [socket, controlledLog, event, handler, handlerName]);
 }
