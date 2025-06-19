@@ -136,7 +136,7 @@ export default function SocketIOContext({ children }) {
       setAuth(null);
       setSocket(null);
     },
-    [tokenStorageClear, setSocket, setAuth]
+    [tokenStorageClear]
   );
 
   /*
@@ -163,7 +163,7 @@ export default function SocketIOContext({ children }) {
       setSocket(null);
     }
     return false;
-  }, [auth, tokenStorageGet, setAuth, setSocket]);
+  }, [auth, tokenStorageGet]);
 
   useEffect(() => {
     if (!isAuthenticated()) return;
@@ -181,7 +181,7 @@ export default function SocketIOContext({ children }) {
       s.off('disconnect', handleDisconnect);
       s.disconnect();
     };
-  }, [isAuthenticated, auth, setSocket, handleConnectError, handleDisconnect]);
+  }, [isAuthenticated, auth, handleConnectError, handleDisconnect]);
 
   return (
     <socketIOContext.Provider

@@ -46,31 +46,25 @@ export default function StickyContext({ children }) {
     saveStickyKeysToStorage(stickyKeys);
   }, [stickyKeys, saveStickyKeysToStorage]);
 
-  const saveConfirmedSticky = useCallback(
-    (data) => {
-      const { nid, idx, key } = data;
-      const savedData = { idx, key };
+  const saveConfirmedSticky = useCallback((data) => {
+    const { nid, idx, key } = data;
+    const savedData = { idx, key };
 
-      setStickyKeys((prevStickyKeys) => ({
-        ...prevStickyKeys, // never null (see loadStickyKeysFromStorage)
-        [nid]: savedData,
-      }));
-    },
-    [setStickyKeys]
-  );
+    setStickyKeys((prevStickyKeys) => ({
+      ...prevStickyKeys, // never null (see loadStickyKeysFromStorage)
+      [nid]: savedData,
+    }));
+  }, []);
 
-  const forgetStickyKey = useCallback(
-    (nid) => {
-      setStickyKeys((prevStickyKeys) => {
-        // no change if that key does not exist
-        if (!prevStickyKeys?.[nid]) return prevStickyKeys;
-        // make copy without that key
-        const { [nid]: _removed, ...newKeys } = prevStickyKeys;
-        return newKeys;
-      });
-    },
-    [setStickyKeys]
-  );
+  const forgetStickyKey = useCallback((nid) => {
+    setStickyKeys((prevStickyKeys) => {
+      // no change if that key does not exist
+      if (!prevStickyKeys?.[nid]) return prevStickyKeys;
+      // make copy without that key
+      const { [nid]: _removed, ...newKeys } = prevStickyKeys;
+      return newKeys;
+    });
+  }, []);
 
   const checkStickyIdIsValid = useCallback(
     (nid, check_idx) => {

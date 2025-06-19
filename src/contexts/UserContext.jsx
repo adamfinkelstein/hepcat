@@ -69,7 +69,7 @@ export default function UserContext({ children }) {
       setIsAdmin(false);
       setPaperKeys(null);
     }
-  }, [user, socket, setUser, setStorageUserID, setIsAdmin, setPaperKeys]);
+  }, [user, socket, setPaperKeys, setStorageUserID]);
 
   // register socket event handlers
   const ctx = 'UserContext';

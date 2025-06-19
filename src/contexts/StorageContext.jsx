@@ -42,7 +42,7 @@ export default function StorageContext({ children }) {
       window.localStorage.setItem('app_version', appVersion);
       storageLog('Cleared storage and updated to app version:', appVersion);
     }
-  }, [isInitialized, setIsInitialized, storageLog]);
+  }, [isInitialized, storageLog]);
 
   // Generic function to get item from storage
   const getStorageItem = useCallback(

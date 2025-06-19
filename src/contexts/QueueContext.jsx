@@ -34,7 +34,7 @@ export default function QueueContext({ children }) {
     const isPaper =
       queue?.length && queueCurrent < queue.length && queueCurrent >= 0;
     setIsCurrentPaper(isPaper);
-  }, [queue, queueCurrent, setIsCurrentPaper]);
+  }, [queue, queueCurrent]);
 
   // When room choice changes, request new queue.
   // (Only after welcome when user is set.)
@@ -42,19 +42,16 @@ export default function QueueContext({ children }) {
     if (user) socketEmit('user_request_queue', roomChoice);
   }, [user, roomChoice, socketEmit]);
 
-  const updateQueueEntry = useCallback(
-    (q_index, status) => {
-      setQueue((prevQueue) => {
-        // Sanity check on bounds
-        if (q_index < 0 || q_index >= prevQueue.length) return prevQueue;
-        // Create new array with updated entry
-        const newQueue = [...prevQueue];
-        newQueue[q_index].status = status;
-        return newQueue;
-      });
-    },
-    [setQueue]
-  );
+  const updateQueueEntry = useCallback((q_index, status) => {
+    setQueue((prevQueue) => {
+      // Sanity check on bounds
+      if (q_index < 0 || q_index >= prevQueue.length) return prevQueue;
+      // Create new array with updated entry
+      const newQueue = [...prevQueue];
+      newQueue[q_index].status = status;
+      return newQueue;
+    });
+  }, []);
 
   const handleQAndGridStatusUpdate = useCallback(
     (update) => {
@@ -72,16 +69,13 @@ export default function QueueContext({ children }) {
     [controlledLog, roomChoice, flash, updateGridEntry, updateQueueEntry]
   );
 
-  const replaceConflictsAndSetQueue = useCallback(
-    (arr) => {
-      const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
-      const afterCleanup = arr.map((p) => {
-        return p ? p : dummy; // replace null (conflict) w dummy
-      });
-      setQueue(afterCleanup);
-    },
-    [setQueue]
-  );
+  const replaceConflictsAndSetQueue = useCallback((arr) => {
+    const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
+    const afterCleanup = arr.map((p) => {
+      return p ? p : dummy; // replace null (conflict) w dummy
+    });
+    setQueue(afterCleanup);
+  }, []);
 
   const receiveQueue = useCallback(
     (data) => {

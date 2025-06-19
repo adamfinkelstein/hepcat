@@ -70,7 +70,7 @@ export default function GridContext({ children }) {
         [nid]: grid_update,
       }));
     },
-    [gridPapers, setGridPapers, checkStickyIdIsValid]
+    [gridPapers, checkStickyIdIsValid]
   );
 
   const updateGridPapers = useCallback(
@@ -90,7 +90,7 @@ export default function GridContext({ children }) {
       setGridNidsInOrder(nidsInOrder);
       setGridPapers(papers);
     },
-    [setGridPapers, setGridNidsInOrder, setGridConflicts, checkStickyIdIsValid]
+    [checkStickyIdIsValid]
   );
 
   const decryptGridPapers = useCallback(
@@ -103,7 +103,7 @@ export default function GridContext({ children }) {
   useEffect(() => {
     const inRoom = gridMode === 'This Room';
     setGridInRoom(inRoom);
-  }, [gridMode, setGridInRoom]);
+  }, [gridMode]);
 
   // sort grid papers into above and below.
   // this happens whenever grid data changes.
@@ -112,13 +112,7 @@ export default function GridContext({ children }) {
     const { above, below } = sortGridPapers(gridPapers, gridNidsInOrder);
     setGridNidsAbove(above);
     setGridNidsBelow(below);
-  }, [
-    gridPapers,
-    gridNidsInOrder,
-    sortGridPapers,
-    setGridNidsAbove,
-    setGridNidsBelow,
-  ]);
+  }, [gridPapers, gridNidsInOrder, sortGridPapers]);
 
   const receiveGrid = useCallback(
     (data) => {
