@@ -14,9 +14,9 @@ function userToClass(user) {
   return className;
 }
 
-export default function NameList({ conf_arr, key }) {
+export default function NameList({ conf_arr }) {
   return (
-    <div key={key}>
+    <div>
       <h3>{conf_arr.title}</h3>
       <ul>
         {conf_arr.array.map((user, user_ind) => {
