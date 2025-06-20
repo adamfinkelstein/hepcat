@@ -1,4 +1,4 @@
-Hepcat was originally designed and written by [Ben Edelman](https://benjaminedelman.com/) (Princeton ’18) and (Adam Finkelstein)[https://www.cs.princeton.edu/~af/] for use during the SIGGRAPH 2014 PC meeting, and it has been incrementally adapted and improved for every subsequent SIGGRAPH and SIGGRAPH Asia PC meeting.
+Hepcat was originally designed and written by [Ben Edelman](https://benjaminedelman.com/) (Princeton ’18) and (Adam Finkelstein)[https://www.cs.princeton.edu/~af/] for use during the SIGGRAPH 2014 PC meeting. Hepcat has been incrementally adapted and improved for every subsequent SIGGRAPH and SIGGRAPH Asia PC meeting.
 
 In spring 2020, the PC meeting shifted from in-person to online (in Zoom). [Szymon Rusinkiewicz](https://www.cs.princeton.edu/~smr/) wrote a related application called “Conflictbot” that listens to the Hepcat server communication and moved participants in and out of the plenary Zoom room based on their conflicts. Subsequent meetings switched to using Ohyay for the online meeting, and Conflictbot was rewritten for Ohyay by [Kayvon Fatahalian](https://graphics.stanford.edu/~kayvonf/).
 
