@@ -125,6 +125,14 @@ First, an Admin user sends a request for the data over the socketio connection. 
 
 - It also moves the file from the key-specific subdirectory up to the parent directory. This prevents downloading the file more than one time, for example if an attacker happens to attempt a download after the original, but before the timeout. This strategy may still be vulnerable to a man-in-the-middle attack.
 
+# Known Vulnerabilities
+
+- Anyone with Admin role, including the Chair, has access to all data in Hepcat, including information on conflicted papers.
+
+- Physical access to a device logged in as a different user provides access to all the data and capabilities of that user.
+
+- When a paper comes up as the current paper in the queue, its current recommended status (Conference, Journal, Reject, Tabled) is broadcasted in order to trigger an update in the GUI for Admin users. For efficiency this message is included as part of a broadcast for all users, even though it is only intended for Admin users -- thereby potentially leaking the information to non-admins slightly early (typically under a minute, since the paper is about to be discussed publicly in the meeting). Note that the information is encrypted with the paper key, as described above, so it will not be available to conflicted users.
+
 # Reporting Vulnerabilities
 
 If you discover a security vulnerability, please report it responsibly. **DO NOT report security vulnerabilities through public GitHub issues.**
