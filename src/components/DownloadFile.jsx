@@ -1,18 +1,16 @@
 // Copyright (c) 2025 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
-import React, { useCallback } from 'react';
-import { useControlledLog } from './ControlledLogContext';
-import { useSocketHandler } from './SocketIOContext';
-import { useUser } from './UserContext';
+import { useCallback } from 'react';
+import { useControlledLog } from '../contexts/ControlledLogContext';
+import { useSocketHandler } from '../contexts/SocketIOContext';
+import { useUser } from '../contexts/UserContext';
 
 const openUrlInNewTab = (url) => {
   window.open(url, '_blank', 'noreferrer');
 };
 
-const downloadsContext = React.createContext();
-
-export default function DownloadsContext({ children }) {
+export default function DownloadFile() {
   const { controlledLog } = useControlledLog();
   const { isAdmin } = useUser();
 
@@ -31,11 +29,5 @@ export default function DownloadsContext({ children }) {
   const ctx = 'DownloadsContext';
   useSocketHandler('server_send_download', receiveDownload, ctx);
 
-  return (
-    <downloadsContext.Provider value={{}}>{children}</downloadsContext.Provider>
-  );
-}
-
-export function useDownloadsContext() {
-  return React.useContext(downloadsContext);
+  return <></>;
 }

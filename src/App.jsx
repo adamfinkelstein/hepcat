@@ -2,11 +2,12 @@
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import Container from 'react-bootstrap/Container';
+import { BrowserRouter } from 'react-router';
+import DownloadFile from './components/DownloadFile';
 import HeaderBar from './components/HeaderBar';
 import AppRoutes from './components/AppRoutes';
 import ModalDialog from './components/ModalDialog';
 import ConfirmationBox from './components/ConfirmationBox';
-import { BrowserRouter } from 'react-router';
 import ControlledLogContext from './contexts/ControlledLogContext';
 import SocketIOContext from './contexts/SocketIOContext';
 import KeyContext from './contexts/KeyContext';
@@ -23,7 +24,6 @@ import ModalDialogContext from './contexts/ModalDialogContext';
 import ConfirmationBoxContext from './contexts/ConfirmationBoxContext';
 import StorageContext from './contexts/StorageContext';
 import ServerAlertContext from './contexts/ServerAlertContext';
-import DownloadsContext from './contexts/DownloadsContext';
 
 export default function App() {
   return (
@@ -38,26 +38,25 @@ export default function App() {
                     <AdminContext>
                       <KeyContext>
                         <UserContext>
-                          <DownloadsContext>
-                            <ServerAlertContext>
-                              <StickyContext>
-                                <GridContext>
-                                  <CountContext>
-                                    <QueueContext>
-                                      <FilterContext>
-                                        <PreferencesContext>
-                                          <ModalDialog />
-                                          <ConfirmationBox />
-                                          <HeaderBar />
-                                          <AppRoutes />
-                                        </PreferencesContext>
-                                      </FilterContext>
-                                    </QueueContext>
-                                  </CountContext>
-                                </GridContext>
-                              </StickyContext>
-                            </ServerAlertContext>
-                          </DownloadsContext>
+                          <ServerAlertContext>
+                            <StickyContext>
+                              <GridContext>
+                                <CountContext>
+                                  <QueueContext>
+                                    <FilterContext>
+                                      <PreferencesContext>
+                                        <DownloadFile />
+                                        <ModalDialog />
+                                        <ConfirmationBox />
+                                        <HeaderBar />
+                                        <AppRoutes />
+                                      </PreferencesContext>
+                                    </FilterContext>
+                                  </QueueContext>
+                                </CountContext>
+                              </GridContext>
+                            </StickyContext>
+                          </ServerAlertContext>
                         </UserContext>
                       </KeyContext>
                     </AdminContext>
