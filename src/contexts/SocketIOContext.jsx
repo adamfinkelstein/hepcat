@@ -18,38 +18,38 @@ export default function SocketIOContext({ children }) {
   const { controlledLog } = useControlledLog();
   const { revealModalDialog } = useModalDialog();
   const {
-    getLocalStorageItem,
-    setLocalStorageItem,
-    getSessionStorageItem,
-    setSessionStorageItem,
+    localStorageItemGet,
+    localStorageItemSet,
+    sessionStorageItemGet,
+    sessionStorageItemSet,
   } = useStorage();
 
   const tokenStorageSet = useCallback(
     (token, remember) => {
       if (remember) {
-        setLocalStorageItem(TOKEN_STORAGE_KEY, token);
-        setSessionStorageItem(TOKEN_STORAGE_KEY, null); // remove, just in case
+        localStorageItemSet(TOKEN_STORAGE_KEY, token);
+        sessionStorageItemSet(TOKEN_STORAGE_KEY, null); // remove, just in case
         return;
       }
       // if not already in local storage, write to session storage
-      if (!getLocalStorageItem(TOKEN_STORAGE_KEY)) {
-        setSessionStorageItem(TOKEN_STORAGE_KEY, token);
+      if (!localStorageItemGet(TOKEN_STORAGE_KEY)) {
+        sessionStorageItemSet(TOKEN_STORAGE_KEY, token);
       }
     },
-    [getLocalStorageItem, setLocalStorageItem, setSessionStorageItem]
+    [localStorageItemGet, localStorageItemSet, sessionStorageItemSet]
   );
 
   const tokenStorageGet = useCallback(() => {
     // first check local storage, then session storage
-    const token = getLocalStorageItem(TOKEN_STORAGE_KEY);
+    const token = localStorageItemGet(TOKEN_STORAGE_KEY);
     if (token) return token;
-    return getSessionStorageItem(TOKEN_STORAGE_KEY);
-  }, [getLocalStorageItem, getSessionStorageItem]);
+    return sessionStorageItemGet(TOKEN_STORAGE_KEY);
+  }, [localStorageItemGet, sessionStorageItemGet]);
 
   const tokenStorageClear = useCallback(() => {
-    setSessionStorageItem(TOKEN_STORAGE_KEY, null);
-    setLocalStorageItem(TOKEN_STORAGE_KEY, null);
-  }, [setSessionStorageItem, setLocalStorageItem]);
+    sessionStorageItemSet(TOKEN_STORAGE_KEY, null);
+    localStorageItemSet(TOKEN_STORAGE_KEY, null);
+  }, [sessionStorageItemSet, localStorageItemSet]);
 
   const socketLogin = useCallback((email, password, remember, cb) => {
     errorCallback = cb;
@@ -65,7 +65,7 @@ export default function SocketIOContext({ children }) {
     [tokenStorageClear]
   );
 
-  const socketSetAuthToken = useCallback(
+  const socketAuthTokenSet = useCallback(
     (token) => {
       tokenStorageSet(token, auth?.remember);
     },
@@ -136,7 +136,7 @@ export default function SocketIOContext({ children }) {
       setAuth(null);
       setSocket(null);
     },
-    [tokenStorageClear, setSocket, setAuth]
+    [tokenStorageClear]
   );
 
   /*
@@ -163,7 +163,7 @@ export default function SocketIOContext({ children }) {
       setSocket(null);
     }
     return false;
-  }, [auth, tokenStorageGet, setAuth, setSocket]);
+  }, [auth, tokenStorageGet]);
 
   useEffect(() => {
     if (!isAuthenticated()) return;
@@ -181,7 +181,7 @@ export default function SocketIOContext({ children }) {
       s.off('disconnect', handleDisconnect);
       s.disconnect();
     };
-  }, [isAuthenticated, auth, setSocket, handleConnectError, handleDisconnect]);
+  }, [isAuthenticated, auth, handleConnectError, handleDisconnect]);
 
   return (
     <socketIOContext.Provider
@@ -190,7 +190,7 @@ export default function SocketIOContext({ children }) {
         socketLogin,
         socketLogout,
         socketEmit,
-        socketSetAuthToken,
+        socketAuthTokenSet,
       }}
     >
       {children}
@@ -207,23 +207,20 @@ export function useSocketHandler(event, handler, handlerName) {
   const { socket } = useSocketIO();
   const { controlledLog } = useControlledLog();
 
-  const registerOnOrOffHandler = useCallback(
-    (event, handler, handlerName, onOrOff) => {
+  useEffect(() => {
+    const registerOnOrOffHandler = (event, handler, msg, onOrOff) => {
       if (!socket) return;
       const verbose = false;
       if (verbose) {
-        const msg = onOrOff + ' socket ' + event + ' handler ' + handlerName;
-        controlledLog(msg);
+        controlledLog(onOrOff.toUpperCase() + ' ' + msg);
       }
       socket[onOrOff](event, handler);
-    },
-    [socket, controlledLog]
-  );
-
-  useEffect(() => {
-    registerOnOrOffHandler(event, handler, handlerName, 'on');
-    return () => {
-      registerOnOrOffHandler(event, handler, handlerName, 'off');
     };
-  }, [registerOnOrOffHandler, event, handler, handlerName]);
+
+    const msg = 'socket event: ' + event + ' handler name: ' + handlerName;
+    registerOnOrOffHandler(event, handler, msg, 'on');
+    return () => {
+      registerOnOrOffHandler(event, handler, msg, 'off');
+    };
+  }, [socket, controlledLog, event, handler, handlerName]);
 }

@@ -27,16 +27,16 @@ export default function ChangePasswordPage() {
   const usersArr = Object.entries(allUsers).map(([_email, user]) => user);
   usersArr.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-  let [oldPassword, setOldPassword] = useState('');
-  let [password, setPassword] = useState('');
-  let [passwordAgain, setPasswordAgain] = useState('');
-  let [checklistOk, setChecklistOk] = useState(false);
-  let [enableSubmit, setEnableSubmit] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordAgain, setPasswordAgain] = useState('');
+  const [checklistOk, setChecklistOk] = useState(false);
+  const [enableSubmit, setEnableSubmit] = useState(false);
 
   const defaultForWho = 'Select a user';
-  let [forWho, setForWho] = useState(defaultForWho);
-  let [forEmail, setForEmail] = useState('');
-  let [isForOther, setIsForOther] = useState(false);
+  const [forWho, setForWho] = useState(defaultForWho);
+  const [forEmail, setForEmail] = useState('');
+  const [isForOther, setIsForOther] = useState(false);
 
   const allowSetOthers = user && isAdmin;
   const oldPassNeeded = false; // was: user && !isForOther;

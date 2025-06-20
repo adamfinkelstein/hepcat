@@ -24,3 +24,8 @@ All checks run automatically via pre-commit hooks.
 2. Make your changes
 3. Ensure all tests pass
 4. Submit a pull request
+
+## See Also
+
+- [CODE_OF_CONDUCT](./CODE_OF_CONDUCT.md)
+- [CONTRIBUTORS](./CONTRIBUTORS.md)

@@ -35,10 +35,11 @@ export default function AdminContext({ children }) {
 
   // Called by QueueContext when new Queue arrives.
   // Reset both probes to not set yet.
+  // Need callback because exported.
   const resetProbeMsgs = useCallback(() => {
     setProbeGUIMsg(notSetYetMsg);
     setProbeTextMsg(notSetYetMsg);
-  }, [setProbeGUIMsg, setProbeTextMsg]);
+  }, []);
 
   // Update admin local variables from QueueContext.
   const recordAdminGlobs = useCallback(
@@ -50,7 +51,7 @@ export default function AdminContext({ children }) {
         setUpdateStatus(data.current_status);
       }
     },
-    [controlledLog, setLocHideQ, setLocHideMsg]
+    [controlledLog]
   );
 
   // Called by component that has the switch.
@@ -62,7 +63,7 @@ export default function AdminContext({ children }) {
       socketEmit('admin_set_disable_logins', disable);
       controlledLog('admin_set_disable_logins: ', disable);
     },
-    [disableLogins, setDisableLogins, socketEmit, controlledLog]
+    [disableLogins, socketEmit, controlledLog]
   );
 
   const receiveAdminData = useCallback(
@@ -72,7 +73,7 @@ export default function AdminContext({ children }) {
       setGitInfo(data.git_info);
       setFileUploads(data.uploads);
     },
-    [setFileUploads, controlledLog]
+    [controlledLog]
   );
 
   const getMsgFromProbe = useCallback(
@@ -92,7 +93,7 @@ export default function AdminContext({ children }) {
       const msg = getMsgFromProbe(countStr, 'GUI');
       setProbeGUIMsg(msg);
     },
-    [getMsgFromProbe, setProbeGUIMsg]
+    [getMsgFromProbe]
   );
 
   const receiveProbeText = useCallback(
@@ -100,7 +101,7 @@ export default function AdminContext({ children }) {
       const msg = getMsgFromProbe(countStr, 'text');
       setProbeTextMsg(msg);
     },
-    [getMsgFromProbe, setProbeTextMsg]
+    [getMsgFromProbe]
   );
 
   const receiveRefreshUser = useCallback(
@@ -112,7 +113,7 @@ export default function AdminContext({ children }) {
         [email]: oneUser,
       }));
     },
-    [controlledLog, setAllUsers]
+    [controlledLog]
   );
 
   const receiveRefreshAllUsers = useCallback(
@@ -120,7 +121,7 @@ export default function AdminContext({ children }) {
       controlledLog('received refresh for all users: ', usersObj);
       setAllUsers(usersObj);
     },
-    [controlledLog, setAllUsers]
+    [controlledLog]
   );
 
   // register socket event handlers

@@ -83,7 +83,7 @@ export function usePreferences() {
 
 export default function PreferencesContext({ children }) {
   const { colorKeys } = useCount();
-  const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
+  const { getUserLocalStorageItem, userLocalStorageItemSet } = useStorage();
   const [isInitialized, setIsInitialized] = useState(false);
   const [colors, setColors] = useState(defaultColors);
   const [fontSize, setFontSize] = useState('Medium');
@@ -103,7 +103,7 @@ export default function PreferencesContext({ children }) {
       con: showConflicts,
       sta: showStars,
     };
-    setUserLocalStorageItem(PREF_STORAGE_KEY, prefs);
+    userLocalStorageItemSet(PREF_STORAGE_KEY, prefs);
   }, [
     colors,
     fontSize,
@@ -112,7 +112,7 @@ export default function PreferencesContext({ children }) {
     showAbstract,
     showConflicts,
     showStars,
-    setUserLocalStorageItem,
+    userLocalStorageItemSet,
   ]);
 
   const readPrefsFromLocalStorage = useCallback(() => {

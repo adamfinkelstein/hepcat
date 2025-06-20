@@ -42,13 +42,10 @@ export default function FilterContext({ children }) {
     [controlledLog]
   );
 
-  const receiveFilterNames = useCallback(
-    (admin_data) => {
-      setAllGuiFilterNames(admin_data.filters.gui);
-      setAllTextFilterNames(admin_data.filters.text);
-    },
-    [setAllGuiFilterNames, setAllTextFilterNames]
-  );
+  const receiveFilterNames = useCallback((admin_data) => {
+    setAllGuiFilterNames(admin_data.filters.gui);
+    setAllTextFilterNames(admin_data.filters.text);
+  }, []);
 
   // register socket event handlers
   const ctx = 'FilterContext';

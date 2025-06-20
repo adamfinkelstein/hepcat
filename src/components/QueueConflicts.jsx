@@ -3,7 +3,7 @@
 
 import Container from 'react-bootstrap/Container';
 
-export default function PaperConflict({ conflicts, isCurrent }) {
+export default function QueueConflicts({ conflicts, isCurrent }) {
   const noConflictsStr = '(no conflicts)';
 
   function userToClass(user) {
@@ -23,7 +23,7 @@ export default function PaperConflict({ conflicts, isCurrent }) {
   }
 
   return (
-    <Container fluid className="PaperConflict">
+    <Container fluid className="QueueConflicts">
       {conflicts.length === 0 ? (
         <div>{noConflictsStr}</div>
       ) : (

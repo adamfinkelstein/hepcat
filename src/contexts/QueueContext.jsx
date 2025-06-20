@@ -26,7 +26,15 @@ export default function QueueContext({ children }) {
   const { flash } = useFlasher();
   const [queue, setQueue] = useState([]);
   const [queueCurrent, setQueueCurrent] = useState(0);
+  const [isCurrentPaper, setIsCurrentPaper] = useState(false);
   const [roomGlobs, setRoomGlobs] = useState(null);
+
+  // When queue or queueCurrent changes, track if there is a current paper.
+  useEffect(() => {
+    const isPaper =
+      queue?.length && queueCurrent < queue.length && queueCurrent >= 0;
+    setIsCurrentPaper(isPaper);
+  }, [queue, queueCurrent]);
 
   // When room choice changes, request new queue.
   // (Only after welcome when user is set.)
@@ -34,19 +42,16 @@ export default function QueueContext({ children }) {
     if (user) socketEmit('user_request_queue', roomChoice);
   }, [user, roomChoice, socketEmit]);
 
-  const updateQueueEntry = useCallback(
-    (q_index, status) => {
-      setQueue((prevQueue) => {
-        // Sanity check on bounds
-        if (q_index < 0 || q_index >= prevQueue.length) return prevQueue;
-        // Create new array with updated entry
-        const newQueue = [...prevQueue];
-        newQueue[q_index].status = status;
-        return newQueue;
-      });
-    },
-    [setQueue]
-  );
+  const updateQueueEntry = useCallback((q_index, status) => {
+    setQueue((prevQueue) => {
+      // Sanity check on bounds
+      if (q_index < 0 || q_index >= prevQueue.length) return prevQueue;
+      // Create new array with updated entry
+      const newQueue = [...prevQueue];
+      newQueue[q_index].status = status;
+      return newQueue;
+    });
+  }, []);
 
   const handleQAndGridStatusUpdate = useCallback(
     (update) => {
@@ -64,16 +69,13 @@ export default function QueueContext({ children }) {
     [controlledLog, roomChoice, flash, updateGridEntry, updateQueueEntry]
   );
 
-  const replaceConflictsAndSetQueue = useCallback(
-    (arr) => {
-      const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
-      const afterCleanup = arr.map((p) => {
-        return p ? p : dummy; // replace null (conflict) w dummy
-      });
-      setQueue(afterCleanup);
-    },
-    [setQueue]
-  );
+  const replaceConflictsAndSetQueue = useCallback((arr) => {
+    const dummy = { nid: 0, conflicts: [], enter: [], leave: [] };
+    const afterCleanup = arr.map((p) => {
+      return p ? p : dummy; // replace null (conflict) w dummy
+    });
+    setQueue(afterCleanup);
+  }, []);
 
   const receiveQueue = useCallback(
     (data) => {
@@ -86,7 +88,17 @@ export default function QueueContext({ children }) {
         setRoomGlobs(data.globs);
         setQueueCurrent(data.globs.current);
         if (isAdmin) {
+          // first time call this without potential decrypt
           recordAdminGlobs(data.globs);
+          const status_enc = data.globs.current_status_enc;
+          if (status_enc) {
+            decryptThenHandleObj(status_enc, (decrypted_status) => {
+              console.log('call recordAdminGlobs with: ' + decrypted_status);
+              data.globs.current_status = decrypted_status;
+              // second time call it including successful current_status
+              recordAdminGlobs(data.globs);
+            });
+          }
         }
         const paper_list = data.paper_list_encrypted;
         decryptThenHandleArray(paper_list, replaceConflictsAndSetQueue);
@@ -114,6 +126,7 @@ export default function QueueContext({ children }) {
       value={{
         queue,
         queueCurrent,
+        isCurrentPaper,
         roomGlobs,
       }}
     >

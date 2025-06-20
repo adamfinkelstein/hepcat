@@ -17,7 +17,7 @@ const stickyContext = React.createContext();
 export default function StickyContext({ children }) {
   const { socket, socketEmit } = useSocketIO();
   const { controlledLog } = useControlledLog();
-  const { getUserLocalStorageItem, setUserLocalStorageItem } = useStorage();
+  const { getUserLocalStorageItem, userLocalStorageItemSet } = useStorage();
 
   // Load sticky keys from storage
   const loadStickyKeysFromStorage = useCallback(() => {
@@ -29,12 +29,12 @@ export default function StickyContext({ children }) {
   const saveStickyKeysToStorage = useCallback(
     (sKeys) => {
       if (sKeys && Object.keys(sKeys).length) {
-        setUserLocalStorageItem(STORAGE_KEY, sKeys);
+        userLocalStorageItemSet(STORAGE_KEY, sKeys);
       } else {
-        setUserLocalStorageItem(STORAGE_KEY, null); // remove the item
+        userLocalStorageItemSet(STORAGE_KEY, null); // remove the item
       }
     },
-    [setUserLocalStorageItem]
+    [userLocalStorageItemSet]
   );
 
   const [stickyKeys, setStickyKeys] = useState(() =>
@@ -46,31 +46,25 @@ export default function StickyContext({ children }) {
     saveStickyKeysToStorage(stickyKeys);
   }, [stickyKeys, saveStickyKeysToStorage]);
 
-  const saveConfirmedSticky = useCallback(
-    (data) => {
-      const { nid, idx, key } = data;
-      const savedData = { idx, key };
+  const saveConfirmedSticky = useCallback((data) => {
+    const { nid, idx, key } = data;
+    const savedData = { idx, key };
 
-      setStickyKeys((prevStickyKeys) => ({
-        ...prevStickyKeys, // never null (see loadStickyKeysFromStorage)
-        [nid]: savedData,
-      }));
-    },
-    [setStickyKeys]
-  );
+    setStickyKeys((prevStickyKeys) => ({
+      ...prevStickyKeys, // never null (see loadStickyKeysFromStorage)
+      [nid]: savedData,
+    }));
+  }, []);
 
-  const forgetStickyKey = useCallback(
-    (nid) => {
-      setStickyKeys((prevStickyKeys) => {
-        // no change if that key does not exist
-        if (!prevStickyKeys?.[nid]) return prevStickyKeys;
-        // make copy without that key
-        const { [nid]: _removed, ...newKeys } = prevStickyKeys;
-        return newKeys;
-      });
-    },
-    [setStickyKeys]
-  );
+  const forgetStickyKey = useCallback((nid) => {
+    setStickyKeys((prevStickyKeys) => {
+      // no change if that key does not exist
+      if (!prevStickyKeys?.[nid]) return prevStickyKeys;
+      // make copy without that key
+      const { [nid]: _removed, ...newKeys } = prevStickyKeys;
+      return newKeys;
+    });
+  }, []);
 
   const checkStickyIdIsValid = useCallback(
     (nid, check_idx) => {

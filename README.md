@@ -116,4 +116,6 @@ Out of the box, Hepcat uses Google [OR Tools](https://developers.google.com/opti
 
 - [Security model](./SECURITY.md)
 - [About testing](tests/README.md)
-- [About installing](config-external/README.md)
+- [Production install](config-external/README.md)
+- [How to contribute](./CONTRIBUTING.md)
+- [Project history](./CONTRIBUTORS.md)

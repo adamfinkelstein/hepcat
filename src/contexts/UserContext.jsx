@@ -10,7 +10,7 @@ import { useStorage } from './StorageContext';
 const userContext = React.createContext();
 
 export default function UserContext({ children }) {
-  const { socket, socketEmit, socketSetAuthToken } = useSocketIO();
+  const { socket, socketEmit, socketAuthTokenSet } = useSocketIO();
   const { controlledLog, setShowLogs } = useControlledLog();
   const { setPaperKeys } = useKey();
   const { setStorageUserID } = useStorage();
@@ -37,7 +37,7 @@ export default function UserContext({ children }) {
     (data) => {
       setShowLogs(data.show_logs); // this should be before next line
       controlledLog('received welcome:', data);
-      socketSetAuthToken(data.token);
+      socketAuthTokenSet(data.token);
       setPaperKeys(data.paper_keys);
       setAllRooms(data.all_rooms);
       setUser(data.user);
@@ -55,7 +55,7 @@ export default function UserContext({ children }) {
       setIsAdmin,
       setPaperKeys,
       setAllRooms,
-      socketSetAuthToken,
+      socketAuthTokenSet,
     ]
   );
 
@@ -69,7 +69,7 @@ export default function UserContext({ children }) {
       setIsAdmin(false);
       setPaperKeys(null);
     }
-  }, [user, socket, setUser, setStorageUserID, setIsAdmin, setPaperKeys]);
+  }, [user, socket, setPaperKeys, setStorageUserID]);
 
   // register socket event handlers
   const ctx = 'UserContext';
