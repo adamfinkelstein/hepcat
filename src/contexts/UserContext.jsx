@@ -9,6 +9,9 @@ import { useStorage } from './StorageContext';
 
 const userContext = React.createContext();
 
+const belongsInRoom = (user, room) =>
+  room === 'Plenary' || user?.rooms?.includes(room);
+
 export default function UserContext({ children }) {
   const { socket, socketEmit, socketAuthTokenSet } = useSocketIO();
   const { controlledLog, setShowLogs } = useControlledLog();
@@ -33,8 +36,15 @@ export default function UserContext({ children }) {
     return isScreenRole() || isOutsideRole();
   }, [isScreenRole, isOutsideRole]);
 
+  const userBelongsInRoom = useCallback(
+    (room) => belongsInRoom(user, room),
+    [user]
+  );
+
   const receiveWelcome = useCallback(
     (data) => {
+      const roomName = data.user.room_name;
+      const roomOrPlenary = roomName ? roomName : 'Plenary';
       setShowLogs(data.show_logs); // this should be before next line
       controlledLog('received welcome:', data);
       socketAuthTokenSet(data.token);
@@ -42,7 +52,7 @@ export default function UserContext({ children }) {
       setAllRooms(data.all_rooms);
       setUser(data.user);
       setIsAdmin(data.user.role_is_admin);
-      setRoomChoice(data.user.room_name);
+      setRoomChoice(roomOrPlenary);
       setStorageUserID(data.user.email);
       socketEmit('user_request_grid');
     },
@@ -86,6 +96,8 @@ export default function UserContext({ children }) {
         isScreenRole,
         isOutsideRole,
         isScreenOrOutside,
+        belongsInRoom,
+        userBelongsInRoom,
       }}
     >
       {children}
