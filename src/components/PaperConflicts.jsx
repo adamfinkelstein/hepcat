@@ -3,15 +3,17 @@
 
 import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
+import AvailableChair from './AvailableChair';
 import NameList from './NameList';
 
 export default function PaperConflicts() {
-  const { roomChoice, belongsInRoom } = useUser();
+  const { isAdmin, roomChoice, belongsInRoom } = useUser();
   const { queue, queueCurrent, isCurrentPaper, roomGlobs } = useQueue();
   const currentShowEnter = isCurrentPaper ? roomGlobs.current_show_enter : 0;
   const isNextPaper = queueCurrent < queue.length - 1;
   const cp = isCurrentPaper ? queue[queueCurrent] : null; // current paper
   const np = isNextPaper ? queue[queueCurrent + 1] : null; // next paper
+  const currentConflicts = cp?.conflicts ? cp?.conflicts : [];
 
   // sort through conflicts.
   // reorder depending on whether they belong in this room or not.
@@ -19,7 +21,7 @@ export default function PaperConflicts() {
     const inRoom = [];
     const outRoom = [];
     for (let i = 0; i < conflicts.length; i++) {
-      let ci = conflicts[i];
+      let ci = { ...conflicts[i] }; // copy for setting otherRoom
       if (belongsInRoom(ci, roomChoice)) {
         inRoom.push(ci);
       } else {
@@ -49,7 +51,7 @@ export default function PaperConflicts() {
     {
       show: true,
       title: 'Conflicts:',
-      array: isCurrentPaper && cp?.conflicts ? siftConflicts(cp.conflicts) : [],
+      array: siftConflicts(currentConflicts),
       default: '(none)',
     },
     {
@@ -68,6 +70,7 @@ export default function PaperConflicts() {
 
   return (
     <div>
+      {isAdmin && <AvailableChair conflicts={currentConflicts} />}
       {conflicts_arrays.map((conf_arr, conf_ind) =>
         conf_arr.show ? (
           <NameList key={conf_ind} conf_arr={conf_arr} />

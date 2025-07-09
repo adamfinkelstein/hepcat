@@ -1,10 +1,11 @@
 // Copyright (c) 2025 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { DateTime } from 'luxon';
 import { useSocketIO, useSocketHandler } from './SocketIOContext';
 import { useControlledLog } from './ControlledLogContext';
+import { useUser } from './UserContext';
 
 const adminContext = React.createContext();
 
@@ -13,6 +14,7 @@ const notSetYetMsg = '(not set)';
 export default function AdminContext({ children }) {
   const { socketEmit } = useSocketIO();
   const { controlledLog } = useControlledLog();
+  const { roomChoice, belongsInRoom } = useUser();
   const [disableLogins, setDisableLogins] = useState(false);
   const [probeGUIMsg, setProbeGUIMsg] = useState(notSetYetMsg);
   const [probeTextMsg, setProbeTextMsg] = useState(notSetYetMsg);
@@ -23,7 +25,23 @@ export default function AdminContext({ children }) {
   const [updateStatus, setUpdateStatus] = useState('Tabled');
   const [gitInfo, setGitInfo] = useState('');
   const [allUsers, setAllUsers] = useState({});
+  const [roomChairs, setRoomChairs] = useState([]);
+  const [roomBackups, setRoomBackups] = useState([]);
   const [showDangerous, setShowDangerous] = useState(false);
+
+  useEffect(() => {
+    const roleAndRoomMatch = (user, role, room) => {
+      return user.role_name == role && belongsInRoom(user, room);
+    };
+    const filterUsersByRoomAndRole = (users, room, role) => {
+      return users.filter((user) => roleAndRoomMatch(user, role, room));
+    };
+    const userArr = Object.values(allUsers);
+    const c = filterUsersByRoomAndRole(userArr, roomChoice, 'Chair');
+    const b = filterUsersByRoomAndRole(userArr, roomChoice, 'Backup');
+    setRoomChairs(c);
+    setRoomBackups(b);
+  }, [roomChoice, allUsers, belongsInRoom]);
 
   const countOnlineUsers = useCallback(() => {
     let count = 0;
@@ -157,6 +175,8 @@ export default function AdminContext({ children }) {
         allUsers,
         setAllUsers,
         countOnlineUsers,
+        roomChairs,
+        roomBackups,
       }}
     >
       {children}
