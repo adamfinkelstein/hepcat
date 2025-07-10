@@ -3,6 +3,7 @@ fake.super@example.com,Fake,Super,Room_1B;Room_2B,Super,pass
 fake.admin@example.com,Fake,Admin,Room_1B;Room_2B,Admin,pass
 fake.chair@example.com,Fake,Chair,Room_1A;Room_2B,Chair,pass
 fake.citizen@example.com,Fake,Citizen,Room_1A;Room_2A,,pass
+caitlyn.johnson@example.com,Fake,Backup,Room_1A;Room_2A,Backup,
 destiny.gomez@example.com,Destiny,Gomez,Room_1B;Room_2A,,
 valerie.stone@example.com,Valerie,Stone,Room_1B;Room_2A,,
 matthew.joseph@example.com,Matthew,Joseph,Room_1A;Room_2B,,
@@ -20,7 +21,6 @@ john.santiago@example.com,John,Santiago,Room_1A;Room_2B,,
 rodney.lee@example.com,Rodney,Lee,Room_1A;Room_2B,,
 ricky.johnson@example.com,Ricky,Johnson,Room_1A;Room_2B,,
 cynthia.caldwell@example.com,Cynthia,Caldwell,Room_1B;Room_2B,,
-caitlyn.johnson@example.com,Caitlyn,Johnson,Room_1A;Room_2A,,
 hannah.mitchell@example.com,Hannah,Mitchell,Room_1B;Room_2B,,
 william.rodriguez@example.com,William,Rodriguez,Room_1A;Room_2A,,
 brian.mcintosh@example.com,Brian,Mcintosh,Room_1B;Room_2B,,

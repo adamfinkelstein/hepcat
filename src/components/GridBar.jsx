@@ -13,11 +13,11 @@ export default function GridBar() {
 
   return (
     <div className="GridBar">
-      {nBelow} below
-      <span className="barText">
-        &nbsp;&lt;&nbsp;{barString}&nbsp;&le;&nbsp;
-      </span>
       {nAbove} above
+      <span className="barText">
+        &nbsp;&ge;&nbsp;{barString}&nbsp;&lt;&nbsp;
+      </span>
+      {nBelow} below
     </div>
   );
 }

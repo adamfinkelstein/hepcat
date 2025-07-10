@@ -35,9 +35,9 @@ export default function App() {
               <FlasherContext>
                 <StorageContext>
                   <SocketIOContext>
-                    <AdminContext>
-                      <KeyContext>
-                        <UserContext>
+                    <KeyContext>
+                      <UserContext>
+                        <AdminContext>
                           <ServerAlertContext>
                             <StickyContext>
                               <GridContext>
@@ -57,9 +57,9 @@ export default function App() {
                               </GridContext>
                             </StickyContext>
                           </ServerAlertContext>
-                        </UserContext>
-                      </KeyContext>
-                    </AdminContext>
+                        </AdminContext>
+                      </UserContext>
+                    </KeyContext>
                   </SocketIOContext>
                 </StorageContext>
               </FlasherContext>

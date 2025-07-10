@@ -17,7 +17,7 @@ export default function StickyTip() {
             <strong>Tabled-Discuss</strong> &mdash; Either:
             <ol>
               <li>Primary wants help/advice from the PC, or</li>
-              <li>A PC member wants to revisit a paper discussion.</li>
+              <li>Any PC member wants to revisit a paper discussion.</li>
             </ol>
           </li>
           <li>

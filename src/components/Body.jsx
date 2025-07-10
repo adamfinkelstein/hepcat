@@ -24,6 +24,7 @@ export default function Body() {
     roomChoice,
     setRoomChoice,
     isScreenOrOutside,
+    userBelongsInRoom,
   } = useUser();
   const { queue, roomGlobs } = useQueue();
   const { splitWidth, setSplitWidth, fontPref } = usePreferences();
@@ -34,8 +35,8 @@ export default function Body() {
     : 'The queue is hidden.';
   const message = hideQueue ? hideMessage : 'No papers in queue.';
 
-  const userBelongsInRoom = (room) =>
-    room === 'Plenary' || user?.rooms?.includes(room);
+  // const userBelongsInRoom = (room) =>
+  //   room === 'Plenary' || user?.rooms?.includes(room);
 
   const userRooms = allRooms.filter(
     // XXX Later make this configurable whether everyone can
