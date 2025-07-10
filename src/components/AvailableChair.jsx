@@ -22,7 +22,7 @@ export default function AvailableChair({ conflicts }) {
       {show ? (
         <NameList conf_arr={conf} />
       ) : (
-        <h3 className="text-danger">No Available Chair!</h3>
+        <h3 className="text-danger fw-bold m-5">No Available Chair!</h3>
       )}
     </>
   );
