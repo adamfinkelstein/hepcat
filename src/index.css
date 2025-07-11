@@ -182,7 +182,7 @@ body {
  */
 
 /* gap below room menu applies for both admin and others */
-.Body .room-choice-menu {
+.ChooseRoom {
   padding-bottom: 0;
   padding-left: 12px;
 }
