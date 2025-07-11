@@ -261,7 +261,7 @@ body {
  * PAPER Tab
 */
 
-.Paper .paper-timer {
+.PaperTab .paper-timer {
   background-color: #dadada;
   border-radius: 5px;
   color: rgb(32, 31, 96);
@@ -274,7 +274,7 @@ body {
   top: 72px;
 }
 
-.Paper .paper-par-header {
+.PaperTab .paper-par-header {
   font-weight: bold;
   padding-right: 8px;
 }
