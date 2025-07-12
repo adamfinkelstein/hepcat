@@ -20,7 +20,7 @@ export default function LoginPage() {
     ev.preventDefault();
     socketLogin(email, password, remember, (error) => {
       if (error) {
-        flash(error, 'danger');
+        flash(error, 'danger', 10); // show for 10s
       }
     });
     navigate('/');
