@@ -6,27 +6,36 @@ import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import Queue from './Queue';
+import BoxMsg from './BoxMsg';
 import ChooseRoom from './ChooseRoom';
+import AdminQueueControls from './AdminQueueControls';
 
 export default function LeftPanel() {
   const { isAdmin } = useUser();
   const { queue, roomGlobs } = useQueue();
   const { fontPref } = usePreferences();
-  const hideQueue = !isAdmin && roomGlobs?.hide_queue;
-  const hideMessage = roomGlobs?.message
-    ? roomGlobs.message
-    : 'The queue is hidden.';
-  const message = hideQueue ? hideMessage : 'No papers in queue.';
+  const hideQueue = roomGlobs?.hide_queue;
+  const globsMsg = roomGlobs?.message;
+  const noPapers = !queue?.length;
+  const noQueue = noPapers || (hideQueue && !isAdmin);
+  let msg = false;
+  if (hideQueue) {
+    msg = globsMsg ? globsMsg : 'The queue is hidden.';
+    if (isAdmin) {
+      const extra = 'Queue hidden for non-admins, saying: ';
+      msg = extra + msg;
+    }
+  } else if (noPapers) {
+    msg = 'No papers in queue.';
+  }
 
   return (
     <Container fluid className="LeftPanel">
       <div className={fontPref}>
         <ChooseRoom />
-        {queue.length && !hideQueue ? (
-          <Queue />
-        ) : (
-          <div className="queue-message">{message}</div>
-        )}
+        {isAdmin && <AdminQueueControls />}
+        {msg && <BoxMsg msg={msg} />}
+        {!noQueue && <Queue />}
       </div>
     </Container>
   );

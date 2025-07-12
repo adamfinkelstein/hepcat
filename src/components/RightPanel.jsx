@@ -13,20 +13,16 @@ import SetQueueTab from './SetQueueTab';
 
 export default function RightPanel() {
   const { isAdmin, isScreenOrOutside } = useUser();
-  const { roomGlobs } = useQueue();
   const { fontPref } = usePreferences();
   const showGrid = !isScreenOrOutside();
-  const hideQueue = !isAdmin && roomGlobs?.hide_queue;
 
   return (
     <Container fluid className="RightPanel">
       <div className={fontPref}>
         <Tabs defaultActiveKey="paper" className="mb-3 bigger-font tabs">
-          {!hideQueue && (
-            <Tab eventKey="paper" title="Paper" className="tab">
-              <PaperTab />
-            </Tab>
-          )}
+          <Tab eventKey="paper" title="Paper" className="tab">
+            <PaperTab />
+          </Tab>
           {showGrid && (
             <Tab eventKey="grid" title="Grid" className="tab">
               <GridTab />

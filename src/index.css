@@ -163,10 +163,7 @@ body {
   padding-top: 15px;
 }
 
-.Body .queue-message,
-.Body .paper-message,
-.Queue .queue-message,
-.GridTab .grid-message {
+.BoxMsg {
   border: 1px dashed purple;
   border-radius: 6px;
   color: purple;
@@ -178,14 +175,8 @@ body {
 }
 
 /*
- * QUEUE Panel
+ * Left Panel
  */
-
-/* gap below room menu applies for both admin and others */
-.ChooseRoom {
-  padding-bottom: 0;
-  padding-left: 12px;
-}
 
 .AdminQueueControls .btn-light {
   border: 1px solid black;
