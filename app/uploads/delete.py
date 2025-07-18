@@ -31,9 +31,8 @@ from ..models.helpers import (
 
 def delete_all_users():
     # drop_and_rebuild_tables("conflicts,users,roles") # old version just this
-    drop_and_rebuild_tables(
-        "history,conflicts,tags,labels,papers,glob_queues,actions,users,roles"
-    )
+    drop = "history,conflicts,tags,labels,papers,glob_queues,actions,users,roles"
+    drop_and_rebuild_tables(drop)
     ensure_all_gqs()  # GQs were wiped, now needed
 
 
