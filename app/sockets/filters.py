@@ -391,14 +391,17 @@ def remove_all_whitespace(exp):
     return exp
 
 
+def has_alpha(str):
+    return any(c.isalpha() for c in str)
+
+
 def exp_is_only_nid_list(exp):
-    no_comma = exp.replace(",", "")
-    return no_comma.isdigit()
+    return not has_alpha(exp)  # has no alpha characters
 
 
 def get_nid_list(exp):
-    nids = exp.split(",")
-    nids = [int(nid) for nid in nids if nid]  # ignore blanks
+    nids = re.split(r"\D+", exp)  # split on non-digits
+    nids = [int(nid) for nid in nids if nid]  # ignore empty
     return nids
 
 
@@ -406,7 +409,7 @@ PARSE_ERR_MSG = "Failed to parse expression in text filter."
 
 
 def parse_text_filter(room, exp):
-    exp = remove_all_whitespace(exp)
+    exp = exp.strip()
     if not exp:
         return [], False, ""
     if exp_is_only_nid_list(exp):
@@ -414,6 +417,7 @@ def parse_text_filter(room, exp):
         nids = get_nid_list(exp)
     else:
         solve_tsp = True
+        exp = remove_all_whitespace(exp)
         nids = get_ids_by_set_op(room, exp)
         if nids is None:
             return None, solve_tsp, PARSE_ERR_MSG
