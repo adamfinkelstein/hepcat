@@ -2,7 +2,7 @@
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 function userToClass(user) {
-  let className = 'bigger-font';
+  let className = ''; //'bigger-font';
   if (user.role_is_admin || user.role_name === 'Backup') {
     className += ' admin-user';
   }
@@ -17,7 +17,7 @@ function userToClass(user) {
 export default function NameList({ conf_arr }) {
   return (
     <div>
-      <h3>{conf_arr.title}</h3>
+      <h5>{conf_arr.title}</h5>
       <ul>
         {conf_arr.array.map((user, user_ind) => {
           return (
