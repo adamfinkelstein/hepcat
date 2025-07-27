@@ -421,12 +421,8 @@ body {
   margin-top: -5px;
 }
 
-.PreferencesPage .favorites-input {
+.FavoritePreferences .favorites-input {
   width: 550px;
-}
-
-.FavoritePreferences {
-  margin-bottom: 50px;
 }
 
 .sticky-popover {

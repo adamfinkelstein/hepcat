@@ -15,7 +15,7 @@ export default function PrivatePage() {
         <h1>Private Settings</h1>
         <Stack direction="vertical" gap={2}>
           <FavoritePreferences />
-          <hr className="horizontal-divider" />
+          <hr className="horizontal-divider mt-5" />
           <RevokeStickies />
         </Stack>
       </div>
