@@ -86,12 +86,12 @@ export default function UsersPage() {
                         </Button>
                       )}
                     </td>
+                    <td>{oneUser.full_name}</td>
                     <td>
                       <span className={userToClass(oneUser)}>
-                        {oneUser.full_name}
+                        {oneUser.role_name}
                       </span>
                     </td>
-                    <td>{oneUser.role_name}</td>
                     <td>{oneUser.email}</td>
                     <td>{oneUser.rooms?.replace(/Room_/g, '')}</td>
                     <td>
