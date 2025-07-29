@@ -45,6 +45,10 @@ body {
   color: gray;
 }
 
+.old-score {
+  color: rgb(210, 174, 137);
+}
+
 .bold-user {
   font-weight: bold;
 }
