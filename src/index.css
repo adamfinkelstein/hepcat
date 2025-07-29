@@ -390,6 +390,7 @@ body {
   padding: 3px 8px;
 }
 
+.GridProgressBar .rectangle,
 .ColorLegend .rectangle,
 .ChooseStatusDropdown .rectangle {
   border: 1px solid black;
