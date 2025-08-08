@@ -18,7 +18,7 @@ export function useQueue() {
 
 export default function QueueContext({ children }) {
   const { controlledLog } = useControlledLog();
-  const { user, isAdmin, roomChoice } = useUser();
+  const { user, isAdmin, roomChoice, isScreenOrOutside } = useUser();
   const { socketEmit } = useSocketIO();
   const { decryptThenHandleArray, decryptThenHandleObj } = useKey();
   const { updateGridEntry } = useGrid();
@@ -28,6 +28,7 @@ export default function QueueContext({ children }) {
   const [queueCurrent, setQueueCurrent] = useState(0);
   const [isCurrentPaper, setIsCurrentPaper] = useState(false);
   const [roomGlobs, setRoomGlobs] = useState(null);
+  const isScreen = isScreenOrOutside();
 
   // When queue or queueCurrent changes, track if there is a current paper.
   useEffect(() => {
@@ -61,12 +62,20 @@ export default function QueueContext({ children }) {
       if (!isTheRoom) return;
       const index = update.queue_index;
       const status = update.status;
+      updateQueueEntry(index, status);
+      if (isScreen) return; // NO flash updates on screen or outside
       const nid = update.nid;
       const msg = `Update: Q${index + 1} (${nid}) is ${status}.`;
       flash(msg, 'info', 3);
-      updateQueueEntry(index, status);
     },
-    [controlledLog, roomChoice, flash, updateGridEntry, updateQueueEntry]
+    [
+      isScreen,
+      controlledLog,
+      roomChoice,
+      flash,
+      updateGridEntry,
+      updateQueueEntry,
+    ]
   );
 
   const replaceConflictsAndSetQueue = useCallback((arr) => {
