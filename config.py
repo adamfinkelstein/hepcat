@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 from os import getcwd, getenv
@@ -106,8 +106,9 @@ class Config:
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
 
     # https://sendgrid.com/en-us/blog/sending-emails-from-python-flask-applications-with-twilio-sendgrid
-    MAIL_SERVER = env_get_str("MAIL_SERVER", "smtp.sendgrid.net")
-    MAIL_PORT = env_get_int("MAIL_PORT", 587)
+    # Note: orig set up using sendgrid, but now using AWS SES in prod.
+    MAIL_SERVER = env_get_str("MAIL_SERVER", "OLD.smtp.sendgrid.net")
+    MAIL_PORT = env_get_int("MAIL_PORT", 2587)  # formerly 587
     MAIL_USE_TLS = env_get_bool("MAIL_USE_TLS", True)
     MAIL_USERNAME = env_get_str("MAIL_USERNAME", "apikey")
     MAIL_PASSWORD = env_get_str("MAIL_PASSWORD")

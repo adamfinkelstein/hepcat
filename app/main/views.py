@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import os
@@ -60,9 +60,8 @@ def reset_password():
         try:
             log_print(f"sending email to {email}")
             mail.send(msg)
-        except SMTPException as e:
-            log_print(f"failed attempt to send email to {email}, error:")
-            log_print(e)
+        except (SMTPException, OSError) as e:
+            log_print(f"error sending email to {email}, error: {type(e).__name__}: {e}")
             return {"error": "error sending email"}, 400
         return {}
 
