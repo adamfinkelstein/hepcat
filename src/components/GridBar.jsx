@@ -15,7 +15,7 @@ export default function GridBar() {
     <div className="GridBar">
       {nAbove} above
       <span className="barText">
-        &nbsp;&ge;&nbsp;{barString}&nbsp;&lt;&nbsp;
+        &nbsp;&ge;&nbsp;{barString}&nbsp;&gt;&nbsp;
       </span>
       {nBelow} below
     </div>

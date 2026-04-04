@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 from os import getcwd, getenv
@@ -96,7 +96,6 @@ class Config:
     HEPCAT_SCREEN_LOGIN = env_get_str("HEPCAT_SCREEN_LOGIN", "screen@example.com")
     HEPCAT_SCREEN_PASSWD = env_get_str("HEPCAT_SCREEN_PASSWD", "pass")
     OMIT_USER_DOMAINS = env_get_str("OMIT_USER_DOMAINS", "linklings.com")
-    DISABLE_PASSWORD_CACHE = env_get_bool("DISABLE_PASSWORD_CACHE", False)
     CONCORDE_EXE = env_get_str("CONCORDE_EXE", "")  # Set this to override default
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -107,8 +106,9 @@ class Config:
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
 
     # https://sendgrid.com/en-us/blog/sending-emails-from-python-flask-applications-with-twilio-sendgrid
-    MAIL_SERVER = env_get_str("MAIL_SERVER", "smtp.sendgrid.net")
-    MAIL_PORT = env_get_int("MAIL_PORT", 587)
+    # Note: orig set up using sendgrid, but now using AWS SES in prod.
+    MAIL_SERVER = env_get_str("MAIL_SERVER", "OLD.smtp.sendgrid.net")
+    MAIL_PORT = env_get_int("MAIL_PORT", 2587)  # formerly 587
     MAIL_USE_TLS = env_get_bool("MAIL_USE_TLS", True)
     MAIL_USERNAME = env_get_str("MAIL_USERNAME", "apikey")
     MAIL_PASSWORD = env_get_str("MAIL_PASSWORD")

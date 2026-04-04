@@ -12,6 +12,8 @@ function formatScoresInHTML(scores) {
   // RE matches any capital letter followed by !
   // with the letter wrapped in <b> tags.
   html = html.replace(/([A-Z])!/g, '<b>$1</b>');
+  // RE matches text within curly braces and wraps it in a span with class "other-room"
+  html = html.replace(/\{([^}]*)\}/g, '<span class="old-score">$1</span>');
   const ret = { __html: html };
   return ret;
 }

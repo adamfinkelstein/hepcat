@@ -11,6 +11,7 @@ import GridBlock from './GridBlock';
 import GridModeDropdown from './GridModeDropdown';
 import GridProgressBar from './GridProgressBar';
 import SetSticky from './SetSticky';
+import BoxMsg from './BoxMsg';
 
 function CountSpan({ label, count }) {
   return (
@@ -43,7 +44,7 @@ export default function GridTab() {
       </Stack>
 
       <GridBlock nidList={gridNidsAbove} />
-      {showGrid ? <GridBar /> : <div className="grid-message">{noGridMsg}</div>}
+      {showGrid ? <GridBar /> : <BoxMsg msg={noGridMsg} />}
       <GridBlock nidList={gridNidsBelow} />
 
       {showProgress > 0 && <GridProgressBar />}

@@ -5,6 +5,11 @@ import Stack from 'react-bootstrap/Stack';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useCount } from '../contexts/CountContext';
 import { useUser } from '../contexts/UserContext';
+import RectangleList from './RectangleList';
+
+const pendKeys = 'Ready,Tabled-Discuss,Tabled'.split(',');
+const convKeys = 'Reject,Conference,Journal'.split(',');
+const confKeys = ['Conflict'];
 
 export default function GridProgressBar() {
   const { user } = useUser();
@@ -70,13 +75,22 @@ export default function GridProgressBar() {
       </ProgressBar>
 
       <Stack direction="horizontal" className="my-0 me-3" gap={3}>
-        <div>Pending: {getCounts('Pending')}</div>
+        <Stack direction="horizontal" gap={1}>
+          <RectangleList keys={pendKeys} />
+          Pending: {getCounts('Pending')}
+        </Stack>
         <div>+</div>
-        <div>Converged: {getCounts('Converged')}</div>
+        <Stack direction="horizontal" gap={1}>
+          <RectangleList keys={convKeys} />
+          Converged: {getCounts('Converged')}
+        </Stack>
         {showConflicts && (
           <>
             <div>+</div>
-            <div>Conflicts: {conflictCount}</div>
+            <Stack direction="horizontal" gap={1}>
+              <RectangleList keys={confKeys} />
+              <div>Conflicts: {conflictCount}</div>
+            </Stack>
           </>
         )}
         <div className="total-count">= Total: {getCounts('total')}</div>

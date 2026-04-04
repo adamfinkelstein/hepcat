@@ -8,11 +8,10 @@ import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import QueueElement from './QueueElement';
-import AdminQueueControls from './AdminQueueControls';
 
 export default function Queue() {
-  const { user, isAdmin, isScreenOrOutside } = useUser();
-  const { queue, queueCurrent, roomGlobs } = useQueue();
+  const { isScreenOrOutside } = useUser();
+  const { queue, queueCurrent } = useQueue();
   const { showConflicts, setShowConflicts, showStars, setShowStars } =
     usePreferences();
   const counter = queueCurrent + 1;
@@ -23,10 +22,6 @@ export default function Queue() {
   const start_index = Math.max(0, queueCurrent - past_max);
   const end_index = Math.min(counter + future_max, queue.length);
   const queueSlice = queue.slice(start_index, end_index);
-  const hideQueue = roomGlobs?.hide_queue;
-  const hideMessage = roomGlobs?.message
-    ? roomGlobs.message
-    : 'The queue is hidden.';
 
   function getQEntryClass(index) {
     let className = 'q-entry';
@@ -45,39 +40,30 @@ export default function Queue() {
 
   return (
     <Container fluid className="Queue">
-      {user && isAdmin && <AdminQueueControls />}
-      <Container fluid>
-        {hideQueue && (
-          <div className="bigger-font queue-message">
-            Queue hidden for non-admin users, with this message: <br />{' '}
-            {hideMessage}
-          </div>
-        )}
-        <Stack direction="horizontal" className="mt-2">
-          <span>
-            Current: {currentCount} {queue.length}
-          </span>
-          <Stack direction="horizontal" className="q-show-checks" gap={3}>
-            <div>Show:</div>
-            <Form.Check
-              label="Conflicts"
-              type="checkbox"
-              checked={showConflicts}
-              onChange={() => {
-                setShowConflicts(!showConflicts);
-              }}
-            />
-            <Form.Check
-              label="Stars"
-              type="checkbox"
-              checked={showStars}
-              onChange={() => {
-                setShowStars(!showStars);
-              }}
-            />
-          </Stack>
+      <Stack direction="horizontal" className="mt-2">
+        <span>
+          Current: {currentCount} {queue.length}
+        </span>
+        <Stack direction="horizontal" className="q-show-checks" gap={3}>
+          <div>Show:</div>
+          <Form.Check
+            label="Conflicts"
+            type="checkbox"
+            checked={showConflicts}
+            onChange={() => {
+              setShowConflicts(!showConflicts);
+            }}
+          />
+          <Form.Check
+            label="Stars"
+            type="checkbox"
+            checked={showStars}
+            onChange={() => {
+              setShowStars(!showStars);
+            }}
+          />
         </Stack>
-      </Container>
+      </Stack>
       <Container fluid className="mt-2 q-list-container">
         <ul>
           {queueSlice.map((paper, index) => {

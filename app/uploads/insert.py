@@ -268,6 +268,14 @@ def ensure_thumbnail(thumbnail, nid):
     return thumbnail
 
 
+def normalize_room_name(room):
+    if room == "P" or room == "Plenary":
+        return "Plenary"
+    if room.startswith("Room_"):
+        return room
+    return "Room_" + room
+
+
 # Submission ID,Exception,Thumbnail URL,Title,Area,Track,Room,Abstract
 def insert_paper_rows(rows):
     area_type = int(LabelType.Area)
@@ -282,6 +290,7 @@ def insert_paper_rows(rows):
         sid, exception, thumbnail, title, areas, track, room, abstract = row
         if exception and omit_exceptions:
             continue  # omit any papers with exceptions
+        room = normalize_room_name(room)
         journal_only = journal_only_from_track(track)
         nid = sid_to_num(sid)
         oid = oids.pop(0)
@@ -425,6 +434,7 @@ def decode_room_list(rooms_str):
     rooms = rooms_str.split(";")
     rooms = [room.strip() for room in rooms]  # trim whitespace
     rooms = [room for room in rooms if len(room)]  # omit empty
+    rooms = [normalize_room_name(room) for room in rooms]
     rooms.sort()
     rooms = " ".join(rooms)
     return rooms
@@ -631,10 +641,7 @@ def read_csv(filename):
     log_print(f"Reading csv of type {header_type}")
     rows = keep_rows_with_n_cols(rows, n_cols)
     is_users = header_type == "users"
-    if is_users and not current_app.config["DISABLE_PASSWORD_CACHE"]:
-        hash_cache = cache_user_password_hashes()
-    else:
-        hash_cache = None
+    hash_cache = cache_user_password_hashes() if is_users else None
     # first delete old database info
     timer_end(f"finished reading {header_type} csv", True)
     if header_type in csvDeleteFunctions:

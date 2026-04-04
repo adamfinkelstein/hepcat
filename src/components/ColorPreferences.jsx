@@ -16,7 +16,7 @@ export default function ColorPreferences() {
   const { controlledLog } = useControlledLog();
   const { flash } = useFlasher();
   const { colors, changeColor, changeToDefaultColors } = usePreferences();
-  const [selectedColorKey, setSelectedColorKey] = useState('Tabled');
+  const [selectedColorKey, setSelectedColorKey] = useState('Ready');
   const logColorChanges = false;
 
   let handleChangeColor = (type, color) => {

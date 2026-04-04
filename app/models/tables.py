@@ -305,9 +305,16 @@ class Action(db.Model):
 ######################
 
 history_context_basic = ["Revoke", "BBS", "Sticky", "Plenary"]
+# These three start empty, and are also cleared by the following fn.
 history_context_name = {}
 history_context_int = {}
 all_queue_rooms = []
+
+
+def clear_history_context_tables_and_rooms():
+    history_context_name.clear()
+    history_context_int.clear()
+    all_queue_rooms.clear()
 
 
 def get_all_rooms():
@@ -327,31 +334,24 @@ def get_active_room_labels():
     return rooms_only
 
 
-def init_history_context_tables():
-    history_context_name.clear()
-    history_context_int.clear()
-
-
 def append_history_context_tables(room_name, room_int):
     history_context_int[room_name] = room_int
     history_context_name[room_int] = room_name
 
 
 def fill_history_context_tables_and_room_list():
-    global all_queue_rooms
-    init_history_context_tables()
+    clear_history_context_tables_and_rooms()
     for room_int, room_name in enumerate(history_context_basic):
         append_history_context_tables(room_name, room_int)
     room_labels = get_active_room_labels()  # omits BBS, Sticky, Plenary
-    all_queue_rooms = []  # empty array (global)
     for room_label in room_labels:
         room_name = room_label.name
         room_int = room_label.id + 1000  # prevent collision with history_context_basic
         all_queue_rooms.append(room_name)
         append_history_context_tables(room_name, room_int)
     all_queue_rooms.sort()  # alphabetical
-    # put Plenary at start of the list, even if that all there is:
-    all_queue_rooms = ["Plenary"] + all_queue_rooms
+    # put Plenary at start of the list, even if that's the whole list:
+    all_queue_rooms.insert(0, "Plenary")
     log_print(f"all_queue_rooms: {all_queue_rooms}")
     log_print(f"room table: {history_context_int}")
 
