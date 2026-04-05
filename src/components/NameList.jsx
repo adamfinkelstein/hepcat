@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 import { useUser } from '../contexts/UserContext';
 
@@ -18,20 +18,26 @@ function userToClass(isAdmin, user) {
 
 export default function NameList({ conf_arr }) {
   const { isAdmin } = useUser();
+  const userList = conf_arr.array;
+  const isEmpty = !userList.length;
   return (
     <div>
       <h5>{conf_arr.title}</h5>
-      <ul>
-        {conf_arr.array.map((user, user_ind) => {
-          return (
-            <li key={user_ind}>
-              <span className={userToClass(isAdmin, user)}>
-                {user.full_name}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      {isEmpty ? (
+        <p>(none)</p>
+      ) : (
+        <ul>
+          {userList.map((user, user_ind) => {
+            const userName = user.full_name.replaceAll(' ', '\u00A0');
+            const userClass = userToClass(isAdmin, user);
+            return (
+              <li key={user_ind}>
+                <span className={userClass}>{userName}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

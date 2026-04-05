@@ -1,6 +1,7 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
+import Stack from 'react-bootstrap/Stack';
 import { useQueue } from '../contexts/QueueContext';
 import { useUser } from '../contexts/UserContext';
 import AvailableChair from './AvailableChair';
@@ -52,32 +53,27 @@ export default function PaperConflicts() {
       show: true,
       title: 'Conflicts:',
       array: siftConflicts(currentConflicts),
-      default: '(none)',
     },
     {
-      show: current_leave?.length,
+      show: !!current_leave?.length,
       title: 'Leave:',
       array: siftConflicts(current_leave),
-      default: '',
     },
     {
-      show: current_enter?.length,
+      show: !!current_enter?.length,
       title: 'Return:',
       array: siftConflicts(current_enter),
-      default: '',
     },
   ];
 
   return (
     <div>
       {isAdmin && <AvailableChair conflicts={currentConflicts} />}
-      {conflicts_arrays.map((conf_arr, conf_ind) =>
-        conf_arr.show ? (
-          <NameList key={conf_ind} conf_arr={conf_arr} />
-        ) : (
-          <p key={conf_ind}>{conf_arr.default}</p>
-        )
-      )}
+      <Stack direction="horizontal" gap={4} className="align-items-start">
+        {conflicts_arrays.map(
+          (entry, idx) => entry.show && <NameList key={idx} conf_arr={entry} />
+        )}
+      </Stack>
     </div>
   );
 }
