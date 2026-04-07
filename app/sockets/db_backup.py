@@ -164,11 +164,7 @@ def launch_remote_sync():
     remote = "ubuntu@backup.hepcat.app:hepcat/" + local
     cmd = ["rsync", "-rvz", "--ignore-existing", "--delete", local, remote]
     out = subprocess.DEVNULL
-    if 0 and current_app.config["DB_BACKUP_RUN"]:  # only in production
-        subprocess.Popen(cmd, stdout=out, stderr=out)
-    else:
-        msg = "rsync cmd: " + " ".join(cmd)
-        log_print(msg)
+    subprocess.Popen(cmd, stdout=out, stderr=out)
 
 
 ##################################
