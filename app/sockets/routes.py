@@ -242,6 +242,7 @@ def user_request_queue(user, room):
 
 @socketio.on("user_set_sticky")
 @login_required_for_io
+@check_db_backup
 def user_set_sticky(data):
     log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
@@ -413,7 +414,6 @@ def admin_prev_paper(room):
 
 @socketio.on("admin_next_paper")
 @admin_required_for_io_with_record
-@check_db_backup
 def admin_next_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current
@@ -425,6 +425,7 @@ def admin_next_paper(room):
 
 @socketio.on("admin_advance_queue")
 @admin_required_for_io_with_record
+@check_db_backup
 def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["updateStatus"]
@@ -488,6 +489,7 @@ def admin_hide_queue(data):
 
 @socketio.on("admin_set_queue_by_gui")
 @admin_required_for_io_with_record
+@check_db_backup
 def admin_set_queue_by_gui(filters):
     room = filters["roomChoice"]
     log_print(f"admin request for set queue in {room}: {filters}")
@@ -501,6 +503,7 @@ def admin_set_queue_by_gui(filters):
 
 @socketio.on("admin_set_queue_by_text")
 @admin_required_for_io_with_record
+@check_db_backup
 def admin_set_queue_by_text(data):
     room = data["roomChoice"]
     explicit = data["explicit"]
