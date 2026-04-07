@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import json
@@ -14,6 +14,7 @@ from .decorators import (
     admin_required_for_io_no_record,
     login_required_for_io,
     super_required_for_io,
+    check_db_backup,
     playback_recorded_actions,
     get_user_or_disconnect,
 )
@@ -412,6 +413,7 @@ def admin_prev_paper(room):
 
 @socketio.on("admin_next_paper")
 @admin_required_for_io_with_record
+@check_db_backup
 def admin_next_paper(room):
     log_print(f"admin request for prev paper in {room}")
     zero_or_inc_current_index(room, +1)  # also "hides" current

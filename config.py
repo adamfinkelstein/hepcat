@@ -68,7 +68,7 @@ load_dotenv(dotenv_path)
 
 
 class Config:
-    SECRET_KEY = env_get_str("SECRET_KEY", "UeVbP7PG4RmtNhz")
+    SECRET_KEY = env_get_str("SECRET_KEY", "OVERRIDE_THIS")
     HEPCAT_SHOW_LOGS = env_get_bool("HEPCAT_SHOW_LOGS", False)
     HEPCAT_LOG_LEVEL = env_get_str("HEPCAT_LOG_LEVEL", "INFO")
     HEPCAT_SHOW_TIMERS = env_get_bool("HEPCAT_SHOW_TIMERS", False)
@@ -101,6 +101,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = env_get_str("SQLALCHEMY_DATABASE_URI", default_db)
     SQLALCHEMY_POOL_SIZE = env_get_int("SQLALCHEMY_POOL_SIZE", 0)  # 0=use default
+    DB_BACKUP_RUN = env_get_bool("DB_BACKUP_RUN", True)
+    DB_BACKUP_DIR = env_get_str("DB_BACKUP_DIR", "db_backups")
+    DB_BACKUP_SECS = env_get_int("DB_BACKUP_SECS", 300)  # 5 mins
+    DB_BACKUP_KEEP = env_get_int("DB_BACKUP_KEEP", 5)
 
     USE_EVENTLET = env_get_bool("USE_EVENTLET")
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
@@ -132,6 +136,7 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = testing_db
     HEPCAT_CACHE_DIR = None  # Do not bother caching
+    DB_BACKUP_RUN = False  # Do not back up db
 
 
 class ProductionConfig(Config):
@@ -144,3 +149,8 @@ config = {
     "production": ProductionConfig,
     "default": DevelopmentConfig,
 }
+
+# Put the name of the name in the config
+for key, cls in config.items():
+    if key != "default":
+        cls.CONFIG_NAME = key
