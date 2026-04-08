@@ -79,6 +79,12 @@ export default function DangerousOps() {
     });
   }
 
+  const dangerousDatabaseButtons = {
+    load: 'Load Test Database|Load a clean test database.',
+    wipe: 'Wipe Database Clean|Remove ALL data from the database!',
+    restore: 'Restore Database|Restore the database from the latest backup.',
+  };
+
   return (
     <div className="DangerousOps mt-3">
       {/* <div className={fontPref}> */}
@@ -118,33 +124,23 @@ export default function DangerousOps() {
           </Stack>
           {isSuper && (
             <>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton('load')}
-                >
-                  Load&nbsp;Test&nbsp;Database
-                </Button>
-                &nbsp;&nbsp;This loads a clean test database.
-              </Stack>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton('wipe')}
-                >
-                  Wipe&nbsp;Database&nbsp;Clean
-                </Button>
-                &nbsp;&nbsp;This removes ALL data from the database!
-              </Stack>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton('restore')}
-                >
-                  Restore&nbsp;Database
-                </Button>
-                &nbsp;&nbsp;This restores the database from the latest backup.
-              </Stack>
+              {Object.entries(dangerousDatabaseButtons).map(
+                ([verb, labelDesc]) => {
+                  const [label, desc] = labelDesc.split('|');
+                  const labelNoBreaks = label.replace(/ /g, '\u00A0');
+                  return (
+                    <Stack direction="horizontal" key={verb}>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleWipeDBButton(verb)}
+                      >
+                        {labelNoBreaks}
+                      </Button>
+                      &nbsp;&nbsp;{desc}
+                    </Stack>
+                  );
+                }
+              )}
             </>
           )}
         </Stack>
