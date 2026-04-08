@@ -18,6 +18,7 @@ from .decorators import (
     playback_recorded_actions,
     get_user_or_disconnect,
 )
+from .db_backup import restore_from_latest_backup
 from .. import db, socketio, log_print
 from ..uploads.insert import (
     save_and_read_csv,
@@ -89,6 +90,7 @@ from .get_or_set import (
     update_current_paper_status,
     wipe_db_and_disconnect_all,
     zero_or_inc_current_index,
+    prepare_to_replace_db,
 )
 
 ###########
@@ -713,3 +715,14 @@ def admin_load_database():
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
         playback_recorded_actions(user_set_sticky)
+
+
+@socketio.on("admin_restore_database")
+@super_required_for_io
+def admin_restore_database():
+    try:
+        prepare_to_replace_db()  # logs out everyone including the admin
+        restore_from_latest_backup()
+    except Exception as e:
+        log_print(f"admin_restore_database: FAILED with {e}")
+        raise

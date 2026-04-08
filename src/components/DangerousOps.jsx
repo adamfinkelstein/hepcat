@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import { Button, Stack, Collapse } from 'react-bootstrap';
@@ -56,8 +56,8 @@ export default function DangerousOps() {
     });
   }
 
-  function handleWipeDBButton(isLoad) {
-    const verb = isLoad ? 'load' : 'wipe';
+  function handleWipeDBButton(verb) {
+    // verb: 'load', 'wipe', 'restore'
     let text = `Are you really, Really, REALLY sure you want to ${verb} the database?`;
     if (numFilters > 2) {
       text +=
@@ -109,7 +109,7 @@ export default function DangerousOps() {
           </Stack>
           <Stack direction="horizontal" gap={2}>
             <Button variant="danger" onClick={() => handleBulkConfirmButton()}>
-              Bulk&nbsp;Confirm in&nbsp;Queue
+              Bulk&nbsp;Confirm&nbsp;Queue
             </Button>
             <div className="button-desc">
               Mark status of all "Ready" papers in PLENARY queue as now
@@ -121,20 +121,29 @@ export default function DangerousOps() {
               <Stack direction="horizontal">
                 <Button
                   variant="danger"
-                  onClick={() => handleWipeDBButton(true)}
+                  onClick={() => handleWipeDBButton('load')}
                 >
-                  Load Test Database
+                  Load&nbsp;Test&nbsp;Database
                 </Button>
                 &nbsp;&nbsp;This loads a clean test database.
               </Stack>
               <Stack direction="horizontal">
                 <Button
                   variant="danger"
-                  onClick={() => handleWipeDBButton(false)}
+                  onClick={() => handleWipeDBButton('wipe')}
                 >
-                  Wipe Database Clean
+                  Wipe&nbsp;Database&nbsp;Clean
                 </Button>
                 &nbsp;&nbsp;This removes ALL data from the database!
+              </Stack>
+              <Stack direction="horizontal">
+                <Button
+                  variant="danger"
+                  onClick={() => handleWipeDBButton('restore')}
+                >
+                  Restore&nbsp;Database
+                </Button>
+                &nbsp;&nbsp;This restores the database from the latest backup.
               </Stack>
             </>
           )}

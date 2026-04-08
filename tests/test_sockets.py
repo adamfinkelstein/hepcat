@@ -1,11 +1,11 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 from tests.hepcat_test_case import HepcatTestCase
 from app.util import read_text_from_file
 
 """
-This class tests the complete list of socket events
+This class tests nearly the complete list of socket events
 as implemented in apps/sockets/routes.py
 (but not the on_error handler) -- listed here:
 
@@ -36,6 +36,8 @@ as implemented in apps/sockets/routes.py
 * admin_request_download
 * admin_wipe_database
 * admin_load_database
+
+It does not test "admin_restore_database".
 
 Some limitations that could be addressed in future updates:
 - Most calls cover legal paths and skip failure modes.

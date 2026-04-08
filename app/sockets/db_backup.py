@@ -243,3 +243,30 @@ def db_backup_if_needed():
         launch_remote_sync()
     except Exception as e:
         log_print(f"db backup failed: {e}")
+
+
+##################################
+#
+# Public / Exported
+#
+# Restore from latest backup.
+#
+##################################
+
+
+def restore_from_latest_backup():
+    most_recent = most_recent_backup_file()
+    if most_recent is None:
+        return
+    backup_dir = get_backup_dir()
+    backup_path = os.path.join(backup_dir, most_recent)
+    # Maybe later, check db integrity using:
+    #   if not verify_db_integrity(backup_path)
+    # If it fails, we could delete the file and try again with the next.
+    db_path = get_db_path()
+    log_print(f"restoring db backup from {backup_path} to {db_path}")
+    copy_file_atomic(backup_path, db_path)
+    # We could consider adding this on production server:
+    # -- kill gunicorn (and then supervisor will bring it back up)
+    # import signal
+    # os.kill(os.getpid(), signal.SIGHUP)

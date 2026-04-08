@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import os
@@ -520,3 +520,12 @@ def wipe_db_and_disconnect_all():
     disconnect_all_users()  # do this first because users in db
     wipe_db_clean()
     remove_upload_folder()  # clean up any files
+
+
+def prepare_to_replace_db():
+    log_print("about to replace database...")
+    invalidate_cache_all()
+    disconnect_all_users()  # do this first because users in db
+    remove_upload_folder()  # clean up any files
+    db.close_all_sessions()  # close all active SQLAlchemy sessions
+    db.engine.dispose()  # tear down SQLAlchemy connection pool

@@ -29,6 +29,7 @@
     "EVENTLET",
     "fontawesome",
     "fortawesome",
+    "getpid",
     "gitinfo",
     "hstack",
     "infile",
