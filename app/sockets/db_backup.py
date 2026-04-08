@@ -5,6 +5,7 @@
 
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import time
@@ -57,6 +58,29 @@ def most_recent_backup_file():
 
 ##################################
 #
+# Internal - File Paths
+#
+##################################
+
+
+def get_tmp_path():
+    random_hex = os.urandom(8).hex()
+    file_name = f"backup_tmp_{random_hex}.db"
+    backup_dir = get_backup_dir()
+    file_path = os.path.join(backup_dir, file_name)
+    return file_path
+
+
+def get_final_path():
+    secs = int(time.time())
+    final_name = f"backup_{secs}.db"
+    backup_dir = get_backup_dir()
+    final_path = os.path.join(backup_dir, final_name)
+    return final_path
+
+
+##################################
+#
 # Internal - Timing
 #
 ##################################
@@ -85,13 +109,11 @@ def backup_is_needed():
 #
 # Internal - SQLite Copy
 #
+# This backup operation is atomic.
+# Search for "backup(target" here:
+#    https://docs.python.org/3/library/sqlite3.html
+#
 ##################################
-
-
-def make_tmp_path():
-    backup_dir = get_backup_dir()
-    random_hex = os.urandom(8).hex()
-    return os.path.join(backup_dir, f"backup_tmp_{random_hex}.db")
 
 
 def copy_db_to_tmp(db_path, tmp_path):
@@ -100,20 +122,6 @@ def copy_db_to_tmp(db_path, tmp_path):
     src.backup(dst)
     dst.close()
     src.close()
-
-
-def get_final_name():
-    secs = int(time.time())
-    final_name = f"backup_{secs}.db"
-    return final_name
-
-
-def rename_tmp_to_final(tmp_path):
-    backup_dir = get_backup_dir()
-    final_name = get_final_name()
-    final_path = os.path.join(backup_dir, final_name)
-    os.replace(tmp_path, final_path)
-    log_print(f"db_backup: wrote {final_name}")
 
 
 ##################################
@@ -131,13 +139,39 @@ def delete_file(path):
 
 
 def prune_old_backups():
-    n_keep = current_app.config["DB_BACKUP_KEEP"]
+    n_keep = current_app.config["DB_BACKUP_N_KEEP"]
     backups = list_backup_files()
     old_backups = backups[:-n_keep]
     backup_dir = get_backup_dir()
     for filename in old_backups:
         path = os.path.join(backup_dir, filename)
         delete_file(path)
+
+
+##################################
+#
+# Internal - Copy and Verify Integrity
+#
+##################################
+
+
+def copy_file_atomic(src_path, dst_path):
+    staging_path = get_tmp_path()
+    shutil.copyfile(src_path, staging_path)  # slow, not atomic
+    os.replace(staging_path, dst_path)  # atomic
+
+
+def verify_db_integrity(db_path):
+    if not current_app.config["DB_BACKUP_VERIFY"]:
+        return True
+    conn = sqlite3.connect(db_path)
+    try:
+        result = conn.execute("PRAGMA integrity_check").fetchone()
+        is_ok = result[0] == "ok"
+        log_print(f"verify_db_integrity: {is_ok}")
+        return is_ok
+    finally:
+        conn.close()
 
 
 ##################################
@@ -181,7 +215,7 @@ def launch_remote_sync():
 #   1. Copies the live SQLite database to a uniquely named tmp file,
 #      using SQLite's online backup API (safe during concurrent writes).
 #   2. Atomically renames the tmp file to its final backup name.
-#   3. Prunes old backups, keeps only the most recent N (DB_BACKUP_KEEP).
+#   3. Prunes old backups, keeps only the most recent DB_BACKUP_N_KEEP.
 #   4. Launches rsync as a background process to mirror the backup
 #      directory to a remote server.
 #
@@ -199,12 +233,13 @@ def db_backup_if_needed():
         timer_start()
         log_print("starting db backup")
         db_path = get_db_path()
-        tmp_path = make_tmp_path()
-        copy_db_to_tmp(db_path, tmp_path)
-        rename_tmp_to_final(tmp_path)
+        final_path = get_final_path()
+        copy_file_atomic(db_path, final_path)
+        if not verify_db_integrity(final_path):
+            delete_file(final_path)
+            return
         prune_old_backups()
         timer_end("finished db backup")
         launch_remote_sync()
     except Exception as e:
         log_print(f"db backup failed: {e}")
-        delete_file(tmp_path)

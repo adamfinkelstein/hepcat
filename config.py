@@ -104,7 +104,8 @@ class Config:
     DB_BACKUP_RUN = env_get_bool("DB_BACKUP_RUN", True)
     DB_BACKUP_DIR = env_get_str("DB_BACKUP_DIR", "db_backups")
     DB_BACKUP_SECS = env_get_int("DB_BACKUP_SECS", 300)  # 5 mins
-    DB_BACKUP_KEEP = env_get_int("DB_BACKUP_KEEP", 5)
+    DB_BACKUP_N_KEEP = env_get_int("DB_BACKUP_N_KEEP", 5)
+    DB_BACKUP_VERIFY = env_get_bool("DB_BACKUP_VERIFY", True)
 
     USE_EVENTLET = env_get_bool("USE_EVENTLET")
     ALLOW_CORS = env_get_bool("ALLOW_CORS")
