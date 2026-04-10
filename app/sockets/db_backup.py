@@ -86,11 +86,16 @@ def get_final_path():
 ##################################
 
 
+def timestamp_from_filename(filename):
+    timestamp = int(BACKUP_FILENAME_RE.match(filename).group(1))
+    return timestamp
+
+
 def seconds_since_last_backup():
     most_recent = most_recent_backup_file()
     if most_recent is None:
         return float("inf")
-    timestamp = int(BACKUP_FILENAME_RE.match(most_recent).group(1))
+    timestamp = timestamp_from_filename(most_recent)
     return time.time() - timestamp  # float - int = float
 
 
@@ -138,10 +143,44 @@ def delete_file(path):
         pass
 
 
-def prune_old_backups():
+SECS_PER_HOUR = 3600
+SECS_PER_DAY = 86400
+PACIFIC_OFFSET_SECONDS = 8 * 3600  # UTC-8 (PST)
+
+
+# Make a dictionary key that corresponds to hours or days (given in secs).
+# PACIFIC_OFFSET_SECONDS means the start of day is at/near PST.
+def filename_time_to_key(filename, period_secs):
+    timestamp = timestamp_from_filename(filename)
+    key = (timestamp - PACIFIC_OFFSET_SECONDS) // period_secs
+    return key
+
+
+# Get the most recent file from each of the n_keep most recent hours (or days)
+def most_recent_per_period(backups, n_keep, period_secs):
+    by_period = {}
+    for f in backups:
+        key = filename_time_to_key(f, period_secs)
+        by_period[key] = f
+    sorted_keys = sorted(by_period.keys())
+    recent_keys = sorted_keys[-n_keep:]  # latest n_keep in ascending order
+    filenames = [by_period[key] for key in recent_keys]
+    return set(filenames)
+
+
+def set_of_files_to_keep(backups):
     n_keep = current_app.config["DB_BACKUP_N_KEEP"]
+    most_recent_files = backups[-n_keep:]  # latest n_keep in ascending order
+    keep = set(most_recent_files)
+    keep.update(most_recent_per_period(backups, n_keep, SECS_PER_HOUR))
+    keep.update(most_recent_per_period(backups, n_keep, SECS_PER_DAY))
+    return keep
+
+
+def prune_old_backups():
     backups = list_backup_files()
-    old_backups = backups[:-n_keep]
+    keepers = set_of_files_to_keep(backups)
+    old_backups = set(backups) - keepers
     backup_dir = get_backup_dir()
     for filename in old_backups:
         path = os.path.join(backup_dir, filename)
