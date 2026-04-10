@@ -23,9 +23,11 @@ BACKUP_FILENAME_RE = re.compile(r"^backup_(\d+)\.db$")
 
 
 def get_db_path():
-    # go from sqlite:///...etc.../data.sqlite to data.sqlite
+    # go from sqlite:///...etc.../data.sqlite to ./data.sqlite
     uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
-    return uri.rsplit("/", 1)[-1]
+    parts = uri.rsplit("/", 1)
+    last_part = parts[-1]
+    return last_part  # This file is in the running directory ./
 
 
 def get_backup_dir():
@@ -121,7 +123,7 @@ def backup_is_needed():
 ##################################
 
 
-def copy_db_to_tmp(db_path, tmp_path):
+def copy_active_db_to_tmp(db_path, tmp_path):
     src = sqlite3.connect(db_path)
     dst = sqlite3.connect(tmp_path)
     src.backup(dst)
@@ -272,11 +274,13 @@ def db_backup_if_needed():
         timer_start()
         log_print("starting db backup")
         db_path = get_db_path()
+        staging_path = get_tmp_path()
         final_path = get_final_path()
-        copy_file_atomic(db_path, final_path)
-        if not verify_db_integrity(final_path):
-            delete_file(final_path)
+        copy_active_db_to_tmp(db_path, staging_path)
+        if not verify_db_integrity(staging_path):
+            delete_file(staging_path)
             return
+        os.replace(staging_path, final_path)  # atomic
         prune_old_backups()
         timer_end("finished db backup")
         launch_remote_sync()
