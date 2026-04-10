@@ -199,12 +199,6 @@ def prune_old_backups():
 ##################################
 
 
-def copy_file_atomic(src_path, dst_path):
-    staging_path = get_tmp_path()
-    shutil.copyfile(src_path, staging_path)  # slow, not atomic
-    os.replace(staging_path, dst_path)  # atomic
-
-
 def verify_db_integrity(db_path):
     if not current_app.config["DB_BACKUP_VERIFY"]:
         return True
@@ -216,6 +210,17 @@ def verify_db_integrity(db_path):
         return is_ok
     finally:
         conn.close()
+
+
+def copy_file_after_verify(src_path, dst_path):
+    staging_path = get_tmp_path()
+    shutil.copyfile(src_path, staging_path)  # slow, not atomic
+    if verify_db_integrity(staging_path):
+        os.replace(staging_path, dst_path)  # atomic
+        return True
+    log_print(f"corrupted backup ignored: {staging_path}")
+    delete_file(staging_path)
+    return False
 
 
 ##################################
@@ -253,11 +258,6 @@ def launch_remote_sync():
     threading.Thread(target=callback_after_sync, args=(proc,), daemon=True).start()
 
 
-def prepare_to_replace_db():
-    db.close_all_sessions()  # close all active SQLAlchemy sessions
-    db.engine.dispose()  # tear down SQLAlchemy connection pool
-
-
 ##################################
 #
 # Public / Exported
@@ -286,6 +286,7 @@ def prepare_to_replace_db():
 def db_backup_if_needed():
     if not backup_is_needed():
         return
+    staging_path = None
     try:
         timer_start()
         log_print("starting db backup")
@@ -302,6 +303,8 @@ def db_backup_if_needed():
         launch_remote_sync()
     except Exception as e:
         log_print(f"db backup failed: {e}")
+        if staging_path:
+            delete_file(staging_path)
         # should send warning email here.
         # but do not re-raise exception.
 
@@ -319,16 +322,20 @@ def restore_from_latest_backup():
     most_recent = most_recent_backup_file()
     if most_recent is None:
         return
+    # get full path of backup
     backup_dir = get_backup_dir()
     backup_path = os.path.join(backup_dir, most_recent)
-    # Could potentially check db integrity using:
-    #   verify_db_integrity(backup_path)
-    # But cannot issue warning because everyone is logged out by now.
+
+    # User sockets have all been closed down by the calling function.
+    # Close down db before copy
+    db.close_all_sessions()  # close all active SQLAlchemy sessions
+    db.engine.dispose()  # tear down SQLAlchemy connection pool
     db_path = get_db_path()
     log_print(f"restoring db backup from {backup_path} to {db_path}")
-    copy_file_atomic(backup_path, db_path)
+    copy_ok = copy_file_after_verify(backup_path, db_path)
+
     # If launched via gunicorn, send message to restart (but not in dev).
-    if "gunicorn" in sys.modules:
+    if copy_ok and "gunicorn" in sys.modules:
         log_print("instruct gunicorn to restart with new db file")
         gunicorn_pid = os.getppid()
         os.kill(gunicorn_pid, signal.SIGHUP)
