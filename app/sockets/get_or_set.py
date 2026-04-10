@@ -46,7 +46,6 @@ from ..models.schemas import (
 )
 from ..models.helpers import get_or_create_gq, wipe_db_clean
 from ..models.label_util import label_str_to_enum
-from ..uploads import remove_upload_folder
 
 
 def encrypt_str(raw, key):
@@ -519,13 +518,3 @@ def wipe_db_and_disconnect_all():
     invalidate_cache_all()
     disconnect_all_users()  # do this first because users in db
     wipe_db_clean()
-    remove_upload_folder()  # clean up any files
-
-
-def prepare_to_replace_db():
-    log_print("about to replace database...")
-    invalidate_cache_all()
-    disconnect_all_users()  # do this first because users in db
-    remove_upload_folder()  # clean up any files
-    db.close_all_sessions()  # close all active SQLAlchemy sessions
-    db.engine.dispose()  # tear down SQLAlchemy connection pool

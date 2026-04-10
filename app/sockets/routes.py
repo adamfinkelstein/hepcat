@@ -20,6 +20,7 @@ from .decorators import (
 )
 from .db_backup import restore_from_latest_backup
 from .. import db, socketio, log_print
+from ..uploads import remove_upload_folder
 from ..uploads.insert import (
     save_and_read_csv,
     pending_uploads,
@@ -90,7 +91,6 @@ from .get_or_set import (
     update_current_paper_status,
     wipe_db_and_disconnect_all,
     zero_or_inc_current_index,
-    prepare_to_replace_db,
 )
 
 ###########
@@ -705,6 +705,7 @@ def admin_request_download(kind):
 @super_required_for_io
 def admin_wipe_database():
     wipe_db_and_disconnect_all()
+    remove_upload_folder()  # clean up any files
 
 
 @socketio.on("admin_load_database")
@@ -720,9 +721,14 @@ def admin_load_database():
 @socketio.on("admin_restore_database")
 @super_required_for_io
 def admin_restore_database():
+    log_print("about to restore database...")
     try:
-        prepare_to_replace_db()  # logs out everyone including the admin
+        invalidate_cache_all()
+        remove_upload_folder()  # clean up any files
+        disconnect_all_users()  # do this first because users in db
         restore_from_latest_backup()
     except Exception as e:
+        # We cannot issue warning or error through GUI because everyone
+        # has been logged out by the "disconnect..." above.
         log_print(f"admin_restore_database: FAILED with {e}")
         raise

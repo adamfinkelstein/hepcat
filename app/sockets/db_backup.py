@@ -11,7 +11,7 @@ import subprocess
 import threading
 import time
 from flask import current_app
-from .. import log_print
+from .. import db, log_print
 from ..util import timer_start, timer_end
 
 ##################################
@@ -251,6 +251,11 @@ def launch_remote_sync():
     threading.Thread(target=callback_after_sync, args=(proc,), daemon=True).start()
 
 
+def prepare_to_replace_db():
+    db.close_all_sessions()  # close all active SQLAlchemy sessions
+    db.engine.dispose()  # tear down SQLAlchemy connection pool
+
+
 ##################################
 #
 # Public / Exported
@@ -317,6 +322,7 @@ def restore_from_latest_backup():
     # Maybe later, check db integrity using:
     #   if not verify_db_integrity(backup_path)
     # If it fails, we could delete the file and try again with the next.
+    # Cannot issue warning because everyone is logged out by now.
     db_path = get_db_path()
     log_print(f"restoring db backup from {backup_path} to {db_path}")
     copy_file_atomic(backup_path, db_path)
