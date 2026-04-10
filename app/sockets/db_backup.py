@@ -8,6 +8,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import threading
 import time
 from flask import current_app
 from .. import log_print
@@ -222,6 +223,13 @@ def verify_db_integrity(db_path):
 ##################################
 
 
+def callback_after_sync(proc):
+    code = proc.wait()
+    if code != 0:
+        log_print(f"rsync failed with exit code {code}")  # is this ok?
+        # perhaps send email here...
+
+
 # rsync options:
 # -rvz
 #     r=Recursive, so it copies files in the directories.
@@ -239,7 +247,8 @@ def launch_remote_sync():
     remote = "ubuntu@backup.hepcat.app:hepcat/" + local
     cmd = ["rsync", "-rvz", "--ignore-existing", "--delete", local, remote]
     out = subprocess.DEVNULL
-    subprocess.Popen(cmd, stdout=out, stderr=out)
+    proc = subprocess.Popen(cmd, stdout=out, stderr=out)
+    threading.Thread(target=callback_after_sync, args=(proc,), daemon=True).start()
 
 
 ##################################
@@ -286,6 +295,8 @@ def db_backup_if_needed():
         launch_remote_sync()
     except Exception as e:
         log_print(f"db backup failed: {e}")
+        # should send warning email here.
+        # but do not re-raise exception.
 
 
 ##################################
