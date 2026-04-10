@@ -30,6 +30,7 @@
     "fontawesome",
     "fortawesome",
     "getpid",
+    "getppid",
     "gitinfo",
     "hstack",
     "infile",

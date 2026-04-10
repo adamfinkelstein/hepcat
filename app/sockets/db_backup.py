@@ -7,7 +7,9 @@ import os
 import re
 import shutil
 import sqlite3
+import signal
 import subprocess
+import sys
 import threading
 import time
 from flask import current_app
@@ -319,14 +321,14 @@ def restore_from_latest_backup():
         return
     backup_dir = get_backup_dir()
     backup_path = os.path.join(backup_dir, most_recent)
-    # Maybe later, check db integrity using:
-    #   if not verify_db_integrity(backup_path)
-    # If it fails, we could delete the file and try again with the next.
-    # Cannot issue warning because everyone is logged out by now.
+    # Could potentially check db integrity using:
+    #   verify_db_integrity(backup_path)
+    # But cannot issue warning because everyone is logged out by now.
     db_path = get_db_path()
     log_print(f"restoring db backup from {backup_path} to {db_path}")
     copy_file_atomic(backup_path, db_path)
-    # We could consider adding this on production server:
-    # -- kill gunicorn (and then supervisor will bring it back up)
-    # import signal
-    # os.kill(os.getpid(), signal.SIGHUP)
+    # If launched via gunicorn, send message to restart (but not in dev).
+    if "gunicorn" in sys.modules:
+        log_print("instruct gunicorn to restart with new db file")
+        gunicorn_pid = os.getppid()
+        os.kill(gunicorn_pid, signal.SIGHUP)
