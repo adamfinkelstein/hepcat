@@ -227,16 +227,6 @@ def copy_file_after_verify(src_path, dst_path):
 #
 # Internal - Sync local backup directory to remove backup server.
 #
-##################################
-
-
-def callback_after_sync(proc):
-    code = proc.wait()
-    if code != 0:
-        log_print(f"rsync failed with exit code {code}")  # is this ok?
-        # perhaps send email here...
-
-
 # rsync options:
 # -rvz
 #     r=Recursive, so it copies files in the directories.
@@ -248,14 +238,28 @@ def callback_after_sync(proc):
 # --delete
 #     Remove files on the remote that no longer exist locally.
 #     So pruning is reflected on the remote side too.
+#
+##################################
+
+
+def call_sync(local, remote):
+    cmd = ["rsync", "-rvz", "--ignore-existing", "--delete", local, remote]
+    out = subprocess.DEVNULL
+    try:
+        log_print(f"about to call rsync: {cmd}")
+        subprocess.check_call(cmd, stdout=out, stderr=out)
+    except Exception as e:
+        err_type = type(e).__name__
+        log_print(f"rsync failed: {err_type}: {e}")
+        # perhaps send email here...
+
+
 def launch_remote_sync():
     backup_dir = get_backup_dir()
     local = backup_dir + "/"  # trailing slash: rsync copy dir CONTENTS
     remote = "ubuntu@backup.hepcat.app:hepcat/" + local
-    cmd = ["rsync", "-rvz", "--ignore-existing", "--delete", local, remote]
-    out = subprocess.DEVNULL
-    proc = subprocess.Popen(cmd, stdout=out, stderr=out)
-    threading.Thread(target=callback_after_sync, args=(proc,), daemon=True).start()
+    sync_args = (local, remote)
+    threading.Thread(target=call_sync, args=sync_args, daemon=True).start()
 
 
 ##################################
