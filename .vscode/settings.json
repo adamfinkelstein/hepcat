@@ -58,6 +58,7 @@
     "sqla",
     "SQLALCHEMY",
     "stickie",
+    "supervisorctl",
     "uarr",
     "unconficted",
     "unconflicted",
