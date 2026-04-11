@@ -1,5 +1,4 @@
 #!/bin/bash
 
-cd /home/ubuntu/hepcat
-source ./deploy-scripts/deploy-code-only.sh
+source /home/ubuntu/hepcat/deploy-scripts/deploy-code-only.sh
 sudo supervisorctl restart hepcat
