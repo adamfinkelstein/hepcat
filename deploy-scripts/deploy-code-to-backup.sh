@@ -5,8 +5,8 @@ sudo supervisorctl stop hepcat
 ssh ubuntu@backup.hepcat.app supervisorctl stop hepcat
 
 # Update code locally
-cd /home/ubuntu/hepcat
-source ./deploy-scripts/deploy-code-only.sh
+cd /home/ubuntu/hepcat/deploy-scripts
+source deploy-code-only.sh
 
 # Copy this entire directory (including code) to backup server
 cd /home/ubuntu
