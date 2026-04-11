@@ -2,7 +2,7 @@
 
 # Stop hepcat locally and at backup server
 sudo supervisorctl stop hepcat
-ssh ubuntu@backup.hepcat.app supervisorctl stop hepcat
+ssh ubuntu@backup.hepcat.app sudo supervisorctl stop hepcat
 
 # Update code locally
 cd /home/ubuntu/hepcat/deploy-scripts
@@ -17,4 +17,4 @@ rsync -avz --delete hepcat/ ubuntu@backup.hepcat.app:hepcat/
 
 # Start hepcat locally and at backup server
 sudo supervisorctl start hepcat
-ssh ubuntu@backup.hepcat.app supervisorctl start hepcat
+ssh ubuntu@backup.hepcat.app sudo supervisorctl start hepcat
