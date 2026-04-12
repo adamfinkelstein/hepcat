@@ -29,6 +29,7 @@ export default function AdminContext({ children }) {
   const [roomBackups, setRoomBackups] = useState([]);
   const [showDangerous, setShowDangerous] = useState(false);
   const [backupFiles, setBackupFiles] = useState(null);
+  const [isBackupServer, setIsBackupServer] = useState(false);
 
   useEffect(() => {
     const roleAndRoomMatch = (user, role, room) => {
@@ -91,6 +92,7 @@ export default function AdminContext({ children }) {
       setDisableLogins(data.disable_logins);
       setGitInfo(data.git_info);
       setFileUploads(data.uploads);
+      setIsBackupServer(data.is_backup_server);
     },
     [controlledLog]
   );

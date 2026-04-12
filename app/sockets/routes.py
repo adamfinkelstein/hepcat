@@ -126,11 +126,13 @@ def emit_admin_data(*, broadcast):
     # general
     disable = setting_bool_get("disable_logins")
     git_info = get_git_info_from_repo()
+    is_backup = current_app.config["DB_BACKUP_SERVER"]
     data = {
         "disable_logins": disable,
         "git_info": git_info,
         "uploads": uploads,
         "filters": filters,
+        "is_backup_server": is_backup,
     }
     # now send
     if broadcast:

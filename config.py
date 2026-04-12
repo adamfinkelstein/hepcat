@@ -101,6 +101,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = env_get_str("SQLALCHEMY_DATABASE_URI", default_db)
     SQLALCHEMY_POOL_SIZE = env_get_int("SQLALCHEMY_POOL_SIZE", 0)  # 0=use default
+
+    DB_BACKUP_SERVER = env_get_bool("DB_BACKUP_SERVER", False)  # Is this the backup?
     DB_BACKUP_RUN = env_get_bool("DB_BACKUP_RUN", True)
     DB_BACKUP_DIR = env_get_str("DB_BACKUP_DIR", "db_backups")
     DB_BACKUP_SECS = env_get_int("DB_BACKUP_SECS", 300)  # 5 mins

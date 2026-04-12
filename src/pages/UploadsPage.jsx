@@ -20,7 +20,7 @@ export default function UploadsPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { fontPref } = usePreferences();
-  const { fileUploads } = useAdmin();
+  const { fileUploads, isBackupServer } = useAdmin();
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];
   const uploadTitle = uploadList.length
@@ -118,12 +118,14 @@ export default function UploadsPage() {
             <h2>Extra Admin Functions</h2>
           </div>
           <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
-            <Stack direction="horizontal">
-              <Button className="btn-warning" onClick={handleBackupNowBtn}>
-                Backup Now
-              </Button>
-              &nbsp;&nbsp;Save a backup of the database right now.
-            </Stack>
+            {!isBackupServer && (
+              <Stack direction="horizontal">
+                <Button className="btn-warning" onClick={handleBackupNowBtn}>
+                  Backup Now
+                </Button>
+                &nbsp;&nbsp;Save a backup of the database right now.
+              </Stack>
+            )}
             <Stack direction="horizontal">
               <Button
                 className="btn-warning"

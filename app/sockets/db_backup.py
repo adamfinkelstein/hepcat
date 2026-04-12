@@ -141,13 +141,16 @@ def seconds_since_last_backup():
 
 
 # Says whether time since last backup is more than min interval between backups.
-# Also verifies that backups should even run (eg on production server).
+# First verify that backups should even run:
+# - Only if enabled on primary, and never on the backup server itself.
 def backup_is_needed():
-    if not current_app.config["DB_BACKUP_RUN"]:
+    if not current_app.config["DB_BACKUP_RUN"]:  # Only if enabled on primary.
+        return False
+    if current_app.config["DB_BACKUP_SERVER"]:  # Never on backup server.
         return False
     interval = current_app.config["DB_BACKUP_SECS"]
     duration = seconds_since_last_backup()
-    is_needed = duration > interval
+    is_needed = duration > interval  # Sufficient time since last backup.
     return is_needed
 
 
