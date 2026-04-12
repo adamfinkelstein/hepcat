@@ -311,7 +311,7 @@ def launch_remote_sync():
 #
 # Public / Exported
 #
-# db_backup_if_needed() is called from the @check_db_backup decorator,
+# backup_db_if_needed() is called from the @check_for_db_backup decorator,
 # which is applied to Flask request handlers that perform significant
 # database writes. It runs entirely on the request thread except for
 # the final rsync, which is launched as a background process.
@@ -332,7 +332,7 @@ def launch_remote_sync():
 ##################################
 
 
-def db_backup_now(is_auto=False):
+def backup_db_now(is_auto=False):
     staging_path = None
     try:
         timer_start()
@@ -348,18 +348,20 @@ def db_backup_now(is_auto=False):
         prune_old_backups()
         timer_end("finished db backup")
         launch_remote_sync()
+        return final_path
     except Exception as e:
         log_print(f"db backup failed: {e}")
         if staging_path:
             delete_file(staging_path)
         # should send warning email here.
         # but do not re-raise exception.
+        return None
 
 
-def db_backup_if_needed():
+def backup_db_if_needed():
     if not backup_is_needed():
         return
-    db_backup_now(True)
+    return backup_db_now(True)
 
 
 ##################################
@@ -378,7 +380,7 @@ def get_meta_from_filename(filename):
     return tup
 
 
-def list_of_backup_files_with_meta():
+def backup_files_available():
     filenames = list_backup_files()
     meta = [get_meta_from_filename(f) for f in filenames]
     return meta
@@ -393,7 +395,7 @@ def list_of_backup_files_with_meta():
 ##################################
 
 
-def restore_from_backup(filename):
+def restore_from_backup_file(filename):
     # get full path of backup
     backup_dir = get_backup_dir()
     backup_path = os.path.join(backup_dir, filename)
@@ -416,8 +418,8 @@ def restore_from_backup(filename):
         os.kill(gunicorn_pid, signal.SIGHUP)
 
 
-def restore_from_latest_backup():
+def restore_from_backup_latest():
     most_recent = most_recent_backup_file()
     if most_recent is None:
         return
-    restore_from_backup(most_recent)
+    restore_from_backup_file(most_recent)

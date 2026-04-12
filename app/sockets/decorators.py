@@ -7,7 +7,7 @@ from flask import current_app
 from flask_socketio import disconnect
 from .. import db, log_print
 from ..models.tables import Action
-from .db_backup import db_backup_if_needed
+from .db_backup import backup_db_if_needed
 from .users import (
     current_user_is_admin,
     current_user_is_super,
@@ -157,7 +157,7 @@ def get_user_or_disconnect(f):
 
 ##################################
 #
-# check_db_backup is a decorator that calls db_backup_if_needed()
+# check_for_db_backup is a decorator that calls backup_db_if_needed()
 # after the wrapped handler completes, so the database backup reflects
 # the most recent write.
 #
@@ -167,18 +167,18 @@ def get_user_or_disconnect(f):
 #
 #   @socketio.on("admin_next_paper")
 #   @admin_required_for_io_with_record
-#   @check_db_backup
+#   @check_for_db_backup
 #   def admin_next_paper(room):
 #       ...
 #
 ##################################
 
 
-def check_db_backup(f):
+def check_for_db_backup(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         result = f(*args, **kwargs)
-        db_backup_if_needed()
+        backup_db_if_needed()
         return result
 
     return decorated
