@@ -192,6 +192,7 @@ export default function AdminContext({ children }) {
         roomBackups,
         backupFiles,
         requestBackupList,
+        isBackupServer,
       }}
     >
       {children}
