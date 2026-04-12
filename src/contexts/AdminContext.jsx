@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -28,6 +28,7 @@ export default function AdminContext({ children }) {
   const [roomChairs, setRoomChairs] = useState([]);
   const [roomBackups, setRoomBackups] = useState([]);
   const [showDangerous, setShowDangerous] = useState(false);
+  const [backupFiles, setBackupFiles] = useState(null);
 
   useEffect(() => {
     const roleAndRoomMatch = (user, role, room) => {
@@ -142,6 +143,15 @@ export default function AdminContext({ children }) {
     [controlledLog]
   );
 
+  const requestBackupList = useCallback(() => {
+    setBackupFiles(null); // reset to loading state
+    socketEmit('admin_request_backup_list');
+  }, [socketEmit]);
+
+  const receiveBackupList = useCallback((files) => {
+    setBackupFiles(files);
+  }, []);
+
   // register socket event handlers
   const ctx = 'AdminContext';
   useSocketHandler('server_send_admin_data', receiveAdminData, ctx);
@@ -149,6 +159,7 @@ export default function AdminContext({ children }) {
   useSocketHandler('server_probe_by_text', receiveProbeText, ctx);
   useSocketHandler('server_refresh_user', receiveRefreshUser, ctx);
   useSocketHandler('server_refresh_all_users', receiveRefreshAllUsers, ctx);
+  useSocketHandler('server_send_backup_list', receiveBackupList, ctx);
 
   return (
     <adminContext.Provider
@@ -177,6 +188,8 @@ export default function AdminContext({ children }) {
         countOnlineUsers,
         roomChairs,
         roomBackups,
+        backupFiles,
+        requestBackupList,
       }}
     >
       {children}

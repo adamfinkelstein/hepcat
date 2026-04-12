@@ -9,6 +9,7 @@ import { useGrid } from '../contexts/GridContext';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
 import { useFilterContext } from '../contexts/FilterContext';
+import RestoreBackupDropdown from './RestoreBackupDropdown';
 
 export default function DangerousOps() {
   const { user } = useUser();
@@ -141,6 +142,10 @@ export default function DangerousOps() {
                   );
                 }
               )}
+              <Stack direction="horizontal">
+                <RestoreBackupDropdown />
+                &nbsp;&nbsp;Restore the database from a specific backup file.
+              </Stack>
             </>
           )}
         </Stack>
