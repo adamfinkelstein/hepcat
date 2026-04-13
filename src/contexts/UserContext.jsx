@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import React, { useCallback, useState, useEffect } from 'react';
@@ -37,8 +37,8 @@ export default function UserContext({ children }) {
   }, [isScreenRole, isOutsideRole]);
 
   const userBelongsInRoom = useCallback(
-    (room) => belongsInRoom(user, room),
-    [user]
+    (room) => isScreenOrOutside() || belongsInRoom(user, room),
+    [user, isScreenOrOutside]
   );
 
   const receiveWelcome = useCallback(

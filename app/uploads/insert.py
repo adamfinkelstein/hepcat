@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import os
@@ -192,7 +192,7 @@ def insert_user_rows(rows, hash_cache):
         db.session.add(user)
         count += 1
     log_print(f"added {count} users (restored {hash_count} old passwords)")
-    ensure_screens()  # this will provide at least Plenary but later need to add rooms
+    ensure_screens()
     return count
 
 
@@ -424,7 +424,6 @@ def insert_paper_room_rows(rows):
     # Also note that uploading papers will reset all GQs.
     ensure_all_gqs()
     reset_all_gqs()
-    ensure_screens()
     return count
 
 

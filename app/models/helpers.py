@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 from flask import current_app
@@ -121,14 +121,13 @@ def ensure_supers():
 
 def ensure_screens():
     passwd = current_app.config["HEPCAT_SCREEN_PASSWD"]
-    # log_print(f"ensure_screens: passwd={passwd}")
-    rooms = get_all_rooms()
-    for room in rooms:
-        lower = room.lower()
-        email = f"screen.{lower}@example.com"
-        ensure_user(email, "Screen", room, "Screen", passwd, room)
-        email = f"outside.{lower}@example.com"
-        ensure_user(email, "Outside", room, "Outside", passwd, room)
+    digits = {"1": "One", "2": "Two"}
+    for digit in digits.keys():
+        word = digits[digit]
+        for role in ["Screen", "Outside"]:
+            lower = role.lower()
+            email = f"{lower}{digit}@example.com"
+            ensure_user(email, role, word, role, passwd)
 
 
 def dump_users_papers_and_conflicts(title):
