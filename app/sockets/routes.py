@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import json
@@ -14,10 +14,18 @@ from .decorators import (
     admin_required_for_io_no_record,
     login_required_for_io,
     super_required_for_io,
+    check_for_db_backup,
     playback_recorded_actions,
     get_user_or_disconnect,
 )
+from .db_backup import (
+    backup_db_now,
+    backup_files_available,
+    restore_from_backup_latest,
+    restore_from_backup_file,
+)
 from .. import db, socketio, log_print
+from ..uploads import remove_upload_folder
 from ..uploads.insert import (
     save_and_read_csv,
     pending_uploads,
@@ -118,11 +126,13 @@ def emit_admin_data(*, broadcast):
     # general
     disable = setting_bool_get("disable_logins")
     git_info = get_git_info_from_repo()
+    is_backup = current_app.config["DB_BACKUP_SERVER"]
     data = {
         "disable_logins": disable,
         "git_info": git_info,
         "uploads": uploads,
         "filters": filters,
+        "is_backup_server": is_backup,
     }
     # now send
     if broadcast:
@@ -241,6 +251,7 @@ def user_request_queue(user, room):
 
 @socketio.on("user_set_sticky")
 @login_required_for_io
+@check_for_db_backup
 def user_set_sticky(data):
     log_print(f"user request for set sticky: {data}")
     nid = data["nid"]
@@ -423,6 +434,7 @@ def admin_next_paper(room):
 
 @socketio.on("admin_advance_queue")
 @admin_required_for_io_with_record
+@check_for_db_backup
 def admin_advance_queue(data):
     room = data["roomChoice"]
     status_update = data["updateStatus"]
@@ -486,6 +498,7 @@ def admin_hide_queue(data):
 
 @socketio.on("admin_set_queue_by_gui")
 @admin_required_for_io_with_record
+@check_for_db_backup
 def admin_set_queue_by_gui(filters):
     room = filters["roomChoice"]
     log_print(f"admin request for set queue in {room}: {filters}")
@@ -499,6 +512,7 @@ def admin_set_queue_by_gui(filters):
 
 @socketio.on("admin_set_queue_by_text")
 @admin_required_for_io_with_record
+@check_for_db_backup
 def admin_set_queue_by_text(data):
     room = data["roomChoice"]
     explicit = data["explicit"]
@@ -698,6 +712,7 @@ def admin_request_download(kind):
 @super_required_for_io
 def admin_wipe_database():
     wipe_db_and_disconnect_all()
+    remove_upload_folder()  # clean up any files
 
 
 @socketio.on("admin_load_database")
@@ -708,3 +723,50 @@ def admin_load_database():
     try_sql_commit()
     if current_app.config["HEPCAT_TEST_ACTIONS"]:
         playback_recorded_actions(user_set_sticky)
+
+
+@socketio.on("admin_restore_database")
+@super_required_for_io
+def admin_restore_database():
+    log_print("admin_restore_database")
+    try:
+        invalidate_cache_all()
+        remove_upload_folder()  # clean up any files
+        disconnect_all_users()  # do this first because users in db
+        restore_from_backup_latest()
+    except Exception as e:
+        # We cannot issue warning or error through GUI because everyone
+        # has been logged out by the "disconnect..." above.
+        log_print(f"admin_restore_database: FAILED with {e}")
+        raise
+
+
+# mimics function above, but with filename specified
+@socketio.on("admin_restore_database_from_file")
+@super_required_for_io
+def admin_restore_database_from_file(filename):
+    log_print(f"admin_restore_database_from_file: {filename}")
+    try:
+        invalidate_cache_all()
+        remove_upload_folder()
+        disconnect_all_users()
+        restore_from_backup_file(filename)
+    except Exception as e:
+        log_print(f"admin_restore_database_from_file: FAILED with {e}")
+        raise
+
+
+@socketio.on("admin_backup_now")
+@admin_required_for_io_no_record
+def admin_backup_now():
+    filename = backup_db_now()
+    msg = f"Backup complete: {filename}" if filename else "Backup failed."
+    variant = "success" if filename else "danger"
+    emit("server_send_flasher", {"message": msg, "type": variant})
+
+
+@socketio.on("admin_request_backup_list")
+@admin_required_for_io_no_record
+def admin_request_backup_list():
+    files = backup_files_available()
+    emit("server_send_backup_list", files)

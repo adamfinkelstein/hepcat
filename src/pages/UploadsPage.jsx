@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import Container from 'react-bootstrap/Container';
@@ -20,7 +20,7 @@ export default function UploadsPage() {
   const { controlledLog } = useControlledLog();
   const { socketEmit } = useSocketIO();
   const { fontPref } = usePreferences();
-  const { fileUploads } = useAdmin();
+  const { fileUploads, isBackupServer } = useAdmin();
   const uploadList = fileUploads ? fileUploads.uploads : [];
   const pendingList = fileUploads ? fileUploads.pending : [];
   const uploadTitle = uploadList.length
@@ -29,6 +29,10 @@ export default function UploadsPage() {
   const pendingTitle = pendingList.length
     ? 'Pending Files:'
     : 'No files pending.';
+
+  const handleBackupNowBtn = () => {
+    socketEmit('admin_backup_now');
+  };
 
   const handleSendBtn = (event) => {
     event.preventDefault();
@@ -114,6 +118,14 @@ export default function UploadsPage() {
             <h2>Extra Admin Functions</h2>
           </div>
           <Stack className="mt-4 mb-5" direction="vertical" gap={4}>
+            {!isBackupServer && (
+              <Stack direction="horizontal">
+                <Button className="btn-warning" onClick={handleBackupNowBtn}>
+                  Backup Now
+                </Button>
+                &nbsp;&nbsp;Save a backup of the database right now.
+              </Stack>
+            )}
             <Stack direction="horizontal">
               <Button
                 className="btn-warning"

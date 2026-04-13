@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import json
@@ -6,12 +6,13 @@ from functools import wraps
 from flask import current_app
 from flask_socketio import disconnect
 from .. import db, log_print
+from ..models.tables import Action
+from .db_backup import backup_db_if_needed
 from .users import (
     current_user_is_admin,
     current_user_is_super,
     get_current_user_or_none,
 )
-from ..models.tables import Action
 
 ##################################
 #
@@ -150,5 +151,34 @@ def get_user_or_disconnect(f):
             return
         # Call the original function with user as the first argument
         return f(user, *args, **kwargs)
+
+    return decorated
+
+
+##################################
+#
+# check_for_db_backup is a decorator that calls backup_db_if_needed()
+# after the wrapped handler completes, so the database backup reflects
+# the most recent write.
+#
+# It should be applied closest to the handler function, below any other
+# decorators, so that it runs only if the handler actually executed
+# (i.e. the user was authorized and the db write completed). Example:
+#
+#   @socketio.on("admin_next_paper")
+#   @admin_required_for_io_with_record
+#   @check_for_db_backup
+#   def admin_next_paper(room):
+#       ...
+#
+##################################
+
+
+def check_for_db_backup(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        result = f(*args, **kwargs)
+        backup_db_if_needed()
+        return result
 
     return decorated
