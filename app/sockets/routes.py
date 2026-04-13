@@ -759,10 +759,15 @@ def admin_restore_database_from_file(filename):
 @socketio.on("admin_backup_now")
 @admin_required_for_io_no_record
 def admin_backup_now():
-    filename = backup_db_now()
-    msg = f"Backup complete: {filename}" if filename else "Backup failed."
-    variant = "success" if filename else "danger"
-    emit("server_send_flasher", {"message": msg, "type": variant})
+    time_string = backup_db_now()
+    if time_string:
+        msg = f"Backup completed {time_string}"
+        variant = "success"
+    else:
+        msg = "Backup failed."
+        variant = "danger"
+    flash_data = {"message": msg, "type": variant, "duration": 8}
+    emit("server_send_flasher", flash_data)
 
 
 @socketio.on("admin_request_backup_list")

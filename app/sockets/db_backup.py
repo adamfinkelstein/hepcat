@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime, timezone
 from flask import current_app
 from .. import db, log_print
 from ..util import timer_start, timer_end
@@ -26,12 +27,17 @@ from ..util import timer_start, timer_end
 BACKUP_FILENAME_RE = re.compile(r"^backup_(\d+)_(auto|gui)\.db$")
 
 
+def get_filename_from_path(path):
+    parts = path.rsplit("/", 1)
+    last_part = parts[-1]
+    return last_part
+
+
 def get_db_path():
     # go from sqlite:///...etc.../data.sqlite to ./data.sqlite
     uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
-    parts = uri.rsplit("/", 1)
-    last_part = parts[-1]
-    return last_part  # This file is in the running directory ./
+    filename = get_filename_from_path(uri)
+    return filename  # This file is in the running directory ./
 
 
 def get_backup_dir():
@@ -43,6 +49,12 @@ def get_backup_dir():
 # Internal - File info from filenames
 #
 ##################################
+
+
+def format_timestamp_for_display(timestamp):
+    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    fmt = dt.strftime("%a %b %-d, %I:%M %p UTC")
+    return fmt
 
 
 def get_timestamp_from_filename(filename):
@@ -351,7 +363,10 @@ def backup_db_now(is_auto=False):
         prune_old_backups()
         timer_end("finished db backup")
         launch_remote_sync()
-        return final_path
+        filename = get_filename_from_path(final_path)
+        timestamp = get_timestamp_from_filename(filename)
+        time_string = format_timestamp_for_display(timestamp)
+        return time_string
     except Exception as e:
         log_print(f"db backup failed: {e}")
         if staging_path:
@@ -364,7 +379,7 @@ def backup_db_now(is_auto=False):
 def backup_db_if_needed():
     if not backup_is_needed():
         return
-    return backup_db_now(True)
+    backup_db_now(True)
 
 
 ##################################
