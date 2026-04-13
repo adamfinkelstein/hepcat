@@ -1,6 +1,12 @@
 #!/bin/bash
 
+if [ -z "$BASH_VERSION" ]; then
+    echo "Error: this script must be run with bash." >&2
+    exit 1
+fi
+
 # Stop hepcat locally and at backup server
+echo "About to stop hepcat at local and backup servers..."
 sudo supervisorctl stop hepcat
 ssh ubuntu@backup.hepcat.app sudo supervisorctl stop hepcat
 
@@ -34,3 +40,5 @@ mv $ENV_TMP $ENV_FILE
 # Start hepcat locally and at backup server
 sudo supervisorctl start hepcat
 ssh ubuntu@backup.hepcat.app sudo supervisorctl start hepcat
+
+echo "Done."
