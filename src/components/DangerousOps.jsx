@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import { Button, Stack, Collapse } from 'react-bootstrap';
@@ -9,6 +9,7 @@ import { useGrid } from '../contexts/GridContext';
 import { useUser } from '../contexts/UserContext';
 import { useAdmin } from '../contexts/AdminContext';
 import { useFilterContext } from '../contexts/FilterContext';
+import RestoreBackupDropdown from './RestoreBackupDropdown';
 
 export default function DangerousOps() {
   const { user } = useUser();
@@ -56,8 +57,8 @@ export default function DangerousOps() {
     });
   }
 
-  function handleWipeDBButton(isLoad) {
-    const verb = isLoad ? 'load' : 'wipe';
+  function handleWipeDBButton(verb) {
+    // verb: 'load', 'wipe', 'restore'
     let text = `Are you really, Really, REALLY sure you want to ${verb} the database?`;
     if (numFilters > 2) {
       text +=
@@ -78,6 +79,12 @@ export default function DangerousOps() {
       }
     });
   }
+
+  const dangerousDatabaseButtons = {
+    load: 'Load Test Database|Load a clean test database.',
+    wipe: 'Wipe Database Clean|Remove ALL data from the database!',
+    restore: 'Restore Database|Restore the database from the latest backup.',
+  };
 
   return (
     <div className="DangerousOps mt-3">
@@ -109,7 +116,7 @@ export default function DangerousOps() {
           </Stack>
           <Stack direction="horizontal" gap={2}>
             <Button variant="danger" onClick={() => handleBulkConfirmButton()}>
-              Bulk&nbsp;Confirm in&nbsp;Queue
+              Bulk&nbsp;Confirm&nbsp;Queue
             </Button>
             <div className="button-desc">
               Mark status of all "Ready" papers in PLENARY queue as now
@@ -118,23 +125,26 @@ export default function DangerousOps() {
           </Stack>
           {isSuper && (
             <>
+              {Object.entries(dangerousDatabaseButtons).map(
+                ([verb, labelDesc]) => {
+                  const [label, desc] = labelDesc.split('|');
+                  const labelNoBreaks = label.replace(/ /g, '\u00A0');
+                  return (
+                    <Stack direction="horizontal" key={verb}>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleWipeDBButton(verb)}
+                      >
+                        {labelNoBreaks}
+                      </Button>
+                      &nbsp;&nbsp;{desc}
+                    </Stack>
+                  );
+                }
+              )}
               <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton(true)}
-                >
-                  Load Test Database
-                </Button>
-                &nbsp;&nbsp;This loads a clean test database.
-              </Stack>
-              <Stack direction="horizontal">
-                <Button
-                  variant="danger"
-                  onClick={() => handleWipeDBButton(false)}
-                >
-                  Wipe Database Clean
-                </Button>
-                &nbsp;&nbsp;This removes ALL data from the database!
+                <RestoreBackupDropdown />
+                &nbsp;&nbsp;Restore the database from a specific backup file.
               </Stack>
             </>
           )}

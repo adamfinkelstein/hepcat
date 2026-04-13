@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Adam Finkelstein
+# Copyright (c) 2025-2026 Adam Finkelstein
 # Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import os
@@ -46,7 +46,6 @@ from ..models.schemas import (
 )
 from ..models.helpers import get_or_create_gq, wipe_db_clean
 from ..models.label_util import label_str_to_enum
-from ..uploads import remove_upload_folder
 
 
 def encrypt_str(raw, key):
@@ -519,4 +518,3 @@ def wipe_db_and_disconnect_all():
     invalidate_cache_all()
     disconnect_all_users()  # do this first because users in db
     wipe_db_clean()
-    remove_upload_folder()  # clean up any files

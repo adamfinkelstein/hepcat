@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Adam Finkelstein
+// Copyright (c) 2025-2026 Adam Finkelstein
 // Licensed under the Apache 2.0 License. See LICENSE file for details.
 
 import Container from 'react-bootstrap/Container';
@@ -16,7 +16,7 @@ import { usePreferences } from '../contexts/PreferencesContext';
 export default function HeaderBar() {
   const { controlledLog } = useControlledLog();
   const { user, isAdmin } = useUser();
-  const { countOnlineUsers } = useAdmin();
+  const { countOnlineUsers, isBackupServer } = useAdmin();
   const { socketLogout } = useSocketIO();
   const { fontPref } = usePreferences();
 
@@ -40,9 +40,8 @@ export default function HeaderBar() {
       <Navbar bg="dark" variant="dark" fixed="top" className="HeaderBar">
         <Container fluid className={fontPref}>
           <Navbar.Brand as={NavLink} to="/">
-            Hepcat: SIGGRAPH PC Meeting
+            Hepcat: SIGGRAPH PC Meeting{isBackupServer && ' (Backup)'}
           </Navbar.Brand>
-
           <Navbar.Collapse id="navbarScroll">
             <Nav
               className="me-auto my-2 my-lg-0 RightSideNav"
