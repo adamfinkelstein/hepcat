@@ -11,6 +11,7 @@ import { useConfirmationBox } from '../contexts/ConfirmationBoxContext';
 function formatBackupLabel(timestamp, kind) {
   const fmt = 'ccc MMM d, h:mm a ZZZZ';
   const dt = DateTime.fromSeconds(timestamp).toLocal().toFormat(fmt);
+  if (kind == 'gui') kind = 'Admin'; // Show that admin made this backup
   return `${dt} (${kind})`;
 }
 
